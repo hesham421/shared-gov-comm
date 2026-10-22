@@ -1,0 +1,10 @@
+# One writer per path — derived from factory.yaml → project.partitions by gov.py new-project.
+# Most specific wins. Replace the placeholders with the maintainers of each writer.
+
+*                                   @factory-maintainers
+/backend/modules/*/                 @backend-maintainers
+/analysis/modules/*/                @factory-maintainers
+/frontend/modules/*/                @frontend-maintainers
+/backend/modules/*/api-docs/        @backend-maintainers
+/backend/modules/*/packages/        @factory-maintainers
+/frontend/modules/*/packages/       @factory-maintainers

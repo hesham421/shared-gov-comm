@@ -1,0 +1,16 @@
+# macOS Finder metadata — never content
+.DS_Store
+
+# Derived caches: `gov.py state` rewrites these from the vN/ sources on every run.
+# Everything else under _state/ IS tracked (approvals, gate and analyze records, briefs).
+**/_state/current-*.md
+**/_state/traceability.md
+**/_state/state.json
+
+# Implementer receipts — per-run, not governance
+**/modules/*/**/receipts/
+
+# An implementer session runs inside this checkout (runner --cd): its own files are never the project's —
+# except the usage skills `gov.py given add` installs under .claude/skills/, which ARE the project's
+.claude/*
+!.claude/skills/
