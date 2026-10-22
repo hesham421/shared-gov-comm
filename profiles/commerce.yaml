@@ -230,3 +230,8 @@ review:
     - {id: CM-10, stage: P3.1, check: "a cross-module dependency points only DOWNWARD in the brief's §5 DAG (a lower-numbered module never depends on a higher one)", severity: CRITICAL}
 
 # given:   # the given dependency — written by `gov.py given add erp-core --version <v> --from <checkout>`, never by hand first
+
+given:                                    # the given dependencies — written by `gov.py given add` (capabilities.given)
+  erp-core:
+    version: "1.5.0"
+    manifest: deps/erp-core/core-manifest.yaml

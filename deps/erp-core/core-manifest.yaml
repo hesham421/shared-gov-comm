@@ -1,0 +1,127 @@
+core:
+  name: erp-core
+  coordinates: com.erp:erp-core
+  version: 1.5.0
+  tenancy:
+    modes: [single, multi]
+    rule: "business modules never read erp.core.tenant.mode or default-tenant-id; every table carries TENANT_ID; read the tenant from TenantContext, deployment differences from TenantPolicy"
+modules:
+  audit:
+    package: com.erp.audit
+    provides: [audit, audit-events, audit-trail, change-history, retention]
+    entities: [AuditEvent]
+    tables: [CORE_AUDIT_EVENT]
+    extension-points: []
+    interfaces: [com.erp.audit.crossmodule.AuditApi]
+    api: docs/api-docs/audit/index.md
+    docs: docs/modules/audit.md
+  common:
+    package: com.erp.common
+    provides: [base-entity, audit-columns, optimistic-locking, service-result, error-codes, localized-errors, api-envelope, validation, search, paging, idempotency, boolean-converters, owned-lookups]
+    entities: []
+    tables: []
+    extension-points: []
+    interfaces: []
+    docs: docs/modules/common.md
+  cu:
+    package: com.erp.cu
+    provides: [settings, configuration, app-configuration, platform-defaults, tenant-overrides]
+    entities: [AppConfiguration]
+    tables: [CU_APP_CONFIGURATION]
+    extension-points: []
+    interfaces: [com.erp.cu.crossmodule.SettingsApi]
+    api: docs/api-docs/cu/index.md
+    docs: docs/modules/cu.md
+  events:
+    package: com.erp.events
+    provides: [events, domain-events, event-bus, async-listeners]
+    entities: []
+    tables: []
+    extension-points: [com.erp.events.OutboxDeliveryGate, com.erp.events.OutboxSubscriber]
+    interfaces: [com.erp.events.DomainEventPublisher, com.erp.events.OutboxPublisher, com.erp.events.OutboxReplayApi]
+    events: [com.erp.events.CustomerRegisteredEvent, com.erp.events.CustomerVerifiedEvent, com.erp.events.FileDocumentPublishedEvent, com.erp.events.NotificationDispatchedEvent, com.erp.events.NotificationFailedEvent, com.erp.events.NotificationRequestedEvent, com.erp.events.PasswordResetRequestedEvent, com.erp.events.TenantActivatedEvent, com.erp.events.TenantCreatedEvent, com.erp.events.TenantSuspendedEvent, com.erp.events.UserCreatedEvent, com.erp.events.UserPasswordChangedEvent, com.erp.events.UserStatusChangedEvent]
+    docs: docs/modules/events.md
+  file:
+    package: com.erp.file
+    provides: [files, documents, file-categories, images, uploads, downloads, public-files, storage, download-tokens, attachments]
+    entities: [FileCategory, FileDocument]
+    tables: [FILE_CATEGORY, FILE_DOCUMENT]
+    extension-points: [com.erp.file.service.DownloadTokenStore, com.erp.file.storage.StorageProvider]
+    interfaces: [com.erp.file.crossmodule.FileDocumentLookupApi, com.erp.file.crossmodule.FileImageStoreApi, com.erp.file.crossmodule.FilePrivateStoreApi]
+    api: docs/api-docs/file/index.md
+    docs: docs/modules/file.md
+  mdl:
+    package: com.erp.mdl
+    provides: [lookups, lookup-types, lookup-values, reference-lists, code-lists, master-data]
+    entities: [LookupType, LookupValue]
+    tables: [MDL_LOOKUP_TYPE, MDL_LOOKUP_VALUE]
+    extension-points: []
+    interfaces: [com.erp.mdl.crossmodule.MdlLookupApi]
+    api: docs/api-docs/mdl/index.md
+    docs: docs/modules/mdl.md
+  module:
+    package: com.erp.module
+    provides: [business-modules, module-manifests, module-entitlements, module-license, module-catalog]
+    entities: []
+    tables: []
+    extension-points: []
+    interfaces: [com.erp.module.crossmodule.ModuleCatalogApi, com.erp.module.crossmodule.ModuleEntitlementApi]
+    api: docs/api-docs/module/index.md
+    docs: docs/modules/module.md
+  notif:
+    package: com.erp.notif
+    provides: [notifications, templates, channels, email, in-app, inbox, dispatch, notification-log]
+    entities: [NotificationChannelConfig, NotificationInboxItem, NotificationLog, NotificationTemplate]
+    tables: [NOTIF_CHANNEL_CONFIG, NOTIF_INBOX, NOTIF_LOG, NOTIF_TEMPLATE]
+    extension-points: [com.erp.notif.channel.ChannelProvider, com.erp.notif.crossmodule.RecipientDirectory]
+    interfaces: [com.erp.notif.crossmodule.NotificationChannelAdminApi, com.erp.notif.crossmodule.NotificationDispatchApi, com.erp.notif.crossmodule.NotificationLogQueryApi]
+    api: docs/api-docs/notif/index.md
+    docs: docs/modules/notif.md
+  report:
+    package: com.erp.report
+    provides: [reports, report-definitions, exports, printing, csv-export, pdf-export, print-templates]
+    entities: []
+    tables: []
+    extension-points: [com.erp.report.ReportProvider, com.erp.report.crossmodule.PrintAuthorizationHook, com.erp.report.crossmodule.PrintParameterContributor, com.erp.report.crossmodule.PrintTemplateSource]
+    interfaces: [com.erp.report.crossmodule.PrintApi]
+    api: docs/api-docs/report/index.md
+    docs: docs/modules/report.md
+  sec:
+    package: com.erp.sec
+    provides: [users, roles, permissions, grants, staff-auth, customer-auth, customer-accounts, login, jwt, sessions, password-reset, signup, module-registry, screens, audit-log, security-dashboard]
+    entities: [ActionRegistry, AuditLogEntry, ModuleRegistry, Role, RoleActionGrant, RoleModuleGrant, RoleScreenGrant, ScreenRegistry, SignupRequest, User, UserRoleAssignment]
+    tables: [SEC_ACTION_REG, SEC_AUDIT_LOG, SEC_MODULE_REG, SEC_ROLE, SEC_ROLE_ACTION_GRANT, SEC_ROLE_MODULE_GRANT, SEC_ROLE_SCREEN_GRANT, SEC_SCREEN_REG, SEC_SIGNUP_REQUEST, SEC_USER, SEC_USER_ROLE]
+    extension-points: [com.erp.sec.permission.PermissionContributor]
+    interfaces: [com.erp.sec.crossmodule.SecAdminRecoveryApi, com.erp.sec.crossmodule.SecModuleRegistryApi, com.erp.sec.crossmodule.SecUserDirectoryApi]
+    api: docs/api-docs/sec/index.md
+    docs: docs/modules/sec.md
+  sequence:
+    package: com.erp.sequence
+    provides: [number-series, numbering, document-numbers, sequences]
+    entities: [NumberSeries]
+    tables: [CORE_NUMBER_SERIES]
+    extension-points: []
+    interfaces: [com.erp.sequence.crossmodule.NumberSeriesApi]
+    api: docs/api-docs/sequence/index.md
+    docs: docs/modules/sequence.md
+  tenant:
+    package: com.erp.tenant
+    provides: [tenants, tenancy, tenant-context, tenant-provisioning, tenant-export, tenant-branding, tenant-logo, public-app-config]
+    entities: [Tenant]
+    tables: [CORE_TENANT]
+    extension-points: [com.erp.tenant.TenantExportContributor, com.erp.tenant.TenantProvisioningContributor]
+    interfaces: [com.erp.tenant.TenantPolicy, com.erp.tenant.TenantRunner, com.erp.tenant.crossmodule.TenantLookupApi]
+    api: docs/api-docs/tenant/index.md
+    docs: docs/modules/tenant.md
+conventions:
+  tenancy: docs/conventions.md#tenancy
+  lookups: docs/conventions.md#lookups
+  files: docs/conventions.md#files
+  notifications: docs/conventions.md#notifications
+  numbering: docs/conventions.md#numbering
+  reporting: docs/conventions.md#reporting
+  error-codes: docs/conventions.md#error-codes
+  auth-and-permissions: docs/conventions.md#auth-and-permissions
+  settings: docs/conventions.md#settings
+  migrations: docs/conventions.md#migrations
+  modules: docs/conventions.md#modules

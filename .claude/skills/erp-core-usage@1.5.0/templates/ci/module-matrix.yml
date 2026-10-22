@@ -1,0 +1,23 @@
+# One CI job per business module (ADR-MODULE-004): each job builds and tests one Maven module whose test classpath is
+# erp-core plus the module's declared dependencies only, so "each module boots alone" is proven on every push.
+# Copy to .github/workflows/module-matrix.yml and list the product's modules; every module has
+#   - its manifest (META-INF/erp/modules/<code>.yaml),
+#   - a boot test: @SpringBootTest that starts the context (the core validates the manifest and its dependencies),
+#   - ModuleBoundaryRules.modulesDependOnlyOnTheirDeclaredDependencies() in an ArchUnit test.
+name: module-matrix
+on: [push, pull_request]
+jobs:
+  module:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [leasing, maintenance, analytics]     # the product's Maven modules, one per business module
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '25', cache: maven}
+      - name: Build and test ${{ matrix.module }} alone
+        run: mvn -B -pl ${{ matrix.module }} -am verify
+        env:
+          ERP_TEST_DB: testcontainers
