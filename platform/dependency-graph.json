@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "generated_from": {
+    "platform-summary": {},
+    "srs": {}
+  },
+  "modules": {
+    "CAT": {
+      "tier": 1,
+      "tier_source": "derived"
+    }
+  },
+  "edges": []
+}

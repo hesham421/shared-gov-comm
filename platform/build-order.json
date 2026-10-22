@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "waves": [
+    [
+      "CAT"
+    ]
+  ],
+  "parallelism": [
+    1
+  ],
+  "critical_path": [
+    "CAT"
+  ],
+  "cycles": [],
+  "modules": {
+    "CAT": {
+      "wave": 1,
+      "depends_on": []
+    }
+  },
+  "status": {
+    "1": {
+      "CAT": "ready"
+    },
+    "2": {
+      "CAT": "ready"
+    }
+  }
+}

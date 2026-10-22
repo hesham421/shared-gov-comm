@@ -1,0 +1,14 @@
+{
+  "modules": {
+    "CAT": {
+      "code": "CAT",
+      "description": "",
+      "registered_at": "2026-10-22T14:18:09+00:00",
+      "versions": [
+        1
+      ],
+      "current_version": 1,
+      "delivery": {}
+    }
+  }
+}

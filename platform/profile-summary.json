@@ -1,0 +1,695 @@
+{
+  "profile": "commerce",
+  "project_file": "project.yaml",
+  "paths": {
+    "profiles": "profiles",
+    "domain": "analysis/domain",
+    "platform": "analysis/platform",
+    "modules": "analysis/modules",
+    "decisions": "analysis/decisions",
+    "overview": "analysis/platform/PROJECT-OVERVIEW.md"
+  },
+  "module_dirs": {
+    "state_dir": "_state",
+    "inputs_dir": "_inputs",
+    "input_meta": "{file}.meta.json",
+    "manifest_file": "manifest.json",
+    "analyze_report": "_state/analyze-{stage}.md",
+    "gate_record": "_state/gate-{gate}.md",
+    "change_manifest": "change-manifest.md"
+  },
+  "tracks": {
+    "backend": {
+      "repo": "backend",
+      "exec_stage": "P3.1",
+      "partition": "backend/modules/{MOD}",
+      "delivery": "backend/modules/{MOD}/packages",
+      "delivery_version_folder": "v{version}",
+      "delivery_current": "platform/modules-registry.json → modules.<MOD>.delivery.backend",
+      "plans": {
+        "exec": {
+          "package": "backend-execution",
+          "phases": [
+            {
+              "key": "CORE",
+              "display": "CORE",
+              "folder": "CORE",
+              "never_split": true,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": true
+            },
+            {
+              "key": "DATA-DOM",
+              "display": "DATA+DOM",
+              "folder": "DATA-DOM",
+              "never_split": false,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": true,
+              "sub_labels": [
+                "MASTER",
+                "TRANSACTIONAL",
+                "LOOKUP"
+              ]
+            },
+            {
+              "key": "SVC-API",
+              "display": "SVC+API",
+              "folder": "SVC-API",
+              "never_split": false,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": false,
+              "sub_labels": [
+                "CRUD",
+                "SEARCH",
+                "INT"
+              ],
+              "split_threshold": {
+                "kind": "API",
+                "count": 8,
+                "op": ">=",
+                "grouping": "CRUD / SEARCH / INT"
+              }
+            },
+            {
+              "key": "DOC",
+              "display": "DOC",
+              "folder": "DOC",
+              "never_split": true,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": true
+            },
+            {
+              "key": "SEC-BE",
+              "display": "SEC-BE",
+              "folder": "SEC-BE",
+              "never_split": true,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": true
+            },
+            {
+              "key": "ALIGN-BE",
+              "display": "ALIGN-BE",
+              "folder": "ALIGN-BE",
+              "never_split": true,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": true
+            },
+            {
+              "key": "INT-C",
+              "display": "INT-C",
+              "folder": "INT-C",
+              "never_split": false,
+              "sub_bearing": false,
+              "integration": true,
+              "binds_api": false,
+              "no_tests": false
+            }
+          ]
+        },
+        "test": {
+          "package": "backend-test",
+          "phases": [
+            {
+              "key": "TEST-PLAN-BE",
+              "display": "TEST-PLAN-BE",
+              "folder": "TEST-PLAN-BE",
+              "never_split": false,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": false,
+              "sub_labels": [
+                "RULE-SCENARIOS",
+                "API-SCENARIOS"
+              ],
+              "split_threshold": {
+                "kind": "TC",
+                "count": 12,
+                "op": ">",
+                "grouping": "RULE-SCENARIOS / API-SCENARIOS"
+              }
+            },
+            {
+              "key": "INT-XM",
+              "display": "INT-XM",
+              "folder": "INT-XM",
+              "never_split": false,
+              "sub_bearing": false,
+              "integration": true,
+              "binds_api": false,
+              "no_tests": false,
+              "split_threshold": {
+                "kind": "TC",
+                "count": 8,
+                "op": ">",
+                "grouping": "per target module"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "frontend": {
+      "repo": "frontend",
+      "exec_stage": "P3.2",
+      "partition": "frontend/modules/{MOD}",
+      "delivery": "frontend/modules/{MOD}/packages",
+      "delivery_version_folder": "v{version}",
+      "delivery_current": "platform/modules-registry.json → modules.<MOD>.delivery.frontend",
+      "plans": {
+        "exec": {
+          "package": "frontend-execution",
+          "phases": [
+            {
+              "key": "F1",
+              "display": "F1 — Models & Types",
+              "folder": "F1",
+              "never_split": false,
+              "sub_bearing": true,
+              "integration": false,
+              "binds_api": true,
+              "no_tests": true
+            },
+            {
+              "key": "F2",
+              "display": "F2 — Data Hooks",
+              "folder": "F2",
+              "never_split": false,
+              "sub_bearing": true,
+              "integration": false,
+              "binds_api": true,
+              "no_tests": false
+            },
+            {
+              "key": "F3",
+              "display": "F3 — Forms & Validators",
+              "folder": "F3",
+              "never_split": false,
+              "sub_bearing": true,
+              "integration": false,
+              "binds_api": true,
+              "no_tests": false
+            },
+            {
+              "key": "F4",
+              "display": "F4 — Screens & Routes",
+              "folder": "F4",
+              "never_split": false,
+              "sub_bearing": true,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": false
+            },
+            {
+              "key": "SEC-FE",
+              "display": "SEC-FE",
+              "folder": "SEC-FE",
+              "never_split": true,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": true
+            },
+            {
+              "key": "ALIGN-FE",
+              "display": "ALIGN-FE",
+              "folder": "ALIGN-FE",
+              "never_split": true,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": true
+            }
+          ]
+        },
+        "test": {
+          "package": "frontend-test",
+          "phases": [
+            {
+              "key": "TEST-PLAN-FE",
+              "display": "TEST-PLAN-FE",
+              "folder": "TEST-PLAN-FE",
+              "never_split": false,
+              "sub_bearing": false,
+              "integration": false,
+              "binds_api": false,
+              "no_tests": false,
+              "sub_labels": [
+                "UI-FLOWS",
+                "INT-FLOW"
+              ],
+              "split_threshold": {
+                "kind": "TC",
+                "count": 8,
+                "op": ">",
+                "grouping": "UI-FLOWS / INT-FLOW"
+              }
+            },
+            {
+              "key": "INT-UXD",
+              "display": "INT-UXD",
+              "folder": "INT-UXD",
+              "never_split": false,
+              "sub_bearing": false,
+              "integration": true,
+              "binds_api": false,
+              "no_tests": false,
+              "split_threshold": {
+                "kind": "TC",
+                "count": 8,
+                "op": ">",
+                "grouping": "per source module"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "languages": {
+    "all": [
+      "ar",
+      "en"
+    ],
+    "primary": "en",
+    "require_all": true
+  },
+  "given": {
+    "erp-core": {
+      "version": "1.5.0",
+      "manifest": "deps/erp-core/core-manifest.yaml",
+      "skill": ".claude/skills/erp-core-usage@1.5.0"
+    }
+  },
+  "consumer": {
+    "schema_version": 7,
+    "publications": {
+      "modules-registry": "platform/modules-registry.json",
+      "profile-summary": "platform/profile-summary.json",
+      "dependency-graph": "platform/dependency-graph.json",
+      "contracts": "platform/contracts/contract-{mod}.md",
+      "build-order": "platform/build-order.json",
+      "api-specs": "backend/modules/{MOD}/packages/api-spec-{mod}.yaml",
+      "factory-pin": "platform/factory-pin.json"
+    },
+    "partitions": {
+      "platform": {
+        "path": "platform",
+        "writer": "factory"
+      },
+      "analysis": {
+        "path": "analysis/modules/{MOD}",
+        "writer": "factory"
+      },
+      "api-docs": {
+        "path": "backend/modules/{MOD}/api-docs",
+        "writer": "backend"
+      },
+      "backend-packages": {
+        "path": "backend/modules/{MOD}/packages",
+        "writer": "factory"
+      },
+      "frontend-packages": {
+        "path": "frontend/modules/{MOD}/packages",
+        "writer": "factory"
+      },
+      "backend": {
+        "path": "backend/modules/{MOD}",
+        "writer": "backend"
+      },
+      "frontend": {
+        "path": "frontend/modules/{MOD}",
+        "writer": "frontend"
+      }
+    },
+    "artifacts": {
+      "platform-summary": {
+        "stage": "P0",
+        "folder": "P0",
+        "file": "platform-summary.md"
+      },
+      "module-registry": {
+        "stage": "P0",
+        "folder": "P0",
+        "file": "module-registry-{mod}.md"
+      },
+      "business-policies": {
+        "stage": "P0",
+        "folder": "P0",
+        "file": "business-policies-{mod}.md"
+      },
+      "prd": {
+        "stage": "P0.5",
+        "folder": "P0_5",
+        "file": "prd-{mod}.md"
+      },
+      "srs": {
+        "stage": "P1",
+        "folder": "P1",
+        "file": "srs-{mod}.md"
+      },
+      "registry-srs": {
+        "stage": "P1",
+        "folder": "P1",
+        "file": "registry-srs-{mod}.md"
+      },
+      "contract": {
+        "stage": "P1.5",
+        "folder": "P1_5",
+        "file": "contract-{mod}.md"
+      },
+      "db-script": {
+        "stage": "P2",
+        "folder": "P2",
+        "file": "db-script-{mod}.md"
+      },
+      "registry-db": {
+        "stage": "P2",
+        "folder": "P2",
+        "file": "registry-db-{mod}.md"
+      },
+      "backend-execution-plan": {
+        "stage": "P3.1",
+        "folder": "P3_1",
+        "file": "backend-execution-plan-{mod}.md",
+        "track": "backend",
+        "plan": "exec"
+      },
+      "registry-exec-be": {
+        "stage": "P3.1",
+        "folder": "P3_1",
+        "file": "registry-exec-be-{mod}.md"
+      },
+      "api-spec": {
+        "stage": "P3.1",
+        "folder": "P3_1",
+        "file": "api-spec-{mod}.yaml"
+      },
+      "flow-diagram": {
+        "stage": "P3.2",
+        "folder": "P3_2",
+        "file": "flow-diagram-{mod}.md"
+      },
+      "ui-ux-spec": {
+        "stage": "P3.2",
+        "folder": "P3_2",
+        "file": "ui-ux-spec-{mod}.md"
+      },
+      "frontend-execution-plan": {
+        "stage": "P3.2",
+        "folder": "P3_2",
+        "file": "frontend-execution-plan-{mod}.md",
+        "track": "frontend",
+        "plan": "exec"
+      },
+      "registry-exec-fe": {
+        "stage": "P3.2",
+        "folder": "P3_2",
+        "file": "registry-exec-fe-{mod}.md"
+      },
+      "backend-test-plan": {
+        "stage": "P4",
+        "folder": "P4",
+        "file": "backend-test-plan-{mod}.md",
+        "track": "backend",
+        "plan": "test"
+      },
+      "frontend-test-plan": {
+        "stage": "P4",
+        "folder": "P4",
+        "file": "frontend-test-plan-{mod}.md",
+        "track": "frontend",
+        "plan": "test"
+      },
+      "impact": {
+        "stage": "F0",
+        "folder": "F0",
+        "file": "impact-{mod}.json"
+      },
+      "feature-prompt": {
+        "stage": "F1",
+        "folder": "F1",
+        "file": "feature-prompt-{mod}.md"
+      },
+      "api-verify-script": {
+        "stage": "api-verify",
+        "folder": "api_verify",
+        "file": "api-verify-{mod}.py"
+      },
+      "api-verify-report": {
+        "stage": "api-verify",
+        "folder": "api_verify",
+        "file": "api-verify-report-{mod}.md"
+      }
+    },
+    "gates": [
+      {
+        "id": "prd-approval",
+        "type": "human-approval",
+        "after": "P0.5"
+      },
+      {
+        "id": "analysis",
+        "type": "review",
+        "after": "P4"
+      },
+      {
+        "id": "feature",
+        "type": "review",
+        "after": "F1"
+      }
+    ],
+    "package": {
+      "manifest_file": "{unit}.package.json",
+      "fields": [
+        "unit",
+        "kind",
+        "tests",
+        "acceptance",
+        "given"
+      ],
+      "acceptance": "tests-green",
+      "test_label": "Package"
+    },
+    "integration_package": {
+      "path": "integration/{xm}",
+      "manifest_file": "package.json",
+      "fields": [
+        "xm",
+        "target",
+        "requires",
+        "tests",
+        "acceptance",
+        "given"
+      ],
+      "excluded_from_module_delivery": true,
+      "deferral_channel": "deferred_xm"
+    },
+    "feedback": {
+      "file": "execution-state.json",
+      "versioned": true,
+      "channels": {
+        "api_doc_gaps": {
+          "key": "endpoint",
+          "label": "API gap"
+        },
+        "blocked": {
+          "key": "id",
+          "label": "blocked"
+        },
+        "deferred_xm": {
+          "key": "id",
+          "label": "deferred XM"
+        },
+        "xm_events": {
+          "key": "id",
+          "label": "XM event",
+          "writer": "factory"
+        }
+      },
+      "status_field": "resolution",
+      "status": {
+        "open": [
+          "OPEN",
+          "DEFERRED",
+          "PENDING"
+        ],
+        "closed": [
+          "RESOLVED",
+          "CLOSED",
+          "IMPLEMENTED"
+        ],
+        "human": [
+          "HUMAN",
+          "ADR"
+        ]
+      },
+      "delivery": {
+        "package_results": {
+          "key": "package_results",
+          "fields": [
+            "package",
+            "tests_passed",
+            "tests_failed"
+          ]
+        },
+        "api_verify": {
+          "key": "api_verify",
+          "fields": [
+            "version",
+            "result"
+          ],
+          "passing": "PASS",
+          "written_by": "backend",
+          "closes": "frontend"
+        }
+      }
+    },
+    "feature": {
+      "prompt_dir": "prompts",
+      "prompt_file": "FEAT-{MOD}-{seq}.md",
+      "done_key": "features_done",
+      "plan_line": "{feat}: delivered via {prompt_path}",
+      "plan_block": "FEATURE LOG"
+    },
+    "blocks": {
+      "fence": "yaml name={name}",
+      "names": [
+        "api-surface",
+        "bootstrap",
+        "change-manifest",
+        "compliance-map",
+        "dbf-matrix",
+        "error-catalog",
+        "given-modules",
+        "given-usage",
+        "lookups",
+        "module-dependencies",
+        "permission-matrix",
+        "platform-dependencies",
+        "research-log",
+        "screen-hooks",
+        "self-check",
+        "totals",
+        "xm-register"
+      ],
+      "ddl_fence": "sql"
+    },
+    "sparse": {
+      "backend": [
+        ".claude/skills/**",
+        "analysis/decisions/**",
+        "analysis/domain/**",
+        "analysis/modules/*/F0/**",
+        "analysis/modules/*/F1/**",
+        "analysis/modules/*/P0/**",
+        "analysis/modules/*/P0_5/**",
+        "analysis/modules/*/P1/**",
+        "analysis/modules/*/P1_5/**",
+        "analysis/modules/*/P2/**",
+        "analysis/modules/*/P3_1/**",
+        "analysis/modules/*/P4/**",
+        "analysis/modules/*/P_1/**",
+        "analysis/modules/*/_inputs/**",
+        "analysis/modules/*/_state/**",
+        "analysis/modules/*/api_verify/**",
+        "analysis/modules/*/domain_profile/**",
+        "analysis/modules/*/manifest.json",
+        "analysis/modules/*/prompts/**",
+        "analysis/modules/*/v*/F0/**",
+        "analysis/modules/*/v*/F1/**",
+        "analysis/modules/*/v*/P0/**",
+        "analysis/modules/*/v*/P0_5/**",
+        "analysis/modules/*/v*/P1/**",
+        "analysis/modules/*/v*/P1_5/**",
+        "analysis/modules/*/v*/P2/**",
+        "analysis/modules/*/v*/P3_1/**",
+        "analysis/modules/*/v*/P4/**",
+        "analysis/modules/*/v*/P_1/**",
+        "analysis/modules/*/v*/_inputs/**",
+        "analysis/modules/*/v*/_state/**",
+        "analysis/modules/*/v*/api_verify/**",
+        "analysis/modules/*/v*/change-manifest.md",
+        "analysis/modules/*/v*/domain_profile/**",
+        "analysis/modules/*/v*/manifest.json",
+        "analysis/platform/**",
+        "backend/modules/*/**",
+        "backend/modules/*/api-docs/**",
+        "backend/modules/*/packages/**",
+        "backend/modules/*/packages/api-spec-*.yaml",
+        "deps/*/**",
+        "platform/**",
+        "platform/build-order.json",
+        "platform/contracts/contract-*.md",
+        "platform/dependency-graph.json",
+        "platform/factory-pin.json",
+        "platform/modules-registry.json",
+        "platform/profile-summary.json",
+        "project.yaml"
+      ],
+      "frontend": [
+        ".claude/skills/**",
+        "analysis/decisions/**",
+        "analysis/domain/**",
+        "analysis/modules/*/F0/**",
+        "analysis/modules/*/F1/**",
+        "analysis/modules/*/P0/**",
+        "analysis/modules/*/P0_5/**",
+        "analysis/modules/*/P1/**",
+        "analysis/modules/*/P1_5/**",
+        "analysis/modules/*/P2/**",
+        "analysis/modules/*/P3_2/**",
+        "analysis/modules/*/P4/**",
+        "analysis/modules/*/P_1/**",
+        "analysis/modules/*/_inputs/**",
+        "analysis/modules/*/_state/**",
+        "analysis/modules/*/api_verify/**",
+        "analysis/modules/*/domain_profile/**",
+        "analysis/modules/*/manifest.json",
+        "analysis/modules/*/prompts/**",
+        "analysis/modules/*/v*/F0/**",
+        "analysis/modules/*/v*/F1/**",
+        "analysis/modules/*/v*/P0/**",
+        "analysis/modules/*/v*/P0_5/**",
+        "analysis/modules/*/v*/P1/**",
+        "analysis/modules/*/v*/P1_5/**",
+        "analysis/modules/*/v*/P2/**",
+        "analysis/modules/*/v*/P3_2/**",
+        "analysis/modules/*/v*/P4/**",
+        "analysis/modules/*/v*/P_1/**",
+        "analysis/modules/*/v*/_inputs/**",
+        "analysis/modules/*/v*/_state/**",
+        "analysis/modules/*/v*/api_verify/**",
+        "analysis/modules/*/v*/change-manifest.md",
+        "analysis/modules/*/v*/domain_profile/**",
+        "analysis/modules/*/v*/manifest.json",
+        "analysis/platform/**",
+        "backend/modules/*/api-docs/**",
+        "backend/modules/*/packages/api-spec-*.yaml",
+        "deps/*/**",
+        "frontend/modules/*/**",
+        "frontend/modules/*/packages/**",
+        "platform/**",
+        "platform/build-order.json",
+        "platform/contracts/contract-*.md",
+        "platform/dependency-graph.json",
+        "platform/factory-pin.json",
+        "platform/modules-registry.json",
+        "platform/profile-summary.json",
+        "project.yaml"
+      ]
+    }
+  }
+}
