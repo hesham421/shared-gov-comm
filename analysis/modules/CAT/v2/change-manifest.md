@@ -47,6 +47,11 @@ artifacts:
     MODIFIED: []
     REMOVED: []
     UNCHANGED: []
+  contract:                  # file P1_5/contract-cat.md; written in full (no prior contract in the current state); CON stream starts at 001, next free 019
+    ADDED: [CON-CAT-001, CON-CAT-002, CON-CAT-003, CON-CAT-004, CON-CAT-005, CON-CAT-006, CON-CAT-007, CON-CAT-008, CON-CAT-009, CON-CAT-010, CON-CAT-011, CON-CAT-012, CON-CAT-013, CON-CAT-014, CON-CAT-015, CON-CAT-016, CON-CAT-017, CON-CAT-018]
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
 ```
 
 P0 delta note: the given's module set changed (1.6.0 adds `gl`), so the domain-profile hand re-run named in the summary applies (OI-02).
@@ -54,3 +59,10 @@ P0 delta note: the given's module set changed (1.6.0 adds `gl`), so the domain-p
 P0.5 delta note: 22 user stories were added, covering 9 of 9 POL-CAT policies. No story is deferred. The erp-core 1.6.0 change (`gl`) does not touch the catalogue boundary, so no story depends on the given upgrade.
 
 P1 delta note: the SRS is written in full, because the current state holds no earlier SRS. It adds REQ 127, AC 129, ENT 12, RULE 49 and SCR-REQ 6, covering 22 of 22 stories. It records ADR-CAT-038 … ADR-CAT-043 (all ACCEPTED, none BLOCKED). The `module-dependencies` block is `consumes: []`. The given uses go through erp-core mdl, cu, sequence, file, events, report and sec; no use goes through the new `gl` module.
+
+P1.5 delta note: the contract is written in full, because the current state holds no earlier contract. It adds CON 18:
+- 6 entity items, one for each SHARED ENT (ENT-CAT-001, 002, 006, 007, 008, 009), each with a BIGINT identifier.
+- 11 operation items (signatures only).
+- 1 catalogue-change event item.
+
+Nothing is MODIFIED or REMOVED, so no consumer edge is affected. The contract repeats the SRS `given-usage` rows verbatim. No question was raised and no ADR was needed; the next free ADR is ADR-CAT-044.
