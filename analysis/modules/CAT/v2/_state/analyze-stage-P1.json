@@ -1,0 +1,185 @@
+{
+  "module": "CAT",
+  "version": 2,
+  "scope": "stage:P1",
+  "counts": {
+    "CRITICAL": 0,
+    "MAJOR": 0,
+    "MINOR": 8
+  },
+  "clean": true,
+  "blocking": [
+    "CRITICAL",
+    "MAJOR"
+  ],
+  "contracts": [
+    "C0",
+    "C5",
+    "C12"
+  ],
+  "skipped": [],
+  "coverage": {
+    "C0.1": 8,
+    "C5.2": 127,
+    "C5.3": 127,
+    "C5.4": 127,
+    "C5.5": 129,
+    "C5.6": 49,
+    "C5.8": 317,
+    "C5.13": 305,
+    "C5.14": 129,
+    "C5.15": 12,
+    "C5.16": 22,
+    "C5.17": 1
+  },
+  "vacuous": [],
+  "metrics": [
+    {
+      "id": "us-req",
+      "from": "US",
+      "to": [
+        "REQ"
+      ],
+      "total": 22,
+      "covered": 22,
+      "pct": 100.0
+    },
+    {
+      "id": "req-ac",
+      "from": "REQ",
+      "to": [
+        "AC"
+      ],
+      "total": 127,
+      "covered": 127,
+      "pct": 100.0
+    },
+    {
+      "id": "req-api",
+      "from": "REQ",
+      "to": [
+        "API"
+      ],
+      "total": 127,
+      "covered": 0,
+      "pct": 0.0
+    },
+    {
+      "id": "req-ux",
+      "from": "REQ",
+      "to": [
+        "SCR",
+        "UXD"
+      ],
+      "total": 127,
+      "covered": 0,
+      "pct": 0.0
+    },
+    {
+      "id": "ac-tc",
+      "from": "AC",
+      "to": [
+        "TC"
+      ],
+      "total": 129,
+      "covered": 0,
+      "pct": 0.0
+    }
+  ],
+  "findings": [
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-010` uses 'fast' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 404
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-013` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 446
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-036` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 762
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-072` uses '\u0645\u062e\u062a\u0644\u0641' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 1260
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-102` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 1680
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-CAT-006` `Then: isActiveFl is true and publishStateCode is UNPUBLISHED` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 348
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-CAT-067` `Then: PHONES has an empty parentCategoryFk, and its Items keep categoryFk PH` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 1190
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-CAT-110` `Then: that image has isPrimaryFl true` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 1792
+    }
+  ],
+  "provenance": {
+    "rules": {
+      "contracts": "1e9a4cbe6e0e656cd905e87ef41fdd715519f455a4d19dba41e3592b43b3a281",
+      "checker": "fefbd9a0755e86efb7bf544bfdec9b68cb4bd9982c8d88234354177a186a8185",
+      "policy": "f0051863173859c50eaa1091adddc83f9c46e4a33a735325d37acc31ffd51c3d"
+    },
+    "resolvable": [
+      "business-policies",
+      "change-manifest",
+      "domain-profile",
+      "module-registry",
+      "platform-summary",
+      "prd",
+      "project-registry",
+      "registry-srs",
+      "srs"
+    ],
+    "inputs": {
+      "business-policies": "c152874252d238fa48c628a658d2386be20140b4ba19b8b936bc22c217bc51e5",
+      "change-manifest": "6f880d7a9c255db9404d2aa6da5acc1aa4960f8df3c8917a8f7ca9c3425d53c2",
+      "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
+      "module-registry": "5fc7c7c7a020ebee8280a8519ade559492413ef6f6eeaf7ef6f157d19f9c1a0d",
+      "platform-summary": "8869f2caaaa63ad4690042b1ddd12bd37461bc901343d1924927ebb4c7ac9967",
+      "prd": "5e6157b1493b752f2ec9686b7621e181123364bb4031c5515b2dbc6e88bac5da",
+      "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
+      "registry-srs": "3ca9da3db1d58736b2aa403b1d9b7f7d05da01610692247ad765d800eeb69970",
+      "srs": "c6b734716872e557231d2c4ba25882ec1385155b2e0742559aa8aeeb49b3bd78"
+    },
+    "at": "2026-10-26T16:59:09+00:00"
+  }
+}
