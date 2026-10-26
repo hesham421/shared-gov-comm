@@ -27,6 +27,8 @@ line is a rejection; a gap in the core is an ADR `CORE-GAP-<topic>.md` in the pr
 | C18 | The module ships `META-INF/erp/modules/<code>.yaml`; its permission modules are contributed in its `package`; every endpoint is under its `api-paths` | `src/main/resources/META-INF/erp/modules/`, `controller/*.java` |
 | C19 | Business events another module consumes are `OutboxPublisher.publish("<code>.<Name>", payload)` inside the writing transaction; every `OutboxSubscriber` is idempotent on `OutboxMessage.id()` | `service/*.java`, `*Subscriber.java` |
 | C20 | `ModuleBoundaryRules.modulesDependOnlyOnTheirDeclaredDependencies()` runs in the module's tests and the module has its own CI job | `src/test/java`, the CI workflow |
+| C21 | Every home-screen figure is a `home-cards` entry of the manifest (`key`, `title-key`, `description-key`, `permission` of this module, `order`, `target` = a screen of its `permission-modules`) valued by exactly one `HomeCardProvider` bean whose `moduleCode()` is the manifest's code; the provider only reads; both title keys are in the module's EN and AR bundles | `META-INF/erp/modules/<code>.yaml`, `*HomeCards.java`, `messages*.properties` |
+| C22 | A module that posts to the ledger stores account roles as `AccountView.accountId`s (never codes), calls `GlPostingApi.post` with a stable per-document `idempotencyKey` and its own code as `postingModule`, posts a correction as a new entry under a new key, reads balances through `GlEntryQueryApi.totals` and has no journal, balance or chart table | the role-mapping setting or table, `*Posting*.java`, `V1000+` migrations |
 
 ## Forbidden — any "yes" is a rejection
 
@@ -43,3 +45,4 @@ line is a rejection; a gap in the core is an ADR `CORE-GAP-<topic>.md` in the pr
 | F9 | A workaround for a missing core capability instead of `CORE-GAP-<topic>.md` | the ADR folder |
 | F10 | A licence check of the module's own, a module on/off setting or a branch on the deployment mode | `grep -r "licen\|entitle\|tenant.mode"` |
 | F11 | A business event to another module through `DomainEventPublisher`, or an event / outbox table of the module | `*Event.java`, the migration |
+| F12 | A home-screen card outside the manifest: a dashboard / summary endpoint of the module's own, a `HomeCardProvider` that checks the licence or the permission itself, or one that writes | `controller/*.java`, `*HomeCards.java` |

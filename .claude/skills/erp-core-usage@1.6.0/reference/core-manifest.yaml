@@ -1,7 +1,7 @@
 core:
   name: erp-core
   coordinates: com.erp:erp-core
-  version: 1.5.0
+  version: 1.6.0
   tenancy:
     modes: [single, multi]
     rule: "business modules never read erp.core.tenant.mode or default-tenant-id; every table carries TENANT_ID; read the tenant from TenantContext, deployment differences from TenantPolicy"
@@ -39,7 +39,7 @@ modules:
     tables: []
     extension-points: [com.erp.events.OutboxDeliveryGate, com.erp.events.OutboxSubscriber]
     interfaces: [com.erp.events.DomainEventPublisher, com.erp.events.OutboxPublisher, com.erp.events.OutboxReplayApi]
-    events: [com.erp.events.CustomerRegisteredEvent, com.erp.events.CustomerVerifiedEvent, com.erp.events.FileDocumentPublishedEvent, com.erp.events.NotificationDispatchedEvent, com.erp.events.NotificationFailedEvent, com.erp.events.NotificationRequestedEvent, com.erp.events.PasswordResetRequestedEvent, com.erp.events.TenantActivatedEvent, com.erp.events.TenantCreatedEvent, com.erp.events.TenantSuspendedEvent, com.erp.events.UserCreatedEvent, com.erp.events.UserPasswordChangedEvent, com.erp.events.UserStatusChangedEvent]
+    events: [com.erp.events.CustomerRegisteredEvent, com.erp.events.CustomerVerifiedEvent, com.erp.events.FileDocumentPublishedEvent, com.erp.events.NotificationDispatchedEvent, com.erp.events.NotificationFailedEvent, com.erp.events.NotificationRequestedEvent, com.erp.events.NotificationTemplateCategoryChangedEvent, com.erp.events.OutboxReplayDrainedEvent, com.erp.events.PasswordResetRequestedEvent, com.erp.events.TenantActivatedEvent, com.erp.events.TenantCreatedEvent, com.erp.events.TenantSuspendedEvent, com.erp.events.UserCreatedEvent, com.erp.events.UserPasswordChangedEvent, com.erp.events.UserStatusChangedEvent]
     docs: docs/modules/events.md
   file:
     package: com.erp.file
@@ -50,6 +50,15 @@ modules:
     interfaces: [com.erp.file.crossmodule.FileDocumentLookupApi, com.erp.file.crossmodule.FileImageStoreApi, com.erp.file.crossmodule.FilePrivateStoreApi]
     api: docs/api-docs/file/index.md
     docs: docs/modules/file.md
+  gl:
+    package: com.erp.gl
+    provides: [chart-of-accounts, fiscal-periods, journal-entries, trial-balance, ledger-currencies]
+    entities: []
+    tables: []
+    extension-points: []
+    interfaces: [com.erp.gl.crossmodule.GlAccountLookupApi, com.erp.gl.crossmodule.GlEntryQueryApi, com.erp.gl.crossmodule.GlPostingApi]
+    api: docs/api-docs/gl/index.md
+    docs: docs/modules/gl.md
   mdl:
     package: com.erp.mdl
     provides: [lookups, lookup-types, lookup-values, reference-lists, code-lists, master-data]
@@ -61,38 +70,38 @@ modules:
     docs: docs/modules/mdl.md
   module:
     package: com.erp.module
-    provides: [business-modules, module-manifests, module-entitlements, module-license, module-catalog]
+    provides: [business-modules, module-manifests, module-entitlements, module-license, module-catalog, home-cards]
     entities: []
     tables: []
-    extension-points: []
-    interfaces: [com.erp.module.crossmodule.ModuleCatalogApi, com.erp.module.crossmodule.ModuleEntitlementApi]
+    extension-points: [com.erp.module.HomeCardProvider]
+    interfaces: [com.erp.module.crossmodule.HomeCardApi, com.erp.module.crossmodule.ModuleCatalogApi, com.erp.module.crossmodule.ModuleEntitlementApi]
     api: docs/api-docs/module/index.md
     docs: docs/modules/module.md
   notif:
     package: com.erp.notif
     provides: [notifications, templates, channels, email, in-app, inbox, dispatch, notification-log]
-    entities: [NotificationChannelConfig, NotificationInboxItem, NotificationLog, NotificationTemplate]
-    tables: [NOTIF_CHANNEL_CONFIG, NOTIF_INBOX, NOTIF_LOG, NOTIF_TEMPLATE]
+    entities: [NotificationChannelConfig, NotificationInboxItem, NotificationLog, NotificationLogAttachment, NotificationTemplate]
+    tables: [NOTIF_CHANNEL_CONFIG, NOTIF_INBOX, NOTIF_LOG, NOTIF_LOG_ATTACHMENT, NOTIF_TEMPLATE]
     extension-points: [com.erp.notif.channel.ChannelProvider, com.erp.notif.crossmodule.RecipientDirectory]
     interfaces: [com.erp.notif.crossmodule.NotificationChannelAdminApi, com.erp.notif.crossmodule.NotificationDispatchApi, com.erp.notif.crossmodule.NotificationLogQueryApi]
     api: docs/api-docs/notif/index.md
     docs: docs/modules/notif.md
   report:
     package: com.erp.report
-    provides: [reports, report-definitions, exports, printing, csv-export, pdf-export, print-templates]
+    provides: [reports, report-definitions, exports, printing, csv-export, pdf-export, print-templates, payment-file-export, payment-layouts]
     entities: []
     tables: []
     extension-points: [com.erp.report.ReportProvider, com.erp.report.crossmodule.PrintAuthorizationHook, com.erp.report.crossmodule.PrintParameterContributor, com.erp.report.crossmodule.PrintTemplateSource]
-    interfaces: [com.erp.report.crossmodule.PrintApi]
+    interfaces: [com.erp.report.crossmodule.PaymentFileExportApi, com.erp.report.crossmodule.PrintApi]
     api: docs/api-docs/report/index.md
     docs: docs/modules/report.md
   sec:
     package: com.erp.sec
-    provides: [users, roles, permissions, grants, staff-auth, customer-auth, customer-accounts, login, jwt, sessions, password-reset, signup, module-registry, screens, audit-log, security-dashboard]
+    provides: [users, roles, permissions, grants, staff-auth, customer-auth, customer-accounts, customer-default-roles, customer-invitations, login, jwt, sessions, password-reset, signup, module-registry, screens, audit-log, security-dashboard]
     entities: [ActionRegistry, AuditLogEntry, ModuleRegistry, Role, RoleActionGrant, RoleModuleGrant, RoleScreenGrant, ScreenRegistry, SignupRequest, User, UserRoleAssignment]
     tables: [SEC_ACTION_REG, SEC_AUDIT_LOG, SEC_MODULE_REG, SEC_ROLE, SEC_ROLE_ACTION_GRANT, SEC_ROLE_MODULE_GRANT, SEC_ROLE_SCREEN_GRANT, SEC_SCREEN_REG, SEC_SIGNUP_REQUEST, SEC_USER, SEC_USER_ROLE]
     extension-points: [com.erp.sec.permission.PermissionContributor]
-    interfaces: [com.erp.sec.crossmodule.SecAdminRecoveryApi, com.erp.sec.crossmodule.SecModuleRegistryApi, com.erp.sec.crossmodule.SecUserDirectoryApi]
+    interfaces: [com.erp.sec.crossmodule.SecAdminRecoveryApi, com.erp.sec.crossmodule.SecCustomerDefaultRoleApi, com.erp.sec.crossmodule.SecCustomerInvitationApi, com.erp.sec.crossmodule.SecModuleRegistryApi, com.erp.sec.crossmodule.SecUserDirectoryApi]
     api: docs/api-docs/sec/index.md
     docs: docs/modules/sec.md
   sequence:
@@ -106,7 +115,7 @@ modules:
     docs: docs/modules/sequence.md
   tenant:
     package: com.erp.tenant
-    provides: [tenants, tenancy, tenant-context, tenant-provisioning, tenant-export, tenant-branding, tenant-logo, public-app-config]
+    provides: [tenants, tenancy, tenant-context, tenant-provisioning, tenant-export, tenant-branding, tenant-logo, public-app-config, tenant-data-residency]
     entities: [Tenant]
     tables: [CORE_TENANT]
     extension-points: [com.erp.tenant.TenantExportContributor, com.erp.tenant.TenantProvisioningContributor]
@@ -125,3 +134,4 @@ conventions:
   settings: docs/conventions.md#settings
   migrations: docs/conventions.md#migrations
   modules: docs/conventions.md#modules
+  ledger: docs/conventions.md#ledger

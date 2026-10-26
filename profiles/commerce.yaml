@@ -233,5 +233,5 @@ review:
 
 given:                                    # the given dependencies — written by `gov.py given add` (capabilities.given)
   erp-core:
-    version: "1.5.0"
+    version: "1.6.0"
     manifest: deps/erp-core/core-manifest.yaml

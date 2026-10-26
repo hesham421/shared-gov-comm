@@ -256,10 +256,63 @@ Rules:
    reached through outbox events or core APIs only (`ModuleBoundaryRules`, one CI job per module).
 6. No second source of truth: a statement or balance is a computed view over the documents (invoices, payments),
    never a parallel ledger. No workflow engine: a document's lifecycle is a fixed state machine on its Domain object.
+7. A key figure on the shared home screen is a `home-cards` entry of the manifest (`key`, `title-key`, `description-key`,
+   `permission`, `order`, `target` — a screen of the module's `permission-modules`; the snake spellings `home_cards`,
+   `title_key`, `description_key` are read too) valued by the module's one `HomeCardProvider` bean (`com.erp.module`,
+   erp-core 1.6.0, ADR-MODULE-005). The core shows the card only when the module is entitled for the tenant and the
+   user holds its permission, calls the provider inside the request tenant within
+   `erp.core.modules.home-cards.timeout-ms` (status `UNAVAILABLE` otherwise), orders by `order`, module, key and
+   localizes `title-key` / `description-key` from the module's bundle. A provider reads only; computing a value writes
+   nothing. A permission, a target or a provider the manifest's own module does not contribute stops startup
+   (`MODULE_MANIFEST_INVALID`).
 
-Core types: `ModuleCatalogApi`, `ModuleEntitlementApi`, `OutboxPublisher`, `OutboxSubscriber`, `OutboxReplayApi`;
-tables `CORE_TENANT_MODULE`, `CORE_OUTBOX_EVENT`, `CORE_OUTBOX_DELIVERY`.
+Core types: `ModuleCatalogApi`, `ModuleEntitlementApi`, `HomeCardProvider`, `HomeCardApi`, `OutboxPublisher`,
+`OutboxSubscriber`, `OutboxReplayApi`; tables `CORE_TENANT_MODULE`, `CORE_OUTBOX_EVENT`, `CORE_OUTBOX_DELIVERY`;
+endpoint `GET /api/v1/modules/home-cards`.
 
 Do not rebuild: a licence check in a module, a module flag in settings, a per-module event table or relay, a menu
-filter in the module, a configurable workflow.
+filter in the module, a configurable workflow, a home-screen card wired outside the manifest (a module's own dashboard
+endpoint, a card that checks its own licence or permission, a provider that writes).
 
+
+## Ledger
+
+A module that handles money posts its accounting effect into the core general ledger (`gl`, erp-core 1.6.0,
+CCR-ACC-001, ADR-GL-001 … 007) and reads totals back from it; it keeps no journal, balance or chart of its own.
+
+Rules:
+1. Account roles are mapped to accounts by their **stable id**: the module's own configuration (a setting or a table
+   of its own) stores `AccountView.accountId` per role (sales, VAT output, receivable, bank …), chosen through
+   `GlAccountLookupApi.search(text, true, page)` / `findByCode(code)`, and resolves it with `get(accountId)` at posting
+   time. It never stores an account code (a tenant may recode an account; the id never changes) and never creates an
+   account or a period (the posting API never does either; the accountant does, on the `GL_*` screens).
+2. One document's effect is posted once through `GlPostingApi.post(PostEntryRequest)` with an `idempotencyKey` of the
+   module's own that is unique per tenant and stable for the document (e.g. `"<module>-<document type>-<document id>"`):
+   a repeat with the same content answers the first entry with `alreadyPosted = true` and posts nothing, so a
+   redelivered outbox event or a restarted job is harmless; the same key with different content is
+   `IDEMPOTENCY_CONFLICT` (a change to a posted document is a **new** entry under a new key — a reversal or an
+   adjustment — never a re-post). `postingModule` is the module's code (it must be entitled for the tenant:
+   `MODULE_NOT_ENTITLED` otherwise), `sourceModule / sourceType / sourceRef` name the document, `kind` is
+   `AUTOMATIC` (or `OPENING` for migrated balances).
+3. A line carries one side only, in the currency's minor units (SAR 2, OMR 3 — the ledger never rounds:
+   `INVALID_AMOUNT`), the counterparty as `partyRef` and the facts to read back as opaque `tags` (≤ 8, e.g. `country`,
+   `tax-category`); the entry balances (`ENTRY_UNBALANCED`) in one currency enabled for the tenant
+   (`CURRENCY_NOT_SUPPORTED`) and is dated in an OPEN fiscal period (`PERIOD_CLOSED` — subscribe to
+   `gl.FiscalPeriodStatusChanged` and retry when the period reopens). Every refusal is a `LocalizedException` and
+   posts nothing; the post commits in its own transaction (the key is the retry handle).
+4. Read back through `GlEntryQueryApi`: `findBySource` for a document's entries, `lines(LineQuery, page)` for a
+   statement, `totals(TotalsQuery)` grouped by party or by tag keys for a return (a line without the key is grouped
+   under `""`; the rows add up to the ungrouped total). Balances are computed from posted lines, never stored by the
+   module; the trial balance (`GET /api/v1/gl/trial-balance`, export `GL_TRIAL_BALANCE`) is gl's.
+5. React to the ledger through the outbox only: `gl.JournalEntryPosted {tenant, entryId, kind, postingModule,
+   sourceModule, sourceRef, postingDate}` and `gl.FiscalPeriodStatusChanged {tenant, periodStart, periodEnd, status}`,
+   consumed by an `OutboxSubscriber`.
+
+Core types: `GlAccountLookupApi`, `GlPostingApi`, `GlEntryQueryApi`, `PostEntryRequest`, `PostEntryLine`,
+`PostedEntryRef`, `AccountView`, `EntryView`, `LineView`, `AccountTotal`, `LineQuery`, `TotalsQuery`, `GlEvents`
+(`com.erp.gl.crossmodule`); tables `GL_ACCOUNT`, `GL_FISCAL_PERIOD`, `GL_TENANT_CURRENCY`, `GL_JOURNAL_ENTRY`,
+`GL_JOURNAL_LINE`, `GL_JOURNAL_LINE_TAG` (never read directly — no `@SharedEntity`).
+
+Do not rebuild: a chart of accounts or account roles stored by code, a journal or posting table, a balance or
+running-total table, an idempotency store for posts, a fiscal calendar or period lock, a currency decimal table, a
+reversal mechanism on posted entries, a trial balance.
