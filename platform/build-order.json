@@ -165,8 +165,8 @@
     "1": {
       "CAT": "ready",
       "PTY": "ready",
-      "INV": "waiting",
-      "PRC": "waiting",
+      "INV": "ready",
+      "PRC": "ready",
       "PUR": "waiting",
       "SLS": "waiting",
       "SHP": "waiting",
@@ -181,8 +181,8 @@
     "2": {
       "CAT": "ready",
       "PTY": "ready",
-      "INV": "waiting",
-      "PRC": "waiting",
+      "INV": "ready",
+      "PRC": "ready",
       "PUR": "waiting",
       "SLS": "waiting",
       "SHP": "waiting",
