@@ -35,6 +35,13 @@
       "backend/test": false,
       "frontend/exec": false,
       "frontend/test": false
+    },
+    "coverage": {
+      "us-req": null,
+      "req-ac": null,
+      "req-api": null,
+      "req-ux": null,
+      "ac-tc": null
     }
   },
   "created_at": "2026-10-26T07:33:10+00:00"
