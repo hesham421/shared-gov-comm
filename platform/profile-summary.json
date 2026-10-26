@@ -288,9 +288,9 @@
   },
   "given": {
     "erp-core": {
-      "version": "1.5.0",
+      "version": "1.6.0",
       "manifest": "deps/erp-core/core-manifest.yaml",
-      "skill": ".claude/skills/erp-core-usage@1.5.0"
+      "skill": ".claude/skills/erp-core-usage@1.6.0"
     }
   },
   "consumer": {
