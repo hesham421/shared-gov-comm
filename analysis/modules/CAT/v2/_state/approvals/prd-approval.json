@@ -1,0 +1,11 @@
+{
+  "gate": "prd-approval",
+  "module": "CAT",
+  "version": 2,
+  "by": "Hesham",
+  "at": "2026-10-26T16:36:56+00:00",
+  "after": "P0.5",
+  "artifact_sha": {
+    "prd": "aef4274b30c737815bb275a9aad1ad8642f298a68967987681e0eb5e4be75fd0"
+  }
+}
