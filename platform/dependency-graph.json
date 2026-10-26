@@ -4,7 +4,9 @@
     "platform-summary": {
       "CAT": "v2"
     },
-    "srs": {}
+    "srs": {
+      "CAT": "v2"
+    }
   },
   "modules": {
     "ACC": {
