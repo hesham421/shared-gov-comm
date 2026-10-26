@@ -1,14 +1,345 @@
 {
   "schema": 1,
   "generated_from": {
-    "platform-summary": {},
+    "platform-summary": {
+      "CAT": "v2"
+    },
     "srs": {}
   },
   "modules": {
+    "ACC": {
+      "tier": 5,
+      "tier_source": "declared"
+    },
+    "APR": {
+      "tier": 5,
+      "tier_source": "declared"
+    },
     "CAT": {
       "tier": 1,
-      "tier_source": "derived"
+      "tier_source": "declared"
+    },
+    "INS": {
+      "tier": 6,
+      "tier_source": "declared"
+    },
+    "INV": {
+      "tier": 2,
+      "tier_source": "declared"
+    },
+    "PRC": {
+      "tier": 2,
+      "tier_source": "declared"
+    },
+    "PTY": {
+      "tier": 1,
+      "tier_source": "declared"
+    },
+    "PUR": {
+      "tier": 3,
+      "tier_source": "declared"
+    },
+    "SFR": {
+      "tier": 5,
+      "tier_source": "declared"
+    },
+    "SHP": {
+      "tier": 4,
+      "tier_source": "declared"
+    },
+    "SLS": {
+      "tier": 3,
+      "tier_source": "declared"
+    },
+    "STL": {
+      "tier": 4,
+      "tier_source": "declared"
+    },
+    "SWR": {
+      "tier": 4,
+      "tier_source": "declared"
+    },
+    "TAX": {
+      "tier": 4,
+      "tier_source": "declared"
     }
   },
-  "edges": []
+  "edges": [
+    {
+      "from": "ACC",
+      "to": "PUR",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "ACC",
+      "to": "SLS",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "ACC",
+      "to": "STL",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "ACC",
+      "to": "TAX",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "APR",
+      "to": "INV",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "APR",
+      "to": "PUR",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "APR",
+      "to": "SLS",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "APR",
+      "to": "STL",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "ACC",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "APR",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "CAT",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "INV",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "PRC",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "PTY",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "PUR",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "SFR",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "SHP",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "SLS",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "STL",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "SWR",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INS",
+      "to": "TAX",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "INV",
+      "to": "CAT",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "PRC",
+      "to": "CAT",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "PUR",
+      "to": "CAT",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "PUR",
+      "to": "INV",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "PUR",
+      "to": "PTY",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SFR",
+      "to": "CAT",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SFR",
+      "to": "INV",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SFR",
+      "to": "PRC",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SFR",
+      "to": "PTY",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SFR",
+      "to": "SHP",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SFR",
+      "to": "SLS",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SFR",
+      "to": "STL",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SHP",
+      "to": "SLS",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SLS",
+      "to": "CAT",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SLS",
+      "to": "INV",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SLS",
+      "to": "PRC",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SLS",
+      "to": "PTY",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "STL",
+      "to": "PTY",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "STL",
+      "to": "PUR",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "STL",
+      "to": "SLS",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SWR",
+      "to": "INV",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "SWR",
+      "to": "SLS",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "TAX",
+      "to": "CAT",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "TAX",
+      "to": "PUR",
+      "state": "DECLARED",
+      "source": "platform"
+    },
+    {
+      "from": "TAX",
+      "to": "SLS",
+      "state": "DECLARED",
+      "source": "platform"
+    }
+  ]
 }

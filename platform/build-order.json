@@ -2,28 +2,197 @@
   "schema": 1,
   "waves": [
     [
-      "CAT"
+      "CAT",
+      "PTY"
+    ],
+    [
+      "INV",
+      "PRC"
+    ],
+    [
+      "PUR",
+      "SLS"
+    ],
+    [
+      "SHP",
+      "STL",
+      "SWR",
+      "TAX"
+    ],
+    [
+      "ACC",
+      "APR",
+      "SFR"
+    ],
+    [
+      "INS"
     ]
   ],
   "parallelism": [
+    2,
+    2,
+    2,
+    4,
+    3,
     1
   ],
   "critical_path": [
-    "CAT"
+    "CAT",
+    "INV",
+    "PUR",
+    "STL",
+    "ACC",
+    "INS"
   ],
   "cycles": [],
   "modules": {
     "CAT": {
       "wave": 1,
       "depends_on": []
+    },
+    "PTY": {
+      "wave": 1,
+      "depends_on": []
+    },
+    "INV": {
+      "wave": 2,
+      "depends_on": [
+        "CAT"
+      ]
+    },
+    "PRC": {
+      "wave": 2,
+      "depends_on": [
+        "CAT"
+      ]
+    },
+    "PUR": {
+      "wave": 3,
+      "depends_on": [
+        "CAT",
+        "INV",
+        "PTY"
+      ]
+    },
+    "SLS": {
+      "wave": 3,
+      "depends_on": [
+        "CAT",
+        "INV",
+        "PRC",
+        "PTY"
+      ]
+    },
+    "SHP": {
+      "wave": 4,
+      "depends_on": [
+        "SLS"
+      ]
+    },
+    "STL": {
+      "wave": 4,
+      "depends_on": [
+        "PTY",
+        "PUR",
+        "SLS"
+      ]
+    },
+    "SWR": {
+      "wave": 4,
+      "depends_on": [
+        "INV",
+        "SLS"
+      ]
+    },
+    "TAX": {
+      "wave": 4,
+      "depends_on": [
+        "CAT",
+        "PUR",
+        "SLS"
+      ]
+    },
+    "ACC": {
+      "wave": 5,
+      "depends_on": [
+        "PUR",
+        "SLS",
+        "STL",
+        "TAX"
+      ]
+    },
+    "APR": {
+      "wave": 5,
+      "depends_on": [
+        "INV",
+        "PUR",
+        "SLS",
+        "STL"
+      ]
+    },
+    "SFR": {
+      "wave": 5,
+      "depends_on": [
+        "CAT",
+        "INV",
+        "PRC",
+        "PTY",
+        "SHP",
+        "SLS",
+        "STL"
+      ]
+    },
+    "INS": {
+      "wave": 6,
+      "depends_on": [
+        "ACC",
+        "APR",
+        "CAT",
+        "INV",
+        "PRC",
+        "PTY",
+        "PUR",
+        "SFR",
+        "SHP",
+        "SLS",
+        "STL",
+        "SWR",
+        "TAX"
+      ]
     }
   },
   "status": {
     "1": {
-      "CAT": "ready"
+      "CAT": "ready",
+      "PTY": "ready",
+      "INV": "waiting",
+      "PRC": "waiting",
+      "PUR": "waiting",
+      "SLS": "waiting",
+      "SHP": "waiting",
+      "STL": "waiting",
+      "SWR": "waiting",
+      "TAX": "waiting",
+      "ACC": "waiting",
+      "APR": "waiting",
+      "SFR": "waiting",
+      "INS": "waiting"
     },
     "2": {
-      "CAT": "ready"
+      "CAT": "ready",
+      "PTY": "ready",
+      "INV": "waiting",
+      "PRC": "waiting",
+      "PUR": "waiting",
+      "SLS": "waiting",
+      "SHP": "waiting",
+      "STL": "waiting",
+      "SWR": "waiting",
+      "TAX": "waiting",
+      "ACC": "waiting",
+      "APR": "waiting",
+      "SFR": "waiting",
+      "INS": "waiting"
     }
   }
 }
