@@ -3,9 +3,9 @@
   "version": 2,
   "scope": "all",
   "counts": {
-    "CRITICAL": 12,
-    "MAJOR": 17,
-    "MINOR": 0
+    "CRITICAL": 7,
+    "MAJOR": 164,
+    "MINOR": 8
   },
   "clean": false,
   "blocking": [
@@ -32,28 +32,28 @@
   ],
   "skipped": [],
   "coverage": {
-    "C0.1": 5,
+    "C0.1": 11,
     "C1.4": 9,
     "C2.2": 10,
     "C3.7": 9,
     "C3.8": 9,
-    "C4.4": 0,
-    "C4.7": 0,
-    "C5.2": 0,
-    "C5.3": 0,
-    "C5.4": 0,
-    "C5.5": 0,
-    "C5.6": 0,
-    "C5.8": 0,
-    "C5.13": 0,
-    "C5.14": 0,
-    "C5.15": 0,
-    "C5.16": 0,
-    "C5.17": 0,
-    "C6.2": 0,
+    "C4.4": 22,
+    "C4.7": 1,
+    "C5.2": 127,
+    "C5.3": 127,
+    "C5.4": 127,
+    "C5.5": 129,
+    "C5.6": 49,
+    "C5.8": 317,
+    "C5.13": 305,
+    "C5.14": 129,
+    "C5.15": 12,
+    "C5.16": 22,
+    "C5.17": 1,
+    "C6.2": 161,
     "C6.3": 0,
-    "C6.5": 0,
-    "C6.6": 0,
+    "C6.5": 161,
+    "C6.6": 12,
     "C6.10": 0,
     "C6.11": 1,
     "C6.12": 0,
@@ -65,7 +65,7 @@
     "C7.4": 0,
     "C7.5": 0,
     "C7.5b": 0,
-    "C7.6": 0,
+    "C7.6": 127,
     "C7.22": 0,
     "C7.21": 0,
     "C7.23": 0,
@@ -94,48 +94,28 @@
     "C9.22": 0,
     "C9.23": 6,
     "C10.1": 0,
-    "C10.2": 0,
+    "C10.2": 129,
     "C10.7": 0,
     "C10.8": 0,
     "C10.9": 0,
     "C10.10": 0,
     "C10.11": 0,
-    "C13.5": 0,
-    "C-GIVEN-1": 0,
-    "C-GIVEN-2": 0,
+    "C13.5": 18,
+    "C-GIVEN-1": 24,
+    "C-GIVEN-2": 9,
     "C-GIVEN-3": 27
   },
   "vacuous": [
-    "C-GIVEN-1",
-    "C-GIVEN-2",
     "C10.1",
     "C10.10",
     "C10.11",
-    "C10.2",
     "C10.7",
     "C10.8",
     "C10.9",
-    "C13.5",
-    "C4.4",
-    "C4.7",
-    "C5.13",
-    "C5.14",
-    "C5.15",
-    "C5.16",
-    "C5.17",
-    "C5.2",
-    "C5.3",
-    "C5.4",
-    "C5.5",
-    "C5.6",
-    "C5.8",
     "C6.10",
     "C6.12",
     "C6.15",
-    "C6.2",
     "C6.3",
-    "C6.5",
-    "C6.6",
     "C7.18",
     "C7.19",
     "C7.2",
@@ -155,7 +135,6 @@
     "C7.4",
     "C7.5",
     "C7.5b",
-    "C7.6",
     "C9.15",
     "C9.16",
     "C9.17",
@@ -176,9 +155,9 @@
       "to": [
         "REQ"
       ],
-      "total": 0,
-      "covered": 0,
-      "pct": null
+      "total": 22,
+      "covered": 22,
+      "pct": 100.0
     },
     {
       "id": "req-ac",
@@ -186,9 +165,9 @@
       "to": [
         "AC"
       ],
-      "total": 0,
-      "covered": 0,
-      "pct": null
+      "total": 127,
+      "covered": 127,
+      "pct": 100.0
     },
     {
       "id": "req-api",
@@ -196,9 +175,9 @@
       "to": [
         "API"
       ],
-      "total": 0,
+      "total": 127,
       "covered": 0,
-      "pct": null
+      "pct": 0.0
     },
     {
       "id": "req-ux",
@@ -207,9 +186,9 @@
         "SCR",
         "UXD"
       ],
-      "total": 0,
+      "total": 127,
       "covered": 0,
-      "pct": null
+      "pct": 0.0
     },
     {
       "id": "ac-tc",
@@ -217,9 +196,9 @@
       "to": [
         "TC"
       ],
-      "total": 0,
+      "total": 129,
       "covered": 0,
-      "pct": null
+      "pct": 0.0
     }
   ],
   "findings": [
@@ -241,46 +220,6 @@
     },
     {
       "severity": "CRITICAL",
-      "clause": "C13.1",
-      "check": "exists",
-      "message": "`contract` is missing or empty",
-      "artifact": "contract",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C4.1",
-      "check": "exists",
-      "message": "`prd` is missing or empty",
-      "artifact": "prd",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C4.2",
-      "check": "gate-approved",
-      "message": "no approval record for gate `prd-approval` (gov.py approve prd-approval)",
-      "artifact": "",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C5.1",
-      "check": "exists",
-      "message": "`srs` is missing or empty",
-      "artifact": "srs",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C6.1",
-      "check": "exists",
-      "message": "`db-script` is missing or empty",
-      "artifact": "db-script",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
       "clause": "C7.1",
       "check": "markers",
       "message": "`backend-execution-plan` missing",
@@ -289,10 +228,10 @@
     },
     {
       "severity": "CRITICAL",
-      "clause": "C7.10",
-      "check": "value-agreement",
-      "message": "binding artifact `db-script` missing",
-      "artifact": "db-script",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-CAT-044` is cited in `contract` but governance-shared\\analysis\\decisions\\CAT\\ADR-CAT-044.md does not exist",
+      "artifact": "contract",
       "line": 0
     },
     {
@@ -321,107 +260,1035 @@
     },
     {
       "severity": "MAJOR",
-      "clause": "C12.2",
-      "check": "manifest",
-      "message": "manifest names unknown artifact `module-registry-cat`",
-      "artifact": "change-manifest",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-001` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 278
     },
     {
       "severity": "MAJOR",
-      "clause": "C12.2",
-      "check": "manifest",
-      "message": "manifest names unknown artifact `business-policies-cat`",
-      "artifact": "change-manifest",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-002` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 292
     },
     {
       "severity": "MAJOR",
-      "clause": "C3.7",
-      "check": "registry-agree",
-      "message": "`POL-CAT-001` defined in `business-policies` but absent from `module-registry`",
-      "artifact": "business-policies",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-003` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 306
     },
     {
       "severity": "MAJOR",
-      "clause": "C3.7",
-      "check": "registry-agree",
-      "message": "`POL-CAT-002` defined in `business-policies` but absent from `module-registry`",
-      "artifact": "business-policies",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-004` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 320
     },
     {
       "severity": "MAJOR",
-      "clause": "C3.7",
-      "check": "registry-agree",
-      "message": "`POL-CAT-003` defined in `business-policies` but absent from `module-registry`",
-      "artifact": "business-policies",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-005` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 334
     },
     {
       "severity": "MAJOR",
-      "clause": "C3.7",
-      "check": "registry-agree",
-      "message": "`POL-CAT-004` defined in `business-policies` but absent from `module-registry`",
-      "artifact": "business-policies",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-006` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 348
     },
     {
       "severity": "MAJOR",
-      "clause": "C3.7",
-      "check": "registry-agree",
-      "message": "`POL-CAT-005` defined in `business-policies` but absent from `module-registry`",
-      "artifact": "business-policies",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-007` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 362
     },
     {
       "severity": "MAJOR",
-      "clause": "C3.7",
-      "check": "registry-agree",
-      "message": "`POL-CAT-006` defined in `business-policies` but absent from `module-registry`",
-      "artifact": "business-policies",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-008` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 376
     },
     {
       "severity": "MAJOR",
-      "clause": "C3.7",
-      "check": "registry-agree",
-      "message": "`POL-CAT-007` defined in `business-policies` but absent from `module-registry`",
-      "artifact": "business-policies",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-009` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 390
     },
     {
       "severity": "MAJOR",
-      "clause": "C3.7",
-      "check": "registry-agree",
-      "message": "`POL-CAT-008` defined in `business-policies` but absent from `module-registry`",
-      "artifact": "business-policies",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-010` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 404
     },
     {
       "severity": "MAJOR",
-      "clause": "C3.7",
-      "check": "registry-agree",
-      "message": "`POL-CAT-009` defined in `business-policies` but absent from `module-registry`",
-      "artifact": "business-policies",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-011` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 418
     },
     {
       "severity": "MAJOR",
-      "clause": "C5.8",
-      "check": "registry-agree",
-      "message": "registry `registry-srs` missing",
-      "artifact": "registry-srs",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-012` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 432
     },
     {
       "severity": "MAJOR",
-      "clause": "C6.5",
-      "check": "registry-agree",
-      "message": "registry `registry-db` missing",
-      "artifact": "registry-db",
-      "line": 0
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-013` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 446
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-014` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 460
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-015` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 474
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-016` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 488
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-017` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 493
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-018` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 510
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-019` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 524
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-020` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 538
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-021` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 552
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-022` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 566
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-023` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 580
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-024` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 594
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-025` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 608
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-026` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 622
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-027` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 636
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-028` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 650
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-029` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 664
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-030` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 678
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-031` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 692
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-032` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 706
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-033` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 720
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-034` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 734
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-035` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 748
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-036` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 762
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-037` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 776
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-038` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 790
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-039` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 804
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-040` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 818
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-041` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 832
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-042` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 846
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-043` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 851
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-044` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 865
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-045` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 879
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-046` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 893
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-047` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 907
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-048` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 921
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-049` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 935
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-050` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 949
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-051` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 963
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-052` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 977
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-053` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 991
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-054` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1008
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-055` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1022
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-056` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1036
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-057` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1050
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-058` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1064
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-059` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1078
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-060` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1092
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-061` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1106
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-062` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1120
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-063` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1134
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-064` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1148
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-065` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1162
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-066` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1176
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-067` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1190
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-068` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1204
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-069` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1218
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-070` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1232
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-071` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1246
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-072` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1260
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-073` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1274
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-074` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1288
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-075` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1302
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-076` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1316
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-077` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1330
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-078` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1344
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-079` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1358
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-080` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1372
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-081` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1386
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-082` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1400
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-083` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1414
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-084` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1428
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-085` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1442
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-086` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1456
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-087` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1470
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-088` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1484
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-089` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1498
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-090` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1512
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-091` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1526
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-092` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1540
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-093` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1554
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-094` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1568
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-095` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1582
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-096` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1596
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-097` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1610
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-098` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1624
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-099` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1638
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-100` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1652
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-101` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1666
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-102` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1680
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-103` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1694
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-104` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1708
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-105` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1722
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-106` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1736
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-107` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1750
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-108` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1764
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-109` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1778
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-110` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1792
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-111` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1806
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-112` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1820
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-113` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1834
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-114` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1848
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-115` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1862
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-116` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1876
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-117` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1890
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-118` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1904
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-119` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1918
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-120` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1932
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-121` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1946
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-122` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1960
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-123` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1974
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-124` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1988
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-125` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2002
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-126` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2016
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-127` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2030
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-128` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2044
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-CAT-129` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2058
     },
     {
       "severity": "MAJOR",
@@ -441,6 +1308,254 @@
     },
     {
       "severity": "MAJOR",
+      "clause": "C7.5",
+      "check": "registry-agree",
+      "message": "artifact `backend-execution-plan` missing",
+      "artifact": "backend-execution-plan",
+      "line": 0
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-003` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 297
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-008` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 367
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-009` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 381
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-011` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 409
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-012` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 423
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-013` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 437
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-014` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 451
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-016` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 479
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-021` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 557
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-023` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 585
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-026` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 627
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-035` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 753
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-036` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 767
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-037` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 781
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-038` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 795
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-039` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 809
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-040` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 823
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-041` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 837
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-061` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1125
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-075` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1321
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-090` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1531
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-091` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1545
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-100` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1671
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-102` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1699
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-103` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1713
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-104` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1727
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-116` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1895
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-125` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2021
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-126` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2035
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-CAT-127` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2049
+    },
+    {
+      "severity": "MAJOR",
       "clause": "C9.2",
       "check": "traces",
       "message": "`frontend-execution-plan` missing",
@@ -454,30 +1569,106 @@
       "message": "registry `registry-exec-fe` missing",
       "artifact": "registry-exec-fe",
       "line": 0
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-010` uses 'fast' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 404
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-013` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 446
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-036` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 762
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-072` uses '\u0645\u062e\u062a\u0644\u0641' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 1260
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-CAT-102` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 1680
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-CAT-006` `Then: isActiveFl is true and publishStateCode is UNPUBLISHED` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 348
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-CAT-067` `Then: PHONES has an empty parentCategoryFk, and its Items keep categoryFk PH` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 1190
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-CAT-110` `Then: that image has isPrimaryFl true` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 1792
     }
   ],
   "provenance": {
     "rules": {
       "contracts": "1e9a4cbe6e0e656cd905e87ef41fdd715519f455a4d19dba41e3592b43b3a281",
-      "checker": "fefbd9a0755e86efb7bf544bfdec9b68cb4bd9982c8d88234354177a186a8185",
+      "checker": "22088c70be3d5eb4f1ea551e1df5253e1ff7fbf003ae1bb336cfece81e3be64d",
       "policy": "f0051863173859c50eaa1091adddc83f9c46e4a33a735325d37acc31ffd51c3d"
     },
     "resolvable": [
       "business-policies",
       "change-manifest",
+      "contract",
+      "db-script",
       "domain-profile",
       "module-registry",
       "platform-summary",
-      "project-registry"
+      "prd",
+      "project-registry",
+      "registry-db",
+      "registry-srs",
+      "srs"
     ],
     "inputs": {
-      "business-policies": "e697aa1c5294daca4178f7da4af703a860a912f292eb3e5257ec92d2f407093e",
-      "change-manifest": "4689192e0eef5c27a840aa9817f25286906c65a59960de8f8e677b9e9b0f67d8",
+      "business-policies": "c152874252d238fa48c628a658d2386be20140b4ba19b8b936bc22c217bc51e5",
+      "change-manifest": "bbac8b91fe71b3e6bccbde8bb4b5cf73f23f1d7f57c1cd5cc79a62f829b493eb",
+      "contract": "7a78dff411001fb66979c0087d499a806382c9c017549132880086f774803a03",
+      "db-script": "9d3059123650df9b01c69887251cf9aec0852e265ba1eff0f3b30a49a27bfa78",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
-      "module-registry": "630d55730517f694ee765ab7d2225f39b9d64d5b48ad79e0e29d7ade218dc0f4",
-      "platform-summary": "63187b10eaead00fdf02ff285dc7c2324154ae60fc22130062ebc0d64f0c5717",
-      "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877"
+      "module-registry": "5fc7c7c7a020ebee8280a8519ade559492413ef6f6eeaf7ef6f157d19f9c1a0d",
+      "platform-summary": "8869f2caaaa63ad4690042b1ddd12bd37461bc901343d1924927ebb4c7ac9967",
+      "prd": "5e6157b1493b752f2ec9686b7621e181123364bb4031c5515b2dbc6e88bac5da",
+      "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
+      "registry-db": "abb0aacc3a047b415f49ba57d7a4fdeeee91e2670975ad10ff8a9cc02bd1673e",
+      "registry-srs": "3ca9da3db1d58736b2aa403b1d9b7f7d05da01610692247ad765d800eeb69970",
+      "srs": "c6b734716872e557231d2c4ba25882ec1385155b2e0742559aa8aeeb49b3bd78"
     },
-    "at": "2026-10-26T14:47:28+00:00"
+    "at": "2026-10-27T04:31:36+00:00"
   }
 }

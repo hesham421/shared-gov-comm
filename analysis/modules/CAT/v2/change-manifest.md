@@ -52,6 +52,32 @@ artifacts:
     MODIFIED: []
     REMOVED: []
     UNCHANGED: []
+  db-script:                 # file P2/db-script-cat.md; written in full as a create-all migration (no prior db-script in the current state); DBF stream starts at 001, next free 162; no XM (consumes: []), XM next free 001
+    ADDED: [DBF-CAT-001, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010,
+      DBF-CAT-011, DBF-CAT-012, DBF-CAT-013, DBF-CAT-014, DBF-CAT-015, DBF-CAT-016, DBF-CAT-017, DBF-CAT-018, DBF-CAT-019, DBF-CAT-020,
+      DBF-CAT-021, DBF-CAT-022, DBF-CAT-023, DBF-CAT-024, DBF-CAT-025, DBF-CAT-026, DBF-CAT-027, DBF-CAT-028, DBF-CAT-029, DBF-CAT-030,
+      DBF-CAT-031, DBF-CAT-032, DBF-CAT-033, DBF-CAT-034, DBF-CAT-035, DBF-CAT-036, DBF-CAT-037, DBF-CAT-038, DBF-CAT-039, DBF-CAT-040,
+      DBF-CAT-041, DBF-CAT-042, DBF-CAT-043, DBF-CAT-044, DBF-CAT-045, DBF-CAT-046, DBF-CAT-047, DBF-CAT-048, DBF-CAT-049, DBF-CAT-050,
+      DBF-CAT-051, DBF-CAT-052, DBF-CAT-053, DBF-CAT-054, DBF-CAT-055, DBF-CAT-056, DBF-CAT-057, DBF-CAT-058, DBF-CAT-059, DBF-CAT-060,
+      DBF-CAT-061, DBF-CAT-062, DBF-CAT-063, DBF-CAT-064, DBF-CAT-065, DBF-CAT-066, DBF-CAT-067, DBF-CAT-068, DBF-CAT-069, DBF-CAT-070,
+      DBF-CAT-071, DBF-CAT-072, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-076, DBF-CAT-077, DBF-CAT-078, DBF-CAT-079, DBF-CAT-080,
+      DBF-CAT-081, DBF-CAT-082, DBF-CAT-083, DBF-CAT-084, DBF-CAT-085, DBF-CAT-086, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089, DBF-CAT-090,
+      DBF-CAT-091, DBF-CAT-092, DBF-CAT-093, DBF-CAT-094, DBF-CAT-095, DBF-CAT-096, DBF-CAT-097, DBF-CAT-098, DBF-CAT-099, DBF-CAT-100,
+      DBF-CAT-101, DBF-CAT-102, DBF-CAT-103, DBF-CAT-104, DBF-CAT-105, DBF-CAT-106, DBF-CAT-107, DBF-CAT-108, DBF-CAT-109, DBF-CAT-110,
+      DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114, DBF-CAT-115, DBF-CAT-116, DBF-CAT-117, DBF-CAT-118, DBF-CAT-119, DBF-CAT-120,
+      DBF-CAT-121, DBF-CAT-122, DBF-CAT-123, DBF-CAT-124, DBF-CAT-125, DBF-CAT-126, DBF-CAT-127, DBF-CAT-128, DBF-CAT-129, DBF-CAT-130,
+      DBF-CAT-131, DBF-CAT-132, DBF-CAT-133, DBF-CAT-134, DBF-CAT-135, DBF-CAT-136, DBF-CAT-137, DBF-CAT-138, DBF-CAT-139, DBF-CAT-140,
+      DBF-CAT-141, DBF-CAT-142, DBF-CAT-143, DBF-CAT-144, DBF-CAT-145, DBF-CAT-146, DBF-CAT-147, DBF-CAT-148, DBF-CAT-149, DBF-CAT-150,
+      DBF-CAT-151, DBF-CAT-152, DBF-CAT-153, DBF-CAT-154, DBF-CAT-155, DBF-CAT-156, DBF-CAT-157, DBF-CAT-158, DBF-CAT-159, DBF-CAT-160,
+      DBF-CAT-161]
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
+  registry-db:               # file P2/registry-db-cat.md; owns no IDs (indexes the db-script DBF ranges and the empty XM register); written in full (no prior DB registry in the current state)
+    ADDED: []
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
 ```
 
 P0 delta note: the given's module set changed (1.6.0 adds `gl`), so the domain-profile hand re-run named in the summary applies (OI-02).
@@ -66,3 +92,10 @@ P1.5 delta note: the contract is written in full, because the current state hold
 - 1 catalogue-change event item.
 
 Nothing is MODIFIED or REMOVED, so no consumer edge is affected. The contract repeats the SRS `given-usage` rows verbatim. No question was raised and no ADR was needed; the next free ADR is ADR-CAT-044.
+
+P2 delta note: the db-script is written as a create-all migration, because the current state holds no earlier db-script. It adds 12 tables (one per ENT) and DBF 161 (001 … 161):
+- every PK uses the identity clause, as a BIGINT, which matches the contract's identifier promise;
+- 13 intra-module FKs;
+- every UNIQUE is composite with TENANT_ID.
+
+The XM register is empty (`consumes: []`), so `gov.py graph` gets no edge from CAT. The given tables (mdl lookup tables, CORE_NUMBER_SERIES, FILE_DOCUMENT, CORE_TENANT) are never re-created. The 10 CAT lookup keys (34 values), the 3 number series and the 8 Unit e-invoice codes are seeded for the PLATFORM tenant. Decisions are recorded as DEFAULTs D-P2-01 … D-P2-18. No question was raised and no ADR was needed; the next free ADR is unchanged.
