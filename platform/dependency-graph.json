@@ -130,7 +130,7 @@
     {
       "from": "INS",
       "to": "CAT",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -196,19 +196,19 @@
     {
       "from": "INV",
       "to": "CAT",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
       "from": "PRC",
       "to": "CAT",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
       "from": "PUR",
       "to": "CAT",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -226,7 +226,7 @@
     {
       "from": "SFR",
       "to": "CAT",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -274,7 +274,7 @@
     {
       "from": "SLS",
       "to": "CAT",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -328,7 +328,7 @@
     {
       "from": "TAX",
       "to": "CAT",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
