@@ -119,10 +119,12 @@ Verdict as stamped by the orchestrator from `gov.py analyze` (self-check block p
 | decisions/CAT/CORE-GAP-tenant-lookup-types | whether a tenant can create lookup types with nested values at runtime | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-number-series-block-allocation | whether NumberSeriesApi can allocate a block of n numbers in one call | OPEN (asked of erp-core) |
 
-Next free ADR after the third gate-analysis revise: ADR-CAT-072. None BLOCKED.
+The fourth gate-analysis revise raised no ADR; the next free ADR sequence for CAT is 072. None BLOCKED.
+
+Fourth gate-analysis revise (backend): API-CAT-047's facade carries only `@PreAuthorize("isAuthenticated()")` and the read service checks PERM_CAT_ITEMS_VIEW in code (G1); API-CAT-049's write pass re-reads its Categories FOR SHARE after the scale-prefix lock and rejects rows of a Category deactivated meanwhile with RULE-CAT-026 (G2); API-CAT-041 / QR-CAT-026 apply `isActiveFl` to attributes and values alike (G3); API-CAT-049 traces REQ-CAT-139, the import time limit (G4); API-CAT-004 leaves an Item's barcodes active and API-CAT-016 stays allowed on an inactive Item (G6).
 
 ### Traceability
-REQ covered by ≥ 1 API: 138 / 138 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
+REQ covered by ≥ 1 API: 139 / 139 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
 
 ### Event
 "P3.1 completed: CAT v2 — API 55 · QR 72 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–071, none BLOCKED · CORE-GAP 3"

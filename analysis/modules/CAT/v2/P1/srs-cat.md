@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved 2026-10-26 — gate prd-approval)
-Counts : REQ 138 · AC 160 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 16
+Counts : REQ 139 · AC 161 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 16
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -19,6 +19,7 @@ Counts : REQ 138 · AC 160 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 16
 | Prepared by | claude:opus (analysis lane) |
 | Decisions applied | 16 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
 | Revisions (third gate-analysis revise) | ADDED: REQ-CAT-136 … REQ-CAT-138, AC-CAT-153 … AC-CAT-160 · MODIFIED: REQ-CAT-135 and RULE-CAT-053 (three repair operations stay allowed on an inactive Item — ADR-CAT-068), RULE-CAT-003, AC-CAT-007 and AC-CAT-043 (the message names the existing Item's code), RULE-CAT-016, RULE-CAT-023 and RULE-CAT-024 (also checked on reactivation — ADR-CAT-069), A7 |
+| Revisions (fourth gate-analysis revise) | ADDED: REQ-CAT-139, AC-CAT-161 (an import past its time limit is rolled back whole — ADR-CAT-071) · MODIFIED: REQ-CAT-005 and A7 (deactivating an Item leaves its barcodes active; a GTIN is released by deactivating the barcode), RULE-CAT-049 (traces REQ-CAT-139) |
 
 ## A2 — Functional context
 
@@ -325,11 +326,11 @@ Then  : the next read returns that brandCode, and updatedBy holds the owner's us
 
 ### REQ-CAT-005 — Deactivate an Item
 Pattern    : event
-Statement  : When an owner deactivates an Item, the system shall set its isActiveFl to false and its publishStateCode to UNPUBLISHED.
+Statement  : When an owner deactivates an Item, the system shall set its isActiveFl to false and its publishStateCode to UNPUBLISHED, and leave its Variants and their barcodes active.
 Traces     : US-CAT-001
-Entities   : ENT-CAT-001
-Rationale  : An Item that is no longer sold leaves every channel but stays readable by earlier documents.
-Source     : US-CAT-001; RULE-CAT-041; RULE-CAT-048
+Entities   : ENT-CAT-001, ENT-CAT-009
+Rationale  : An Item that is no longer sold leaves every channel but stays readable by earlier documents. Its barcodes stay active so that the Item can be reactivated with them: while the Item is inactive they no longer resolve (REQ-CAT-086) but still hold their values under RULE-CAT-029. The owner releases a GTIN by deactivating the barcode (REQ-CAT-085, API-CAT-016), which stays allowed on an inactive Item (RULE-CAT-053 never refuses a child deactivation). Deactivating a Variant, by contrast, deactivates its barcodes (REQ-CAT-050).
+Source     : US-CAT-001; RULE-CAT-041; RULE-CAT-048; ADR-CAT-063
 Priority   : HIGH
 
 #### AC-CAT-005 — [REQ-CAT-005]
@@ -2309,6 +2310,20 @@ Given : the active attribute SIZE with the inactive value XS «صغير جدًا
 When  : the owner reactivates XS
 Then  : isActiveFl is true, its code stays XS, and the Variant generation list for SIZE offers XS
 
+### REQ-CAT-139 — Import past its time limit
+Pattern    : unwanted
+Statement  : If an item import does not complete within 120 seconds, then the system shall roll the whole import back, store no Item, Variant or barcode of it, publish no catalogue-change event for it, and answer with RULE-CAT-049.
+Traces     : US-CAT-010
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-009
+Rationale  : An import is all or nothing, so a slow import never leaves half a catalogue behind; the codes already drawn stay as gaps in their series, and the owner imports the file again, split into smaller files. A file of 5,000 valid rows completes within 60 seconds (ADR-CAT-071).
+Source     : US-CAT-010; ADR-CAT-071; RULE-CAT-049
+Priority   : HIGH
+
+#### AC-CAT-161 — [REQ-CAT-139]
+Given : an import file of 5,000 valid rows, in a tenant with 0 Items, whose processing is held past 120 seconds
+When  : the owner submits it
+Then  : 0 Items, 0 Variants, 0 barcodes and 0 catalogue-change events are stored, and the response shows ar: «تعذّر حفظ التغيير ولم يُرسل أي إشعار بالتغيير. أعد المحاولة.» · en: "The change was not saved and no change notice was sent. Try again."
+
 ## A5 — Business rules
 
 ### RULE-CAT-001 — Arabic name required
@@ -2751,7 +2766,7 @@ Scope      : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005, ENT-CAT-007, ENT-CAT-008, EN
 Trigger    : on commit or rollback of a catalogue change
 Statement  : The system shall record each catalogue-change event in the same transaction as the change and deliver it only after commit.
 Message    : ar: تعذّر حفظ التغيير ولم يُرسل أي إشعار بالتغيير. أعد المحاولة. · en: The change was not saved and no change notice was sent. Try again.
-Traces     : REQ-CAT-008, REQ-CAT-009
+Traces     : REQ-CAT-008, REQ-CAT-009, REQ-CAT-139
 Data source: ENT-CAT-001.itemPk, ENT-CAT-002.variantPk
 Source     : US-CAT-002; given `events` outbox
 
@@ -2864,6 +2879,8 @@ Every transition into ACTIVE (create, import row, reactivate) re-establishes the
 - invariant 2 (inactive Category): an update whose only change is categoryFk points the Item to an active Category or to none (REQ-CAT-072), or the Category itself is reactivated (REQ-CAT-136, ADR-CAT-069);
 - invariant 3 (invalid component): the Bundle components are replaced with valid lines (REQ-CAT-057; it needs `bundles` on);
 - invariant 4 (name taken): the other active Item is renamed or deactivated; the Item's own name cannot change while it is inactive.
+
+Deactivating an Item leaves its Variants and their barcodes active, so that the Item can be reactivated with them (REQ-CAT-005). While the Item is inactive, those barcodes no longer resolve (REQ-CAT-086, ADR-CAT-059) but still hold their values under RULE-CAT-029; the owner releases a GTIN by deactivating the barcode (REQ-CAT-085, API-CAT-016), which stays allowed on an inactive Item. Deactivating a Variant, by contrast, deactivates its barcodes and releases their values (REQ-CAT-050, ADR-CAT-063).
 
 The other records that can be deactivated also have a way back: Categories, Variant attributes and Variant attribute values are reactivated under their own uniqueness and hierarchy rules (REQ-CAT-136 … REQ-CAT-138), and a Variant is replaced by regenerating its combination. The channel reads of an Item's children (barcode lookup, Variant search, labels) also require an active Item (REQ-CAT-086, REQ-CAT-101). Only the reads by identifier return inactive records (RULE-CAT-048).
 
@@ -3102,7 +3119,7 @@ Operations   : download import sheet, submit file (custom), read result
 Users        : Owner
 Navigation   : Setup wizard step 5 "import items" (wizard owner: P-02) → Item import / استيراد الأصناف; also Catalog / الكتالوج → Items → Import; to: Items
 Content shape: other (upload + result list)
-Traces       : REQ-CAT-036 … REQ-CAT-041
+Traces       : REQ-CAT-036 … REQ-CAT-041, REQ-CAT-139
 Composite    : Wizard step — one screen requirement
 
 ### B2 — Search / list
@@ -3127,7 +3144,7 @@ Page code: CAT_ITEM_IMPORT
 | Operation | Verb | Path | Inputs | Outputs | RULEs | Traces (REQ) |
 |---|---|---|---|---|---|---|
 | download import sheet | GET | /api/v1/cat/item-imports/sheet | — | xlsx file (report CAT_ITEM_IMPORT_SHEET rendered by the core print service — ADR-CAT-057) | — | REQ-CAT-036 |
-| import items | POST | /api/v1/cat/item-imports | fileDocumentRef of the uploaded xlsx file | import result (counts, rejected rows) | RULE-CAT-044, 045 | REQ-CAT-037, 038, 039, 040, 041 |
+| import items | POST | /api/v1/cat/item-imports | fileDocumentRef of the uploaded xlsx file | import result (counts, rejected rows) | RULE-CAT-044, 045, 049 | REQ-CAT-037, 038, 039, 040, 041, 139 |
 
 ## SCR-REQ-CAT-005 — Barcode labels / ملصقات الباركود
 
@@ -3227,7 +3244,7 @@ Page code: CAT_SETTINGS
 | US-CAT-007 | REQ-CAT-024 … 027 | AC-CAT-025 … 028 | RULE-CAT-001 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
 | US-CAT-008 | REQ-CAT-028 … 031 | AC-CAT-029 … 032 | RULE-CAT-001, 002 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
 | US-CAT-009 | REQ-CAT-032 … 035, 134 | AC-CAT-033 … 036, 141 | RULE-CAT-004, 005 | ENT-CAT-001, 002, 012 | SCR-REQ-CAT-001, 006 |
-| US-CAT-010 | REQ-CAT-036 … 041 | AC-CAT-037 … 043 | RULE-CAT-003, 044, 045 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-004 |
+| US-CAT-010 | REQ-CAT-036 … 041, 139 | AC-CAT-037 … 043, 161 | RULE-CAT-003, 044, 045, 049 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-004 |
 | US-CAT-011 | REQ-CAT-042 … 055, 129, 137, 138 | AC-CAT-044 … 057, 131, 145, 146, 147, 159, 160 | RULE-CAT-001, 013, 014, 015, 016, 017, 048, 052 | ENT-CAT-001, 002, 003, 004, 005 | SCR-REQ-CAT-001, 003 |
 | US-CAT-012 | REQ-CAT-056 … 063, 130 | AC-CAT-058 … 065, 134, 151 | RULE-CAT-018, 019, 020, 021, 022 | ENT-CAT-001, 002, 005, 007 | SCR-REQ-CAT-001 |
 | US-CAT-013 | REQ-CAT-064 … 072, 136 | AC-CAT-066 … 074, 142, 153, 157, 158 | RULE-CAT-001, 023, 024, 025, 026, 048 | ENT-CAT-001, 006 | SCR-REQ-CAT-002 |

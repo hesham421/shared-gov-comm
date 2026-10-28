@@ -91,10 +91,10 @@ for files you do not change. The files you may write:
 {
   "verdict": "REVISE",
   "scores": {
-    "unambiguous": 3,
+    "unambiguous": 1,
     "verifiable": 2,
-    "complete": 1,
-    "consistent": 2,
+    "complete": 2,
+    "consistent": 1,
     "singular": 3,
     "feasible": 2,
     "traceable": 3
@@ -104,143 +104,66 @@ for files you do not change. The files you may write:
       "id": "G1",
       "severity": "MAJOR",
       "section": "backend",
-      "artifact": "srs",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "complete (RULE-CAT-053 vs RULE-CAT-050/026/019, SRS A7)",
-      "problem": "RULE-CAT-053 refuses every write under an inactive Item, and REQ-CAT-130 refuses reactivation until the ACTIVE-state invariants hold. The two together leave three states the user can never leave. (1) 0 active Variants: generation is refused and Variants have no reactivation. (2) An inactive Category: PUT categoryFk is refused and Categories have no reactivation. (3) A BUNDLE with an invalid component: API-CAT-017 is refused. The RULE-CAT-050 and RULE-CAT-026 messages offer next actions that cannot be taken. This is the same pattern in three places.",
-      "fix": "In a new ADR, amend RULE-CAT-053 and REQ-CAT-135 so three repair operations stay allowed on an inactive Item: Variant generation (API-CAT-006), a categoryFk-only change (API-CAT-003) and replacing the Bundle components (API-CAT-017). Each is still subject to its own rules. Update SRS A7, the API-CAT-003/006/017 Validations and Orchestration lines, and the CAT-422-PARENT-INACTIVE trigger.",
-      "adr": true
+      "clause": "consistent",
+      "problem": "API-CAT-047 contradicts itself. Its Layers line puts `CatSearchQueryFacade.searchCatalogue` behind `@PreAuthorize` on the screen VIEW permission. Its Validations and Security lines, REQ-CAT-127, AC-CAT-129, TC-CAT-124, ADR-CAT-061 §3 and the api-spec (which has no 403 response) all require a caller without PERM_CAT_ITEMS_VIEW to get 200 with an empty list. With the annotation in place, Spring Security answers 403 before the empty-result logic runs. The HTTP path and the in-process `CatalogueReadApi.searchCatalogue` path would then behave differently.",
+      "fix": "In API-CAT-047 Layers and in the CatalogueReadApi table, state that `CatSearchQueryFacade.searchCatalogue` carries only `@PreAuthorize(\"isAuthenticated()\")`. `CatCatalogueReadService.searchCatalogue` checks PERM_CAT_ITEMS_VIEW in code and returns an empty list when the caller lacks it. Add this exception to the PHASE SEC-BE paragraph that already names API-CAT-047.",
+      "adr": false
     },
     {
       "id": "G2",
       "severity": "MAJOR",
-      "section": "frontend",
-      "artifact": "frontend-execution-plan",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "consistent (F3 SCR-CAT-001 inactive Item read-only; ui-ux-spec)",
-      "problem": "On an inactive Item, F3 and the UX spec hide exactly the affordances that the REQ-CAT-130 refusals direct the user to use.",
-      "fix": "On an inactive Item's Entry, keep 'Generate variants' (while `variants` is on), the Category field and the Bundle components pane available. Everything else stays read-only. Link the ITEM-STATE-COMMAND refusal banners to these affordances.",
+      "clause": "concurrency (backend row)",
+      "problem": "API-CAT-024's Concurrency line credits API-CAT-049 with reading the Category FOR SHARE, but API-CAT-049 does not. It resolves category codes in the lock-free validation pass (QR-CAT-032, no lock). Its write pass re-reads only the scale layouts under the scale-prefix lock. A Category deactivated between the two passes can still receive imported active Items. Each such Item then points to an inactive Category, which breaks RULE-CAT-026 and invariant 2 of SRS A7 (ADR-CAT-059).",
+      "fix": "Add a step at the start of the API-CAT-049 write pass: re-read every Category referenced by a valid row with QR-CAT-032 FOR SHARE, and reject each row whose Category is now inactive with RULE-CAT-026 (column category, inside CAT-200-IMPORT-ROW-REJECTED) before its batch is inserted. Add QR-CAT-032 (FOR SHARE) to the Repository line and the lock order (scale-prefix lock, then Category rows) to the Concurrency line. Add API-CAT-049 to QR-CAT-032's FOR SHARE locking note.",
       "adr": false
     },
     {
       "id": "G3",
       "severity": "MAJOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "verifiable (TC-CAT-185/186/187)",
-      "problem": "These TCs assert the refusal but never prove that the Item can recover.",
-      "fix": "Extend each TC with its repair step, then a reactivation that succeeds. Add a frontend TC showing that the three affordances remain on an inactive Item.",
+      "clause": "unambiguous",
+      "problem": "API-CAT-041 and QR-CAT-026 apply `isActiveFl` to attributes only (DBF-CAT-040); the second read of QR-CAT-026 returns every value. TC-CAT-090 nevertheless asserts that `GET /variant-attributes?isActiveFl=true` omits the inactive value XS. The frontend ATTRIBUTE-OPTIONS-QUERY also promises 'active values'. SCR-CAT-003 needs inactive values to stay visible, or Reactivate of a value (API-CAT-055) cannot be reached. As written, TC-CAT-090 fails against the plan, and two implementers would build the filter differently.",
+      "fix": "In API-CAT-041, QR-CAT-026 and the api-spec parameter description, state that `isActiveFl` filters both the attributes and their values, and that omitting it returns all of both. In F2, state that the generation picker sends isActiveFl=true and that the SCR-CAT-003 list and values editor send no filter.",
       "adr": false
     },
     {
       "id": "G4",
-      "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "concurrency (API-CAT-021/023/024; ADR-CAT-047)",
-      "problem": "API-CAT-024 locks only the Category row before counting its children. API-CAT-021 and API-CAT-023 read the parent unlocked, under the tree lock, and API-CAT-024 never takes the tree lock. A parallel sub-category create or move can therefore commit an active child under an inactive parent, which RULE-CAT-023 forbids.",
-      "fix": "Have API-CAT-024 take pg_advisory_xact_lock (TENANT_ID, 'CAT_CATEGORY_TREE') before QR-CAT-038. Amend ADR-CAT-047. Add an AC and a parallel-request TC (create a child and deactivate its parent at the same time): exactly one succeeds.",
-      "adr": false
-    },
-    {
-      "id": "G10",
-      "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "srs",
-      "line": null,
-      "clause": "complete (P2 closure: withdrawn record; ENT-CAT-003/004/006)",
-      "problem": "Category, Variant attribute and attribute value can be deactivated but never reactivated. Their codes are unique across active and inactive rows (UQ_CAT_CATEGORY_CODE, UQ_CAT_VAR_ATTR_CODE and UQ_CAT_VAR_ATTR_VALUE_CODE are not partial). A mistaken deactivation therefore loses the record and its code permanently, and a deactivated tree node cannot come back.",
-      "fix": "Add a reactivation for each: PATCH {isActiveFl:true}, guarded by RULE-CAT-023/024 for Categories (parent active, sibling name free) and RULE-CAT-016 for attributes and values. Add a REQ, AC, API block, catalog codes and TCs for each. This also gives G1 case (2) a second way out.",
-      "adr": true
-    },
-    {
-      "id": "G11",
       "severity": "MINOR",
-      "section": "backend",
-      "artifact": "srs",
+      "section": "tests",
+      "artifact": "backend-test-plan",
       "line": null,
-      "clause": "\"C5 Every user-maintained code list is an MDL lookup type …\" / \"F3 … a module 'types' table\"",
-      "problem": "CAT_VAR_ATTR and CAT_VAR_ATTR_VALUE are user-maintained code lists (code, nameAr, nameEn, sortOrder, isActiveFl) stored in module tables. ADR-CAT-003/018 justify them against C-GIVEN-1 only, and no ADR answers C5/F3 the way ADR-CAT-042 answers F5.",
-      "fix": "Add an ADR showing why mdl cannot hold them: tenant-defined types, values nested per attribute, and FK integrity from assignments (FK_CAT_VAR_ATTR_ASSIGN_CAT_VAR_ATTR_VALUE). If mdl lacks tenant-created types, raise CORE-GAP-tenant-lookup-types.md.",
-      "adr": true
-    },
-    {
-      "id": "G12",
-      "severity": "MINOR",
-      "section": "frontend",
-      "artifact": "frontend-execution-plan",
-      "line": null,
-      "clause": "P3 read-binding (cross-screen jump identifies one record)",
-      "problem": "The RULE-CAT-003 next action jumps to /cat/items?text=<nameAr>. That search is a substring LIKE, while the duplicate check compares normalised names, so the jump can list several Items or miss the duplicate. The backend promises 'the existing Item's code' as the next action, but neither LocalizedError nor the message carries it (ADR-CAT-052 §5).",
-      "fix": "Add {code} to the RULE-CAT-003 message, as RULE-CAT-029 already does, filled from QR-CAT-002. Make the frontend jump to /cat/items?text=<code>. Mark AC-CAT-007, TC-CAT-003 and TC-CAT-126 MODIFIED.",
-      "adr": false
-    },
-    {
-      "id": "G13",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "\"C13 One PermissionContributor (<Module>Permissions)…\"; \"F2 A native query without TENANT_ID\"",
-      "problem": "PHASE CORE names the contributor CatPermissions, while Given usage, SEC-BE and bootstrap name it CatPermissionContributor. The default-sortOrder sub-selects in QR-CAT-024, 029 and 034 (MAX(SORT_ORDER)+1 inside an INSERT) carry no TENANT_ID, and an INSERT…SELECT has to be native.",
-      "fix": "Use one name, CatPermissions, implementing PermissionContributor. Compute the default sortOrder in a tenant-filtered JPQL read before the save, or add TENANT_ID = :tenant and @TenantUnscoped.",
+      "clause": "verifiable",
+      "problem": "ADR-CAT-071 and API-CAT-049 commit to a 120 s timeout with a whole-import rollback: nothing stored, no events, code gaps left, lock released, CAT-500-CHANGE-NOT-SAVED. They also set a 60 s budget for 5,000 rows. No REQ, AC or TC covers this behaviour.",
+      "fix": "Add one REQ with the unwanted pattern and one AC: an import that exceeds its timeout is rolled back whole, stores 0 Items, Variants, barcodes and events, and answers CAT-500-CHANGE-NOT-SAVED. Add one backend TC in SVC-API-INT that injects a delayed write pass, in the style of TC-CAT-004.",
       "adr": false
     },
     {
       "id": "G5",
       "severity": "MINOR",
       "section": "backend",
-      "artifact": "business-policies",
+      "artifact": "contract",
       "line": null,
-      "clause": "platform findings (§7)",
-      "problem": "CORE-GAP-in-process-authorization exists only in the ADR folder. No OPEN platform-finding row records it with an owner.",
-      "fix": "Add an OPEN row. Owner: erp-core. Evidence: C13, F9, ADR-CAT-061, ADR-CAT-066 and the CORE-GAP file, with its three options.",
+      "clause": "traceable (stale upstream headers)",
+      "problem": "Several header lines were not refreshed after the gate-analysis revises. The contract says 'REQ 127'. The db-script says 'REQ 127 · RULE 49' and 'next free ADR sequence is 068', and so does registry-db. The current registries give REQ 138, RULE 53 and next free ADR 072. The rule that allowed this: a revise re-renders only the artifacts it edits.",
+      "fix": "Refresh the Inputs, Counts and next-id lines of the contract, db-script and registry-db from the current registries. Add a step to the revise checklist: re-stamp the header counts of every downstream artifact from the registries.",
       "adr": false
     },
     {
       "id": "G6",
       "severity": "MINOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
-      "line": null,
-      "clause": "consistent",
-      "problem": "The backend plan's header omits frontend TC-CAT-208 and 209. ADR-CAT-052 still quotes '124 of 129' and '52' ACs.",
-      "fix": "Add 208–209 to the header's frontend range. Add a note to ADR-CAT-052 that its counts are superseded: 146 backend ACs, 152 combined.",
-      "adr": false
-    },
-    {
-      "id": "G7",
-      "severity": "MINOR",
       "section": "backend",
-      "artifact": "backend-execution-plan",
+      "artifact": "srs",
       "line": null,
-      "clause": "feasible (API-CAT-049)",
-      "problem": "A synchronous import of up to 5,000 rows runs in one transaction, allocates codes row by row and holds the tenant scale-prefix lock throughout. No time budget or timeout is stated.",
-      "fix": "State a target duration and the request timeout. Allocate codes in batches. Take the prefix lock once per import. Name what happens when the timeout is exceeded.",
-      "adr": false
-    },
-    {
-      "id": "G8",
-      "severity": "MINOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
-      "line": null,
-      "clause": "verifiable (RULE-CAT-053 on 10 endpoints)",
-      "problem": "Only TC-CAT-198 (backend) and TC-CAT-209 (frontend) exercise RULE-CAT-053.",
-      "fix": "Add one parameterised TC over API-CAT-003, 006, 008, 010, 012, 014, 015, 017, 018 and 019 under an inactive parent. It also asserts that child deactivations still succeed and, after G1, that the three repair operations succeed.",
-      "adr": false
-    },
-    {
-      "id": "G9",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "api-spec",
-      "line": null,
-      "clause": "C7.29–C7.31 (API-CAT-005)",
-      "problem": "The ItemStateRequest schema allows both fields, an empty body or isActiveFl false.",
-      "fix": "Set isActiveFl enum [true] and add oneOf (or minProperties/maxProperties 1) in the plan, then regenerate the spec.",
+      "clause": "complete",
+      "problem": "The analysis never says what happens to an Item's barcodes when the Item is deactivated. ADR-CAT-063 cascades barcodes only on Variant deactivation. After an Item is deactivated, its Variants' barcodes stop resolving (ADR-CAT-059) but stay active, so they keep blocking their values under RULE-CAT-029. Keeping them is probably intended, since the Item can be reactivated, but no artifact says so.",
+      "fix": "State in REQ-CAT-005 and SRS A7 that deactivating an Item leaves its barcodes active, so it can be reactivated with them, and that the owner releases a GTIN with API-CAT-016, which stays allowed on an inactive Item. Extend the TC-CAT-188 expected result: the same GTIN added to another Variant is refused with CAT-409-BARCODE-DUPLICATE.",
       "adr": false
     }
   ],
@@ -288,24 +211,24 @@ for files you do not change. The files you may write:
   ],
   "analyze_confirmed": [
     {
-      "finding": "C5.13@srs:451 AC-CAT-013",
+      "finding": "C5.13 srs:452 AC-CAT-013 'could'",
       "confirmed": false,
-      "note": "False positive. 'could' is inside the quoted RULE-CAT-009 message. The C5.13 checker should exclude quoted message text."
+      "note": "False positive. 'could' is inside the quoted English message of RULE-CAT-009 (\"could not be checked\"), not in the criterion itself."
     },
     {
-      "finding": "C5.13@srs:769 AC-CAT-036",
+      "finding": "C5.13 srs:770 AC-CAT-036 'could'",
       "confirmed": false,
-      "note": "False positive. The word is in the quoted RULE-CAT-005 message."
+      "note": "False positive. 'could' is inside the quoted RULE-CAT-005 message (\"could not be issued\")."
     },
     {
-      "finding": "C5.13@srs:1289 AC-CAT-072",
+      "finding": "C5.13 srs:1290 AC-CAT-072 'مختلف'",
       "confirmed": false,
-      "note": "False positive. The word is in the quoted RULE-CAT-024 message."
+      "note": "False positive. The word is part of the quoted RULE-CAT-024 message text («رمزًا أو اسمًا مختلفًا»); the AC's Then is exact."
     },
     {
-      "finding": "C5.13@srs:1724 AC-CAT-102",
+      "finding": "C5.13 srs:1730 AC-CAT-102 'could'",
       "confirmed": false,
-      "note": "False positive. The word is in the quoted RULE-CAT-035 message. The 10 'examined nothing' clauses (C6.3, C6.10, C6.12, C6.15, C7.5, C7.5b, C7.24, C7.26–C7.28) are empty by nature, because the XM register is empty."
+      "note": "False positive. 'could' is inside the quoted RULE-CAT-035 message (\"could not be read\")."
     }
   ]
 }
@@ -730,9 +653,16 @@ paths:
           application/json:
             schema:
               type: object
+              description: exactly one of isActiveFl (reactivate; only true — deactivation is DELETE) or publishStateCode (publish / unpublish) — ADR-CAT-048
               properties:
-                isActiveFl: {type: boolean, x-dbf: DBF-CAT-014}
+                isActiveFl: {type: boolean, enum: [true], x-dbf: DBF-CAT-014}
                 publishStateCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-013}
+              additionalProperties: false
+              minProperties: 1
+              maxProperties: 1
+              oneOf:
+              - required: [isActiveFl]
+              - required: [publishStateCode]
               title: ItemStateRequest
       responses:
         '200':
@@ -865,8 +795,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED, CAT-422-PARENT-INACTIVE
-          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED, CAT-422-PARENT-INACTIVE]
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1621,8 +1551,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID, CAT-422-PARENT-INACTIVE
-          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID, CAT-422-PARENT-INACTIVE]
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -2162,6 +2092,83 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
+    patch:
+      operationId: reactivateCategory
+      summary: reactivate Category
+      x-api-id: API-CAT-053
+      x-traces: [REQ-CAT-136, DBF-CAT-071, DBF-CAT-073, DBF-CAT-076, DBF-CAT-077, DBF-CAT-079]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: reactivation only — isActiveFl must be true; deactivation is DELETE (ADR-CAT-069)
+              properties:
+                isActiveFl: {type: boolean, enum: [true], x-dbf: DBF-CAT-076}
+              required: [isActiveFl]
+              additionalProperties: false
+              title: CategoryStateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/CategoryView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-CATEGORY-DUPLICATE
+          x-error-codes: [CAT-409-CATEGORY-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CATEGORY-PARENT-INVALID
+          x-error-codes: [CAT-422-CATEGORY-PARENT-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
   /api/v1/cat/variant-attributes:
     post:
       operationId: createVariantAttribute
@@ -2474,6 +2481,77 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
+    patch:
+      operationId: reactivateVariantAttribute
+      summary: reactivate Variant attribute
+      x-api-id: API-CAT-054
+      x-traces: [REQ-CAT-137, DBF-CAT-035, DBF-CAT-037, DBF-CAT-040, DBF-CAT-042]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: reactivation only — isActiveFl must be true; deactivation is DELETE (ADR-CAT-069)
+              properties:
+                isActiveFl: {type: boolean, enum: [true], x-dbf: DBF-CAT-040}
+              required: [isActiveFl]
+              additionalProperties: false
+              title: VariantAttributeStateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+          x-error-codes: [CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
   /api/v1/cat/variant-attributes/{id}/values:
     post:
       operationId: createVariantAttributeValue
@@ -2682,6 +2760,77 @@ paths:
         '409':
           description: error — CAT-409-ATTRIBUTE-VALUE-IN-USE
           x-error-codes: [CAT-409-ATTRIBUTE-VALUE-IN-USE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    patch:
+      operationId: reactivateVariantAttributeValue
+      summary: reactivate Variant attribute value
+      x-api-id: API-CAT-055
+      x-traces: [REQ-CAT-138, DBF-CAT-047, DBF-CAT-049, DBF-CAT-052, DBF-CAT-053, DBF-CAT-055]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: reactivation only — isActiveFl must be true; deactivation is DELETE (ADR-CAT-069)
+              properties:
+                isActiveFl: {type: boolean, enum: [true], x-dbf: DBF-CAT-052}
+              required: [isActiveFl]
+              additionalProperties: false
+              title: VariantAttributeValueStateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeValueView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+          x-error-codes: [CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -4092,9 +4241,9 @@ components:
 # BACKEND EXECUTION PLAN — Catalog / الكتالوج (CAT)
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P3.1   Track : backend · plan exec
-Inputs : srs (P1 — REQ 135 · AC 152 · ENT 12 · RULE 53 · SCR-REQ 6), db-script (P2 — 12 tables · DBF 161 · XM 0), registry-srs, registry-db, contract (P1.5 — CON 18)
+Inputs : srs (P1 — REQ 138 · AC 160 · ENT 12 · RULE 53 · SCR-REQ 6), db-script (P2 — 12 tables · DBF 161 · XM 0), registry-srs, registry-db, contract (P1.5 — CON 18)
 Governance : FULL (db-script present) · dialect postgresql16 · framework Spring Boot (Java 25) on erp-core 1.6.0
-Counts : API 52 · QR 72 · error codes 60 · XM 0 · ADR raised 5 at P3.1 (ADR-CAT-044 … ADR-CAT-048), ADR-CAT-055 … ADR-CAT-062 at the gate-analysis revise and ADR-CAT-063 … ADR-CAT-067 at the second gate-analysis revise, all ACCEPTED non-breaking · CORE-GAP 1 (in-process authorization)
+Counts : API 55 · QR 72 · error codes 60 · XM 0 · ADR raised 5 at P3.1 (ADR-CAT-044 … ADR-CAT-048), ADR-CAT-055 … ADR-CAT-062 at the gate-analysis revise, ADR-CAT-063 … ADR-CAT-067 at the second and ADR-CAT-068 … ADR-CAT-071 at the third gate-analysis revise, all ACCEPTED non-breaking · CORE-GAP 3 (in-process authorization, tenant lookup types, number-series block allocation)
 Delta  : CS-CAT-001 (ADDITIVE). The current state holds no backend plan for CAT, so v2 writes it in full; the API and QR streams start at 001.
 Status : DRAFT — P3.1 pass 1 · no question raised · nothing BLOCKED
 ══════════════════════════════════════════════════════════════════
@@ -4104,7 +4253,7 @@ Reading order for the implementer: index → DB Alignment Manifest → ADRs → 
 ## EXECUTION PLAN INDEX — CAT v2 — backend-execution-plan-cat.md
 
 Profile: commerce · dialect: postgresql16 · framework: Spring Boot (Java 25), erp-core 1.6.0 given
-Open ADRs: 0 BLOCKED — decisions/CAT/ (this stage raised ADR-CAT-044 … ADR-CAT-048; the gate-analysis revise added ADR-CAT-055 … ADR-CAT-062; the second revise added ADR-CAT-063 … ADR-CAT-067; all ACCEPTED). Open core gap: decisions/CAT/CORE-GAP-in-process-authorization.md (ADR-CAT-061 is conditional on its answer — ADR-CAT-066)
+Open ADRs: 0 BLOCKED — decisions/CAT/ (this stage raised ADR-CAT-044 … ADR-CAT-048; the gate-analysis revise added ADR-CAT-055 … ADR-CAT-062; the second revise added ADR-CAT-063 … ADR-CAT-067; the third revise added ADR-CAT-068 … ADR-CAT-071; all ACCEPTED). Open core gaps: decisions/CAT/CORE-GAP-in-process-authorization.md (ADR-CAT-061 is conditional on its answer — ADR-CAT-066), decisions/CAT/CORE-GAP-tenant-lookup-types.md (ADR-CAT-070), decisions/CAT/CORE-GAP-number-series-block-allocation.md (ADR-CAT-071)
 
 ### Entity registry
 | ENT | name (en / ar) | kind | table | business code | operations |
@@ -4180,6 +4329,9 @@ The FIELDS table of each entity block (PHASE DATA-DOM) is the field registry: DB
 | API-CAT-050 | print barcode labels | POST | /api/v1/cat/barcode-labels | 102, 103, 104 |
 | API-CAT-051 | capability turn-off check | GET | /api/v1/cat/capability-checks/turn-off | 021, 022, 023 |
 | API-CAT-052 | active values of a CAT lookup key | GET | /api/v1/cat/lookups/{key} | 073, 074, 076 |
+| API-CAT-053 | reactivate Category | PATCH | /api/v1/cat/categories/{id} | 136 |
+| API-CAT-054 | reactivate Variant attribute | PATCH | /api/v1/cat/variant-attributes/{id} | 137 |
+| API-CAT-055 | reactivate Variant attribute value | PATCH | /api/v1/cat/variant-attribute-values/{id} | 138 |
 
 ### Rule registry
 Every RULE has a message in ar and en in the SRS; the Error Catalog (§ Error Catalog) carries it character for character. ✓ = both languages present.
@@ -4201,15 +4353,15 @@ Every RULE has a message in ar and en in the SRS; the Error Catalog (§ Error Ca
 | RULE-CAT-013 | One value per attribute and unique combinations | Variant generation | ENT-CAT-005 | ✓ |
 | RULE-CAT-014 | Variant limits per Item | Variant generation | ENT-CAT-002 | ✓ |
 | RULE-CAT-015 | Last active Variant stays active | Variant deactivation | ENT-CAT-002 | ✓ |
-| RULE-CAT-016 | Attribute and value codes and names unique | create · update | ENT-CAT-003 | ✓ |
+| RULE-CAT-016 | Attribute and value codes and names unique | create · update · reactivation | ENT-CAT-003 | ✓ |
 | RULE-CAT-017 | Attribute or value in use stays active | deactivation | ENT-CAT-003 | ✓ |
 | RULE-CAT-018 | Bundle has components with quantities | Bundle save | ENT-CAT-007 | ✓ |
 | RULE-CAT-019 | Valid Bundle components | Bundle save · line change · Bundle reactivation | ENT-CAT-007 | ✓ |
 | RULE-CAT-020 | A Bundle has one Variant | Variant generation | ENT-CAT-002 | ✓ |
 | RULE-CAT-021 | Component of an active Bundle stays active | Variant / Item deactivation | ENT-CAT-007 | ✓ |
 | RULE-CAT-022 | Item kind fixed after first save | update | ENT-CAT-001 | ✓ |
-| RULE-CAT-023 | Category hierarchy | create · update | ENT-CAT-006 | ✓ |
-| RULE-CAT-024 | Category code and sibling name unique | create · update | ENT-CAT-006 | ✓ |
+| RULE-CAT-023 | Category hierarchy | create · update · reactivation | ENT-CAT-006 | ✓ |
+| RULE-CAT-024 | Category code and sibling name unique | create · update · reactivation | ENT-CAT-006 | ✓ |
 | RULE-CAT-025 | Category in use stays active | deactivation | ENT-CAT-006 | ✓ |
 | RULE-CAT-026 | Item Category active | create · update · import row · reactivation | ENT-CAT-001 | ✓ |
 | RULE-CAT-027 | Valid Item unit | create | ENT-CAT-008 | ✓ |
@@ -4238,7 +4390,7 @@ Every RULE has a message in ar and en in the SRS; the Error Catalog (§ Error Ca
 | RULE-CAT-050 | A reactivated Item has an active Variant | reactivation | ENT-CAT-001 | ✓ |
 | RULE-CAT-051 | Item unit used by active barcodes stays active | Item unit deactivation | ENT-CAT-008 | ✓ |
 | RULE-CAT-052 | Generation names every attribute the Item uses | Variant generation | ENT-CAT-005 | ✓ |
-| RULE-CAT-053 | An inactive parent refuses child writes | Item update · child create / update under an inactive Item or Variant | ENT-CAT-001 | ✓ |
+| RULE-CAT-053 | An inactive parent refuses child writes | Item update other than a categoryFk-only change · Item unit, image, barcode and e-invoice override writes under an inactive Item or Variant (Variant generation and Bundle components stay allowed — ADR-CAT-068) | ENT-CAT-001 | ✓ |
 
 No RULE is DEFERRED: every `Data source` of SRS A5 resolves to an ENT field bound to a DBF (db-script §2), except RULE-CAT-036 and RULE-CAT-044, whose remaining inputs are request inputs (copy counts, the submitted file) that the rule itself names as such.
 
@@ -4339,7 +4491,7 @@ No RULE is DEFERRED: every `Data source` of SRS A5 resolves to an ENT field boun
 ```yaml name=totals
 DBF: 161
 XM: 0
-API: 52
+API: 55
 QR: 72
 ```
 
@@ -4530,7 +4682,7 @@ Derived / computed properties (no DBF — ADR-CAT-048):
 | ADR-CAT-044 | platform-standard error rows (ar / en texts written and the 413 / 415 rows removed at the second gate-analysis revise) | ACCEPTED (non-breaking) |
 | ADR-CAT-045 | endpoint surface beyond SRS B5; in-process `CatalogueReadApi` | ACCEPTED (non-breaking) |
 | ADR-CAT-046 | security bootstrap and preset-role grants; tenant copies of seeds | ACCEPTED (non-breaking) |
-| ADR-CAT-047 | repository deviations (native queries, joins) and concurrency guards | ACCEPTED (non-breaking) |
+| ADR-CAT-047 | repository deviations (native queries, joins) and concurrency guards (Category deactivation and reactivation take the tree lock — amended at the third gate-analysis revise) | ACCEPTED (non-breaking) |
 | ADR-CAT-048 | endpoint shapes, derived properties, success-path messages (§4 amended by ADR-CAT-056, ADR-CAT-057) | ACCEPTED (non-breaking) |
 | ADR-CAT-055 | the given CORE_TENANT is a permitted FK reference, not an XM (db-script BLOCK 5e) | ACCEPTED (non-breaking) |
 | ADR-CAT-056 | uploaded files go through the given FILE endpoints; API-CAT-018 / 049 take fileDocumentRef; file retention | ACCEPTED (non-breaking) |
@@ -4545,6 +4697,10 @@ Derived / computed properties (no DBF — ADR-CAT-048):
 | ADR-CAT-065 | CAT serves its own lookup keys through OwnedLookups (API-CAT-052); amends ADR-CAT-050 §1 and §2 | ACCEPTED (non-breaking) |
 | ADR-CAT-066 | in-process authorization raised as CORE-GAP-in-process-authorization.md; ADR-CAT-061 made conditional on the core's answer | ACCEPTED (non-breaking) |
 | ADR-CAT-067 | every intra-module FK is composite with TENANT_ID (db-script D-P2-12) | ACCEPTED (non-breaking) |
+| ADR-CAT-068 | three repair operations stay allowed on an inactive Item (API-CAT-003 categoryFk-only, API-CAT-006, API-CAT-017); amends ADR-CAT-063 | ACCEPTED (non-breaking) |
+| ADR-CAT-069 | Categories, Variant attributes and values can be reactivated (API-CAT-053 … 055) | ACCEPTED (non-breaking) |
+| ADR-CAT-070 | Variant attributes and values stay CAT tables, not mdl lookup types (checklist C5 / F3); CORE-GAP-tenant-lookup-types.md | ACCEPTED (non-breaking) |
+| ADR-CAT-071 | item import time budget, batched code allocation, one scale-prefix lock per import; CORE-GAP-number-series-block-allocation.md | ACCEPTED (non-breaking) |
 
 <!-- PHASE:CORE:START traces=REQ-CAT-131,REQ-CAT-132,REQ-CAT-134,REQ-CAT-001,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-032,REQ-CAT-033,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-029 -->
 ## PHASE CORE — architecture policies (R1)
@@ -4556,7 +4712,7 @@ Derived / computed properties (no DBF — ADR-CAT-048):
   - `domain`: the entities, one per table, each with its Domain companion `<Entity>Domain`.
   - `repository`: `Cat<Entity>Repository`.
   - `crossmodule`: the published in-process interface `com.erp.cat.crossmodule.CatalogueReadApi` (ADR-CAT-045, ADR-CAT-061).
-  - `permission`: `CatPermissions`, the given `PermissionContributor`.
+  - `permission`: `CatPermissions` (`com.erp.cat.permission.CatPermissions implements PermissionContributor`) — the one contributor of checklist C13, and the class every `@PreAuthorize` references. No other name is used for it.
   - `report`: `CatBarcodeLabelReportProvider` and `CatItemImportSheetReportProvider`.
   - `tenant`: `CatTenantProvisioningContributor`.
 - **Rule placement (checklist C12).** A rule that needs only the record being written, and the parent values passed to it, lives on that entity's Domain companion (`<Entity>Domain.create(…)` for a new record, `<Entity>Domain.from(stored, request)` for a change). Each entity block names its companion and its rules: for example RULE-CAT-001, 002, 004, 007, 022, 027 (format and base-unit difference), 028, 030, 034 and 042. The service orchestrates: it holds the transaction, the locks, the queries, the given calls and every cross-record rule (uniqueness, counts, hierarchy, flags, lookups, state invariants). Controllers hold no rule. A db-script constraint that backs a rule is translated to that rule's catalog row.
@@ -4608,7 +4764,7 @@ Every named entity carries nameAr (mandatory, ≥ 1 Arabic letter) and nameEn (o
 | erp-core · modules.events | com.erp.events.OutboxPublisher | catalogue-change events |
 | erp-core · modules.report | com.erp.report.crossmodule.PrintApi | label document (API-CAT-050, PDF) and item import sheet (API-CAT-048, XLSX), both returned through `PrintResponses.toResponseEntity` |
 | erp-core · modules.report | com.erp.report.ReportProvider | `CatBarcodeLabelReportProvider` registers report CAT_BARCODE_LABEL; `CatItemImportSheetReportProvider` registers report CAT_ITEM_IMPORT_SHEET (ADR-CAT-057) |
-| erp-core · modules.sec | com.erp.sec.permission.PermissionContributor | `CatPermissionContributor` registers the six page codes |
+| erp-core · modules.sec | com.erp.sec.permission.PermissionContributor | `CatPermissions` registers the six page codes |
 | erp-core · modules.tenant | com.erp.tenant.TenantProvisioningContributor | `CatTenantProvisioningContributor` copies the 8 Unit e-invoice codes into each new tenant; the given copies the CAT lookups and number series (ADR-CAT-058, REQ-CAT-134) |
 
 No CAT class re-creates an entity or a table the given owns; an operation on a given entity is a call through its `via`.
@@ -4617,7 +4773,7 @@ No CAT class re-creates an entity or a table the given owns; an operation on a g
 - **Manifest (C18).** The CAT jar ships `src/main/resources/META-INF/erp/modules/cat.yaml`:
   - `code: cat`, `version: 2.0.0`, `name` (ar «الكتالوج» / en "Catalog"), `package: com.erp.cat`;
   - `depends: []`, `optional-depends: []` (no business-module dependency — SRS A8);
-  - `permission-modules: [CAT]` — the `PermissionModule` CatPermissionContributor declares (menu «الكتالوج / Catalog»; also the `OWNER_MODULE_CODE` of the CAT lookup types, db-script BLOCK 8a), whose `PermissionScreen`s are the six page codes CAT_ITEMS, CAT_CATEGORIES, CAT_VARIANT_ATTRIBUTES, CAT_ITEM_IMPORT, CAT_BARCODE_LABELS, CAT_SETTINGS;
+  - `permission-modules: [CAT]` — the `PermissionModule` CatPermissions declares (menu «الكتالوج / Catalog»; also the `OWNER_MODULE_CODE` of the CAT lookup types, db-script BLOCK 8a), whose `PermissionScreen`s are the six page codes CAT_ITEMS, CAT_CATEGORIES, CAT_VARIANT_ATTRIBUTES, CAT_ITEM_IMPORT, CAT_BARCODE_LABELS, CAT_SETTINGS;
   - `api-paths: [/api/v1/cat]`, `settings: []`;
   - `events.publishes: [cat.CatalogueChanged]`, `events.consumes: []`;
   - `migrations: [V1000__cat_catalog.sql]`;
@@ -4632,6 +4788,8 @@ No CAT class re-creates an entity or a table the given owns; an operation on a g
 | CORE-GAP | Question to the core | What CAT does until the answer | ADR |
 |---|---|---|---|
 | decisions/CAT/CORE-GAP-in-process-authorization.md | How is a cross-module read API (`com.erp.<mod>.crossmodule.*`) authorized when its caller holds no permission of the owning module — a storefront shopper of SFR, a cashier of SLS, a job of INV — given that checklist C13 requires `@PreAuthorize` on every service method? | `CatCatalogueReadService` carries no `@PreAuthorize`; the HTTP facades keep the screen permission; the calling module authorizes its own caller (ADR-CAT-061). When the core answers (for example a core caller authority for in-process reads, or a documented C13 exception), CAT adopts it in a delta without changing any `CatalogueReadApi` signature | ADR-CAT-066 |
+| decisions/CAT/CORE-GAP-tenant-lookup-types.md | Can a tenant user create a lookup **type** at runtime (not only values of a type a module seeded), with values nested under it and a stable identifier another table may reference? | Variant attributes and their values stay in CAT_VAR_ATTR / CAT_VAR_ATTR_VALUE (checklist C5 / F3 deviation, justified): the tenant defines the attributes, each value belongs to one attribute, and CAT_VAR_ATTR_ASSIGN references the pair by composite FK (FK_CAT_VAR_ATTR_ASSIGN_CAT_VAR_ATTR_VALUE). When the core answers, a delta moves them to mdl only if it keeps that integrity | ADR-CAT-070 |
+| decisions/CAT/CORE-GAP-number-series-block-allocation.md | Can `NumberSeriesApi` allocate a block of n consecutive numbers in one call? | The item import (API-CAT-049) draws its codes per batch of 500 rows, one `next` call per code (each in its own transaction, as the given defines it), before the batch is inserted. When the core answers, one call per batch replaces the n calls, with no change to the endpoint | ADR-CAT-071 |
 <!-- PHASE:CORE:END -->
 
 <!-- PHASE:DATA-DOM:START traces=REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,DBF-CAT-001,DBF-CAT-002,DBF-CAT-003,DBF-CAT-004,DBF-CAT-005,DBF-CAT-006,DBF-CAT-007,DBF-CAT-008,DBF-CAT-009,DBF-CAT-010,DBF-CAT-011,DBF-CAT-012,DBF-CAT-013,DBF-CAT-014,DBF-CAT-015,DBF-CAT-016,DBF-CAT-017,DBF-CAT-018,DBF-CAT-019,DBF-CAT-020,DBF-CAT-021,DBF-CAT-022,DBF-CAT-023,DBF-CAT-024,DBF-CAT-025,DBF-CAT-026,DBF-CAT-027,DBF-CAT-028,DBF-CAT-029,DBF-CAT-030,DBF-CAT-031,DBF-CAT-032,DBF-CAT-033,DBF-CAT-034,DBF-CAT-035,DBF-CAT-036,DBF-CAT-037,DBF-CAT-038,DBF-CAT-039,DBF-CAT-040,DBF-CAT-041,DBF-CAT-042,DBF-CAT-043,DBF-CAT-044,DBF-CAT-045,DBF-CAT-046,DBF-CAT-047,DBF-CAT-048,DBF-CAT-049,DBF-CAT-050,DBF-CAT-051,DBF-CAT-052,DBF-CAT-053,DBF-CAT-054,DBF-CAT-055,DBF-CAT-056,DBF-CAT-057,DBF-CAT-058,DBF-CAT-059,DBF-CAT-060,DBF-CAT-061,DBF-CAT-062,DBF-CAT-063,DBF-CAT-064,DBF-CAT-065,DBF-CAT-066,DBF-CAT-067,DBF-CAT-068,DBF-CAT-069,DBF-CAT-070,DBF-CAT-071,DBF-CAT-072,DBF-CAT-073,DBF-CAT-074,DBF-CAT-075,DBF-CAT-076,DBF-CAT-077,DBF-CAT-078,DBF-CAT-079,DBF-CAT-080,DBF-CAT-081,DBF-CAT-082,DBF-CAT-083,DBF-CAT-084,DBF-CAT-085,DBF-CAT-086,DBF-CAT-087,DBF-CAT-088,DBF-CAT-089,DBF-CAT-090,DBF-CAT-091,DBF-CAT-092,DBF-CAT-093,DBF-CAT-094,DBF-CAT-095,DBF-CAT-096,DBF-CAT-097,DBF-CAT-098,DBF-CAT-099,DBF-CAT-100,DBF-CAT-101,DBF-CAT-102,DBF-CAT-103,DBF-CAT-104,DBF-CAT-105,DBF-CAT-106,DBF-CAT-107,DBF-CAT-108,DBF-CAT-109,DBF-CAT-110,DBF-CAT-111,DBF-CAT-112,DBF-CAT-113,DBF-CAT-114,DBF-CAT-115,DBF-CAT-116,DBF-CAT-117,DBF-CAT-118,DBF-CAT-119,DBF-CAT-120,DBF-CAT-121,DBF-CAT-122,DBF-CAT-123,DBF-CAT-124,DBF-CAT-125,DBF-CAT-126,DBF-CAT-127,DBF-CAT-128,DBF-CAT-129,DBF-CAT-130,DBF-CAT-131,DBF-CAT-132,DBF-CAT-133,DBF-CAT-134,DBF-CAT-135,DBF-CAT-136,DBF-CAT-137,DBF-CAT-138,DBF-CAT-139,DBF-CAT-140,DBF-CAT-141,DBF-CAT-142,DBF-CAT-143,DBF-CAT-144,DBF-CAT-145,DBF-CAT-146,DBF-CAT-147,DBF-CAT-148,DBF-CAT-149,DBF-CAT-150,DBF-CAT-151,DBF-CAT-152,DBF-CAT-153,DBF-CAT-154,DBF-CAT-155,DBF-CAT-156,DBF-CAT-157,DBF-CAT-158,DBF-CAT-159,DBF-CAT-160,DBF-CAT-161,REQ-CAT-049,REQ-CAT-094,REQ-CAT-122 -->
@@ -4675,7 +4833,7 @@ LOOKUP FIELDS  itemKindCode · ITEM_KIND_CODE (DBF-CAT-005) · CAT_ITEM_KIND · 
 DOMAIN RULES
 - RULE-CAT-001 — Arabic name required · scope ENT-CAT-001, 003, 004, 006, 010 · trigger on create · on update · on import row · statement: The system shall require a nameAr of 1 to 200 characters that contains at least one Arabic letter when a record of scope is saved. · DB CHK_CAT_ITEM_NAME_AR, CHK_CAT_VAR_ATTR_NAME_AR, CHK_CAT_VAR_ATTR_VALUE_NAME_AR, CHK_CAT_CATEGORY_NAME_AR, CHK_CAT_ITEM_MEDIA_NAME_AR (Arabic letter) + domain (presence, length) · layer domain (ItemDomain, VariantAttributeDomain, VariantAttributeValueDomain, CategoryDomain, ItemMediaDomain) · message CAT-422-NAME-AR-INVALID
 - RULE-CAT-002 — English name length · scope ENT-CAT-001, 003, 004, 006, 010 · trigger on create · on update · on import row · statement: The system shall prevent saving a nameEn longer than 200 characters. · DB column length 200 + domain · layer domain (the five companions of RULE-CAT-001) · message CAT-422-NAME-EN-TOO-LONG
-- RULE-CAT-003 — One active Item per name · scope ENT-CAT-001 · trigger on create · on update · on reactivation · on import row · statement: The system shall prevent saving or reactivating an Item when its nameAr, after Arabic normalisation (tashkeel and tatweel removed; أ إ آ ٱ read as ا, ة as ه, ى as ي; Latin letters lower-cased; leading, trailing and repeated spaces removed — ADR-CAT-062), equals the normalised nameAr of another active Item of the tenant or of an earlier valid row of the same import file. · DB UQ_CAT_ITEM_NAME_AR (partial, on CAT_NORMALIZE_AR(NAME_AR)) + service (QR-CAT-002; same-file rows in memory) · layer service · message CAT-409-ITEM-NAME-DUPLICATE (next action: the existing Item's code)
+- RULE-CAT-003 — One active Item per name · scope ENT-CAT-001 · trigger on create · on update · on reactivation · on import row · statement: The system shall prevent saving or reactivating an Item when its nameAr, after Arabic normalisation (tashkeel and tatweel removed; أ إ آ ٱ read as ا, ة as ه, ى as ي; Latin letters lower-cased; leading, trailing and repeated spaces removed — ADR-CAT-062), equals the normalised nameAr of another active Item of the tenant or of an earlier valid row of the same import file. · DB UQ_CAT_ITEM_NAME_AR (partial, on CAT_NORMALIZE_AR(NAME_AR)) + service (QR-CAT-002; same-file rows in memory) · layer service · message CAT-409-ITEM-NAME-DUPLICATE ({code} = the code QR-CAT-002 returns for the other active Item, or, for an earlier row of the same import file, the code the import gave to that row's Item — the next action)
 - RULE-CAT-004 — Codes are system-assigned · scope ENT-CAT-001, 002 · trigger on create · on update · statement: The system shall assign the code of an Item from series CAT_ITEM and of a Variant from series CAT_VARIANT on first save, and prevent any request from supplying or changing a code (NUMBERING: document numbers come from the core sequence module). · DB UQ_CAT_ITEM_CODE, UQ_CAT_VARIANT_CODE + domain (ItemDomain / VariantDomain reject a supplied or changed code; the service allocates it) · layer domain · message CAT-422-CODE-SYSTEM-ASSIGNED
 - RULE-CAT-005 — No record without a code · scope ENT-CAT-001, 002 · trigger on create · statement: The system shall prevent storing an Item or a Variant when the core number series returns no code. · DB — · layer service (transaction rolled back) · message CAT-500-CODE-NOT-ISSUED
 - RULE-CAT-006 — Lookup-backed fields hold active values · scope ENT-CAT-001, 002, 008, 009, 011, 012 · trigger on create · on update · on import row · statement: The system shall require every changed lookup-backed field to hold an active value of its lookup key (A6), and shall keep an unchanged value that was deactivated later. · DB — (D-P2-05) · layer service via MdlLookupApi · message CAT-422-LOOKUP-VALUE-INACTIVE
@@ -4693,8 +4851,8 @@ DOMAIN RULES
 - RULE-CAT-048 — Deactivation keeps records for consumers (ARCH-5) · scope ENT-CAT-001, 002, 006, 007, 008, 009 · trigger on deactivation · statement: The system shall deactivate a SHARED (owner) record by setting isActiveFl to false, never by deletion, keep it readable by identifier for consuming modules, exclude it from new selections and publish a catalogue-change event with change kind DEACTIVATED. · DB — (no DELETE statement exists) · layer service · message CAT-200-DEACTIVATED
 - RULE-CAT-049 — Change events only after commit · scope ENT-CAT-001, 002, 005, 007, 008, 009, 010 · trigger on commit or rollback of a catalogue change · statement: The system shall record each catalogue-change event in the same transaction as the change and deliver it only after commit. · DB — · layer service via OutboxPublisher · message CAT-500-CHANGE-NOT-SAVED
 - RULE-CAT-050 — A reactivated Item has an active Variant · scope ENT-CAT-001, 002 · trigger on reactivation · statement: The system shall prevent reactivating an Item that has no active Variant. · DB — · layer service (QR-CAT-015 under the Item lock) · message CAT-422-ITEM-NO-ACTIVE-VARIANT
-- RULE-CAT-053 — An inactive parent refuses child writes · scope ENT-CAT-001, 002, 005, 007, 008, 009, 010 · trigger on Item update (API-CAT-003) · on Variant generation (006) · on Variant e-invoice override (008) · on Item unit create or update (010, 012) · on barcode create (014, 015) · on Bundle component save (017) · on image create or update (018, 019) · statement: The system shall prevent updating an inactive Item, and creating or changing a Variant, Variant attribute assignment, Bundle component line, Item unit or image of an inactive Item, and adding a barcode to, or setting the e-invoice override of, a Variant that is inactive or belongs to an inactive Item. Deactivating a child record stays allowed. · DB — · layer service (the Item's isActiveFl DBF-CAT-014, and for 008 / 014 / 015 the Variant's isActiveFl DBF-CAT-027, read under the Item lock QR-CAT-010, so a parallel deactivation of the Item cannot interleave — ADR-CAT-063) · message CAT-422-PARENT-INACTIVE
-STATE MACHINE  status columns IS_ACTIVE_FL (DBF-CAT-014) × PUBLISH_STATE_CODE (DBF-CAT-013) · values ACTIVE·UNPUBLISHED, ACTIVE·PUBLISHED, INACTIVE·UNPUBLISHED · initial ACTIVE·UNPUBLISHED (create) · transitions: publish ACTIVE·UNPUBLISHED → ACTIVE·PUBLISHED (owner, API-CAT-005, RULE-CAT-041); unpublish ACTIVE·PUBLISHED → ACTIVE·UNPUBLISHED (owner, API-CAT-005); deactivate ACTIVE·* → INACTIVE·UNPUBLISHED (owner, API-CAT-004, RULE-CAT-021, 041, 048); reactivate INACTIVE·UNPUBLISHED → ACTIVE·UNPUBLISHED (owner, API-CAT-005, stays UNPUBLISHED; guarded by the ACTIVE-state invariants of SRS A7 — RULE-CAT-050, 026, 019, 003, ADR-CAT-059) · terminal none · invalid transition (publish while inactive / without active Variant) → RULE-CAT-041
+- RULE-CAT-053 — An inactive parent refuses child writes · scope ENT-CAT-001, 002, 008, 009, 010 · trigger on Item update that changes more than categoryFk (API-CAT-003) · on Variant e-invoice override (008) · on Item unit create or update (010, 012) · on barcode create (014, 015) · on image create or update (018, 019) · statement: The system shall prevent changing any field of an inactive Item other than categoryFk, creating or changing an Item unit or image of an inactive Item, and adding a barcode to, or setting the e-invoice override of, a Variant that is inactive or belongs to an inactive Item. Three repair operations stay allowed on an inactive Item, each under its own rules: Variant generation (API-CAT-006 — RULE-CAT-008, 012, 013, 014, 020, 052), an update whose only change is categoryFk (API-CAT-003 — RULE-CAT-026) and the replacement of the Bundle components (API-CAT-017 — RULE-CAT-008, 018, 019) — ADR-CAT-068. Deactivating a child record stays allowed. · DB — · layer service (the Item's isActiveFl DBF-CAT-014, and for 008 / 014 / 015 the Variant's isActiveFl DBF-CAT-027, read under the Item lock QR-CAT-010, so a parallel deactivation of the Item cannot interleave — ADR-CAT-063) · message CAT-422-PARENT-INACTIVE
+STATE MACHINE  status columns IS_ACTIVE_FL (DBF-CAT-014) × PUBLISH_STATE_CODE (DBF-CAT-013) · values ACTIVE·UNPUBLISHED, ACTIVE·PUBLISHED, INACTIVE·UNPUBLISHED · initial ACTIVE·UNPUBLISHED (create) · transitions: publish ACTIVE·UNPUBLISHED → ACTIVE·PUBLISHED (owner, API-CAT-005, RULE-CAT-041); unpublish ACTIVE·PUBLISHED → ACTIVE·UNPUBLISHED (owner, API-CAT-005); deactivate ACTIVE·* → INACTIVE·UNPUBLISHED (owner, API-CAT-004, RULE-CAT-021, 041, 048); reactivate INACTIVE·UNPUBLISHED → ACTIVE·UNPUBLISHED (owner, API-CAT-005, stays UNPUBLISHED; guarded by the ACTIVE-state invariants of SRS A7 — RULE-CAT-050, 026, 019, 003, ADR-CAT-059; each broken invariant has a repair allowed while INACTIVE — Variant generation API-CAT-006, a categoryFk-only update API-CAT-003, Bundle components API-CAT-017, or the Category's own reactivation API-CAT-053 — ADR-CAT-068) · terminal none · invalid transition (publish while inactive / without active Variant) → RULE-CAT-041
 CROSS-MODULE   none — no XM id touches this entity (read by other modules through `CatalogueReadApi`, PHASE SVC-API)
 OPERATIONS     VIEW, CREATE, UPDATE, DELETE
 DOMAIN         ItemDomain.create(request, defaults) · ItemDomain.from(stored, request) — RULE-CAT-001, 002, 004 (code supplied or changed), 007, 022, 042 (pair and format); the service orchestrates RULE-CAT-003, 005, 006, 008, 009, 019, 021, 026, 041, 048, 050, 053 and the locks
@@ -4792,10 +4950,10 @@ DEFAULT FIELDS master → nameAr, nameEn, code, isActiveFl + audit
 DTO MEMBERSHIP create-request: code, nameAr, nameEn, parentCategoryFk, sortOrder (default next under the parent) · update-request: nameAr, nameEn, parentCategoryFk, sortOrder, version (code excluded) · response CategoryView / CategoryNode
 LOOKUP FIELDS  none
 DOMAIN RULES   (RULE-CAT-001, 002, 048 — full text under ENT-CAT-001)
-- RULE-CAT-023 — Category hierarchy · scope ENT-CAT-006 · trigger on create · on update · statement: The system shall require the parent Category to be active, to be neither the Category itself nor one of its sub-categories, and the resulting depth to be at most 5 levels. · DB CHK_CAT_CATEGORY_PARENT_CATEGORY_FK (not itself) + service (active, no cycle, depth — QR-CAT-037 under the tree lock) · layer service · message CAT-422-CATEGORY-PARENT-INVALID
-- RULE-CAT-024 — Category code and sibling name unique · scope ENT-CAT-006 · trigger on create · on update · statement: The system shall require a code of 1 to 30 Latin letters, digits or hyphens unique per tenant, and a nameAr unique among the active Categories of the same parent. · DB UQ_CAT_CATEGORY_CODE, UQ_CAT_CATEGORY_NAME_AR, CHK_CAT_CATEGORY_CODE · layer service (QR-CAT-033) + constraint translation · message CAT-409-CATEGORY-DUPLICATE
+- RULE-CAT-023 — Category hierarchy · scope ENT-CAT-006 · trigger on create · on update · on reactivation (API-CAT-053) · statement: The system shall require the parent Category to be active, to be neither the Category itself nor one of its sub-categories, and the resulting depth to be at most 5 levels; a Category being reactivated must have an empty or active parent. · DB CHK_CAT_CATEGORY_PARENT_CATEGORY_FK (not itself) + service (active, no cycle, depth — QR-CAT-037 under the tree lock) · layer service · message CAT-422-CATEGORY-PARENT-INVALID
+- RULE-CAT-024 — Category code and sibling name unique · scope ENT-CAT-006 · trigger on create · on update · on reactivation (API-CAT-053) · statement: The system shall require a code of 1 to 30 Latin letters, digits or hyphens unique per tenant, and a nameAr unique among the active Categories of the same parent; a Category being reactivated keeps its code and must not carry the nameAr of another active Category of its parent. · DB UQ_CAT_CATEGORY_CODE, UQ_CAT_CATEGORY_NAME_AR, CHK_CAT_CATEGORY_CODE · layer service (QR-CAT-033) + constraint translation · message CAT-409-CATEGORY-DUPLICATE
 - RULE-CAT-025 — Category in use stays active · scope ENT-CAT-006 · trigger on deactivation · statement: The system shall prevent deactivating a Category that has active sub-categories or active Items. · DB — · layer service (QR-CAT-038 under the Category lock) · message CAT-409-CATEGORY-IN-USE ({count})
-STATE MACHINE  IS_ACTIVE_FL (DBF-CAT-076) only — deactivate via API-CAT-024
+STATE MACHINE  IS_ACTIVE_FL (DBF-CAT-076) only — deactivate via API-CAT-024 (RULE-CAT-025), reactivate via API-CAT-053 (RULE-CAT-023, 024 — ADR-CAT-069); the code is kept, so a mistaken deactivation never loses it
 CROSS-MODULE   none
 OPERATIONS     VIEW, CREATE, UPDATE, DELETE
 DOMAIN         CategoryDomain.create(request) · CategoryDomain.from(stored, request) — RULE-CAT-001, 002, 024 (code format), 023 (not its own parent); active parent, cycle, depth, sibling names and RULE-CAT-025 in the service
@@ -4969,9 +5127,9 @@ DEFAULT FIELDS lookup → code, nameAr, nameEn, sortOrder, isActiveFl (+ the giv
 DTO MEMBERSHIP create-request: code, nameAr, nameEn, sortOrder (default next) · update-request: nameAr, nameEn, sortOrder, version · response VariantAttributeView with its values
 LOOKUP FIELDS  none
 DOMAIN RULES   (RULE-CAT-001, 002, 008 — full text under ENT-CAT-001)
-- RULE-CAT-016 — Attribute and value codes and names unique · scope ENT-CAT-003, 004 · trigger on create · on update · statement: The system shall require a code of 1 to 30 Latin letters, digits or hyphens, unique per tenant for a Variant attribute and per attribute for a value, and a nameAr unique among the active records of the same scope. · DB UQ_CAT_VAR_ATTR_CODE, UQ_CAT_VAR_ATTR_NAME_AR, UQ_CAT_VAR_ATTR_VALUE_CODE, UQ_CAT_VAR_ATTR_VALUE_NAME_AR, CHK_CAT_VAR_ATTR_CODE, CHK_CAT_VAR_ATTR_VALUE_CODE · layer service (QR-CAT-023 / QR-CAT-028) + constraint translation · message CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+- RULE-CAT-016 — Attribute and value codes and names unique · scope ENT-CAT-003, 004 · trigger on create · on update · on reactivation (API-CAT-054, 055) · statement: The system shall require a code of 1 to 30 Latin letters, digits or hyphens, unique per tenant for a Variant attribute and per attribute for a value, and a nameAr unique among the active records of the same scope; a record being reactivated keeps its code and must not carry the nameAr of another active record of its scope. · DB UQ_CAT_VAR_ATTR_CODE, UQ_CAT_VAR_ATTR_NAME_AR, UQ_CAT_VAR_ATTR_VALUE_CODE, UQ_CAT_VAR_ATTR_VALUE_NAME_AR, CHK_CAT_VAR_ATTR_CODE, CHK_CAT_VAR_ATTR_VALUE_CODE · layer service (QR-CAT-023 / QR-CAT-028) + constraint translation · message CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
 - RULE-CAT-017 — Attribute or value in use stays active · scope ENT-CAT-003, 004 · trigger on deactivation · statement: The system shall prevent deactivating a Variant attribute or value that an active assignment of an active Variant carries. · DB — · layer service (QR-CAT-021 under the row lock) · message CAT-409-ATTRIBUTE-VALUE-IN-USE ({count})
-STATE MACHINE  IS_ACTIVE_FL (DBF-CAT-040) only — deactivate via API-CAT-028
+STATE MACHINE  IS_ACTIVE_FL (DBF-CAT-040) only — deactivate via API-CAT-028 (RULE-CAT-017), reactivate via API-CAT-054 (RULE-CAT-016 — ADR-CAT-069); its values keep their own state
 CROSS-MODULE   none
 OPERATIONS     VIEW, CREATE, UPDATE, DELETE
 DOMAIN         VariantAttributeDomain.create(request) · VariantAttributeDomain.from(stored, request) — RULE-CAT-001, 002, 016 (code format); uniqueness and RULE-CAT-017 in the service
@@ -5001,7 +5159,7 @@ DEFAULT FIELDS lookup → code, nameAr, nameEn, sortOrder, isActiveFl (+ tenantI
 DTO MEMBERSHIP create-request: code, nameAr, nameEn, sortOrder (default next within the attribute); variantAttributeFk from the path · update-request: nameAr, nameEn, sortOrder, version · response VariantAttributeValueView
 LOOKUP FIELDS  none
 DOMAIN RULES   (RULE-CAT-001, 002, 008 — under ENT-CAT-001; RULE-CAT-016, 017 — under ENT-CAT-003)
-STATE MACHINE  IS_ACTIVE_FL (DBF-CAT-052) only — deactivate via API-CAT-031
+STATE MACHINE  IS_ACTIVE_FL (DBF-CAT-052) only — deactivate via API-CAT-031 (RULE-CAT-017), reactivate via API-CAT-055 under an active attribute (RULE-CAT-016 — ADR-CAT-069)
 CROSS-MODULE   none
 OPERATIONS     VIEW, CREATE, UPDATE, DELETE
 DOMAIN         VariantAttributeValueDomain.create(request, attribute) · VariantAttributeValueDomain.from(stored, request) — RULE-CAT-001, 002, 016 (code format); uniqueness and RULE-CAT-017 in the service
@@ -5072,12 +5230,12 @@ REPOSITORY OPS QR-CAT-065, QR-CAT-066, QR-CAT-067, QR-CAT-068, QR-CAT-069, QR-CA
 <!-- SUB:DATA-DOM-LOOKUP:END -->
 <!-- PHASE:DATA-DOM:END -->
 
-<!-- PHASE:SVC-API:START traces=REQ-CAT-135,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,DBF-CAT-001,DBF-CAT-002,DBF-CAT-003,DBF-CAT-004,DBF-CAT-005,DBF-CAT-006,DBF-CAT-007,DBF-CAT-008,DBF-CAT-009,DBF-CAT-010,DBF-CAT-011,DBF-CAT-012,DBF-CAT-013,DBF-CAT-014,DBF-CAT-015,DBF-CAT-017,DBF-CAT-020,DBF-CAT-022,DBF-CAT-023,DBF-CAT-024,DBF-CAT-025,DBF-CAT-026,DBF-CAT-027,DBF-CAT-028,DBF-CAT-030,DBF-CAT-033,DBF-CAT-035,DBF-CAT-036,DBF-CAT-037,DBF-CAT-038,DBF-CAT-039,DBF-CAT-040,DBF-CAT-042,DBF-CAT-047,DBF-CAT-048,DBF-CAT-049,DBF-CAT-050,DBF-CAT-051,DBF-CAT-052,DBF-CAT-053,DBF-CAT-055,DBF-CAT-061,DBF-CAT-062,DBF-CAT-063,DBF-CAT-064,DBF-CAT-071,DBF-CAT-072,DBF-CAT-073,DBF-CAT-074,DBF-CAT-075,DBF-CAT-076,DBF-CAT-077,DBF-CAT-079,DBF-CAT-084,DBF-CAT-085,DBF-CAT-086,DBF-CAT-087,DBF-CAT-088,DBF-CAT-089,DBF-CAT-096,DBF-CAT-097,DBF-CAT-098,DBF-CAT-099,DBF-CAT-100,DBF-CAT-101,DBF-CAT-102,DBF-CAT-104,DBF-CAT-109,DBF-CAT-110,DBF-CAT-111,DBF-CAT-112,DBF-CAT-113,DBF-CAT-114,DBF-CAT-118,DBF-CAT-121,DBF-CAT-122,DBF-CAT-123,DBF-CAT-124,DBF-CAT-125,DBF-CAT-126,DBF-CAT-127,DBF-CAT-128,DBF-CAT-129,DBF-CAT-131,DBF-CAT-136,DBF-CAT-137,DBF-CAT-138,DBF-CAT-139,DBF-CAT-140,DBF-CAT-141,DBF-CAT-142,DBF-CAT-143,DBF-CAT-145,DBF-CAT-150,DBF-CAT-151,DBF-CAT-152,DBF-CAT-153,DBF-CAT-154,DBF-CAT-155,DBF-CAT-157,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127 -->
+<!-- PHASE:SVC-API:START traces=REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,REQ-CAT-135,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,DBF-CAT-001,DBF-CAT-002,DBF-CAT-003,DBF-CAT-004,DBF-CAT-005,DBF-CAT-006,DBF-CAT-007,DBF-CAT-008,DBF-CAT-009,DBF-CAT-010,DBF-CAT-011,DBF-CAT-012,DBF-CAT-013,DBF-CAT-014,DBF-CAT-015,DBF-CAT-017,DBF-CAT-020,DBF-CAT-022,DBF-CAT-023,DBF-CAT-024,DBF-CAT-025,DBF-CAT-026,DBF-CAT-027,DBF-CAT-028,DBF-CAT-030,DBF-CAT-033,DBF-CAT-035,DBF-CAT-036,DBF-CAT-037,DBF-CAT-038,DBF-CAT-039,DBF-CAT-040,DBF-CAT-042,DBF-CAT-047,DBF-CAT-048,DBF-CAT-049,DBF-CAT-050,DBF-CAT-051,DBF-CAT-052,DBF-CAT-053,DBF-CAT-055,DBF-CAT-061,DBF-CAT-062,DBF-CAT-063,DBF-CAT-064,DBF-CAT-071,DBF-CAT-072,DBF-CAT-073,DBF-CAT-074,DBF-CAT-075,DBF-CAT-076,DBF-CAT-077,DBF-CAT-079,DBF-CAT-084,DBF-CAT-085,DBF-CAT-086,DBF-CAT-087,DBF-CAT-088,DBF-CAT-089,DBF-CAT-096,DBF-CAT-097,DBF-CAT-098,DBF-CAT-099,DBF-CAT-100,DBF-CAT-101,DBF-CAT-102,DBF-CAT-104,DBF-CAT-109,DBF-CAT-110,DBF-CAT-111,DBF-CAT-112,DBF-CAT-113,DBF-CAT-114,DBF-CAT-118,DBF-CAT-121,DBF-CAT-122,DBF-CAT-123,DBF-CAT-124,DBF-CAT-125,DBF-CAT-126,DBF-CAT-127,DBF-CAT-128,DBF-CAT-129,DBF-CAT-131,DBF-CAT-136,DBF-CAT-137,DBF-CAT-138,DBF-CAT-139,DBF-CAT-140,DBF-CAT-141,DBF-CAT-142,DBF-CAT-143,DBF-CAT-145,DBF-CAT-150,DBF-CAT-151,DBF-CAT-152,DBF-CAT-153,DBF-CAT-154,DBF-CAT-155,DBF-CAT-157,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127 -->
 ## PHASE SVC-API — services and endpoints (R3)
 
-52 endpoints (≥ 8), grouped: SUB SVC-API-CRUD (create / read-by-id / update / deactivate, API-CAT-001 … 037), SUB SVC-API-SEARCH (lists, searches, lookups, API-CAT-038 … 047 and API-CAT-052), SUB SVC-API-INT (custom operations — import, labels, capability check — and the in-process contract surface, API-CAT-048 … 051). Line grammar used by every block: `Request` names path / query / body fields as `name: type [required] [DBF-…]`; `Response` names status · envelope · DTO (DTOs in PHASE DOC); `Errors` lists Error Catalog codes; every RULE named in `Validations` has its catalog row. Every mutating endpoint records the catalogue-change event of its entity (PHASE CORE) — that is what `Honours: CON-CAT-018` on a block means.
+55 endpoints (≥ 8), grouped: SUB SVC-API-CRUD (create / read-by-id / update / deactivate / reactivate, API-CAT-001 … 037 and API-CAT-053 … 055), SUB SVC-API-SEARCH (lists, searches, lookups, API-CAT-038 … 047 and API-CAT-052), SUB SVC-API-INT (custom operations — import, labels, capability check — and the in-process contract surface, API-CAT-048 … 051). Line grammar used by every block: `Request` names path / query / body fields as `name: type [required] [DBF-…]`; `Response` names status · envelope · DTO (DTOs in PHASE DOC); `Errors` lists Error Catalog codes; every RULE named in `Validations` has its catalog row. Every mutating endpoint records the catalogue-change event of its entity (PHASE CORE) — that is what `Honours: CON-CAT-018` on a block means.
 
-<!-- SUB:SVC-API-CRUD:START traces=REQ-CAT-135,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,DBF-CAT-001,DBF-CAT-002,DBF-CAT-003,DBF-CAT-004,DBF-CAT-005,DBF-CAT-006,DBF-CAT-007,DBF-CAT-008,DBF-CAT-009,DBF-CAT-010,DBF-CAT-011,DBF-CAT-012,DBF-CAT-013,DBF-CAT-014,DBF-CAT-015,DBF-CAT-017,DBF-CAT-020,DBF-CAT-022,DBF-CAT-023,DBF-CAT-024,DBF-CAT-025,DBF-CAT-026,DBF-CAT-027,DBF-CAT-028,DBF-CAT-030,DBF-CAT-033,DBF-CAT-035,DBF-CAT-036,DBF-CAT-037,DBF-CAT-038,DBF-CAT-039,DBF-CAT-040,DBF-CAT-042,DBF-CAT-047,DBF-CAT-048,DBF-CAT-049,DBF-CAT-050,DBF-CAT-051,DBF-CAT-052,DBF-CAT-053,DBF-CAT-055,DBF-CAT-061,DBF-CAT-062,DBF-CAT-063,DBF-CAT-064,DBF-CAT-071,DBF-CAT-072,DBF-CAT-073,DBF-CAT-074,DBF-CAT-075,DBF-CAT-076,DBF-CAT-077,DBF-CAT-079,DBF-CAT-084,DBF-CAT-085,DBF-CAT-086,DBF-CAT-087,DBF-CAT-088,DBF-CAT-089,DBF-CAT-096,DBF-CAT-097,DBF-CAT-098,DBF-CAT-099,DBF-CAT-100,DBF-CAT-101,DBF-CAT-102,DBF-CAT-104,DBF-CAT-109,DBF-CAT-110,DBF-CAT-111,DBF-CAT-112,DBF-CAT-113,DBF-CAT-114,DBF-CAT-121,DBF-CAT-122,DBF-CAT-123,DBF-CAT-124,DBF-CAT-125,DBF-CAT-126,DBF-CAT-127,DBF-CAT-128,DBF-CAT-129,DBF-CAT-131,DBF-CAT-136,DBF-CAT-137,DBF-CAT-138,DBF-CAT-139,DBF-CAT-140,DBF-CAT-141,DBF-CAT-142,DBF-CAT-143,DBF-CAT-145,DBF-CAT-150,DBF-CAT-151,DBF-CAT-152,DBF-CAT-153,DBF-CAT-154,DBF-CAT-155,DBF-CAT-157,REQ-CAT-001,REQ-CAT-002,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-096,REQ-CAT-098,REQ-CAT-099,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124 -->
+<!-- SUB:SVC-API-CRUD:START traces=REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,REQ-CAT-135,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,DBF-CAT-001,DBF-CAT-002,DBF-CAT-003,DBF-CAT-004,DBF-CAT-005,DBF-CAT-006,DBF-CAT-007,DBF-CAT-008,DBF-CAT-009,DBF-CAT-010,DBF-CAT-011,DBF-CAT-012,DBF-CAT-013,DBF-CAT-014,DBF-CAT-015,DBF-CAT-017,DBF-CAT-020,DBF-CAT-022,DBF-CAT-023,DBF-CAT-024,DBF-CAT-025,DBF-CAT-026,DBF-CAT-027,DBF-CAT-028,DBF-CAT-030,DBF-CAT-033,DBF-CAT-035,DBF-CAT-036,DBF-CAT-037,DBF-CAT-038,DBF-CAT-039,DBF-CAT-040,DBF-CAT-042,DBF-CAT-047,DBF-CAT-048,DBF-CAT-049,DBF-CAT-050,DBF-CAT-051,DBF-CAT-052,DBF-CAT-053,DBF-CAT-055,DBF-CAT-061,DBF-CAT-062,DBF-CAT-063,DBF-CAT-064,DBF-CAT-071,DBF-CAT-072,DBF-CAT-073,DBF-CAT-074,DBF-CAT-075,DBF-CAT-076,DBF-CAT-077,DBF-CAT-079,DBF-CAT-084,DBF-CAT-085,DBF-CAT-086,DBF-CAT-087,DBF-CAT-088,DBF-CAT-089,DBF-CAT-096,DBF-CAT-097,DBF-CAT-098,DBF-CAT-099,DBF-CAT-100,DBF-CAT-101,DBF-CAT-102,DBF-CAT-104,DBF-CAT-109,DBF-CAT-110,DBF-CAT-111,DBF-CAT-112,DBF-CAT-113,DBF-CAT-114,DBF-CAT-121,DBF-CAT-122,DBF-CAT-123,DBF-CAT-124,DBF-CAT-125,DBF-CAT-126,DBF-CAT-127,DBF-CAT-128,DBF-CAT-129,DBF-CAT-131,DBF-CAT-136,DBF-CAT-137,DBF-CAT-138,DBF-CAT-139,DBF-CAT-140,DBF-CAT-141,DBF-CAT-142,DBF-CAT-143,DBF-CAT-145,DBF-CAT-150,DBF-CAT-151,DBF-CAT-152,DBF-CAT-153,DBF-CAT-154,DBF-CAT-155,DBF-CAT-157,REQ-CAT-001,REQ-CAT-002,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-096,REQ-CAT-098,REQ-CAT-099,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124 -->
 ### SUB SVC-API-CRUD
 
 <!-- API:API-CAT-001:START traces=REQ-CAT-131,REQ-CAT-134,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-011,REQ-CAT-013,REQ-CAT-015,REQ-CAT-016,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-056,REQ-CAT-059,REQ-CAT-060,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-117,REQ-CAT-123,DBF-CAT-002,DBF-CAT-003,DBF-CAT-004,DBF-CAT-005,DBF-CAT-006,DBF-CAT-007,DBF-CAT-008,DBF-CAT-009,DBF-CAT-010,DBF-CAT-011,DBF-CAT-012,DBF-CAT-013,DBF-CAT-014,DBF-CAT-015,DBF-CAT-023,DBF-CAT-024,DBF-CAT-027,DBF-CAT-028,DBF-CAT-085,DBF-CAT-086,DBF-CAT-087,DBF-CAT-088,DBF-CAT-089 -->
@@ -5122,11 +5280,11 @@ Endpoint     : /api/v1/cat/items/{id}   verb: PUT
 Layers       : CatItemController.update → CatItemService.update
 Request      : path {id: int64 required DBF-CAT-001} · body ItemUpdateRequest {nameAr: string(200) required DBF-CAT-003; nameEn: string(200) DBF-CAT-004; categoryFk: int64 DBF-CAT-015; brandCode: string(50) DBF-CAT-007; taxClassCode: string(50) required DBF-CAT-008; einvoiceCodeTypeCode: string(50) DBF-CAT-009; einvoiceCode: string(100) DBF-CAT-010; descriptionAr: string(2000) DBF-CAT-011; descriptionEn: string(2000) DBF-CAT-012; version: int64 required DBF-CAT-017; code: string(20); itemKindCode: string(50); baseUomCode: string(50)} · code / itemKindCode / baseUomCode are echoes only, rejected when they differ from the stored value · excluded system fields: itemPk, publishStateCode, isActiveFl, tenantId, audit
 Response     : 200 · ApiResponse<ItemDetail> · paginated: no
-Validations  : RULE-CAT-001, RULE-CAT-002 · RULE-CAT-004 (code changed) · RULE-CAT-022 (itemKindCode changed) · RULE-CAT-007 (baseUomCode changed) · RULE-CAT-006 (only changed lookup fields; an unchanged value deactivated later is kept — REQ-CAT-076) · RULE-CAT-042 · RULE-CAT-026 (changed categoryFk) · RULE-CAT-003 (excluding this Item) · RULE-CAT-049 · the echoed version must equal the stored one (CAT-409-STALE-VERSION — REQ-CAT-133) · an itemPk of another tenant answers CAT-404-NOT-FOUND and changes nothing (REQ-CAT-132) · RULE-CAT-053 (an inactive Item takes no update; it is reactivated first — REQ-CAT-135, ADR-CAT-063)
+Validations  : RULE-CAT-001, RULE-CAT-002 · RULE-CAT-004 (code changed) · RULE-CAT-022 (itemKindCode changed) · RULE-CAT-007 (baseUomCode changed) · RULE-CAT-006 (only changed lookup fields; an unchanged value deactivated later is kept — REQ-CAT-076) · RULE-CAT-042 · RULE-CAT-026 (changed categoryFk) · RULE-CAT-003 (excluding this Item) · RULE-CAT-049 · the echoed version must equal the stored one (CAT-409-STALE-VERSION — REQ-CAT-133) · an itemPk of another tenant answers CAT-404-NOT-FOUND and changes nothing (REQ-CAT-132) · RULE-CAT-053 (on an inactive Item the only change accepted is categoryFk: every other field of the body must equal the stored value, else CAT-422-PARENT-INACTIVE; a categoryFk-only change is the repair of RULE-CAT-026 and is still checked by RULE-CAT-026 and the version — REQ-CAT-135, ADR-CAT-063, ADR-CAT-068)
 Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-409-STALE-VERSION, CAT-500-SERVER-ERROR, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-ITEM-KIND-FIXED, CAT-422-BASE-UOM-FIXED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID, CAT-422-CATEGORY-INACTIVE, CAT-409-ITEM-NAME-DUPLICATE, CAT-422-PARENT-INACTIVE, CAT-500-CHANGE-NOT-SAVED
-Orchestration : lock the Item (QR-CAT-010) and refuse an inactive one (DBF-CAT-014, RULE-CAT-053) → ItemDomain.from(stored, request) compares the echoed code / itemKindCode / baseUomCode (RULE-CAT-004, 022, 007) and checks names and the e-invoice pair (RULE-CAT-001, 002, 042) → the service validates the changed fields (MdlLookupApi; Category QR-CAT-032 FOR SHARE; name QR-CAT-002) → write nameAr, nameEn, categoryFk, brandCode, taxClassCode, einvoiceCodeTypeCode, einvoiceCode, descriptionAr, descriptionEn with the version check (QR-CAT-004; the platform sets updatedBy DBF-CAT-020) → record cat.CatalogueChanged UPDATED → return ItemDetail
+Orchestration : lock the Item (QR-CAT-010) → when it is inactive (DBF-CAT-014): compare every body field with the stored value and refuse any change other than categoryFk (DBF-CAT-015) with RULE-CAT-053; a categoryFk-only change goes on to the Category check and the write, and records cat.CatalogueChanged UPDATED (ADR-CAT-068) → ItemDomain.from(stored, request) compares the echoed code / itemKindCode / baseUomCode (RULE-CAT-004, 022, 007) and checks names and the e-invoice pair (RULE-CAT-001, 002, 042) → the service validates the changed fields (MdlLookupApi; Category QR-CAT-032 FOR SHARE; name QR-CAT-002) → write nameAr, nameEn, categoryFk, brandCode, taxClassCode, einvoiceCodeTypeCode, einvoiceCode, descriptionAr, descriptionEn with the version check (QR-CAT-004; the platform sets updatedBy DBF-CAT-020) → record cat.CatalogueChanged UPDATED → return ItemDetail
 Repository   : QR-CAT-010 FIND_ONE (FOR UPDATE) · QR-CAT-032 FIND_ONE · QR-CAT-002 EXISTS · QR-CAT-004 UPDATE · join NONE · READ_WRITE
-Concurrency  : lost update — the version check (optimistic lock on DBF-CAT-017) makes the second of two parallel updates fail with CAT-409-STALE-VERSION; name — UQ_CAT_ITEM_NAME_AR translated to CAT-409-ITEM-NAME-DUPLICATE; the Item lock orders the update against a parallel deactivation, so RULE-CAT-053 decides on the committed state
+Concurrency  : lost update — the version check (optimistic lock on DBF-CAT-017) makes the second of two parallel updates fail with CAT-409-STALE-VERSION; name — UQ_CAT_ITEM_NAME_AR translated to CAT-409-ITEM-NAME-DUPLICATE; the Item lock orders the update against a parallel deactivation or reactivation, so RULE-CAT-053 and its categoryFk-only exception decide on the committed state
 Security     : SCR-REQ-CAT-001 Items · PERM_CAT_ITEMS_UPDATE
 Localization : messages ar + en from the Error Catalog
 <!-- API:API-CAT-003:END -->
@@ -5154,9 +5312,9 @@ Entity       : ENT-CAT-001 · operation UPDATE · serves SCR-REQ-CAT-001 "reacti
 Honours: CON-CAT-001, CON-CAT-018
 Endpoint     : /api/v1/cat/items/{id}   verb: PATCH
 Layers       : CatItemController.changeState → CatItemService.reactivate / publish / unpublish
-Request      : path {id: int64 required DBF-CAT-001} · body ItemStateRequest {isActiveFl: boolean DBF-CAT-014; publishStateCode: string(50) DBF-CAT-013} · exactly one of the two; isActiveFl accepts only true (deactivation is DELETE) — ADR-CAT-048
+Request      : path {id: int64 required DBF-CAT-001} · body ItemStateRequest {isActiveFl: boolean DBF-CAT-014; publishStateCode: string(50) DBF-CAT-013} · exactly one of the two; isActiveFl accepts only true (deactivation is DELETE) — ADR-CAT-048 · schema: `isActiveFl` enum [true]; `oneOf` [required isActiveFl, required publishStateCode] with `minProperties: 1`, `maxProperties: 1` and no other property, so an empty body, a body with both fields or `isActiveFl: false` fails the document check (CAT-400-REQUEST-INVALID) before the service runs
 Response     : 200 · ApiResponse<ItemDetail> · paginated: no
-Validations  : reactivate — the ACTIVE-state invariants of SRS A7 are re-established (ADR-CAT-059), in this order: RULE-CAT-050 (≥ 1 active Variant), RULE-CAT-026 (categoryFk empty or an active Category), RULE-CAT-019 (kind BUNDLE: every active line names an active Variant of an active STANDARD Item), RULE-CAT-003 (the normalised name is still unique among active Items) · publish — RULE-CAT-006 (publishStateCode an active CAT_PUBLISH_STATE value), RULE-CAT-041 (Item active and ≥ 1 active Variant) · RULE-CAT-049
+Validations  : reactivate — the ACTIVE-state invariants of SRS A7 are re-established (ADR-CAT-059), in this order: RULE-CAT-050 (≥ 1 active Variant), RULE-CAT-026 (categoryFk empty or an active Category), RULE-CAT-019 (kind BUNDLE: every active line names an active Variant of an active STANDARD Item), RULE-CAT-003 (the normalised name is still unique among active Items); each refusal names a repair that stays allowed on the inactive Item (ADR-CAT-068): RULE-CAT-050 → generate Variants (API-CAT-006), RULE-CAT-026 → change only categoryFk (API-CAT-003) or reactivate the Category (API-CAT-053), RULE-CAT-019 → replace the Bundle components (API-CAT-017) · publish — RULE-CAT-006 (publishStateCode an active CAT_PUBLISH_STATE value), RULE-CAT-041 (Item active and ≥ 1 active Variant) · RULE-CAT-049
 Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-500-SERVER-ERROR, CAT-409-ITEM-NAME-DUPLICATE, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-PUBLISH-BLOCKED, CAT-422-ITEM-NO-ACTIVE-VARIANT, CAT-422-CATEGORY-INACTIVE, CAT-422-BUNDLE-COMPONENT-INVALID, CAT-500-CHANGE-NOT-SAVED
 Orchestration : lock the Item (QR-CAT-010) → reactivate: count its active Variants (QR-CAT-015), read its Category FOR SHARE (QR-CAT-032), for a BUNDLE read the active lines (QR-CAT-039) and their Variants and Items FOR SHARE (QR-CAT-017), check the name (QR-CAT-002), set isActiveFl true (DBF-CAT-014), keep publishStateCode UNPUBLISHED (DBF-CAT-013), record REACTIVATED → publish: count active Variants (QR-CAT-015), set PUBLISHED (DBF-CAT-013), record UPDATED → unpublish: set UNPUBLISHED (DBF-CAT-013), isActiveFl unchanged, record UPDATED → write (QR-CAT-004) → return ItemDetail
 Repository   : QR-CAT-010 FIND_ONE (FOR UPDATE) · QR-CAT-015 COUNT · QR-CAT-032 FIND_ONE (FOR SHARE) · QR-CAT-039 FIND_ALL · QR-CAT-017 FIND_ALL (FOR SHARE) · QR-CAT-002 EXISTS · QR-CAT-004 UPDATE · join ADR-CAT-047 (QR-CAT-017, QR-CAT-039) · READ_WRITE
@@ -5173,11 +5331,11 @@ Endpoint     : /api/v1/cat/items/{id}/variants   verb: POST
 Layers       : CatVariantController.generate → CatVariantService.generate
 Request      : path {id: int64 required DBF-CAT-001} · body VariantGenerationRequest {selections: array{variantAttributeFk: int64 required DBF-CAT-063; variantAttributeValueFks: array<int64> required DBF-CAT-064}}
 Response     : 201 · ApiResponse<VariantGenerationResult> · paginated: no
-Validations  : RULE-CAT-008 / RULE-CAT-009 (`variants`) · RULE-CAT-053 (the Item must be active) · RULE-CAT-020 (Item kind must be STANDARD) · selected attributes and values must be active (an inactive one is not offered — CAT-400-REQUEST-INVALID) · RULE-CAT-052 (every attribute the Item's active Variants already carry is in the selections with ≥ 1 value — checked first) · RULE-CAT-014 (≤ 3 attributes used, ≤ 300 active Variants after) · RULE-CAT-012 (existing Variants first take the first selected value of each newly used attribute — success notice) · RULE-CAT-013 (one value per attribute; a request that names exactly one combination already carried by an active Variant is rejected; in a multi-value selection existing combinations are skipped — REQ-CAT-049) · RULE-CAT-005 · RULE-CAT-049; new Variants carry no barcode (REQ-CAT-019) and the existing ones keep variantPk, code and barcodes (REQ-CAT-017)
-Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-500-SERVER-ERROR, CAT-422-CAPABILITY-OFF, CAT-500-CAPABILITY-UNREADABLE, CAT-422-PARENT-INACTIVE, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED, CAT-409-VARIANT-COMBINATION-DUPLICATE, CAT-201-EXISTING-VARIANTS-KEPT, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED
-Orchestration : read `variants` → lock the Item (QR-CAT-010) and check isActiveFl (DBF-CAT-014, RULE-CAT-053) and itemKindCode (DBF-CAT-005) → load the selected attributes and values (QR-CAT-026, QR-CAT-031 FOR SHARE) → load the active Variants (QR-CAT-013) and their assignments (QR-CAT-019) → check that every attribute the active Variants carry is selected with ≥ 1 value (RULE-CAT-052) → count (QR-CAT-015) and check the limits → for each existing active Variant persist an assignment of the first selected value of every newly used attribute: variantFk (DBF-CAT-062), variantAttributeFk (DBF-CAT-063), variantAttributeValueFk (DBF-CAT-064), isActiveFl true (DBF-CAT-061) (QR-CAT-018) → for each remaining combination allocate a code from CAT_VARIANT into DBF-CAT-023, persist the Variant with isDefaultFl false (DBF-CAT-024), isActiveFl true (DBF-CAT-027), itemFk (DBF-CAT-028) (QR-CAT-011) and its assignments (QR-CAT-018) → record cat.CatalogueChanged CREATED for every new Variant and assignment → return the Item's Variants
+Validations  : RULE-CAT-008 / RULE-CAT-009 (`variants`) · allowed on an inactive Item: generation is the repair of RULE-CAT-050, so RULE-CAT-053 does not apply here and the rules below decide alone (REQ-CAT-135, ADR-CAT-068); on an inactive Item with 0 active Variants, RULE-CAT-052 requires no attribute and RULE-CAT-012 assigns nothing · RULE-CAT-020 (Item kind must be STANDARD) · selected attributes and values must be active (an inactive one is not offered — CAT-400-REQUEST-INVALID) · RULE-CAT-052 (every attribute the Item's active Variants already carry is in the selections with ≥ 1 value — checked first) · RULE-CAT-014 (≤ 3 attributes used, ≤ 300 active Variants after) · RULE-CAT-012 (existing Variants first take the first selected value of each newly used attribute — success notice) · RULE-CAT-013 (one value per attribute; a request that names exactly one combination already carried by an active Variant is rejected; in a multi-value selection existing combinations are skipped — REQ-CAT-049) · RULE-CAT-005 · RULE-CAT-049; new Variants carry no barcode (REQ-CAT-019) and the existing ones keep variantPk, code and barcodes (REQ-CAT-017)
+Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-500-SERVER-ERROR, CAT-422-CAPABILITY-OFF, CAT-500-CAPABILITY-UNREADABLE, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED, CAT-409-VARIANT-COMBINATION-DUPLICATE, CAT-201-EXISTING-VARIANTS-KEPT, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED
+Orchestration : read `variants` → lock the Item (QR-CAT-010) and check itemKindCode (DBF-CAT-005); an inactive Item (DBF-CAT-014) is accepted and stays inactive — the owner reactivates it afterwards (ADR-CAT-068) → load the selected attributes and values (QR-CAT-026, QR-CAT-031 FOR SHARE) → load the active Variants (QR-CAT-013) and their assignments (QR-CAT-019) → check that every attribute the active Variants carry is selected with ≥ 1 value (RULE-CAT-052) → count (QR-CAT-015) and check the limits → for each existing active Variant persist an assignment of the first selected value of every newly used attribute: variantFk (DBF-CAT-062), variantAttributeFk (DBF-CAT-063), variantAttributeValueFk (DBF-CAT-064), isActiveFl true (DBF-CAT-061) (QR-CAT-018) → for each remaining combination allocate a code from CAT_VARIANT into DBF-CAT-023, persist the Variant with isDefaultFl false (DBF-CAT-024), isActiveFl true (DBF-CAT-027), itemFk (DBF-CAT-028) (QR-CAT-011) and its assignments (QR-CAT-018) → record cat.CatalogueChanged CREATED for every new Variant and assignment → return the Item's Variants
 Repository   : QR-CAT-010 FIND_ONE (FOR UPDATE) · QR-CAT-026 FIND_ALL · QR-CAT-031 FIND_ALL (FOR SHARE) · QR-CAT-013 FIND_ALL · QR-CAT-019 FIND_ALL · QR-CAT-015 COUNT · QR-CAT-018 SAVE · QR-CAT-011 SAVE · join ADR-CAT-047 · READ_WRITE
-Concurrency  : two generations on one Item would both pass the 300 limit and the combination check — the Item row lock (QR-CAT-010) serialises them; a parallel deactivation of a selected value waits on its FOR SHARE read; UQ_CAT_VAR_ATTR_ASSIGN_ATTR backs one value per attribute; codes are allocated atomically
+Concurrency  : two generations on one Item would both pass the 300 limit and the combination check — the Item row lock (QR-CAT-010) serialises them, and orders a generation against a parallel reactivation of the same Item (API-CAT-005 counts the Variants under that lock); a parallel deactivation of a selected value waits on its FOR SHARE read; UQ_CAT_VAR_ATTR_ASSIGN_ATTR backs one value per attribute; codes are allocated atomically
 Security     : SCR-REQ-CAT-001 Items · PERM_CAT_ITEMS_CREATE
 Localization : derived Variant names in ar and en; notice ar + en (CAT-201-EXISTING-VARIANTS-KEPT)
 <!-- API:API-CAT-006:END -->
@@ -5360,9 +5518,9 @@ Endpoint     : /api/v1/cat/items/{id}/bundle-components   verb: PUT
 Layers       : CatBundleController.replace → CatBundleService.replaceComponents
 Request      : path {id: int64 required DBF-CAT-001} · body BundleComponentsRequest {lines: array{bundleComponentPk: int64 DBF-CAT-084; componentVariantFk: int64 required DBF-CAT-089; quantity: decimal required DBF-CAT-085; sortOrder: int32 DBF-CAT-086}; version: int64 required DBF-CAT-017} · the lines are the Bundle's complete new set of active lines
 Response     : 200 · ApiResponse<List<BundleComponentView>> · paginated: no
-Validations  : RULE-CAT-008 / RULE-CAT-009 (`bundles`) · RULE-CAT-053 (the Bundle Item must be active) · the Item must be of kind BUNDLE (DBF-CAT-005; otherwise CAT-400-REQUEST-INVALID) · RULE-CAT-018 · RULE-CAT-019 · RULE-CAT-049; an active STANDARD Variant created while `bundles` was off is accepted unchanged (REQ-CAT-020)
-Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-409-STALE-VERSION, CAT-500-SERVER-ERROR, CAT-422-CAPABILITY-OFF, CAT-500-CAPABILITY-UNREADABLE, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID, CAT-422-PARENT-INACTIVE, CAT-500-CHANGE-NOT-SAVED
-Orchestration : read `bundles` → lock the Item (QR-CAT-010) and check its version (DBF-CAT-017) and isActiveFl (DBF-CAT-014, RULE-CAT-053) → load the component Variants and their Items FOR SHARE (QR-CAT-017) → load the active lines (QR-CAT-039) → new lines: persist with bundleItemFk (DBF-CAT-088), isActiveFl true (DBF-CAT-087), quantity (DBF-CAT-085), sortOrder default line order (DBF-CAT-086) (QR-CAT-040) → kept lines: update quantity / sortOrder (QR-CAT-041) → lines not in the set: isActiveFl false (DBF-CAT-087) (QR-CAT-041) → bump the Item version (QR-CAT-004) → record cat.CatalogueChanged CREATED / UPDATED / DEACTIVATED per line → return the active lines
+Validations  : RULE-CAT-008 / RULE-CAT-009 (`bundles`) · allowed on an inactive Bundle: replacing the components is the repair of RULE-CAT-019, so RULE-CAT-053 does not apply here and the rules below decide alone (REQ-CAT-135, ADR-CAT-068) · the Item must be of kind BUNDLE (DBF-CAT-005; otherwise CAT-400-REQUEST-INVALID) · RULE-CAT-018 · RULE-CAT-019 · RULE-CAT-049; an active STANDARD Variant created while `bundles` was off is accepted unchanged (REQ-CAT-020)
+Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-409-STALE-VERSION, CAT-500-SERVER-ERROR, CAT-422-CAPABILITY-OFF, CAT-500-CAPABILITY-UNREADABLE, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID, CAT-500-CHANGE-NOT-SAVED
+Orchestration : read `bundles` → lock the Item (QR-CAT-010) and check its version (DBF-CAT-017); an inactive Bundle (DBF-CAT-014) is accepted and stays inactive — the owner reactivates it afterwards (ADR-CAT-068) → load the component Variants and their Items FOR SHARE (QR-CAT-017) → load the active lines (QR-CAT-039) → new lines: persist with bundleItemFk (DBF-CAT-088), isActiveFl true (DBF-CAT-087), quantity (DBF-CAT-085), sortOrder default line order (DBF-CAT-086) (QR-CAT-040) → kept lines: update quantity / sortOrder (QR-CAT-041) → lines not in the set: isActiveFl false (DBF-CAT-087) (QR-CAT-041) → bump the Item version (QR-CAT-004) → record cat.CatalogueChanged CREATED / UPDATED / DEACTIVATED per line → return the active lines
 Repository   : QR-CAT-010 FIND_ONE (FOR UPDATE) · QR-CAT-017 FIND_ALL (FOR SHARE) · QR-CAT-039 FIND_ALL · QR-CAT-040 SAVE · QR-CAT-041 UPDATE · QR-CAT-004 UPDATE · join NONE · READ_WRITE
 Concurrency  : component validity is decided on rows read FOR SHARE, so a parallel deactivation of a component Variant or Item (FOR UPDATE) cannot interleave; two parallel saves of one Bundle are serialised by the Item lock and the version check; UQ_CAT_BUNDLE_COMP_VARIANT backs "listed once"
 Security     : SCR-REQ-CAT-001 Items · PERM_CAT_ITEMS_UPDATE
@@ -5471,7 +5629,7 @@ Security     : SCR-REQ-CAT-002 Categories · PERM_CAT_CATEGORIES_UPDATE
 Localization : names in ar and en
 <!-- API:API-CAT-023:END -->
 
-<!-- API:API-CAT-024:START traces=REQ-CAT-066,REQ-CAT-071,DBF-CAT-071,DBF-CAT-076,DBF-CAT-077,DBF-CAT-014,DBF-CAT-015 -->
+<!-- API:API-CAT-024:START traces=REQ-CAT-066,REQ-CAT-071,REQ-CAT-069,DBF-CAT-071,DBF-CAT-076,DBF-CAT-077,DBF-CAT-014,DBF-CAT-015 -->
 ### API-CAT-024 — deactivate Category
 Entity       : ENT-CAT-006 · operation DELETE · serves SCR-REQ-CAT-002 "deactivate"
 Honours: CON-CAT-003
@@ -5481,9 +5639,9 @@ Request      : path {id: int64 required DBF-CAT-071}
 Response     : 200 · ApiResponse<CategoryView> · paginated: no
 Validations  : RULE-CAT-025 (no active sub-category, no active Item) · RULE-CAT-048
 Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-500-SERVER-ERROR, CAT-409-CATEGORY-IN-USE, CAT-200-DEACTIVATED
-Orchestration : load and lock the Category (QR-CAT-032, FOR UPDATE) → count active sub-categories (DBF-CAT-077) and active Items (DBF-CAT-015, DBF-CAT-014) (QR-CAT-038) → set isActiveFl false (DBF-CAT-076) (QR-CAT-035) → return CategoryView with CAT-200-DEACTIVATED
+Orchestration : take the tenant tree lock (pg_advisory_xact_lock on TENANT_ID, 'CAT_CATEGORY_TREE' — the same lock as API-CAT-021, 023 and 053, ADR-CAT-047) → load and lock the Category (QR-CAT-032, FOR UPDATE) → count active sub-categories (DBF-CAT-077) and active Items (DBF-CAT-015, DBF-CAT-014) (QR-CAT-038) → set isActiveFl false (DBF-CAT-076) (QR-CAT-035) → return CategoryView with CAT-200-DEACTIVATED
 Repository   : QR-CAT-032 FIND_ONE (FOR UPDATE) · QR-CAT-038 COUNT · QR-CAT-035 UPDATE · join NONE · READ_WRITE
-Concurrency  : Item saves read the Category FOR SHARE (API-CAT-001, 003, 049) and Category creates/moves take the tree lock, so an Item or sub-category is never attached to a Category being deactivated
+Concurrency  : the tree lock is taken before QR-CAT-038, so a parallel sub-category create or move (API-CAT-021, 023) or reactivation (API-CAT-053), which read the parent under the same lock, is serialised with the count: either the child commits first and the count refuses the deactivation (CAT-409-CATEGORY-IN-USE), or the deactivation commits first and the child sees an inactive parent (CAT-422-CATEGORY-PARENT-INVALID) — no active child is ever left under an inactive parent (RULE-CAT-023, AC-CAT-153); Item saves read the Category FOR SHARE (API-CAT-001, 003, 049), so an Item is never attached to a Category being deactivated
 Security     : SCR-REQ-CAT-002 Categories · PERM_CAT_CATEGORIES_DELETE
 Localization : success notice ar + en
 <!-- API:API-CAT-024:END -->
@@ -5695,6 +5853,55 @@ Concurrency  : NONE — a flag flip with no decision on other rows
 Security     : SCR-REQ-CAT-006 Catalogue settings · PERM_CAT_SETTINGS_DELETE
 Localization : messages ar + en from the Error Catalog
 <!-- API:API-CAT-037:END -->
+
+<!-- API:API-CAT-053:START traces=REQ-CAT-136,DBF-CAT-071,DBF-CAT-073,DBF-CAT-076,DBF-CAT-077,DBF-CAT-079 -->
+### API-CAT-053 — reactivate Category
+Entity       : ENT-CAT-006 · operation UPDATE · serves SCR-REQ-CAT-002 "reactivate"
+Honours: CON-CAT-003
+Endpoint     : /api/v1/cat/categories/{id}   verb: PATCH
+Layers       : CatCategoryController.reactivate → CatCategoryService.reactivate
+Request      : path {id: int64 required DBF-CAT-071} · body CategoryStateRequest {isActiveFl: boolean required DBF-CAT-076} · schema: `isActiveFl` enum [true], no other property (deactivation is DELETE — API-CAT-024)
+Response     : 200 · ApiResponse<CategoryView> · paginated: no
+Validations  : RULE-CAT-023 (the parent DBF-CAT-077 is empty or active; depth and cycle are unchanged by a reactivation) · RULE-CAT-024 (no other active Category of the same parent carries its nameAr; the code DBF-CAT-072 is kept — UQ_CAT_CATEGORY_CODE spans active and inactive rows, so it is still its own) · no capability flag is read · its sub-categories and Items are not reactivated with it · an already active Category returns the same success (REQ-CAT-136, ADR-CAT-069)
+Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-500-SERVER-ERROR, CAT-422-CATEGORY-PARENT-INVALID, CAT-409-CATEGORY-DUPLICATE
+Orchestration : take the tenant tree lock (pg_advisory_xact_lock on TENANT_ID, 'CAT_CATEGORY_TREE') → load and lock the Category (QR-CAT-032, FOR UPDATE) → read its parent by parentCategoryFk (QR-CAT-032) and refuse an inactive one (RULE-CAT-023) → sibling name check on nameAr (DBF-CAT-073) under the same parent, excluding this Category (QR-CAT-033) → set isActiveFl true (DBF-CAT-076) with the version read under the lock (DBF-CAT-079) (QR-CAT-035) → return CategoryView
+Repository   : QR-CAT-032 FIND_ONE (FOR UPDATE) · QR-CAT-033 EXISTS · QR-CAT-035 UPDATE · join NONE · READ_WRITE
+Concurrency  : the tree lock serialises it with a parallel deactivation of its parent (API-CAT-024) and with creates and moves (API-CAT-021, 023), so it never activates a child under a parent being deactivated; UQ_CAT_CATEGORY_NAME_AR backs the sibling name
+Security     : SCR-REQ-CAT-002 Categories · PERM_CAT_CATEGORIES_UPDATE
+Localization : messages ar + en from the Error Catalog
+<!-- API:API-CAT-053:END -->
+
+<!-- API:API-CAT-054:START traces=REQ-CAT-137,DBF-CAT-035,DBF-CAT-037,DBF-CAT-040,DBF-CAT-042 -->
+### API-CAT-054 — reactivate Variant attribute
+Entity       : ENT-CAT-003 · operation UPDATE · serves SCR-REQ-CAT-003 "reactivate (attribute and value)"
+Endpoint     : /api/v1/cat/variant-attributes/{id}   verb: PATCH
+Layers       : CatVariantAttributeController.reactivate → CatVariantAttributeService.reactivate
+Request      : path {id: int64 required DBF-CAT-035} · body VariantAttributeStateRequest {isActiveFl: boolean required DBF-CAT-040} · schema: `isActiveFl` enum [true], no other property (deactivation is DELETE — API-CAT-028)
+Response     : 200 · ApiResponse<VariantAttributeView> · paginated: no
+Validations  : RULE-CAT-016 (no other active Variant attribute carries its nameAr DBF-CAT-037; the code DBF-CAT-036 is kept — UQ_CAT_VAR_ATTR_CODE spans active and inactive rows) · no capability flag is read, like every reactivation (RULE-CAT-008) · its values keep their own state · an already active attribute returns the same success (REQ-CAT-137, ADR-CAT-069)
+Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-500-SERVER-ERROR, CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+Orchestration : load and lock (QR-CAT-022, FOR UPDATE) → name check among the active attributes, excluding this one (QR-CAT-023 with code empty) → set isActiveFl true (DBF-CAT-040) with the version read under the lock (DBF-CAT-042) (QR-CAT-025) → return VariantAttributeView
+Repository   : QR-CAT-022 FIND_ONE (FOR UPDATE) · QR-CAT-023 EXISTS · QR-CAT-025 UPDATE · join NONE · READ_WRITE
+Concurrency  : UQ_CAT_VAR_ATTR_NAME_AR rejects a parallel create or reactivation that takes the same nameAr (→ CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE)
+Security     : SCR-REQ-CAT-003 Variant attributes · PERM_CAT_VARIANT_ATTRIBUTES_UPDATE
+Localization : messages ar + en from the Error Catalog
+<!-- API:API-CAT-054:END -->
+
+<!-- API:API-CAT-055:START traces=REQ-CAT-138,DBF-CAT-047,DBF-CAT-049,DBF-CAT-052,DBF-CAT-053,DBF-CAT-055 -->
+### API-CAT-055 — reactivate Variant attribute value
+Entity       : ENT-CAT-004 · operation UPDATE · serves SCR-REQ-CAT-003 "reactivate (attribute and value)"
+Endpoint     : /api/v1/cat/variant-attribute-values/{id}   verb: PATCH
+Layers       : CatVariantAttributeController.reactivateValue → CatVariantAttributeService.reactivateValue
+Request      : path {id: int64 required DBF-CAT-047} · body VariantAttributeValueStateRequest {isActiveFl: boolean required DBF-CAT-052} · schema: `isActiveFl` enum [true], no other property (deactivation is DELETE — API-CAT-031)
+Response     : 200 · ApiResponse<VariantAttributeValueView> · paginated: no
+Validations  : its attribute (DBF-CAT-053) must be active (otherwise CAT-400-REQUEST-INVALID, as on value create — API-CAT-029) · RULE-CAT-016 (no other active value of the same attribute carries its nameAr DBF-CAT-049; the code is kept — UQ_CAT_VAR_ATTR_VALUE_CODE spans active and inactive rows) · no capability flag is read (RULE-CAT-008) · an already active value returns the same success (REQ-CAT-138, ADR-CAT-069)
+Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-500-SERVER-ERROR, CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+Orchestration : load and lock the value (QR-CAT-027, FOR UPDATE) → read its attribute FOR SHARE (QR-CAT-022 by variantAttributeFk) and refuse an inactive one → name check among the attribute's active values, excluding this one (QR-CAT-028 with code empty) → set isActiveFl true (DBF-CAT-052) with the version read under the lock (DBF-CAT-055) (QR-CAT-030) → return VariantAttributeValueView
+Repository   : QR-CAT-027 FIND_ONE (FOR UPDATE) · QR-CAT-022 FIND_ONE (FOR SHARE) · QR-CAT-028 EXISTS · QR-CAT-030 UPDATE · join NONE · READ_WRITE
+Concurrency  : the attribute is read FOR SHARE, so a parallel attribute deactivation (API-CAT-028, FOR UPDATE) waits; UQ_CAT_VAR_ATTR_VALUE_NAME_AR backs the name
+Security     : SCR-REQ-CAT-003 Variant attributes · PERM_CAT_VARIANT_ATTRIBUTES_UPDATE
+Localization : messages ar + en from the Error Catalog
+<!-- API:API-CAT-055:END -->
 <!-- SUB:SVC-API-CRUD:END -->
 
 <!-- SUB:SVC-API-SEARCH:START traces=REQ-CAT-134,DBF-CAT-001,DBF-CAT-002,DBF-CAT-003,DBF-CAT-004,DBF-CAT-005,DBF-CAT-007,DBF-CAT-013,DBF-CAT-014,DBF-CAT-015,DBF-CAT-022,DBF-CAT-023,DBF-CAT-027,DBF-CAT-028,DBF-CAT-035,DBF-CAT-036,DBF-CAT-037,DBF-CAT-039,DBF-CAT-040,DBF-CAT-047,DBF-CAT-051,DBF-CAT-053,DBF-CAT-071,DBF-CAT-072,DBF-CAT-073,DBF-CAT-074,DBF-CAT-075,DBF-CAT-076,DBF-CAT-077,DBF-CAT-110,DBF-CAT-111,DBF-CAT-112,DBF-CAT-113,DBF-CAT-114,DBF-CAT-118,DBF-CAT-122,DBF-CAT-123,DBF-CAT-124,DBF-CAT-125,DBF-CAT-126,DBF-CAT-127,DBF-CAT-128,DBF-CAT-129,DBF-CAT-136,DBF-CAT-137,DBF-CAT-140,DBF-CAT-141,DBF-CAT-142,DBF-CAT-143,DBF-CAT-150,DBF-CAT-151,DBF-CAT-154,DBF-CAT-155,REQ-CAT-003,REQ-CAT-014,REQ-CAT-015,REQ-CAT-048,REQ-CAT-067,REQ-CAT-068,REQ-CAT-086,REQ-CAT-090,REQ-CAT-094,REQ-CAT-095,REQ-CAT-097,REQ-CAT-100,REQ-CAT-101,REQ-CAT-109,REQ-CAT-115,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127 -->
@@ -5910,11 +6117,11 @@ Endpoint     : /api/v1/cat/item-imports   verb: POST
 Layers       : CatItemImportController.submit → CatItemImportService.importItems
 Request      : body ItemImportRequest {fileDocumentRef: int64 required} · application/json; the client uploaded the xlsx beforehand through the given FILE endpoint (private storage), which returned fileDocumentRef (ADR-CAT-056) · each data row maps to nameAr (DBF-CAT-003), nameEn (DBF-CAT-004), baseUomCode (DBF-CAT-006), category code → categoryFk (DBF-CAT-015), brandCode (DBF-CAT-007), taxClassCode (DBF-CAT-008), einvoiceCodeTypeCode (DBF-CAT-009), einvoiceCode (DBF-CAT-010), GTIN barcodeValue (DBF-CAT-110), descriptionAr (DBF-CAT-011), descriptionEn (DBF-CAT-012)
 Response     : 200 · ApiResponse<ImportResult> · paginated: no
-Validations  : fileDocumentRef names an available FILE document of the caller's tenant (otherwise CAT-404-NOT-FOUND) · RULE-CAT-044 (xlsx and ≤ 10 MB, read through FileDocumentLookupApi; ≤ 5,000 data rows and a header equal to the sheet — otherwise the whole file is rejected) · RULE-CAT-045 per row: the checks of rules 001, 002, 003 (also against earlier valid rows of the file), 006, 026, 029, 030 and 042 — plus the scale-prefix check of rule 032, whose trigger covers every GTIN create — each failure reported through CAT-200-IMPORT-ROW-REJECTED with the failed rule's message as {reason} · a failing row is skipped and reported (row, column, reason in ar and en) · RULE-CAT-005 · RULE-CAT-049
+Validations  : fileDocumentRef names an available FILE document of the caller's tenant (otherwise CAT-404-NOT-FOUND) · RULE-CAT-044 (xlsx and ≤ 10 MB, read through FileDocumentLookupApi; ≤ 5,000 data rows and a header equal to the sheet — otherwise the whole file is rejected) · RULE-CAT-045 per row: the checks of rules 001, 002, 003 (also against earlier valid rows of the file), 006, 026, 029, 030 and 042 — plus the scale-prefix check of rule 032, whose trigger covers every GTIN create — each failure reported through CAT-200-IMPORT-ROW-REJECTED with the failed rule's message as {reason} · a failing row is skipped and reported (row, column, reason in ar and en); for a name repeated inside the file, the RULE-CAT-003 {code} of the later row is the code the write pass gave to the earlier row's Item, so the rejection reasons are composed after the write pass · RULE-CAT-005 · RULE-CAT-049
 Errors       : CAT-400-REQUEST-INVALID, CAT-401-UNAUTHENTICATED, CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-500-SERVER-ERROR, CAT-422-IMPORT-FILE-REJECTED, CAT-200-IMPORT-ROW-REJECTED, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED
-Orchestration : read the file's type, size and bytes through FileDocumentLookupApi and accept it (RULE-CAT-044) → validation pass, no write: per row resolve the category code (QR-CAT-032), check names, lookups (MdlLookupApi), e-invoice pair, name uniqueness (QR-CAT-002 + in-file set), barcode uniqueness (QR-CAT-048 + in-file set), GTIN format and scale prefixes (QR-CAT-059) → write pass in one transaction, one savepoint per row: Item with code from CAT_ITEM (DBF-CAT-002), itemKindCode STANDARD (DBF-CAT-005), defaults PIECE / STANDARD, publishStateCode UNPUBLISHED (DBF-CAT-013), isActiveFl true (DBF-CAT-014) (QR-CAT-003) → default Variant with code from CAT_VARIANT (DBF-CAT-023), isDefaultFl true (DBF-CAT-024), isActiveFl true (DBF-CAT-027), itemFk (DBF-CAT-028) (QR-CAT-011) → GTIN barcode with barcodeTypeCode GTIN (DBF-CAT-111), uomCode the base unit (DBF-CAT-112), variantFk (DBF-CAT-114), isActiveFl true (DBF-CAT-113) (QR-CAT-049) → record cat.CatalogueChanged CREATED per record → return rows read, Items created, rows rejected and the rejections (ADR-CAT-048)
+Orchestration : read the file's type, size and bytes through FileDocumentLookupApi and accept it (RULE-CAT-044) → validation pass, no write: per row resolve the category code (QR-CAT-032), check names, lookups (MdlLookupApi), e-invoice pair, name uniqueness (QR-CAT-002 + in-file set), barcode uniqueness (QR-CAT-048 + in-file set), GTIN format and scale prefixes (QR-CAT-059) → write pass in one transaction: take the scale-prefix lock once, at its start, when the file holds a GTIN row (pg_advisory_xact_lock on TENANT_ID, 'CAT_SCALE_PREFIX'), re-read the active layouts under it (QR-CAT-059) and re-check the GTIN rows in memory → process the valid rows in batches of 500: draw the batch's Item codes (CAT_ITEM) and Variant codes (CAT_VARIANT) from NumberSeriesApi before the batch is inserted — one `next` call per code, because erp-core 1.6.0 publishes no block allocation (CORE-GAP-number-series-block-allocation.md, ADR-CAT-071) — then insert the batch with JDBC batching (batch size 500) under one savepoint; on a unique violation the batch is rolled back to its savepoint and replayed row by row, each row with its own savepoint, reusing the codes already drawn → per row: Item with code from CAT_ITEM (DBF-CAT-002), itemKindCode STANDARD (DBF-CAT-005), defaults PIECE / STANDARD, publishStateCode UNPUBLISHED (DBF-CAT-013), isActiveFl true (DBF-CAT-014) (QR-CAT-003) → default Variant with code from CAT_VARIANT (DBF-CAT-023), isDefaultFl true (DBF-CAT-024), isActiveFl true (DBF-CAT-027), itemFk (DBF-CAT-028) (QR-CAT-011) → GTIN barcode with barcodeTypeCode GTIN (DBF-CAT-111), uomCode the base unit (DBF-CAT-112), variantFk (DBF-CAT-114), isActiveFl true (DBF-CAT-113) (QR-CAT-049) → record cat.CatalogueChanged CREATED per record → return rows read, Items created, rows rejected and the rejections (ADR-CAT-048)
 Repository   : QR-CAT-032 FIND_ONE · QR-CAT-002 EXISTS · QR-CAT-048 EXISTS · QR-CAT-059 FIND_ALL · QR-CAT-003 SAVE · QR-CAT-011 SAVE · QR-CAT-049 SAVE · join NONE · READ_WRITE
-Concurrency  : a name or barcode taken by a parallel request between the two passes hits UQ_CAT_ITEM_NAME_AR / UQ_CAT_BARCODE_VALUE; the row's savepoint is rolled back and the row is reported rejected (RULE-CAT-003 / RULE-CAT-029); a number-series failure rolls the whole import back (RULE-CAT-005); GTIN rows take the scale-prefix lock
+Concurrency  : a name or barcode taken by a parallel request between the two passes hits UQ_CAT_ITEM_NAME_AR / UQ_CAT_BARCODE_VALUE; the batch is replayed row by row and the row's own savepoint is rolled back, so only that row is reported rejected (RULE-CAT-003 / RULE-CAT-029); a number-series failure rolls the whole import back (RULE-CAT-005); the scale-prefix lock is taken once per import, not per row, and is held until the commit, so a layout create (API-CAT-032) waits at most the import's time budget · Time budget (ADR-CAT-071): a file of 5,000 valid rows completes in at most 60 s on the reference deployment (validation pass ≤ 15 s, write pass ≤ 45 s); the service transaction carries `@Transactional(timeout = 120)` and the request timeout of the endpoint is 120 s. When 120 s is exceeded the transaction is rolled back as a whole: no Item, Variant or barcode is stored and no catalogue-change event is delivered (RULE-CAT-049), the codes already drawn stay as gaps in the series (the given's REQUIRES_NEW allocation), the scale-prefix lock is released, and the answer is CAT-500-CHANGE-NOT-SAVED; the owner imports the file again, split into smaller files
 Security     : SCR-REQ-CAT-004 Item import · PERM_CAT_ITEM_IMPORT_CREATE
 Localization : rejection reasons in ar and en (CAT-200-IMPORT-ROW-REJECTED wraps the failed rule's message)
 <!-- API:API-CAT-049:END -->
@@ -6012,16 +6219,16 @@ Grammar: `- DTO <Name>: <field> <type>; …` with types int64, int32, string, bo
 <!-- PHASE:SEC-BE:START traces=REQ-CAT-131,REQ-CAT-001,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-127 -->
 ## PHASE SEC-BE — security, backend half (R5)
 
-Every endpoint verifies its `PERM_<PAGE_CODE>_<ACTION>` before processing: mutations by `@PreAuthorize` on their service method, reads by `@PreAuthorize` on their controller-side facade (ADR-CAT-061). API-CAT-052 accepts the VIEW permission of any CAT page (`hasAnyAuthority`), because every CAT screen shows lookup-backed fields; it is listed under SCR-REQ-CAT-001 and SCR-REQ-CAT-006, the pages whose fields and filters read it. A caller without it receives CAT-403-FORBIDDEN and nothing changes (REQ-CAT-131). The one exception, API-CAT-047, answers an empty result instead of 403 (REQ-CAT-127). No service checks a role name; only permission names. A forbidden call maps through `LocalizedException → {code, messageAr, messageEn}` to CAT-403-FORBIDDEN. VIEW is the gateway: without it no other action of the page applies. Page registration: `CatPermissionContributor` (given `PermissionContributor`) registers each page code with its name in ar / en and the parent menu «الكتالوج / Catalog»; the given `sec` module derives the permission names (no SQL seed of permission rows — SRS Access summary); preset-role grants per ADR-CAT-046.
+Every endpoint verifies its `PERM_<PAGE_CODE>_<ACTION>` before processing: mutations by `@PreAuthorize` on their service method, reads by `@PreAuthorize` on their controller-side facade (ADR-CAT-061). API-CAT-052 accepts the VIEW permission of any CAT page (`hasAnyAuthority`), because every CAT screen shows lookup-backed fields; it is listed under SCR-REQ-CAT-001 and SCR-REQ-CAT-006, the pages whose fields and filters read it. A caller without it receives CAT-403-FORBIDDEN and nothing changes (REQ-CAT-131). The one exception, API-CAT-047, answers an empty result instead of 403 (REQ-CAT-127). No service checks a role name; only permission names. A forbidden call maps through `LocalizedException → {code, messageAr, messageEn}` to CAT-403-FORBIDDEN. VIEW is the gateway: without it no other action of the page applies. Page registration: `CatPermissions` (given `PermissionContributor`) registers each page code with its name in ar / en and the parent menu «الكتالوج / Catalog»; the given `sec` module derives the permission names (no SQL seed of permission rows — SRS Access summary); preset-role grants per ADR-CAT-046.
 
 ### SCR-REQ-CAT-001 — Items · page CAT_ITEMS «الأصناف / Items»
 VIEW (Owner, Seller/cashier, Warehouse staff): API-CAT-002, 007, 011, 038, 043, 044, 046, 047, 052 · CREATE (Owner): API-CAT-001, 006, 010, 014, 015, 018 · UPDATE (Owner): API-CAT-003, 005, 008, 012, 017, 019 · DELETE (Owner): API-CAT-004, 009, 013, 016, 020
 
 ### SCR-REQ-CAT-002 — Categories · page CAT_CATEGORIES «الفئات / Categories»
-VIEW (Owner, Seller/cashier, Warehouse staff): API-CAT-022, 039, 040 · CREATE (Owner): API-CAT-021 · UPDATE (Owner): API-CAT-023 · DELETE (Owner): API-CAT-024
+VIEW (Owner, Seller/cashier, Warehouse staff): API-CAT-022, 039, 040 · CREATE (Owner): API-CAT-021 · UPDATE (Owner): API-CAT-023, 053 (reactivation) · DELETE (Owner): API-CAT-024
 
 ### SCR-REQ-CAT-003 — Variant attributes · page CAT_VARIANT_ATTRIBUTES «خصائص المتغيّرات / Variant attributes»
-VIEW (Owner, Seller/cashier, Warehouse staff): API-CAT-026, 041 · CREATE (Owner): API-CAT-025, 029 · UPDATE (Owner): API-CAT-027, 030 · DELETE (Owner): API-CAT-028, 031. The menu entry is hidden by the frontend while `variants` is off; the backend refuses the creates and updates (API-CAT-025, 027, 029, 030) with RULE-CAT-008 (REQ-CAT-016), and keeps the reads and deactivations (API-CAT-026, 028, 031, 041) open so that existing attributes can be cleaned up.
+VIEW (Owner, Seller/cashier, Warehouse staff): API-CAT-026, 041 · CREATE (Owner): API-CAT-025, 029 · UPDATE (Owner): API-CAT-027, 030, 054, 055 (reactivations) · DELETE (Owner): API-CAT-028, 031. The menu entry is hidden by the frontend while `variants` is off; the backend refuses the creates and updates (API-CAT-025, 027, 029, 030) with RULE-CAT-008 (REQ-CAT-016), and keeps the reads, deactivations and reactivations (API-CAT-026, 028, 031, 041, 054, 055) open so that existing attributes can be cleaned up or restored.
 
 ### SCR-REQ-CAT-004 — Item import · page CAT_ITEM_IMPORT «استيراد الأصناف / Item import»
 VIEW (Owner): API-CAT-048 · CREATE (Owner): API-CAT-049 · UPDATE, DELETE not granted (no endpoint)
@@ -6044,7 +6251,7 @@ rows:
       DELETE: {granted: true, permission: PERM_CAT_ITEMS_DELETE}
   - screen: SCR-REQ-CAT-002 Categories
     entity: ENT-CAT-006
-    api: [API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-039, API-CAT-040]
+    api: [API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-039, API-CAT-040, API-CAT-053]
     actions:
       VIEW: {granted: true, permission: PERM_CAT_CATEGORIES_VIEW}
       CREATE: {granted: true, permission: PERM_CAT_CATEGORIES_CREATE}
@@ -6052,7 +6259,7 @@ rows:
       DELETE: {granted: true, permission: PERM_CAT_CATEGORIES_DELETE}
   - screen: SCR-REQ-CAT-003 Variant attributes
     entity: ENT-CAT-003
-    api: [API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-041]
+    api: [API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-041, API-CAT-054, API-CAT-055]
     actions:
       VIEW: {granted: true, permission: PERM_CAT_VARIANT_ATTRIBUTES_VIEW}
       CREATE: {granted: true, permission: PERM_CAT_VARIANT_ATTRIBUTES_CREATE}
@@ -6108,12 +6315,12 @@ rows:
   - {kind: tenant seed, name: "CAT lookup types and values (10 keys, 34 values) in each new tenant", source: "given mdl copies them from PLATFORM at tenant provisioning (erp-core modules.mdl) — ADR-CAT-058"}
   - {kind: tenant seed, name: "number series CAT_ITEM, CAT_VARIANT, CAT_INTERNAL_BARCODE in each new tenant", source: "given sequence copies them at tenant provisioning with the counter at 1 — ADR-CAT-058"}
   - {kind: module manifest, name: "META-INF/erp/modules/cat.yaml", source: "the CAT jar; read by the given module catalog at application start (PHASE CORE)"}
-  - {kind: page, name: "CAT_ITEMS", source: "CatPermissionContributor (given PermissionContributor) at application start"}
-  - {kind: page, name: "CAT_CATEGORIES", source: "CatPermissionContributor at application start"}
-  - {kind: page, name: "CAT_VARIANT_ATTRIBUTES", source: "CatPermissionContributor at application start"}
-  - {kind: page, name: "CAT_ITEM_IMPORT", source: "CatPermissionContributor at application start"}
-  - {kind: page, name: "CAT_BARCODE_LABELS", source: "CatPermissionContributor at application start"}
-  - {kind: page, name: "CAT_SETTINGS", source: "CatPermissionContributor at application start"}
+  - {kind: page, name: "CAT_ITEMS", source: "CatPermissions (given PermissionContributor) at application start"}
+  - {kind: page, name: "CAT_CATEGORIES", source: "CatPermissions at application start"}
+  - {kind: page, name: "CAT_VARIANT_ATTRIBUTES", source: "CatPermissions at application start"}
+  - {kind: page, name: "CAT_ITEM_IMPORT", source: "CatPermissions at application start"}
+  - {kind: page, name: "CAT_BARCODE_LABELS", source: "CatPermissions at application start"}
+  - {kind: page, name: "CAT_SETTINGS", source: "CatPermissions at application start"}
   - {kind: permission, name: "PERM_CAT_ITEMS_VIEW", source: "given sec derives it from page CAT_ITEMS", note: "role grant: Owner, Seller/cashier, Warehouse staff (ADR-CAT-046)"}
   - {kind: permission, name: "PERM_CAT_ITEMS_CREATE", source: "given sec derives it from page CAT_ITEMS", note: "role grant: Owner (ADR-CAT-046)"}
   - {kind: permission, name: "PERM_CAT_ITEMS_UPDATE", source: "given sec derives it from page CAT_ITEMS", note: "role grant: Owner (ADR-CAT-046)"}
@@ -6214,15 +6421,15 @@ examined_nothing:
 | RULE-CAT-013 | API-CAT-006 | CAT-409-VARIANT-COMBINATION-DUPLICATE |
 | RULE-CAT-014 | API-CAT-006 | CAT-422-VARIANT-LIMIT-EXCEEDED |
 | RULE-CAT-015 | API-CAT-009 | CAT-409-LAST-ACTIVE-VARIANT |
-| RULE-CAT-016 | API-CAT-025, API-CAT-027, API-CAT-029, API-CAT-030 | CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE |
+| RULE-CAT-016 | API-CAT-025, API-CAT-027, API-CAT-029, API-CAT-030, API-CAT-054, API-CAT-055 | CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE |
 | RULE-CAT-017 | API-CAT-028, API-CAT-031 | CAT-409-ATTRIBUTE-VALUE-IN-USE |
 | RULE-CAT-018 | API-CAT-001, API-CAT-017 | CAT-422-BUNDLE-COMPONENTS-REQUIRED |
 | RULE-CAT-019 | API-CAT-001, API-CAT-005, API-CAT-017 | CAT-422-BUNDLE-COMPONENT-INVALID |
 | RULE-CAT-020 | API-CAT-006 | CAT-422-BUNDLE-SINGLE-VARIANT |
 | RULE-CAT-021 | API-CAT-004, API-CAT-009 | CAT-409-VARIANT-IN-ACTIVE-BUNDLE |
 | RULE-CAT-022 | API-CAT-003 | CAT-422-ITEM-KIND-FIXED |
-| RULE-CAT-023 | API-CAT-021, API-CAT-023 | CAT-422-CATEGORY-PARENT-INVALID |
-| RULE-CAT-024 | API-CAT-021, API-CAT-023 | CAT-409-CATEGORY-DUPLICATE |
+| RULE-CAT-023 | API-CAT-021, API-CAT-023, API-CAT-053 | CAT-422-CATEGORY-PARENT-INVALID |
+| RULE-CAT-024 | API-CAT-021, API-CAT-023, API-CAT-053 | CAT-409-CATEGORY-DUPLICATE |
 | RULE-CAT-025 | API-CAT-024 | CAT-409-CATEGORY-IN-USE |
 | RULE-CAT-026 | API-CAT-001, API-CAT-003, API-CAT-005 | CAT-422-CATEGORY-INACTIVE |
 | RULE-CAT-027 | API-CAT-010 | CAT-422-ITEM-UNIT-INVALID |
@@ -6251,7 +6458,7 @@ examined_nothing:
 | RULE-CAT-050 | API-CAT-005 | CAT-422-ITEM-NO-ACTIVE-VARIANT |
 | RULE-CAT-051 | API-CAT-013 | CAT-409-ITEM-UNIT-HAS-BARCODES |
 | RULE-CAT-052 | API-CAT-006 | CAT-422-VARIANT-ATTRIBUTE-MISSING |
-| RULE-CAT-053 | API-CAT-003, API-CAT-006, API-CAT-008, API-CAT-010, API-CAT-012, API-CAT-014, API-CAT-015, API-CAT-017, API-CAT-018, API-CAT-019 | CAT-422-PARENT-INACTIVE |
+| RULE-CAT-053 | API-CAT-003, API-CAT-008, API-CAT-010, API-CAT-012, API-CAT-014, API-CAT-015, API-CAT-018, API-CAT-019 | CAT-422-PARENT-INACTIVE |
 
 ### Coverage — XM → requires → tests
 none — the XM register is empty; no edge, no `requires`, no edge test.
@@ -6277,7 +6484,7 @@ Join : NONE · Transaction : READ_ONLY · Locking : NONE · Pagination : NO · F
 QR-CAT-002 — Active Item with the same normalised Arabic name
 Phase        : DATA-DOM · Entity : ENT-CAT-001 · Operation : EXISTS
 API          : API-CAT-001, API-CAT-003, API-CAT-005, API-CAT-049
-Intent       : RULE-CAT-003 — another active Item of the tenant carries the name; returns its code for the next action
+Intent       : RULE-CAT-003 — another active Item of the tenant carries the name; returns its CODE, which fills the {code} of the RULE-CAT-003 message (the next action)
 Logical spec : SELECT ITEM_PK, CODE FROM CAT_ITEM WHERE TENANT_ID = :tenant AND IS_ACTIVE_FL AND CAT_NORMALIZE_AR(NAME_AR) = CAT_NORMALIZE_AR(:nameAr) AND ITEM_PK <> COALESCE(:excludePk, -1) LIMIT 1 (JPQL `function('CAT_NORMALIZE_AR', …)` under the tenant filter; the same expression as UQ_CAT_ITEM_NAME_AR — ADR-CAT-062)
 Join : NONE · Transaction : READ_ONLY · Locking : NONE — UQ_CAT_ITEM_NAME_AR decides a race · Pagination : NO · Filters : NAME_AR EXACT (normalised) · Result shape : projection ITEM_PK, CODE · Null handling : excludePk null on create
 
@@ -6416,14 +6623,14 @@ Join : required — ADR-CAT-047 (active Variant) · Transaction : READ_ONLY insi
 
 QR-CAT-022 — Variant attribute by identifier
 Phase        : DATA-DOM · Entity : ENT-CAT-003 · Operation : FIND_ONE
-API          : API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029
-Intent       : read, update, deactivate (FOR UPDATE) or parent of a new value
-Logical spec : SELECT * FROM CAT_VAR_ATTR WHERE VARIANT_ATTRIBUTE_PK = :id [FOR UPDATE]
-Join : NONE · Transaction : per caller · Locking : FOR UPDATE on deactivation (API-CAT-028), else NONE · Pagination : NO · Filters : PK EXACT · Result shape : full entity · Null handling : —
+API          : API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-054, API-CAT-055
+Intent       : read, update, deactivate or reactivate (FOR UPDATE), parent of a new value, or parent of a value being reactivated (FOR SHARE)
+Logical spec : SELECT * FROM CAT_VAR_ATTR WHERE VARIANT_ATTRIBUTE_PK = :id [FOR UPDATE | FOR SHARE]
+Join : NONE · Transaction : per caller · Locking : FOR UPDATE on deactivation and reactivation (API-CAT-028, 054), FOR SHARE when a value of it is reactivated (API-CAT-055), else NONE · Pagination : NO · Filters : PK EXACT · Result shape : full entity · Null handling : —
 
 QR-CAT-023 — Attribute code / active name taken
 Phase        : DATA-DOM · Entity : ENT-CAT-003 · Operation : EXISTS
-API          : API-CAT-025, API-CAT-027
+API          : API-CAT-025, API-CAT-027, API-CAT-054
 Intent       : RULE-CAT-016 for attributes
 Logical spec : SELECT 1 FROM CAT_VAR_ATTR WHERE (CODE = :code OR (IS_ACTIVE_FL AND NAME_AR = :nameAr)) AND VARIANT_ATTRIBUTE_PK <> COALESCE(:excludePk, -1) LIMIT 1
 Join : NONE · Transaction : READ_ONLY · Locking : NONE — UQ_CAT_VAR_ATTR_CODE / UQ_CAT_VAR_ATTR_NAME_AR decide a race · Pagination : NO · Filters : CODE, NAME_AR EXACT · Result shape : count · Null handling : code null on update
@@ -6432,12 +6639,12 @@ QR-CAT-024 — Insert Variant attribute
 Phase        : DATA-DOM · Entity : ENT-CAT-003 · Operation : SAVE
 API          : API-CAT-025
 Intent       : new attribute, sortOrder default next
-Logical spec : INSERT INTO CAT_VAR_ATTR (CODE, NAME_AR, NAME_EN, SORT_ORDER, IS_ACTIVE_FL, TENANT_ID, CREATED_BY, CREATED_AT) VALUES (…, COALESCE(:sortOrder, (SELECT COALESCE(MAX(SORT_ORDER), 0) + 1 FROM CAT_VAR_ATTR)), TRUE, …)
+Logical spec : INSERT INTO CAT_VAR_ATTR (CODE, NAME_AR, NAME_EN, SORT_ORDER, IS_ACTIVE_FL, TENANT_ID, CREATED_BY, CREATED_AT) VALUES (…, :sortOrder, TRUE, …) — an entity save (JPA), not native SQL; when the request carries no sortOrder, the service first reads `SELECT COALESCE(MAX(a.sortOrder), 0) + 1 FROM CatVariantAttribute a` as JPQL under the given tenant filter (so it reads the current tenant's rows only — checklist F2) and passes the result as :sortOrder
 Join : NONE · Transaction : READ_WRITE · Locking : NONE (a sortOrder tie only affects display) · Pagination : NO · Filters : — · Result shape : full entity · Null handling : NAME_EN null allowed
 
 QR-CAT-025 — Update Variant attribute
 Phase        : DATA-DOM · Entity : ENT-CAT-003 · Operation : UPDATE
-API          : API-CAT-027, API-CAT-028
+API          : API-CAT-027, API-CAT-028, API-CAT-054
 Intent       : names, sortOrder or deactivation
 Logical spec : UPDATE CAT_VAR_ATTR SET <changed columns>, VERSION = VERSION + 1, UPDATED_BY = :user, UPDATED_AT = now() WHERE VARIANT_ATTRIBUTE_PK = :id AND VERSION = :version
 Join : NONE · Transaction : READ_WRITE · Locking : optimistic VERSION · Pagination : NO · Filters : PK EXACT · Result shape : count · Null handling : —
@@ -6451,14 +6658,14 @@ Join : NONE (two ordered reads) · Transaction : READ_ONLY · Locking : FOR SHAR
 
 QR-CAT-027 — Variant attribute value by identifier
 Phase        : DATA-DOM · Entity : ENT-CAT-004 · Operation : FIND_ONE
-API          : API-CAT-030, API-CAT-031
-Intent       : update or deactivate (FOR UPDATE) a value
+API          : API-CAT-030, API-CAT-031, API-CAT-055
+Intent       : update, deactivate or reactivate (FOR UPDATE) a value
 Logical spec : SELECT * FROM CAT_VAR_ATTR_VALUE WHERE VARIANT_ATTRIBUTE_VALUE_PK = :id [FOR UPDATE]
-Join : NONE · Transaction : per caller · Locking : FOR UPDATE on deactivation (API-CAT-031) · Pagination : NO · Filters : PK EXACT · Result shape : full entity · Null handling : —
+Join : NONE · Transaction : per caller · Locking : FOR UPDATE on deactivation and reactivation (API-CAT-031, 055) · Pagination : NO · Filters : PK EXACT · Result shape : full entity · Null handling : —
 
 QR-CAT-028 — Value code / active name taken within the attribute
 Phase        : DATA-DOM · Entity : ENT-CAT-004 · Operation : EXISTS
-API          : API-CAT-029, API-CAT-030
+API          : API-CAT-029, API-CAT-030, API-CAT-055
 Intent       : RULE-CAT-016 for values
 Logical spec : SELECT 1 FROM CAT_VAR_ATTR_VALUE WHERE VARIANT_ATTRIBUTE_FK = :attrPk AND (CODE = :code OR (IS_ACTIVE_FL AND NAME_AR = :nameAr)) AND VARIANT_ATTRIBUTE_VALUE_PK <> COALESCE(:excludePk, -1) LIMIT 1
 Join : NONE · Transaction : READ_ONLY · Locking : NONE — UQ_CAT_VAR_ATTR_VALUE_CODE / UQ_CAT_VAR_ATTR_VALUE_NAME_AR decide a race · Pagination : NO · Filters : EXACT · Result shape : count · Null handling : code null on update
@@ -6467,12 +6674,12 @@ QR-CAT-029 — Insert Variant attribute value
 Phase        : DATA-DOM · Entity : ENT-CAT-004 · Operation : SAVE
 API          : API-CAT-029
 Intent       : new value, sortOrder default next within the attribute
-Logical spec : INSERT INTO CAT_VAR_ATTR_VALUE (CODE, NAME_AR, NAME_EN, SORT_ORDER, IS_ACTIVE_FL, VARIANT_ATTRIBUTE_FK, TENANT_ID, CREATED_BY, CREATED_AT) VALUES (…, COALESCE(:sortOrder, (SELECT COALESCE(MAX(SORT_ORDER), 0) + 1 FROM CAT_VAR_ATTR_VALUE WHERE VARIANT_ATTRIBUTE_FK = :attrPk)), TRUE, :attrPk, …)
+Logical spec : INSERT INTO CAT_VAR_ATTR_VALUE (CODE, NAME_AR, NAME_EN, SORT_ORDER, IS_ACTIVE_FL, VARIANT_ATTRIBUTE_FK, TENANT_ID, CREATED_BY, CREATED_AT) VALUES (…, :sortOrder, TRUE, :attrPk, …) — an entity save (JPA), not native SQL; when the request carries no sortOrder, the service first reads `SELECT COALESCE(MAX(v.sortOrder), 0) + 1 FROM CatVariantAttributeValue v WHERE v.variantAttributeFk = :attrPk` as JPQL under the given tenant filter (checklist F2) and passes the result as :sortOrder
 Join : NONE · Transaction : READ_WRITE · Locking : NONE · Pagination : NO · Filters : — · Result shape : full entity · Null handling : NAME_EN null allowed
 
 QR-CAT-030 — Update Variant attribute value
 Phase        : DATA-DOM · Entity : ENT-CAT-004 · Operation : UPDATE
-API          : API-CAT-030, API-CAT-031
+API          : API-CAT-030, API-CAT-031, API-CAT-055
 Intent       : names, sortOrder or deactivation
 Logical spec : UPDATE CAT_VAR_ATTR_VALUE SET <changed columns>, VERSION = VERSION + 1, UPDATED_BY = :user, UPDATED_AT = now() WHERE VARIANT_ATTRIBUTE_VALUE_PK = :id AND VERSION = :version
 Join : NONE · Transaction : READ_WRITE · Locking : optimistic VERSION · Pagination : NO · Filters : PK EXACT · Result shape : count · Null handling : —
@@ -6486,14 +6693,14 @@ Join : NONE · Transaction : READ_WRITE · Locking : FOR SHARE — a parallel de
 
 QR-CAT-032 — Category by identifier (or code)
 Phase        : DATA-DOM · Entity : ENT-CAT-006 · Operation : FIND_ONE
-API          : API-CAT-001, API-CAT-003, API-CAT-005, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-040, API-CAT-049
-Intent       : read; parent of a create; Category of an Item (active check, FOR SHARE — at save and at reactivation); deactivation (FOR UPDATE); import resolves by code
+API          : API-CAT-001, API-CAT-003, API-CAT-005, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-040, API-CAT-049, API-CAT-053
+Intent       : read; parent of a create or of a reactivation; Category of an Item (active check, FOR SHARE — at save and at reactivation); deactivation and reactivation (FOR UPDATE); import resolves by code
 Logical spec : SELECT * FROM CAT_CATEGORY WHERE CATEGORY_PK = :id (import: WHERE CODE = :code) [FOR SHARE | FOR UPDATE]
-Join : NONE · Transaction : per caller · Locking : FOR SHARE when an Item is attached, FOR UPDATE on deactivation — ADR-CAT-047 · Pagination : NO · Filters : PK or CODE EXACT · Result shape : full entity · Null handling : —
+Join : NONE · Transaction : per caller · Locking : FOR SHARE when an Item is attached, FOR UPDATE on deactivation and reactivation (API-CAT-024, 053, both after the tree lock) — ADR-CAT-047 · Pagination : NO · Filters : PK or CODE EXACT · Result shape : full entity · Null handling : —
 
 QR-CAT-033 — Category code / sibling name taken
 Phase        : DATA-DOM · Entity : ENT-CAT-006 · Operation : EXISTS
-API          : API-CAT-021, API-CAT-023
+API          : API-CAT-021, API-CAT-023, API-CAT-053
 Intent       : RULE-CAT-024
 Logical spec : SELECT 1 FROM CAT_CATEGORY WHERE (CODE = :code OR (IS_ACTIVE_FL AND NAME_AR = :nameAr AND PARENT_CATEGORY_FK IS NOT DISTINCT FROM :parentPk)) AND CATEGORY_PK <> COALESCE(:excludePk, -1) LIMIT 1
 Join : NONE · Transaction : READ_ONLY · Locking : under the tree lock; UQ_CAT_CATEGORY_CODE / UQ_CAT_CATEGORY_NAME_AR back it · Pagination : NO · Filters : EXACT · Result shape : count · Null handling : parent null = top level
@@ -6502,12 +6709,12 @@ QR-CAT-034 — Insert Category
 Phase        : DATA-DOM · Entity : ENT-CAT-006 · Operation : SAVE
 API          : API-CAT-021
 Intent       : new Category, sortOrder default next under the parent
-Logical spec : INSERT INTO CAT_CATEGORY (CODE, NAME_AR, NAME_EN, SORT_ORDER, IS_ACTIVE_FL, PARENT_CATEGORY_FK, TENANT_ID, CREATED_BY, CREATED_AT) VALUES (…, COALESCE(:sortOrder, (SELECT COALESCE(MAX(SORT_ORDER), 0) + 1 FROM CAT_CATEGORY WHERE PARENT_CATEGORY_FK IS NOT DISTINCT FROM :parentPk)), TRUE, …)
+Logical spec : INSERT INTO CAT_CATEGORY (CODE, NAME_AR, NAME_EN, SORT_ORDER, IS_ACTIVE_FL, PARENT_CATEGORY_FK, TENANT_ID, CREATED_BY, CREATED_AT) VALUES (…, :sortOrder, TRUE, …) — an entity save (JPA), not native SQL; when the request carries no sortOrder, the service first reads `SELECT COALESCE(MAX(c.sortOrder), 0) + 1 FROM CatCategory c WHERE (c.parentCategoryFk = :parentPk OR (:parentPk IS NULL AND c.parentCategoryFk IS NULL))` as JPQL under the given tenant filter (checklist F2), inside the tree lock, and passes the result as :sortOrder
 Join : NONE · Transaction : READ_WRITE · Locking : under the tree lock · Pagination : NO · Filters : — · Result shape : full entity · Null handling : parent null = top level
 
 QR-CAT-035 — Update Category
 Phase        : DATA-DOM · Entity : ENT-CAT-006 · Operation : UPDATE
-API          : API-CAT-023, API-CAT-024
+API          : API-CAT-023, API-CAT-024, API-CAT-053
 Intent       : names, parent, sortOrder or deactivation
 Logical spec : UPDATE CAT_CATEGORY SET <changed columns>, VERSION = VERSION + 1, UPDATED_BY = :user, UPDATED_AT = now() WHERE CATEGORY_PK = :id AND VERSION = :version
 Join : NONE · Transaction : READ_WRITE · Locking : optimistic VERSION (+ tree lock on a move) · Pagination : NO · Filters : PK EXACT · Result shape : count · Null handling : CODE never in the SET list
@@ -6531,7 +6738,7 @@ Phase        : DATA-DOM · Entity : ENT-CAT-006 · Operation : COUNT
 API          : API-CAT-024
 Intent       : RULE-CAT-025 — {count}
 Logical spec : SELECT (SELECT COUNT(*) FROM CAT_CATEGORY WHERE PARENT_CATEGORY_FK = :id AND IS_ACTIVE_FL) + (SELECT COUNT(*) FROM CAT_ITEM WHERE CATEGORY_FK = :id AND IS_ACTIVE_FL)
-Join : NONE (two counts) · Transaction : READ_ONLY inside READ_WRITE · Locking : the Category row is locked FOR UPDATE first (QR-CAT-032) · Pagination : NO · Filters : EXACT · Result shape : count · Null handling : —
+Join : NONE (two counts) · Transaction : READ_ONLY inside READ_WRITE · Locking : pg_advisory_xact_lock on (TENANT_ID, 'CAT_CATEGORY_TREE') is taken first, then the Category row is locked FOR UPDATE (QR-CAT-032), so a parallel sub-category create, move or reactivation cannot commit between the count and the deactivation — ADR-CAT-047 · Pagination : NO · Filters : EXACT · Result shape : count · Null handling : —
 
 QR-CAT-039 — Active lines of a Bundle
 Phase        : DATA-DOM · Entity : ENT-CAT-007 · Operation : FIND_ALL
@@ -6779,7 +6986,7 @@ Envelope `LocalizedException → {code, messageAr, messageEn}`; codes follow `{M
 rows:
   - {code: "CAT-422-NAME-AR-INVALID", rule: RULE-CAT-001, api: [API-CAT-001, API-CAT-003, API-CAT-018, API-CAT-019, API-CAT-021, API-CAT-023, API-CAT-025, API-CAT-027, API-CAT-029, API-CAT-030], http: 422, trigger: "nameAr missing, longer than 200 characters or without an Arabic letter", messages: {ar: "أدخل الاسم بالعربية (حتى 200 حرف) متضمنًا حرفًا عربيًا واحدًا على الأقل.", en: "Enter the Arabic name (up to 200 characters) with at least one Arabic letter."}}
   - {code: "CAT-422-NAME-EN-TOO-LONG", rule: RULE-CAT-002, api: [API-CAT-001, API-CAT-003, API-CAT-018, API-CAT-019, API-CAT-021, API-CAT-023, API-CAT-025, API-CAT-027, API-CAT-029, API-CAT-030], http: 422, trigger: "nameEn longer than 200 characters", messages: {ar: "الاسم بالإنجليزية لا يتجاوز 200 حرف.", en: "The English name can have at most 200 characters."}}
-  - {code: "CAT-409-ITEM-NAME-DUPLICATE", rule: RULE-CAT-003, api: [API-CAT-001, API-CAT-003, API-CAT-005], http: 409, trigger: "another active Item of the tenant has the same normalised nameAr", messages: {ar: "يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.", en: "An active item already has this name. Open the existing item or change the name."}}
+  - {code: "CAT-409-ITEM-NAME-DUPLICATE", rule: RULE-CAT-003, api: [API-CAT-001, API-CAT-003, API-CAT-005], http: 409, trigger: "another active Item of the tenant has the same normalised nameAr ({code} = that Item's code, from QR-CAT-002)", messages: {ar: "يوجد صنف نشط بالاسم نفسه: {code}. افتح الصنف الموجود أو غيّر الاسم.", en: "An active item already has this name: {code}. Open the existing item or change the name."}}
   - {code: "CAT-422-CODE-SYSTEM-ASSIGNED", rule: RULE-CAT-004, api: [API-CAT-001, API-CAT-003, API-CAT-008], http: 422, trigger: "a request supplies or changes the code of an Item or a Variant", messages: {ar: "يُعيَّن الرمز تلقائيًا ولا يمكن إدخاله أو تعديله.", en: "The code is assigned automatically and cannot be entered or changed."}}
   - {code: "CAT-500-CODE-NOT-ISSUED", rule: RULE-CAT-005, api: [API-CAT-001, API-CAT-006, API-CAT-015, API-CAT-049], http: 500, trigger: "NumberSeriesApi returns no code for CAT_ITEM, CAT_VARIANT or CAT_INTERNAL_BARCODE; nothing is stored", messages: {ar: "تعذّر إصدار رمز جديد الآن، ولم يُحفظ شيء. أعد المحاولة بعد لحظات.", en: "A new code could not be issued, and nothing was saved. Try again in a moment."}}
   - {code: "CAT-422-LOOKUP-VALUE-INACTIVE", rule: RULE-CAT-006, api: [API-CAT-001, API-CAT-003, API-CAT-005, API-CAT-008, API-CAT-010, API-CAT-014, API-CAT-015, API-CAT-032, API-CAT-033, API-CAT-035, API-CAT-036], http: 422, trigger: "a changed lookup-backed field holds a code that is not an active value of its key", messages: {ar: "القيمة المختارة غير متاحة. اختر قيمة نشطة من القائمة.", en: "The selected value is not available. Choose an active value from the list."}}
@@ -6792,15 +6999,15 @@ rows:
   - {code: "CAT-409-VARIANT-COMBINATION-DUPLICATE", rule: RULE-CAT-013, api: [API-CAT-006], http: 409, trigger: "the requested combination is already carried by another active Variant of the Item", messages: {ar: "هذه التركيبة من القيم موجودة في متغيّر آخر لهذا الصنف.", en: "This combination of values already exists on another variant of this item."}}
   - {code: "CAT-422-VARIANT-LIMIT-EXCEEDED", rule: RULE-CAT-014, api: [API-CAT-006], http: 422, trigger: "generation would give the Item more than 3 attributes or 300 active Variants", messages: {ar: "الحد الأقصى 3 خصائص و300 متغيّر نشط للصنف الواحد.", en: "An item can have at most 3 attributes and 300 active variants."}}
   - {code: "CAT-409-LAST-ACTIVE-VARIANT", rule: RULE-CAT-015, api: [API-CAT-009], http: 409, trigger: "deactivating the last active Variant of an active Item", messages: {ar: "لا يمكن إيقاف آخر متغيّر نشط لصنف نشط. أوقف الصنف نفسه بدلًا من ذلك.", en: "The last active variant of an active item cannot be deactivated. Deactivate the item instead."}}
-  - {code: "CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE", rule: RULE-CAT-016, api: [API-CAT-025, API-CAT-027, API-CAT-029, API-CAT-030], http: 409, trigger: "attribute / value code taken in its scope, nameAr taken among active records, or code not 1–30 Latin letters, digits or hyphens", messages: {ar: "الرمز أو الاسم مستخدم بالفعل. استخدم رمزًا (حتى 30 حرفًا لاتينيًا أو رقمًا أو شرطة) واسمًا مختلفين.", en: "The code or name is already used. Use a different code (up to 30 Latin letters, digits or hyphens) and name."}}
+  - {code: "CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE", rule: RULE-CAT-016, api: [API-CAT-025, API-CAT-027, API-CAT-029, API-CAT-030, API-CAT-054, API-CAT-055], http: 409, trigger: "attribute / value code taken in its scope, nameAr taken among active records (also when the record is reactivated), or code not 1–30 Latin letters, digits or hyphens", messages: {ar: "الرمز أو الاسم مستخدم بالفعل. استخدم رمزًا (حتى 30 حرفًا لاتينيًا أو رقمًا أو شرطة) واسمًا مختلفين.", en: "The code or name is already used. Use a different code (up to 30 Latin letters, digits or hyphens) and name."}}
   - {code: "CAT-409-ATTRIBUTE-VALUE-IN-USE", rule: RULE-CAT-017, api: [API-CAT-028, API-CAT-031], http: 409, trigger: "deactivating an attribute or value that an active assignment of an active Variant carries ({count})", messages: {ar: "هذه الخاصية أو القيمة مستخدمة في {count} متغيّرًا نشطًا. أوقف هذه المتغيّرات أولًا.", en: "This attribute or value is used by {count} active variants. Deactivate those variants first."}}
   - {code: "CAT-422-BUNDLE-COMPONENTS-REQUIRED", rule: RULE-CAT-018, api: [API-CAT-001, API-CAT-017], http: 422, trigger: "a BUNDLE saved with no active line, or a quantity not above zero / with more than 3 decimals", messages: {ar: "أضف مكوّنًا واحدًا على الأقل بكمية أكبر من صفر (حتى 3 أرقام عشرية).", en: "Add at least one component with a quantity above zero (up to 3 decimals)."}}
   - {code: "CAT-422-BUNDLE-COMPONENT-INVALID", rule: RULE-CAT-019, api: [API-CAT-001, API-CAT-005, API-CAT-017], http: 422, trigger: "at Bundle save or Bundle reactivation, a component Variant is inactive or of an inactive Item, belongs to a BUNDLE Item, or is listed twice", messages: {ar: "المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها.", en: "A component must be an active variant of an item that is not a bundle, listed once per bundle."}}
   - {code: "CAT-422-BUNDLE-SINGLE-VARIANT", rule: RULE-CAT-020, api: [API-CAT-006], http: 422, trigger: "Variant generation or attribute assignment for an Item of kind BUNDLE", messages: {ar: "الحزمة لها متغيّر واحد فقط ولا تقبل خصائص المتغيّرات.", en: "A bundle has one variant only and takes no variant attributes."}}
   - {code: "CAT-409-VARIANT-IN-ACTIVE-BUNDLE", rule: RULE-CAT-021, api: [API-CAT-004, API-CAT-009], http: 409, trigger: "deactivating a Variant, or its Item, while it is an active component of an active Bundle ({count})", messages: {ar: "هذا المتغيّر مكوّن في {count} حزمة نشطة. أزله من هذه الحزم أو أوقفها أولًا.", en: "This variant is a component of {count} active bundles. Remove it from those bundles or deactivate them first."}}
   - {code: "CAT-422-ITEM-KIND-FIXED", rule: RULE-CAT-022, api: [API-CAT-003], http: 422, trigger: "an update changes itemKindCode of a saved Item", messages: {ar: "لا يمكن تغيير نوع الصنف بعد حفظه. أنشئ صنفًا جديدًا بالنوع المطلوب.", en: "The item kind cannot be changed after saving. Create a new item of the required kind."}}
-  - {code: "CAT-422-CATEGORY-PARENT-INVALID", rule: RULE-CAT-023, api: [API-CAT-021, API-CAT-023], http: 422, trigger: "parent inactive, the Category itself or one of its sub-categories, or depth above 5", messages: {ar: "الفئة الأم يجب أن تكون نشطة، وألا تكون الفئة نفسها أو إحدى فئاتها الفرعية، وألا يتجاوز العمق 5 مستويات.", en: "The parent category must be active, must not be the category itself or one of its sub-categories, and the depth cannot exceed 5 levels."}}
-  - {code: "CAT-409-CATEGORY-DUPLICATE", rule: RULE-CAT-024, api: [API-CAT-021, API-CAT-023], http: 409, trigger: "Category code taken, nameAr taken among active siblings, or code not 1–30 Latin letters, digits or hyphens", messages: {ar: "يوجد رمز الفئة نفسه، أو الاسم نفسه تحت الفئة الأم نفسها. استخدم رمزًا أو اسمًا مختلفًا.", en: "The category code already exists, or the name already exists under the same parent. Use a different code or name."}}
+  - {code: "CAT-422-CATEGORY-PARENT-INVALID", rule: RULE-CAT-023, api: [API-CAT-021, API-CAT-023, API-CAT-053], http: 422, trigger: "parent inactive (also when the Category is reactivated), the Category itself or one of its sub-categories, or depth above 5", messages: {ar: "الفئة الأم يجب أن تكون نشطة، وألا تكون الفئة نفسها أو إحدى فئاتها الفرعية، وألا يتجاوز العمق 5 مستويات.", en: "The parent category must be active, must not be the category itself or one of its sub-categories, and the depth cannot exceed 5 levels."}}
+  - {code: "CAT-409-CATEGORY-DUPLICATE", rule: RULE-CAT-024, api: [API-CAT-021, API-CAT-023, API-CAT-053], http: 409, trigger: "Category code taken, nameAr taken among active siblings (also when the Category is reactivated), or code not 1–30 Latin letters, digits or hyphens", messages: {ar: "يوجد رمز الفئة نفسه، أو الاسم نفسه تحت الفئة الأم نفسها. استخدم رمزًا أو اسمًا مختلفًا.", en: "The category code already exists, or the name already exists under the same parent. Use a different code or name."}}
   - {code: "CAT-409-CATEGORY-IN-USE", rule: RULE-CAT-025, api: [API-CAT-024], http: 409, trigger: "deactivating a Category with active sub-categories or active Items ({count})", messages: {ar: "لا يمكن إيقاف الفئة لوجود {count} فئة فرعية أو صنف نشط فيها. انقلها أو أوقفها أولًا.", en: "The category cannot be deactivated while it holds {count} active sub-categories or items. Move or deactivate them first."}}
   - {code: "CAT-422-CATEGORY-INACTIVE", rule: RULE-CAT-026, api: [API-CAT-001, API-CAT-003, API-CAT-005], http: 422, trigger: "a changed categoryFk, or the categoryFk of an Item being reactivated, points to an inactive Category", messages: {ar: "الفئة المختارة غير نشطة. اختر فئة نشطة.", en: "The selected category is inactive. Choose an active category."}}
   - {code: "CAT-422-ITEM-UNIT-INVALID", rule: RULE-CAT-027, api: [API-CAT-010], http: 422, trigger: "unit equals the base unit or another active unit of the Item, or factor not above zero / more than 6 decimals", messages: {ar: "الوحدة يجب أن تختلف عن الوحدة الأساسية وألا تتكرر، ومعامل التحويل أكبر من صفر (حتى 6 أرقام عشرية).", en: "The unit must differ from the base unit and appear once, with a conversion factor above zero (up to 6 decimals)."}}
@@ -6829,13 +7036,13 @@ rows:
   - {code: "CAT-422-ITEM-NO-ACTIVE-VARIANT", rule: RULE-CAT-050, api: [API-CAT-005], http: 422, trigger: "reactivating an Item that has no active Variant", messages: {ar: "لا يمكن إعادة تفعيل صنف بلا متغيّر نشط. أنشئ متغيّرًا له أو أنشئ صنفًا جديدًا.", en: "An item with no active variant cannot be reactivated. Generate a variant for it, or create a new item."}}
   - {code: "CAT-409-ITEM-UNIT-HAS-BARCODES", rule: RULE-CAT-051, api: [API-CAT-013], http: 409, trigger: "deactivating an Item unit while active barcodes of the Item's Variants are bound to it ({count})", messages: {ar: "هذه الوحدة مستخدمة في {count} باركود نشط. أوقف هذه الباركودات أولًا.", en: "This unit is used by {count} active barcodes. Deactivate those barcodes first."}}
   - {code: "CAT-422-VARIANT-ATTRIBUTE-MISSING", rule: RULE-CAT-052, api: [API-CAT-006], http: 422, trigger: "a generation request omits an attribute the Item's active Variants already carry, or selects no value for it", messages: {ar: "اختر قيمة واحدة على الأقل لكل خاصية يستخدمها الصنف بالفعل.", en: "Select at least one value for every attribute the item already uses."}}
-  - {code: "CAT-422-PARENT-INACTIVE", rule: RULE-CAT-053, api: [API-CAT-003, API-CAT-006, API-CAT-008, API-CAT-010, API-CAT-012, API-CAT-014, API-CAT-015, API-CAT-017, API-CAT-018, API-CAT-019], http: 422, trigger: "an update of an inactive Item, or a child create / update (Variant generation, Bundle components, Item unit, image) under an inactive Item, or a barcode / e-invoice override on a Variant that is inactive or of an inactive Item; child deactivations are never refused", messages: {ar: "هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.", en: "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."}}
-  - {code: "CAT-400-REQUEST-INVALID", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-032, API-CAT-033, API-CAT-034, API-CAT-035, API-CAT-036, API-CAT-037, API-CAT-038, API-CAT-039, API-CAT-040, API-CAT-041, API-CAT-042, API-CAT-043, API-CAT-044, API-CAT-045, API-CAT-046, API-CAT-047, API-CAT-048, API-CAT-049, API-CAT-050, API-CAT-051, API-CAT-052], http: 400, trigger: "malformed body or parameter, wrong type or format, a value not offered (inactive attribute / value, unknown flag name, wrong item kind for the endpoint)", messages: {ar: "الطلب غير صالح. راجع الحقول المحددة ثم أعد المحاولة.", en: "The request is not valid. Check the highlighted fields and try again."}, adr: "ADR-CAT-044"}
-  - {code: "CAT-401-UNAUTHENTICATED", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-032, API-CAT-033, API-CAT-034, API-CAT-035, API-CAT-036, API-CAT-037, API-CAT-038, API-CAT-039, API-CAT-040, API-CAT-041, API-CAT-042, API-CAT-043, API-CAT-044, API-CAT-045, API-CAT-046, API-CAT-047, API-CAT-048, API-CAT-049, API-CAT-050, API-CAT-051, API-CAT-052], http: 401, trigger: "no valid bearer token", messages: {ar: "انتهت جلستك أو لم تسجّل الدخول. سجّل الدخول ثم أعد المحاولة.", en: "You are not signed in or your session has ended. Sign in, then try again."}, adr: "ADR-CAT-044"}
-  - {code: "CAT-403-FORBIDDEN", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-032, API-CAT-033, API-CAT-034, API-CAT-035, API-CAT-036, API-CAT-037, API-CAT-038, API-CAT-039, API-CAT-040, API-CAT-041, API-CAT-042, API-CAT-043, API-CAT-044, API-CAT-045, API-CAT-046, API-CAT-048, API-CAT-049, API-CAT-050, API-CAT-051, API-CAT-052], http: 403, trigger: "the caller lacks the endpoint's PERM_<PAGE_CODE>_<ACTION>", messages: {ar: "ليس لديك صلاحية لتنفيذ هذه العملية. اطلب الصلاحية من مالك النشاط.", en: "You do not have permission to perform this operation. Ask the business owner for access."}, adr: "ADR-CAT-044"}
-  - {code: "CAT-404-NOT-FOUND", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-033, API-CAT-034, API-CAT-036, API-CAT-037, API-CAT-040, API-CAT-044, API-CAT-049, API-CAT-050], http: 404, trigger: "an identifier (a path id, a body reference or a fileDocumentRef) names no record or available file of the caller's tenant", messages: {ar: "السجل المطلوب غير موجود. حدّث القائمة ثم أعد المحاولة.", en: "The requested record was not found. Refresh the list and try again."}, adr: "ADR-CAT-044"}
+  - {code: "CAT-422-PARENT-INACTIVE", rule: RULE-CAT-053, api: [API-CAT-003, API-CAT-008, API-CAT-010, API-CAT-012, API-CAT-014, API-CAT-015, API-CAT-018, API-CAT-019], http: 422, trigger: "an update of an inactive Item that changes any field other than categoryFk, or an Item unit or image create / update under an inactive Item, or a barcode / e-invoice override on a Variant that is inactive or of an inactive Item; child deactivations and the three repairs of ADR-CAT-068 (Variant generation API-CAT-006, a categoryFk-only update API-CAT-003, Bundle components API-CAT-017) are never refused by it", messages: {ar: "هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.", en: "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."}}
+  - {code: "CAT-400-REQUEST-INVALID", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-032, API-CAT-033, API-CAT-034, API-CAT-035, API-CAT-036, API-CAT-037, API-CAT-038, API-CAT-039, API-CAT-040, API-CAT-041, API-CAT-042, API-CAT-043, API-CAT-044, API-CAT-045, API-CAT-046, API-CAT-047, API-CAT-048, API-CAT-049, API-CAT-050, API-CAT-051, API-CAT-052, API-CAT-053, API-CAT-054, API-CAT-055], http: 400, trigger: "malformed body or parameter, wrong type or format, a value not offered (inactive attribute / value, unknown flag name, wrong item kind for the endpoint)", messages: {ar: "الطلب غير صالح. راجع الحقول المحددة ثم أعد المحاولة.", en: "The request is not valid. Check the highlighted fields and try again."}, adr: "ADR-CAT-044"}
+  - {code: "CAT-401-UNAUTHENTICATED", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-032, API-CAT-033, API-CAT-034, API-CAT-035, API-CAT-036, API-CAT-037, API-CAT-038, API-CAT-039, API-CAT-040, API-CAT-041, API-CAT-042, API-CAT-043, API-CAT-044, API-CAT-045, API-CAT-046, API-CAT-047, API-CAT-048, API-CAT-049, API-CAT-050, API-CAT-051, API-CAT-052, API-CAT-053, API-CAT-054, API-CAT-055], http: 401, trigger: "no valid bearer token", messages: {ar: "انتهت جلستك أو لم تسجّل الدخول. سجّل الدخول ثم أعد المحاولة.", en: "You are not signed in or your session has ended. Sign in, then try again."}, adr: "ADR-CAT-044"}
+  - {code: "CAT-403-FORBIDDEN", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-032, API-CAT-033, API-CAT-034, API-CAT-035, API-CAT-036, API-CAT-037, API-CAT-038, API-CAT-039, API-CAT-040, API-CAT-041, API-CAT-042, API-CAT-043, API-CAT-044, API-CAT-045, API-CAT-046, API-CAT-048, API-CAT-049, API-CAT-050, API-CAT-051, API-CAT-052, API-CAT-053, API-CAT-054, API-CAT-055], http: 403, trigger: "the caller lacks the endpoint's PERM_<PAGE_CODE>_<ACTION>", messages: {ar: "ليس لديك صلاحية لتنفيذ هذه العملية. اطلب الصلاحية من مالك النشاط.", en: "You do not have permission to perform this operation. Ask the business owner for access."}, adr: "ADR-CAT-044"}
+  - {code: "CAT-404-NOT-FOUND", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-033, API-CAT-034, API-CAT-036, API-CAT-037, API-CAT-040, API-CAT-044, API-CAT-049, API-CAT-050, API-CAT-053, API-CAT-054, API-CAT-055], http: 404, trigger: "an identifier (a path id, a body reference or a fileDocumentRef) names no record or available file of the caller's tenant", messages: {ar: "السجل المطلوب غير موجود. حدّث القائمة ثم أعد المحاولة.", en: "The requested record was not found. Refresh the list and try again."}, adr: "ADR-CAT-044"}
   - {code: "CAT-409-STALE-VERSION", rule: PLATFORM-STD, api: [API-CAT-003, API-CAT-008, API-CAT-012, API-CAT-017, API-CAT-019, API-CAT-023, API-CAT-027, API-CAT-030, API-CAT-033, API-CAT-036], http: 409, trigger: "the echoed version differs from the stored one (optimistic lock)", messages: {ar: "عدّل مستخدم آخر هذا السجل في الأثناء. أعد تحميله ثم حاول مجددًا.", en: "This record was changed by someone else in the meantime. Reload it and try again."}, adr: "ADR-CAT-044"}
-  - {code: "CAT-500-SERVER-ERROR", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-032, API-CAT-033, API-CAT-034, API-CAT-035, API-CAT-036, API-CAT-037, API-CAT-038, API-CAT-039, API-CAT-040, API-CAT-041, API-CAT-042, API-CAT-043, API-CAT-044, API-CAT-045, API-CAT-046, API-CAT-047, API-CAT-048, API-CAT-049, API-CAT-050, API-CAT-051, API-CAT-052], http: 500, trigger: "unexpected failure; the transaction rolls back and no event is delivered", messages: {ar: "حدث خطأ غير متوقع ولم يُحفظ شيء. حاول مرة أخرى لاحقًا.", en: "An unexpected error occurred, and nothing was saved. Try again later."}, adr: "ADR-CAT-044"}
+  - {code: "CAT-500-SERVER-ERROR", rule: PLATFORM-STD, api: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010, API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020, API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030, API-CAT-031, API-CAT-032, API-CAT-033, API-CAT-034, API-CAT-035, API-CAT-036, API-CAT-037, API-CAT-038, API-CAT-039, API-CAT-040, API-CAT-041, API-CAT-042, API-CAT-043, API-CAT-044, API-CAT-045, API-CAT-046, API-CAT-047, API-CAT-048, API-CAT-049, API-CAT-050, API-CAT-051, API-CAT-052, API-CAT-053, API-CAT-054, API-CAT-055], http: 500, trigger: "unexpected failure; the transaction rolls back and no event is delivered", messages: {ar: "حدث خطأ غير متوقع ولم يُحفظ شيء. حاول مرة أخرى لاحقًا.", en: "An unexpected error occurred, and nothing was saved. Try again later."}, adr: "ADR-CAT-044"}
   - {code: "CAT-404-LOOKUP-KEY-UNKNOWN", rule: PLATFORM-STD, api: [API-CAT-052], http: 404, trigger: "the requested key is not one of the 10 CAT lookup keys, or mdl answers 404 for it (OwnedLookups translates mdl's 404 to this code)", messages: {ar: "هذه القائمة ليست من قوائم الكتالوج. اختر إحدى قوائم الكتالوج.", en: "This list is not one of the catalogue lists. Choose a catalogue list."}, adr: "ADR-CAT-065"}
 ```
 
@@ -6848,23 +7055,23 @@ rows:
 # Backend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : backend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the frontend test plan (this file: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193 and TC-CAT-197 … TC-CAT-207; frontend: TC-CAT-125 … TC-CAT-182 and TC-CAT-194 … TC-CAT-196)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the frontend test plan (this file: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207 and TC-CAT-211 … TC-CAT-216; frontend: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-210)
 
 ## Header
 
 ### Sources (generated current state)
 | Input | File | Version | Use |
 |---|---|---|---|
-| srs | `_state/current-srs.md` | CAT v2 (P1) | derivation source: AC-CAT-001 … 152 (Given / When / Then), RULE-CAT-001 … 053 messages, lookups block |
-| registry-srs | `_state/current-registry-srs.md` | CAT v2 (P1) | ID ranges (REQ 135 · AC 152 · RULE 53) |
+| srs | `_state/current-srs.md` | CAT v2 (P1) | derivation source: AC-CAT-001 … 160 (Given / When / Then), RULE-CAT-001 … 053 messages, lookups block |
+| registry-srs | `_state/current-registry-srs.md` | CAT v2 (P1) | ID ranges (REQ 138 · AC 160 · RULE 53) |
 | registry-db | `_state/current-registry-db.md` | CAT v2 (P2) | XM register `records: []` → no integration TC |
-| backend-execution-plan | `_state/current-backend-execution-plan.md` | CAT v2 (P3.1) | API-CAT-001 … 052, Error Catalog codes, split units (Package) |
+| backend-execution-plan | `_state/current-backend-execution-plan.md` | CAT v2 (P3.1) | API-CAT-001 … 055, Error Catalog codes, split units (Package) |
 | frontend-execution-plan | `_state/current-frontend-execution-plan.md` | CAT v2 (P3.2) | cross-check of the track split (ADR-CAT-052 §1) |
 | api-spec | `_state/current-api-spec.yaml` (`api-spec-cat.yaml`, OpenAPI 3.1.0, 2.0.0) | CAT v2 (P3.1) | shape of every operation a TC asserts on — read by `x-api-id` |
 | dependency-graph | `_state/current-dependency-graph.md` | CAT v2 | CAT is tier 1, no outbound edge |
 
 ### Delta
-The current state holds no earlier test plan, so every TC is ADDED. The TC stream starts at 001. Nothing is MODIFIED or REMOVED.
+The current state holds no earlier test plan, so every TC is ADDED. The TC stream starts at 001. Within v2, the third gate-analysis revise ADDED TC-CAT-211 … TC-CAT-216 and MODIFIED TC-CAT-003, TC-CAT-020 and TC-CAT-203 (the RULE-CAT-003 message names the existing Item's code — G12) and TC-CAT-185, TC-CAT-186 and TC-CAT-187 (each now repairs the Item and reactivates it — G3, ADR-CAT-068). No id is renumbered or REMOVED.
 
 ### Framework
 `profile.stack.testing` is **agnostic**. Each block below is the whole contract: the consumer repo chooses its tool and turns each TC into a test. This plan names no framework, annotation or file layout.
@@ -6872,7 +7079,7 @@ The current state holds no earlier test plan, so every TC is ADDED. The TC strea
 ### Open ADRs
 - ADR-CAT-052 (this stage) is ACCEPTED and non-breaking. It covers the track split, the package binding, the host-data creation surface, catalogue isolation, fields the API document does not expose, and fault injection.
 - ADR-CAT-053 (this stage, analyze round 2) is ACCEPTED and non-breaking. It replaces the unseeded AC values BAG and H87 by seeded values in TC-CAT-063, 120, 121, 122, so that those cases stay on seeded data, and records the frontend plan's unbound refusal texts.
-- The TCs also cite ADR-CAT-041, 044, 045, 047 and 048 (P1/P3.1), and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-058 (tenant provisioning), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-062 (Arabic normalisation). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes; a Variant's barcodes follow it), ADR-CAT-064 (layout keeps its scale code length) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). None of them is BLOCKED.
+- The TCs also cite ADR-CAT-041, 044, 045, 047 and 048 (P1/P3.1), and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-058 (tenant provisioning), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-062 (Arabic normalisation). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes; a Variant's barcodes follow it), ADR-CAT-064 (layout keeps its scale code length) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). From the gate-analysis round 3 they cite ADR-CAT-047 as amended (Category tree lock on deactivation), ADR-CAT-068 (three repairs stay allowed on an inactive Item) and ADR-CAT-069 (reactivation of Categories, Variant attributes and values). None of them is BLOCKED.
 - Host values of an open lookup key (CAT_BRAND) are created and deactivated through the given mdl HTTP surface: the CAT_BRAND type is found by `POST /api/v1/mdl/lookup-types/search`, a value is added by `POST /api/v1/mdl/lookup-types/{id}/values` and deactivated by `DELETE /api/v1/mdl/lookup-values/{id}` (SRS A6). Each Host data line names the call it uses.
 
 ### Shared precondition S0 (applies to every TC; each TC adds only what it states)
@@ -6884,14 +7091,14 @@ The current state holds no earlier test plan, so every TC is ADDED. The TC strea
 - Error bodies are read as `LocalizedException → {code, messageAr, messageEn}`. Success notices are read from `ApiResponse<T>` `code` / `messageAr` / `messageEn` (ADR-CAT-048).
 - "Owner" below is that user. Every message is asserted in ar and en, copied from the SRS.
 
-<!-- PHASE:TEST-PLAN-BE:START traces=AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-025,AC-CAT-026,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-037,AC-CAT-038,AC-CAT-039,AC-CAT-040,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135,AC-CAT-152,AC-CAT-076,REQ-CAT-074 -->
+<!-- PHASE:TEST-PLAN-BE:START traces=AC-CAT-153,AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-157,AC-CAT-158,AC-CAT-159,AC-CAT-160,REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-025,AC-CAT-026,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-037,AC-CAT-038,AC-CAT-039,AC-CAT-040,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135,AC-CAT-152,AC-CAT-076,REQ-CAT-074 -->
 ## PHASE TEST-PLAN-BE — module scenarios
 
-The phase holds 146 TCs, which is more than 12, so it is split into two SUBs:
-- `RULE-SCENARIOS` (80): each AC whose Then names a RULE refusal, a RULE notice or a RULE-governed state transition, including the parallel-request cases of the concurrency guards (TC-CAT-200 … 205).
-- `API-SCENARIOS` (66): endpoint-driven ACs — happy paths, reads, paging, search, events, permission, tenant isolation, optimistic lock, tenant provisioning, CAT lookup reads.
+The phase holds 152 TCs, which is more than 12, so it is split into two SUBs:
+- `RULE-SCENARIOS` (83): each AC whose Then names a RULE refusal, a RULE notice or a RULE-governed state transition, including the parallel-request cases of the concurrency guards (TC-CAT-200 … 205, 211) and the inactive-parent matrix (TC-CAT-212).
+- `API-SCENARIOS` (69): endpoint-driven ACs — happy paths, reads, paging, search, events, permission, tenant isolation, optimistic lock, tenant provisioning, CAT lookup reads, reactivation of Categories, Variant attributes and values.
 
-<!-- SUB:RULE-SCENARIOS:START traces=AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-086,REQ-CAT-101,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-009,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-019,AC-CAT-020,AC-CAT-023,AC-CAT-024,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-035,AC-CAT-036,AC-CAT-038,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-087,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-096,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-110,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-128,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-009,REQ-CAT-013,REQ-CAT-016,REQ-CAT-018,REQ-CAT-019,REQ-CAT-022,REQ-CAT-023,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-034,REQ-CAT-035,REQ-CAT-037,REQ-CAT-040,REQ-CAT-041,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-085,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-094,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-108,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-126,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135 -->
+<!-- SUB:RULE-SCENARIOS:START traces=AC-CAT-153,AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-158,REQ-CAT-136,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-086,REQ-CAT-101,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-009,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-019,AC-CAT-020,AC-CAT-023,AC-CAT-024,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-035,AC-CAT-036,AC-CAT-038,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-087,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-096,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-110,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-128,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-009,REQ-CAT-013,REQ-CAT-016,REQ-CAT-018,REQ-CAT-019,REQ-CAT-022,REQ-CAT-023,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-034,REQ-CAT-035,REQ-CAT-037,REQ-CAT-040,REQ-CAT-041,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-085,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-094,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-108,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-126,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135 -->
 ### SUB RULE-SCENARIOS
 
 <!-- TC:TC-CAT-001:START traces=AC-CAT-005,REQ-CAT-005,API-CAT-004,API-CAT-002 -->
@@ -6929,11 +7136,11 @@ Exercises    : API-CAT-001 POST /api/v1/cat/items
 Rule / code  : RULE-CAT-003 → CAT-409-ITEM-NAME-DUPLICATE
 Package      : SVC-API-CRUD
 Scenario     : VIOLATION · data class INVALID · language ALL
-Preconditions: S0 · an active Item named «شاحن سامسونج 25W» (its code recorded)
+Preconditions: S0 · an active Item named «شاحن سامسونج 25W» with code ITM-000012 (series CAT_ITEM positioned at ITM-000011 before its creation)
 Host data    : none
 Steps        : 1. POST an Item with nameAr «شاحن سامسونج 25W». 2. GET /api/v1/cat/items?text=شاحن سامسونج 25W&isActiveFl=true.
-Expected     : 1 → 409, code CAT-409-ITEM-NAME-DUPLICATE, messageAr «يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.», messageEn "An active item already has this name. Open the existing item or change the name."; the existing Item's code is the next action (envelope field not bound by api-spec-cat.yaml — ADR-CAT-052 §5). 2 → totalElements 1: no Item was created.
-Test data    : nameAr «شاحن سامسونج 25W» (from the AC)
+Expected     : 1 → 409, code CAT-409-ITEM-NAME-DUPLICATE, messageAr «يوجد صنف نشط بالاسم نفسه: ITM-000012. افتح الصنف الموجود أو غيّر الاسم.», messageEn "An active item already has this name: ITM-000012. Open the existing item or change the name." — the message names the existing Item's code, the next action (MODIFIED at the third gate-analysis revise, G12). 2 → totalElements 1: no Item was created.
+Test data    : nameAr «شاحن سامسونج 25W», ITM-000012 (from the AC)
 <!-- TC:TC-CAT-003:END -->
 
 <!-- TC:TC-CAT-004:START traces=AC-CAT-009,REQ-CAT-009,API-CAT-003 -->
@@ -7169,8 +7376,8 @@ Package      : SVC-API-INT
 Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: S0 · no active Item named «كوب زجاج» in the tenant · an xlsx on the import sheet whose rows 2 and 9 both carry nameAr «كوب زجاج» (the other rows valid and distinct)
 Host data    : none
-Steps        : 1. POST the file.
-Expected     : 200; row 2 creates the Item; data.rejectedRows holds row 9 with column nameAr, and its reason reads ar «يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.» · en "An active item already has this name. Open the existing item or change the name." (inside the RULE-CAT-045 row message).
+Steps        : 1. POST the file. 2. GET /api/v1/cat/items?text=كوب زجاج&isActiveFl=true and record the code `<code>` of the Item found.
+Expected     : 1 → 200; row 2 creates the Item; data.rejectedRows holds row 9 with column nameAr, and its reason reads ar «يوجد صنف نشط بالاسم نفسه: <code>. افتح الصنف الموجود أو غيّر الاسم.» · en "An active item already has this name: <code>. Open the existing item or change the name." (inside the RULE-CAT-045 row message). 2 → totalElements 1, and `<code>` is the code named in step 1's reason (MODIFIED at the third gate-analysis revise, G12).
 Test data    : nameAr «كوب زجاج» on rows 2 and 9 (from the AC)
 <!-- TC:TC-CAT-020:END -->
 
@@ -7818,46 +8025,46 @@ Expected     : 1 → 422, code CAT-422-VARIANT-ATTRIBUTE-MISSING, messageAr «ا
 Test data    : SIZE S, M, L; COLOUR «أحمر» (from the AC)
 <!-- TC:TC-CAT-184:END -->
 
-<!-- TC:TC-CAT-185:START traces=AC-CAT-132,REQ-CAT-130,API-CAT-005,API-CAT-002 -->
-### TC-CAT-185 — An Item with no active Variant cannot be reactivated
-Derived from : AC-CAT-132  (REQ-CAT-130)
-Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id}
-Rule / code  : RULE-CAT-050 → CAT-422-ITEM-NO-ACTIVE-VARIANT
+<!-- TC:TC-CAT-185:START traces=AC-CAT-132,AC-CAT-154,REQ-CAT-130,REQ-CAT-135,API-CAT-005,API-CAT-002,API-CAT-006 -->
+### TC-CAT-185 — An Item with no active Variant is refused reactivation, gets a Variant while inactive, then reactivates
+Derived from : AC-CAT-132, AC-CAT-154  (REQ-CAT-130, REQ-CAT-135)
+Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id} · API-CAT-006 POST /api/v1/cat/items/{id}/variants
+Rule / code  : RULE-CAT-050 → CAT-422-ITEM-NO-ACTIVE-VARIANT · repair allowed on an inactive Item (RULE-CAT-053 does not apply to API-CAT-006 — ADR-CAT-068)
 Package      : SVC-API-CRUD
 Scenario     : STATE · data class EDGE · language ALL
-Preconditions: S0 · an Item with exactly 1 active Variant V. The Item is deactivated through API-CAT-004, then V through API-CAT-009, which is allowed because the Item is inactive (RULE-CAT-015 guards only an active Item). The Item now has 0 active Variants
+Preconditions: S0 · an Item with exactly 1 active Variant V and no Variant attribute in use. The Item is deactivated through API-CAT-004, then V through API-CAT-009, which is allowed because the Item is inactive (RULE-CAT-015 guards only an active Item). The Item now has 0 active Variants · the active attribute SIZE with the active value M
 Host data    : none
-Steps        : 1. PATCH the Item with body {isActiveFl: true}. 2. GET the Item.
-Expected     : 1 → 422, code CAT-422-ITEM-NO-ACTIVE-VARIANT, messageAr «لا يمكن إعادة تفعيل صنف بلا متغيّر نشط. أنشئ متغيّرًا له أو أنشئ صنفًا جديدًا.», messageEn "An item with no active variant cannot be reactivated. Generate a variant for it, or create a new item.". 2 → isActiveFl false.
-Test data    : nameAr placeholder `<valid Arabic name>`
+Steps        : 1. PATCH the Item with body {isActiveFl: true}. 2. GET the Item. 3. POST to the Item the generation {selections: [{variantAttributeFk: SIZE, variantAttributeValueFks: [M]}]}. 4. PATCH the Item with body {isActiveFl: true}. 5. GET the Item.
+Expected     : 1 → 422, code CAT-422-ITEM-NO-ACTIVE-VARIANT, messageAr «لا يمكن إعادة تفعيل صنف بلا متغيّر نشط. أنشئ متغيّرًا له أو أنشئ صنفًا جديدًا.», messageEn "An item with no active variant cannot be reactivated. Generate a variant for it, or create a new item.". 2 → isActiveFl false. 3 → 201; one new active Variant carrying M; no CAT-422-PARENT-INACTIVE. 4 → 200; isActiveFl true, publishStateCode UNPUBLISHED. 5 → isActiveFl true and exactly 1 active Variant (the M Variant).
+Test data    : nameAr placeholder `<valid Arabic name>`; SIZE, M (from the AC)
 <!-- TC:TC-CAT-185:END -->
 
-<!-- TC:TC-CAT-186:START traces=AC-CAT-133,REQ-CAT-130,API-CAT-005,API-CAT-002 -->
-### TC-CAT-186 — An Item whose Category went inactive cannot be reactivated
-Derived from : AC-CAT-133  (REQ-CAT-130)
-Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id}
-Rule / code  : RULE-CAT-026 → CAT-422-CATEGORY-INACTIVE
+<!-- TC:TC-CAT-186:START traces=AC-CAT-133,AC-CAT-155,REQ-CAT-130,REQ-CAT-135,API-CAT-005,API-CAT-002,API-CAT-003 -->
+### TC-CAT-186 — An Item whose Category went inactive is refused reactivation, is moved while inactive, then reactivates
+Derived from : AC-CAT-133, AC-CAT-155  (REQ-CAT-130, REQ-CAT-135)
+Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id} · API-CAT-003 PUT /api/v1/cat/items/{id}
+Rule / code  : RULE-CAT-026 → CAT-422-CATEGORY-INACTIVE · RULE-CAT-053 → CAT-422-PARENT-INACTIVE (a change other than categoryFk) · the categoryFk-only change is allowed (ADR-CAT-068)
 Package      : SVC-API-CRUD
 Scenario     : STATE · data class EDGE · language ALL
-Preconditions: S0 · a Category with code OLD holding exactly 1 Item, active. The Item is deactivated through API-CAT-004, then OLD through API-CAT-024, which is allowed because OLD holds no active Item (RULE-CAT-025)
+Preconditions: S0 · a Category with code OLD holding exactly 1 Item, active, with nameEn "Glass cup". The Item is deactivated through API-CAT-004, then OLD through API-CAT-024, which is allowed because OLD holds no active Item (RULE-CAT-025) · an active Category NEW
 Host data    : none
-Steps        : 1. PATCH the Item with body {isActiveFl: true}. 2. GET the Item.
-Expected     : 1 → 422, code CAT-422-CATEGORY-INACTIVE, messageAr «الفئة المختارة غير نشطة. اختر فئة نشطة.», messageEn "The selected category is inactive. Choose an active category.". 2 → isActiveFl false, categoryFk still OLD.
-Test data    : Category OLD (from the AC)
+Steps        : 1. PATCH the Item with body {isActiveFl: true}. 2. GET the Item and record its fields and version. 3. PUT the Item with its recorded fields and version, and nameEn "Glass cup 2" and categoryFk NEW. 4. PUT the Item with its recorded fields and version, and categoryFk NEW only. 5. PATCH the Item with body {isActiveFl: true}. 6. GET the Item.
+Expected     : 1 → 422, code CAT-422-CATEGORY-INACTIVE, messageAr «الفئة المختارة غير نشطة. اختر فئة نشطة.», messageEn "The selected category is inactive. Choose an active category.". 2 → isActiveFl false, categoryFk still OLD. 3 → 422, code CAT-422-PARENT-INACTIVE, messageAr «هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.», messageEn "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."; nothing is saved. 4 → 200; categoryFk NEW, nameEn "Glass cup", isActiveFl false. 5 → 200; isActiveFl true. 6 → categoryFk NEW, nameEn "Glass cup", isActiveFl true.
+Test data    : Categories OLD and NEW, "Glass cup", "Glass cup 2" (from the AC)
 <!-- TC:TC-CAT-186:END -->
 
-<!-- TC:TC-CAT-187:START traces=AC-CAT-134,REQ-CAT-130,API-CAT-005,API-CAT-002 -->
-### TC-CAT-187 — A Bundle whose component went inactive cannot be reactivated
-Derived from : AC-CAT-134  (REQ-CAT-130)
-Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id}
-Rule / code  : RULE-CAT-019 → CAT-422-BUNDLE-COMPONENT-INVALID
+<!-- TC:TC-CAT-187:START traces=AC-CAT-134,AC-CAT-156,REQ-CAT-130,REQ-CAT-135,API-CAT-005,API-CAT-002,API-CAT-017 -->
+### TC-CAT-187 — A Bundle whose component went inactive is refused reactivation, gets new components while inactive, then reactivates
+Derived from : AC-CAT-134, AC-CAT-156  (REQ-CAT-130, REQ-CAT-135)
+Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id} · API-CAT-017 PUT /api/v1/cat/items/{id}/bundle-components
+Rule / code  : RULE-CAT-019 → CAT-422-BUNDLE-COMPONENT-INVALID · repair allowed on an inactive Bundle (RULE-CAT-053 does not apply to API-CAT-017 — ADR-CAT-068)
 Package      : SVC-API-CRUD
 Scenario     : STATE · data class EDGE · language ALL
-Preconditions: S0 · a Bundle B with 2 component lines on the Variants P and C of active STANDARD Items, where P's Item has a second active Variant. B is deactivated through API-CAT-004, then P through API-CAT-009, which is allowed because B is inactive (RULE-CAT-021)
+Preconditions: S0 · a Bundle B with 2 component lines P × 1 and C × 1 on Variants of active STANDARD Items, where P's Item has a second active Variant. B is deactivated through API-CAT-004, then P through API-CAT-009, which is allowed because B is inactive (RULE-CAT-021) · an active Variant Q of an active STANDARD Item
 Host data    : none
-Steps        : 1. PATCH B with body {isActiveFl: true}. 2. GET B.
-Expected     : 1 → 422, code CAT-422-BUNDLE-COMPONENT-INVALID, messageAr «المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها.», messageEn "A component must be an active variant of an item that is not a bundle, listed once per bundle.". 2 → isActiveFl false.
-Test data    : Bundle B, Variants P and C (placeholders)
+Steps        : 1. PATCH B with body {isActiveFl: true}. 2. GET B and record its version. 3. PUT B's line set {lines: [{componentVariantFk: C, quantity: 1}, {componentVariantFk: Q, quantity: 1}], version}. 4. PATCH B with body {isActiveFl: true}. 5. GET B.
+Expected     : 1 → 422, code CAT-422-BUNDLE-COMPONENT-INVALID, messageAr «المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها.», messageEn "A component must be an active variant of an item that is not a bundle, listed once per bundle.". 2 → isActiveFl false. 3 → 200; the active lines are C × 1 and Q × 1; no CAT-422-PARENT-INACTIVE. 4 → 200; isActiveFl true. 5 → isActiveFl true and exactly 2 active lines, C × 1 and Q × 1.
+Test data    : Bundle B, Variants P, C and Q (from the AC; placeholders)
 <!-- TC:TC-CAT-187:END -->
 
 <!-- TC:TC-CAT-188:START traces=AC-CAT-135,REQ-CAT-086,API-CAT-004,API-CAT-043 -->
@@ -7982,7 +8189,7 @@ Scenario     : VIOLATION · data class EDGE · language ALL
 Preconditions: S0 · no active Item named «كوب زجاج»
 Host data    : none
 Steps        : 1. Submit two POSTs of an Item with nameAr «كوب زجاج» simultaneously (two Owner sessions released together). 2. GET /api/v1/cat/items?text=كوب زجاج&isActiveFl=true.
-Expected     : 1 → exactly one request answers 201; the other answers 409, code CAT-409-ITEM-NAME-DUPLICATE, messageAr «يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.», messageEn "An active item already has this name. Open the existing item or change the name.". 2 → totalElements 1.
+Expected     : 1 → exactly one request answers 201; the other answers 409, code CAT-409-ITEM-NAME-DUPLICATE, messageAr «يوجد صنف نشط بالاسم نفسه: {code}. افتح الصنف الموجود أو غيّر الاسم.», messageEn "An active item already has this name: {code}. Open the existing item or change the name.", {code} = the code returned by the winning request (MODIFIED at the third gate-analysis revise, G12). 2 → totalElements 1.
 Test data    : «كوب زجاج» (from the AC)
 <!-- TC:TC-CAT-203:END -->
 
@@ -8013,9 +8220,66 @@ Steps        : 1. Submit DELETE P and PUT B's line set (its current line plus {c
 Expected     : 1 → exactly one request succeeds. Either (a) DELETE answers 200 and PUT answers 422, code CAT-422-BUNDLE-COMPONENT-INVALID, messageAr «المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها.», messageEn "A component must be an active variant of an item that is not a bundle, listed once per bundle."; then 2 → P isActiveFl false and 3 → B's lines exclude P. Or (b) PUT answers 200 and DELETE answers 409, code CAT-409-VARIANT-IN-ACTIVE-BUNDLE, messageAr «هذا المتغيّر مكوّن في 1 حزمة نشطة. أزله من هذه الحزم أو أوقفها أولًا.», messageEn "This variant is a component of 1 active bundles. Remove it from those bundles or deactivate them first."; then 2 → P isActiveFl true and 3 → B's lines include P.
 Test data    : P, B (from the AC)
 <!-- TC:TC-CAT-205:END -->
+
+<!-- TC:TC-CAT-211:START traces=AC-CAT-153,REQ-CAT-071,API-CAT-021,API-CAT-024,API-CAT-022,API-CAT-039 -->
+### TC-CAT-211 — A parallel sub-category create and parent deactivation: exactly one succeeds
+Derived from : AC-CAT-153  (REQ-CAT-071)
+Exercises    : API-CAT-021 POST /api/v1/cat/categories · API-CAT-024 DELETE /api/v1/cat/categories/{id} · API-CAT-022 GET /api/v1/cat/categories/{id} · API-CAT-039 GET /api/v1/cat/categories
+Rule / code  : RULE-CAT-025 → CAT-409-CATEGORY-IN-USE · RULE-CAT-023 → CAT-422-CATEGORY-PARENT-INVALID · guard: the tenant tree lock pg_advisory_xact_lock (TENANT_ID, 'CAT_CATEGORY_TREE'), taken by API-CAT-021 before it reads the parent and by API-CAT-024 before QR-CAT-038 (unit SVC-API-CRUD) — ADR-CAT-047 as amended
+Package      : SVC-API-CRUD
+Scenario     : VIOLATION · data class EDGE · language ALL
+Preconditions: S0 · an active top-level Category «إلكترونيات» with 0 active sub-categories and 0 active Items · no Category with code PHONES
+Host data    : none
+Steps        : 1. Submit POST {code: PHONES, nameAr: «هواتف», parentCategoryFk: «إلكترونيات»} and DELETE «إلكترونيات» simultaneously (two Owner sessions released together). 2. GET «إلكترونيات». 3. GET /api/v1/cat/categories?isActiveFl=true.
+Expected     : 1 → exactly one request succeeds. Either (a) POST answers 201 and DELETE answers 409, code CAT-409-CATEGORY-IN-USE, messageAr «لا يمكن إيقاف الفئة لوجود 1 فئة فرعية أو صنف نشط فيها. انقلها أو أوقفها أولًا.», messageEn "The category cannot be deactivated while it holds 1 active sub-categories or items. Move or deactivate them first."; then 2 → isActiveFl true and 3 → PHONES is an active child of «إلكترونيات». Or (b) DELETE answers 200 and POST answers 422, code CAT-422-CATEGORY-PARENT-INVALID, messageAr «الفئة الأم يجب أن تكون نشطة، وألا تكون الفئة نفسها أو إحدى فئاتها الفرعية، وألا يتجاوز العمق 5 مستويات.», messageEn "The parent category must be active, must not be the category itself or one of its sub-categories, and the depth cannot exceed 5 levels."; then 2 → isActiveFl false and 3 → no Category PHONES. In neither branch does an active Category have an inactive parent.
+Test data    : «إلكترونيات», PHONES, «هواتف» (from the AC)
+<!-- TC:TC-CAT-211:END -->
+
+<!-- TC:TC-CAT-212:START traces=AC-CAT-144,AC-CAT-154,AC-CAT-155,AC-CAT-156,REQ-CAT-135,API-CAT-003,API-CAT-006,API-CAT-008,API-CAT-010,API-CAT-012,API-CAT-014,API-CAT-015,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-009,API-CAT-013,API-CAT-016,API-CAT-020,API-CAT-005 -->
+### TC-CAT-212 — RULE-CAT-053 on every endpoint that applies it, the three repairs and the child deactivations under an inactive Item
+Derived from : AC-CAT-144, AC-CAT-154, AC-CAT-155, AC-CAT-156  (REQ-CAT-135)
+Exercises    : API-CAT-003, 006, 008, 010, 012, 014, 015, 017, 018, 019 (one row each) · API-CAT-009, 013, 016, 020 (child deactivations) · API-CAT-005 (reactivation at the end)
+Rule / code  : RULE-CAT-053 → CAT-422-PARENT-INACTIVE · repairs allowed (ADR-CAT-068) · RULE-CAT-048 → CAT-200-DEACTIVATED
+Package      : SVC-API-CRUD
+Scenario     : VIOLATION · data class INVALID · language ALL · parameterised (one row per endpoint)
+Preconditions: S0 (`variants` and `bundles` on) · a STANDARD Item I with base unit PIECE, nameEn "Cup", categoryFk empty, exactly 1 active Variant V1 carrying the active GTIN 6223000000014, the active Item unit CARTON (no barcode bound to it) and the active image M1 · an active Category NEW · the active attribute SIZE with active values M and L · a BUNDLE Item B with the active line {C, 1} on a Variant C of an active STANDARD Item · then I and B are deactivated through API-CAT-004 · each row reads the record it sends with its current version
+Host data    : none
+Steps        : 1. Send each row below to I (rows 1–8, 10, 11) or to B (row 9), in order, and record the answer. 2. DELETE the barcode 6223000000014 (API-CAT-016), the Item unit CARTON (API-CAT-013), the image M1 (API-CAT-020) and the Variant created by row 3 for L (API-CAT-009). 3. PATCH I with {isActiveFl: true}. 4. GET I.
+
+| Row | Endpoint | Request on the inactive Item | Expected |
+|---|---|---|---|
+| 1 | API-CAT-003 | PUT I with its fields and nameEn "Cup 2" | 422 CAT-422-PARENT-INACTIVE |
+| 2 | API-CAT-003 | PUT I with its fields and categoryFk NEW only | 200 — repair; categoryFk NEW |
+| 3 | API-CAT-006 | POST generation SIZE [M, L] | 201 — repair; V1 takes M, a new Variant carries L |
+| 4 | API-CAT-008 | PUT V1 override GS1 «6223000000014» | 422 CAT-422-PARENT-INACTIVE |
+| 5 | API-CAT-010 | POST unit BOX, conversionFactor 6 | 422 CAT-422-PARENT-INACTIVE |
+| 6 | API-CAT-012 | PUT CARTON with isSalesFl false | 422 CAT-422-PARENT-INACTIVE |
+| 7 | API-CAT-014 | POST GTIN 6223000000021 to V1 | 422 CAT-422-PARENT-INACTIVE |
+| 8 | API-CAT-015 | POST internal barcode to V1 | 422 CAT-422-PARENT-INACTIVE |
+| 9 | API-CAT-017 | PUT B's lines [{C, 2}] | 200 — repair; B's line is C × 2 |
+| 10 | API-CAT-018 | POST a new image (PNG ≤ 5 MB, uploaded through the given FILE endpoint) | 422 CAT-422-PARENT-INACTIVE |
+| 11 | API-CAT-019 | PUT M1 with nameEn "Cup photo" | 422 CAT-422-PARENT-INACTIVE |
+
+Expected     : 1 → every row answers as its table cell says; every 422 carries messageAr «هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.», messageEn "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant.", and changes nothing; no repair row (2, 3, 9) answers CAT-422-PARENT-INACTIVE. 2 → each deactivation answers 200 with code CAT-200-DEACTIVATED (the image removal answers 200). 3 → 200; isActiveFl true. 4 → nameEn "Cup", categoryFk NEW, exactly 1 active Variant (V1, carrying M), no active Item unit, no active image, no active barcode.
+Test data    : "Cup", "Cup 2", NEW, SIZE M / L, BOX, CARTON, 6223000000014, 6223000000021, B, C (placeholders where unnamed)
+<!-- TC:TC-CAT-212:END -->
+
+<!-- TC:TC-CAT-214:START traces=AC-CAT-158,REQ-CAT-136,API-CAT-053,API-CAT-022 -->
+### TC-CAT-214 — A Category under an inactive parent is reactivated only after its parent
+Derived from : AC-CAT-158  (REQ-CAT-136)
+Exercises    : API-CAT-053 PATCH /api/v1/cat/categories/{id} · API-CAT-022 GET /api/v1/cat/categories/{id}
+Rule / code  : RULE-CAT-023 → CAT-422-CATEGORY-PARENT-INVALID
+Package      : SVC-API-CRUD
+Scenario     : VIOLATION · data class INVALID · language ALL
+Preconditions: S0 · the Category PHONES under «إلكترونيات»; PHONES then «إلكترونيات» deactivated through API-CAT-024
+Host data    : none
+Steps        : 1. PATCH PHONES with {isActiveFl: true}. 2. GET PHONES. 3. PATCH «إلكترونيات» with {isActiveFl: true}. 4. PATCH PHONES with {isActiveFl: true}.
+Expected     : 1 → 422, code CAT-422-CATEGORY-PARENT-INVALID, messageAr «الفئة الأم يجب أن تكون نشطة، وألا تكون الفئة نفسها أو إحدى فئاتها الفرعية، وألا يتجاوز العمق 5 مستويات.», messageEn "The parent category must be active, must not be the category itself or one of its sub-categories, and the depth cannot exceed 5 levels.". 2 → isActiveFl false. 3 → 200; isActiveFl true. 4 → 200; isActiveFl true, parentCategoryFk «إلكترونيات».
+Test data    : PHONES, «إلكترونيات» (from the AC)
+<!-- TC:TC-CAT-214:END -->
 <!-- SUB:RULE-SCENARIOS:END -->
 
-<!-- SUB:API-SCENARIOS:START traces=AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-008,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-018,AC-CAT-021,AC-CAT-022,AC-CAT-025,AC-CAT-026,AC-CAT-029,AC-CAT-030,AC-CAT-033,AC-CAT-034,AC-CAT-037,AC-CAT-039,AC-CAT-040,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-079,AC-CAT-080,AC-CAT-085,AC-CAT-086,AC-CAT-088,AC-CAT-094,AC-CAT-095,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-103,AC-CAT-104,AC-CAT-107,AC-CAT-109,AC-CAT-111,AC-CAT-117,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-127,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-008,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-017,REQ-CAT-020,REQ-CAT-021,REQ-CAT-024,REQ-CAT-025,REQ-CAT-028,REQ-CAT-029,REQ-CAT-032,REQ-CAT-033,REQ-CAT-036,REQ-CAT-038,REQ-CAT-039,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-077,REQ-CAT-078,REQ-CAT-083,REQ-CAT-084,REQ-CAT-086,REQ-CAT-092,REQ-CAT-093,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-101,REQ-CAT-102,REQ-CAT-105,REQ-CAT-107,REQ-CAT-109,REQ-CAT-115,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-125,REQ-CAT-127,AC-CAT-152,AC-CAT-076,REQ-CAT-074 -->
+<!-- SUB:API-SCENARIOS:START traces=AC-CAT-157,AC-CAT-159,AC-CAT-160,REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-008,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-018,AC-CAT-021,AC-CAT-022,AC-CAT-025,AC-CAT-026,AC-CAT-029,AC-CAT-030,AC-CAT-033,AC-CAT-034,AC-CAT-037,AC-CAT-039,AC-CAT-040,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-079,AC-CAT-080,AC-CAT-085,AC-CAT-086,AC-CAT-088,AC-CAT-094,AC-CAT-095,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-103,AC-CAT-104,AC-CAT-107,AC-CAT-109,AC-CAT-111,AC-CAT-117,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-127,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-008,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-017,REQ-CAT-020,REQ-CAT-021,REQ-CAT-024,REQ-CAT-025,REQ-CAT-028,REQ-CAT-029,REQ-CAT-032,REQ-CAT-033,REQ-CAT-036,REQ-CAT-038,REQ-CAT-039,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-077,REQ-CAT-078,REQ-CAT-083,REQ-CAT-084,REQ-CAT-086,REQ-CAT-092,REQ-CAT-093,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-101,REQ-CAT-102,REQ-CAT-105,REQ-CAT-107,REQ-CAT-109,REQ-CAT-115,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-125,REQ-CAT-127,AC-CAT-152,AC-CAT-076,REQ-CAT-074 -->
 ### SUB API-SCENARIOS
 
 <!-- TC:TC-CAT-065:START traces=AC-CAT-001,REQ-CAT-001,API-CAT-002,API-CAT-038 -->
@@ -8941,6 +9205,48 @@ Steps        : 1. GET /api/v1/cat/lookups/CAT_UOM. 2. GET /api/v1/cat/lookups/MD
 Expected     : 1 → 200; data has 8 options, the codes PIECE, CARTON, BOX, DOZEN, KILOGRAM, GRAM, METRE and LITRE, each with labelAr and labelEn as in the SRS lookups table. 2 → 404, code CAT-404-LOOKUP-KEY-UNKNOWN, messageAr «هذه القائمة ليست من قوائم الكتالوج. اختر إحدى قوائم الكتالوج.», messageEn "This list is not one of the catalogue lists. Choose a catalogue list.". 3 → 403, code CAT-403-FORBIDDEN.
 Test data    : CAT_UOM and its 8 seeded values (from the AC); MDL_COUNTRY (a key CAT does not own — this case's own value)
 <!-- TC:TC-CAT-207:END -->
+
+<!-- TC:TC-CAT-213:START traces=AC-CAT-157,REQ-CAT-136,API-CAT-053,API-CAT-021,API-CAT-024,API-CAT-039 -->
+### TC-CAT-213 — Reactivating a top-level Category keeps its code
+Derived from : AC-CAT-157  (REQ-CAT-136)
+Exercises    : API-CAT-053 PATCH /api/v1/cat/categories/{id} · API-CAT-021 POST /api/v1/cat/categories · API-CAT-024 DELETE /api/v1/cat/categories/{id} · API-CAT-039 GET /api/v1/cat/categories
+Rule / code  : RULE-CAT-024 → CAT-409-CATEGORY-DUPLICATE (name taken meanwhile) · —
+Package      : SVC-API-CRUD
+Scenario     : STATE · data class VALID · language ALL
+Preconditions: S0 · the top-level Category PHONES «هواتف», deactivated through API-CAT-024
+Host data    : none
+Steps        : 1. POST a top-level Category {code: PHONES2, nameAr: «هواتف»}. 2. PATCH PHONES with {isActiveFl: true}. 3. DELETE PHONES2. 4. PATCH PHONES with {isActiveFl: true}. 5. GET /api/v1/cat/categories?isActiveFl=true.
+Expected     : 1 → 201. 2 → 409, code CAT-409-CATEGORY-DUPLICATE, messageAr «يوجد رمز الفئة نفسه، أو الاسم نفسه تحت الفئة الأم نفسها. استخدم رمزًا أو اسمًا مختلفًا.», messageEn "The category code already exists, or the name already exists under the same parent. Use a different code or name."; PHONES stays inactive. 3 → 200. 4 → 200; isActiveFl true, code PHONES. 5 → the tree lists PHONES «هواتف» as an active root.
+Test data    : PHONES, PHONES2, «هواتف» (from the AC; PHONES2 is this case's own)
+<!-- TC:TC-CAT-213:END -->
+
+<!-- TC:TC-CAT-215:START traces=AC-CAT-159,REQ-CAT-137,API-CAT-054,API-CAT-025,API-CAT-028,API-CAT-041 -->
+### TC-CAT-215 — Reactivating a Variant attribute keeps its code and offers it again
+Derived from : AC-CAT-159  (REQ-CAT-137)
+Exercises    : API-CAT-054 PATCH /api/v1/cat/variant-attributes/{id} · API-CAT-025 POST /api/v1/cat/variant-attributes · API-CAT-028 DELETE /api/v1/cat/variant-attributes/{id} · API-CAT-041 GET /api/v1/cat/variant-attributes
+Rule / code  : RULE-CAT-016 → CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE (name taken meanwhile) · —
+Package      : SVC-API-CRUD
+Scenario     : STATE · data class VALID · language ALL
+Preconditions: S0 · the Variant attribute SIZE «المقاس» with the active values S and M, deactivated through API-CAT-028 (0 active Variants carry it)
+Host data    : none
+Steps        : 1. POST an attribute {code: SIZE2, nameAr: «المقاس»}. 2. PATCH SIZE with {isActiveFl: true}. 3. DELETE SIZE2. 4. PATCH SIZE with {isActiveFl: true}. 5. GET /api/v1/cat/variant-attributes?isActiveFl=true.
+Expected     : 1 → 201. 2 → 409, code CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE, messageAr «الرمز أو الاسم مستخدم بالفعل. استخدم رمزًا (حتى 30 حرفًا لاتينيًا أو رقمًا أو شرطة) واسمًا مختلفين.», messageEn "The code or name is already used. Use a different code (up to 30 Latin letters, digits or hyphens) and name."; SIZE stays inactive. 3 → 200. 4 → 200; isActiveFl true, code SIZE. 5 → SIZE is listed with its active values S and M.
+Test data    : SIZE, SIZE2, «المقاس», S, M (from the AC; SIZE2 is this case's own)
+<!-- TC:TC-CAT-215:END -->
+
+<!-- TC:TC-CAT-216:START traces=AC-CAT-160,REQ-CAT-138,API-CAT-055,API-CAT-054,API-CAT-028,API-CAT-026 -->
+### TC-CAT-216 — Reactivating a Variant attribute value needs an active attribute
+Derived from : AC-CAT-160  (REQ-CAT-138)
+Exercises    : API-CAT-055 PATCH /api/v1/cat/variant-attribute-values/{id} · API-CAT-054 PATCH /api/v1/cat/variant-attributes/{id} · API-CAT-028 DELETE /api/v1/cat/variant-attributes/{id} · API-CAT-026 GET /api/v1/cat/variant-attributes/{id}
+Rule / code  : PLATFORM-STD CAT-400-REQUEST-INVALID (attribute inactive, ADR-CAT-044) · RULE-CAT-016 (satisfied)
+Package      : SVC-API-CRUD
+Scenario     : STATE · data class VALID · language ALL
+Preconditions: S0 · the attribute SIZE with the active value M and the inactive value XS «صغير جدًا» · 0 active Variants carry SIZE
+Host data    : none
+Steps        : 1. DELETE SIZE (API-CAT-028). 2. PATCH XS with {isActiveFl: true}. 3. PATCH SIZE with {isActiveFl: true}. 4. PATCH XS with {isActiveFl: true}. 5. GET SIZE.
+Expected     : 1 → 200. 2 → 400, code CAT-400-REQUEST-INVALID, messageAr «الطلب غير صالح. راجع الحقول المحددة ثم أعد المحاولة.», messageEn "The request is not valid. Check the highlighted fields and try again."; XS stays inactive. 3 → 200. 4 → 200; isActiveFl true, code XS. 5 → SIZE lists M and XS as active.
+Test data    : SIZE, M, XS «صغير جدًا» (from the AC)
+<!-- TC:TC-CAT-216:END -->
 <!-- SUB:API-SCENARIOS:END -->
 <!-- PHASE:TEST-PLAN-BE:END -->
 
@@ -8951,7 +9257,7 @@ CAT has no `XM-*` edge. The registry-db XM register is `records: []`, SRS A8 has
 ## TC TRACEABILITY INDEX
 
 ### AC → TC (and REQ → TC)
-Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-041 → TC-CAT-019, 020. REQ-CAT-086 → TC-CAT-105, 188. REQ-CAT-101 → TC-CAT-111, 189. REQ-CAT-130 → TC-CAT-185, 186, 187. Every other REQ maps to one TC.
+Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-041 → TC-CAT-019, 020. REQ-CAT-086 → TC-CAT-105, 188. REQ-CAT-101 → TC-CAT-111, 189. REQ-CAT-130 → TC-CAT-185, 186, 187. REQ-CAT-135 → TC-CAT-185, 186, 187, 198, 212. REQ-CAT-136 → TC-CAT-213, 214. Every other REQ maps to one TC.
 
 | AC | REQ | TC |
 |---|---|---|
@@ -9107,38 +9413,46 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | AC-CAT-150 | REQ-CAT-087 | TC-CAT-204 |
 | AC-CAT-151 | REQ-CAT-062 | TC-CAT-205 |
 | AC-CAT-152 | REQ-CAT-093 | TC-CAT-206 |
+| AC-CAT-153 | REQ-CAT-071 | TC-CAT-211 |
+| AC-CAT-154 | REQ-CAT-135 | TC-CAT-185, 212 (frontend: TC-CAT-210) |
+| AC-CAT-155 | REQ-CAT-135 | TC-CAT-186, 212 (frontend: TC-CAT-210) |
+| AC-CAT-156 | REQ-CAT-135 | TC-CAT-187, 212 (frontend: TC-CAT-210) |
+| AC-CAT-157 | REQ-CAT-136 | TC-CAT-213 |
+| AC-CAT-158 | REQ-CAT-136 | TC-CAT-214 |
+| AC-CAT-159 | REQ-CAT-137 | TC-CAT-215 |
+| AC-CAT-160 | REQ-CAT-138 | TC-CAT-216 |
 
 ### API → TC (TC-CAT-…)
 | API | TCs |
 |---|---|
 | API-CAT-001 | 003, 005, 007, 012, 013, 014, 016, 027, 028, 035, 036, 071, 074, 076, 077, 078, 080, 081, 093, 190, 193, 203 |
-| API-CAT-002 | 001, 007, 008, 009, 015, 021, 022, 023, 029, 031, 037, 038, 041, 054, 056, 057, 061, 062, 065, 066, 068, 070, 073, 077, 078, 079, 092, 094, 095, 097, 113, 114, 117, 184, 185, 186, 187, 190, 191, 192, 197, 198, 200, 201, 202, 205 |
-| API-CAT-003 | 004, 015, 031, 041, 062, 068, 069, 070, 117, 190, 191, 192 |
+| API-CAT-002 | 001, 007, 008, 009, 015, 021, 022, 023, 029, 031, 037, 038, 041, 054, 056, 057, 061, 062, 065, 066, 068, 070, 073, 077, 078, 079, 092, 094, 095, 097, 113, 114, 117, 184, 185, 186, 187, 190, 191, 192, 197, 198, 200, 201, 202, 205, 212 |
+| API-CAT-003 | 004, 015, 031, 041, 062, 068, 069, 070, 117, 186, 190, 191, 192, 212 |
 | API-CAT-004 | 001, 188, 190, 197 |
-| API-CAT-005 | 002, 059, 060, 061, 185, 186, 187 |
-| API-CAT-006 | 006, 008, 009, 022, 023, 029, 092, 184, 201 |
+| API-CAT-005 | 002, 059, 060, 061, 185, 186, 187, 212 |
+| API-CAT-006 | 006, 008, 009, 022, 023, 029, 092, 184, 185, 201, 212 |
 | API-CAT-007 | 015, 021, 024, 030, 048, 074, 086, 089, 118, 119, 199, 205, 206 |
-| API-CAT-008 | 015, 118 |
-| API-CAT-009 | 021, 024, 030, 199, 200, 205 |
-| API-CAT-010 | 039, 101, 198 |
+| API-CAT-008 | 015, 118, 212 |
+| API-CAT-009 | 021, 024, 030, 199, 200, 205, 212 |
+| API-CAT-010 | 039, 101, 198, 212 |
 | API-CAT-011 | 038, 040, 102, 122, 183 |
-| API-CAT-012 | 040, 102 |
-| API-CAT-013 | 038, 183 |
-| API-CAT-014 | 043, 044, 045, 047, 050, 103, 109, 199, 204 |
-| API-CAT-015 | 104 |
-| API-CAT-016 | 042 |
-| API-CAT-017 | 007, 094, 205 |
-| API-CAT-018 | 055, 056, 113 |
-| API-CAT-019 | 054, 058, 202 |
-| API-CAT-020 | 057, 114 |
-| API-CAT-021 | 033, 096 |
-| API-CAT-022 | 032, 034, 098 |
+| API-CAT-012 | 040, 102, 212 |
+| API-CAT-013 | 038, 183, 212 |
+| API-CAT-014 | 043, 044, 045, 047, 050, 103, 109, 199, 204, 212 |
+| API-CAT-015 | 104, 212 |
+| API-CAT-016 | 042, 212 |
+| API-CAT-017 | 007, 094, 187, 205, 212 |
+| API-CAT-018 | 055, 056, 113, 212 |
+| API-CAT-019 | 054, 058, 202, 212 |
+| API-CAT-020 | 057, 114, 212 |
+| API-CAT-021 | 033, 096, 211, 213 |
+| API-CAT-022 | 032, 034, 098, 211, 214 |
 | API-CAT-023 | 032, 097 |
-| API-CAT-024 | 034, 098 |
-| API-CAT-025 | 006, 026, 072, 085 |
-| API-CAT-026 | 025, 086, 088 |
+| API-CAT-024 | 034, 098, 211, 213 |
+| API-CAT-025 | 006, 026, 072, 085, 215 |
+| API-CAT-026 | 025, 086, 088, 216 |
 | API-CAT-027 | 086 |
-| API-CAT-028 | 087 |
+| API-CAT-028 | 087, 215, 216 |
 | API-CAT-029 | 088 |
 | API-CAT-030 | 089 |
 | API-CAT-031 | 025, 090 |
@@ -9149,9 +9463,9 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | API-CAT-036 | 121 |
 | API-CAT-037 | 122 |
 | API-CAT-038 | 016, 018, 065, 067, 203 |
-| API-CAT-039 | 033, 098, 099 |
+| API-CAT-039 | 033, 098, 099, 211, 213 |
 | API-CAT-040 | 100 |
-| API-CAT-041 | 026, 087, 090, 091 |
+| API-CAT-041 | 026, 087, 090, 091, 215 |
 | API-CAT-042 | 111, 189 |
 | API-CAT-043 | 042, 046, 048, 051, 105, 110, 188, 199, 204, 206 |
 | API-CAT-044 | 115 |
@@ -9163,6 +9477,9 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | API-CAT-050 | 052, 053, 112 |
 | API-CAT-051 | 010, 011, 075 |
 | API-CAT-052 | 207 |
+| API-CAT-053 | 213, 214 |
+| API-CAT-054 | 215, 216 |
+| API-CAT-055 | 216 |
 
 ### RULE / code → TC (TC-CAT-…)
 | RULE | catalog code | TCs (violation / notice / state) |
@@ -9182,17 +9499,17 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | RULE-CAT-013 | CAT-409-VARIANT-COMBINATION-DUPLICATE | 022 · 092 |
 | RULE-CAT-014 | CAT-422-VARIANT-LIMIT-EXCEEDED | 023, 201 (parallel generations) |
 | RULE-CAT-015 | CAT-409-LAST-ACTIVE-VARIANT | 024, 200 (parallel deactivations) |
-| RULE-CAT-016 | CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE | 026 |
+| RULE-CAT-016 | CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE | 026, 215 (reactivation) · 216 |
 | RULE-CAT-017 | CAT-409-ATTRIBUTE-VALUE-IN-USE | 025 · 087, 090 (0 uses) |
 | RULE-CAT-018 | CAT-422-BUNDLE-COMPONENTS-REQUIRED | 027 · 093 |
-| RULE-CAT-019 | CAT-422-BUNDLE-COMPONENT-INVALID | 028, 187 (reactivation), 205 (parallel, branch a) · 093 |
+| RULE-CAT-019 | CAT-422-BUNDLE-COMPONENT-INVALID | 028, 187 (reactivation, then repaired), 205 (parallel, branch a) · 093, 212 |
 | RULE-CAT-020 | CAT-422-BUNDLE-SINGLE-VARIANT | 029 |
 | RULE-CAT-021 | CAT-409-VARIANT-IN-ACTIVE-BUNDLE | 030, 205 (parallel, branch b) |
 | RULE-CAT-022 | CAT-422-ITEM-KIND-FIXED | 031 |
-| RULE-CAT-023 | CAT-422-CATEGORY-PARENT-INVALID | 032 |
-| RULE-CAT-024 | CAT-409-CATEGORY-DUPLICATE | 033 |
-| RULE-CAT-025 | CAT-409-CATEGORY-IN-USE | 034 |
-| RULE-CAT-026 | CAT-422-CATEGORY-INACTIVE | 035, 186 (reactivation) |
+| RULE-CAT-023 | CAT-422-CATEGORY-PARENT-INVALID | 032, 214 (reactivation), 211 (parallel, branch b) |
+| RULE-CAT-024 | CAT-409-CATEGORY-DUPLICATE | 033, 213 (reactivation) |
+| RULE-CAT-025 | CAT-409-CATEGORY-IN-USE | 034, 211 (parallel, branch a) |
+| RULE-CAT-026 | CAT-422-CATEGORY-INACTIVE | 035, 186 (reactivation, then repaired) · 212 (categoryFk-only repair) |
 | RULE-CAT-027 | CAT-422-ITEM-UNIT-INVALID | 039 · 101 |
 | RULE-CAT-028 | CAT-422-CONVERSION-FACTOR-FIXED | 040 |
 | RULE-CAT-029 | CAT-409-BARCODE-DUPLICATE | 043, 204 (parallel adds) · 199 (value released by a Variant deactivation) |
@@ -9216,10 +9533,10 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | RULE-CAT-047 | CAT-404-BARCODE-NOT-FOUND | 046, 188 (Item deactivated) · 042, 048 |
 | RULE-CAT-048 | CAT-200-DEACTIVATED | 001, 038, 042, 098, 197 · 021, 199 (barcodes follow the Variant) |
 | RULE-CAT-049 | CAT-500-CHANGE-NOT-SAVED | 004 · 059, 069 (event after commit) |
-| RULE-CAT-050 | CAT-422-ITEM-NO-ACTIVE-VARIANT | 185 |
+| RULE-CAT-050 | CAT-422-ITEM-NO-ACTIVE-VARIANT | 185 (then repaired by generation) |
 | RULE-CAT-051 | CAT-409-ITEM-UNIT-HAS-BARCODES | 183 |
 | RULE-CAT-052 | CAT-422-VARIANT-ATTRIBUTE-MISSING | 184 |
-| RULE-CAT-053 | CAT-422-PARENT-INACTIVE | 198 |
+| RULE-CAT-053 | CAT-422-PARENT-INACTIVE | 198, 212 (every endpoint that applies it), 186 (a change other than categoryFk) · 185, 187, 212 (the three repairs are not refused — ADR-CAT-068) |
 | PLATFORM-STD | CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-409-STALE-VERSION, CAT-404-LOOKUP-KEY-UNKNOWN | 207 (404 for a key CAT does not own and 403 without a CAT permission on API-CAT-052 — ADR-CAT-065), 190 (403 on API-CAT-001, 003, 004 — AC-CAT-137), 191 (404 across tenants — AC-CAT-139), 192 (409 on a stale version — AC-CAT-140). TC-CAT-124 asserts that the catalogue search does *not* answer 403. CAT-400-REQUEST-INVALID, 401 and 500-SERVER-ERROR have no AC of their own and no TC. 413 and 415 left the catalog with the multipart surface (ADR-CAT-056) |
 
 ### XM → TC
@@ -9231,7 +9548,7 @@ none — no `XM-*` exists (registry-db `records: []`).
 | CORE | 11 | 004, 005, 037, 069, 071, 072, 079, 080, 081, 191, 193 |
 | DATA-DOM-MASTER | 1 | 092 |
 | DATA-DOM-LOOKUP | 2 | 048, 122 |
-| SVC-API-CRUD | 100 | 001, 002, 003, 006, 007, 008, 009, 012, 013, 014, 015, 016, 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 033, 034, 035, 036, 038, 039, 040, 041, 042, 043, 044, 045, 047, 049, 050, 054, 055, 056, 057, 058, 059, 060, 061, 062, 063, 065, 066, 068, 070, 073, 074, 076, 077, 078, 085, 086, 087, 088, 089, 090, 093, 094, 095, 096, 097, 098, 101, 102, 103, 104, 106, 107, 109, 113, 114, 117, 118, 119, 120, 121, 183, 184, 185, 186, 187, 192, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206 |
+| SVC-API-CRUD | 106 | 001, 002, 003, 006, 007, 008, 009, 012, 013, 014, 015, 016, 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 033, 034, 035, 036, 038, 039, 040, 041, 042, 043, 044, 045, 047, 049, 050, 054, 055, 056, 057, 058, 059, 060, 061, 062, 063, 065, 066, 068, 070, 073, 074, 076, 077, 078, 085, 086, 087, 088, 089, 090, 093, 094, 095, 096, 097, 098, 101, 102, 103, 104, 106, 107, 109, 113, 114, 117, 118, 119, 120, 121, 183, 184, 185, 186, 187, 192, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 211, 212, 213, 214, 215, 216 |
 | SVC-API-SEARCH | 17 | 046, 051, 064, 067, 091, 099, 100, 105, 108, 110, 111, 115, 116, 123, 188, 189, 207 |
 | SVC-API-INT | 13 | 010, 011, 017, 018, 019, 020, 052, 053, 075, 082, 083, 084, 112 |
 | SEC-BE | 2 | 124, 190 |
@@ -9241,15 +9558,15 @@ none — no `XM-*` exists (registry-db `records: []`).
 
 | Measure | Result |
 |---|---|
-| AC covered (this track) | 146 / 152 ✓. The 6 others are observable on a screen only and are covered on the frontend track: AC-CAT-014 → TC-CAT-128, AC-CAT-015 → TC-CAT-129, AC-CAT-027 → TC-CAT-132, AC-CAT-075 → TC-CAT-137, AC-CAT-138 → TC-CAT-194, AC-CAT-142 → TC-CAT-195 (ADR-CAT-052 §1). AC-CAT-076 has its server read here (TC-CAT-207) and its field on the frontend (TC-CAT-138). |
-| AC covered (both plans) | 152 / 152 ✓, no gap |
-| REQ covered (this track) | 131 / 135 ✓. REQ-CAT-014, 015, 026 and 073 are covered on the frontend track (TC-CAT-128, 129, 132, 137). |
-| REQ covered (both plans) | 135 / 135 ✓ |
-| API covered | 52 / 52 ✓. This includes API-CAT-011 and API-CAT-046, which no CAT screen calls (ADR-CAT-051), and API-CAT-052 (TC-CAT-207). |
+| AC covered (this track) | 154 / 160 ✓. The 6 others are observable on a screen only and are covered on the frontend track: AC-CAT-014 → TC-CAT-128, AC-CAT-015 → TC-CAT-129, AC-CAT-027 → TC-CAT-132, AC-CAT-075 → TC-CAT-137, AC-CAT-138 → TC-CAT-194, AC-CAT-142 → TC-CAT-195 (ADR-CAT-052 §1). AC-CAT-076 has its server read here (TC-CAT-207) and its field on the frontend (TC-CAT-138). |
+| AC covered (both plans) | 160 / 160 ✓, no gap |
+| REQ covered (this track) | 134 / 138 ✓. REQ-CAT-014, 015, 026 and 073 are covered on the frontend track (TC-CAT-128, 129, 132, 137). |
+| REQ covered (both plans) | 138 / 138 ✓ |
+| API covered | 55 / 55 ✓. This includes API-CAT-011 and API-CAT-046, which no CAT screen calls (ADR-CAT-051), and API-CAT-052 (TC-CAT-207); API-CAT-053 … 055 by TC-CAT-213 … 216. |
 | RULE covered | 53 / 53 ✓, each with its catalog code where the rule raises one |
-| Concurrency guards | 7 / 7 — stale version (TC-CAT-192) and the six parallel-request cases: RULE-CAT-015 (TC-CAT-200), 014 (201), 039 (202), 003 (203), 029 (204), 021 / 019 (205), each naming the guard and its owning unit |
+| Concurrency guards | 8 / 8 — stale version (TC-CAT-192) and the seven parallel-request cases: RULE-CAT-015 (TC-CAT-200), 014 (201), 039 (202), 003 (203), 029 (204), 021 / 019 (205), 025 / 023 (211, the Category tree lock), each naming the guard and its owning unit |
 | XM edges covered | 0 / 0 — no edge, so the `INT-XM` phase is absent |
-| Track size | 146 TCs for 146 ACs (ratio 1.0, within the ~2× guard). No boundary twin is added; every BOUNDARY-class TC is the AC's own case. |
+| Track size | 152 TCs for 154 ACs (ratio < 1.0, within the ~2× guard; TC-CAT-185 … 187 and 212 each cover more than one AC). No boundary twin is added; every BOUNDARY-class TC is the AC's own case. |
 | Host data | CAT_BRAND BRAND_068 (TC-CAT-068, created active by `POST /api/v1/mdl/lookup-types/{id}/values`), CAT_BRAND OLDBRAND (TC-CAT-037, created by the same call, then made inactive by `DELETE /api/v1/mdl/lookup-values/{id}`); CAT_BRAND XYZ absent (TC-CAT-019, 036: never created). The AC values CAT_UOM BAG (AC-CAT-122 … 124) and CAT_EINVOICE_UNIT H87 (AC-CAT-126) are not seeded; TC-CAT-120, 121, 122 stay on seeded data with the unit DOZEN and TC-CAT-063 with the e-invoice unit BX in their place (ADR-CAT-053 §2). No value is demanded in opposite states, and every TC runs in its own tenant (ADR-CAT-052 §3, §4). |
 
 <<<END ARTIFACT>>>
@@ -9368,6 +9685,9 @@ PLATFORM FINDINGS   (§7 — obligations outside CAT that a CAT policy or artifa
 | 2 | A write that turns the capability flag `variants` or `bundles` off must first call `CatalogueReadApi.checkCapabilityTurnOff(flag)`, and must refuse the write, showing the returned message and dependent Items, when `allowed` is false. CAT only answers the check; no flag writer is obliged to call it, so POL-CAT-005 ("the system shall refuse the change") is not enforced anywhere yet. | erp-core `cu` / the platform shell that owns the flag-settings screen (flag owner OPEN, P-02) | POL-CAT-005; CON-CAT-017; REQ-CAT-021, REQ-CAT-022, REQ-CAT-023; ADR-CAT-041; ADR-CAT-017; contract §0 (obligation of the flag writer) | OPEN |
 | 3 | The Host data parser of `gov.py analyze` finds no subject. C10.8 (tc-data) and C10.9 (tc-consistency) report 0 subjects, although at least 10 TCs carry `Host data` and `Test data` lines (TC-CAT-019, 036, 037, 063, 068, 120, 121, 122, 137, 139, 175). The ADR-CAT-053 repair is therefore unproven mechanically. Analyze must be re-run until both clauses report a non-zero count, before the gate can APPROVE. | `gov.py` | analyze-all report "12 clause(s) examined nothing"; backend-test-plan-cat.md and frontend-test-plan-cat.md Host data lines; ADR-CAT-052 §3, ADR-CAT-053 | RESOLVED (gate-analysis round 2, G9). The cause was in CAT, not the parser: the SRS lookups block did not list the host values in `values`, and the Host data lines named no verb or path. Both are fixed (SRS A6; TC-CAT-019, 036, 037, 068, 137, 139 name the mdl `POST /api/v1/mdl/lookup-types/{id}/values` / `DELETE /api/v1/mdl/lookup-values/{id}` calls). The re-run reports C10.8 = 11 and C10.9 = 9 subjects, with no finding. |
 | 4 | The erp-core manifest publishes no in-process interface for the `common` capability `owned-lookups` (`com.erp.common.lookup.OwnedLookups`). CAT's given-usage row for API-CAT-052 must therefore name the mdl interface the call goes through (`com.erp.mdl.crossmodule.MdlLookupApi`), not the helper that checklist C6 and mdl.md conventions §Lookups rule 4 require. The manifest should list `OwnedLookups` under `modules.common`, so that a module serving its own keys can cite it directly. | erp-core (manifest of `modules.common`) | backend plan PHASE CORE given-usage row "modules.mdl, through common `owned-lookups`"; SRS A9; ADR-CAT-065; erp-core checklist C6 | OPEN |
+| 5 | erp-core gives no pattern for authorizing a cross-module read API (`com.erp.<mod>.crossmodule.*`) whose callers hold no permission of the owning module — a storefront shopper (SFR), a cashier (SLS), a system job (INV, PUR, TAX). Checklist C13 requires `@PreAuthorize` on every service method and states no exception, so CAT's `CatCatalogueReadService` carries none while the HTTP facades keep the screen permission and the calling module authorizes its own caller. The gap is raised as `CORE-GAP-in-process-authorization.md`, which asks the core to choose one of three options: (1) a core-provided caller authority (for example `CROSSMODULE_READ`) granted to in-process calls and checked by a `crossmodule` read service; (2) a documented exception to C13 for read-only services reached only through a `crossmodule` interface, enforced by `ModuleBoundaryRules`; (3) a core helper that runs an in-process read as a system principal on behalf of the calling module. Until the core answers, ADR-CAT-061 holds only conditionally. | erp-core | erp-core checklist C13 and F9; ADR-CAT-061; ADR-CAT-066; decisions/CAT/CORE-GAP-in-process-authorization.md (the three options above); backend plan PHASE CORE "Core gaps" | OPEN |
+| 6 | erp-core 1.6.0 lets a module register lookup types only by migration, with flat values that other tables reference by code. CAT's Variant attributes are types the tenant creates at runtime, each with its own values, referenced by foreign key from Variant assignments, so they stay CAT tables — a C5 / F3 deviation justified in ADR-CAT-070 and raised as `CORE-GAP-tenant-lookup-types.md`. | erp-core | erp-core checklist C5, F3 and F9; ADR-CAT-070; decisions/CAT/CORE-GAP-tenant-lookup-types.md | OPEN |
+| 7 | `NumberSeriesApi` allocates one number per call, so the item import draws up to 10,000 codes one by one (ADR-CAT-071). A block allocation would replace them with one call per batch. Raised as `CORE-GAP-number-series-block-allocation.md`. | erp-core | erp-core checklist F9; ADR-CAT-071; API-CAT-049; decisions/CAT/CORE-GAP-number-series-block-allocation.md | OPEN |
 ══════════════════════════════════════════════════════════════════
 
 <<<END ARTIFACT>>>
@@ -10425,7 +10745,7 @@ CREATE INDEX IDX_CAT_BARCODE_BARCODE_VALUE_TRGM ON CAT_BARCODE USING gin (BARCOD
 -- ──────────────────────────────────────────────────────────────────
 
 -- 8a — lookup types. Table owned by erp-core modules.mdl (MDL_LOOKUP_TYPE); the keys are owned by CAT (SRS A6).
--- OWNER_MODULE_CODE 'CAT' is the permission module CatPermissionContributor declares (RULE-MDL-001 is checked
+-- OWNER_MODULE_CODE 'CAT' is the permission module CatPermissions declares (RULE-MDL-001 is checked
 -- application-side against SEC_MODULE_REG, which the given fills from the contributor at startup).
 INSERT INTO MDL_LOOKUP_TYPE (LOOKUP_TYPE_PK, TENANT_ID, KEY, OWNER_MODULE_CODE, NAME_AR, NAME_EN, IS_ACTIVE_FL, CREATED_BY, CREATED_AT)
 SELECT nextval('SEQ_MDL_LOOKUP_TYPE'), 1, v.TYPE_KEY, 'CAT', v.NAME_AR, v.NAME_EN, TRUE, 'SYSTEM', CURRENT_TIMESTAMP
@@ -10641,11 +10961,12 @@ Priority  : MEDIUM (US-CAT-019)
 ```
 
 ```
-FLOW — SCR-CAT-001 · publish, unpublish, deactivate, reactivate   traces=US-CAT-020,US-CAT-001,REQ-CAT-005,REQ-CAT-006,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-062,SCR-CAT-001
+FLOW — SCR-CAT-001 · publish, unpublish, deactivate, reactivate   traces=US-CAT-020,US-CAT-001,REQ-CAT-130,REQ-CAT-135,REQ-CAT-005,REQ-CAT-006,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-062,SCR-CAT-001
 Screens   : SCR-CAT-001
 Sequence  : Items · Entry (no pending change) → Publish | Unpublish | Deactivate | Reactivate → confirmation → state badge updates → back to Items · Search
 Trigger   : the owner decides what is offered online, or retires / returns an Item
 Priority  : MEDIUM (US-CAT-020); HIGH (US-CAT-001)
+Exit      : Reactivate refused → the banner links to the repair on the same Entry, which stays available on the inactive Item (ADR-CAT-068): no active Variant → "Generate variants" · inactive Category → the Category field, or Categories `?node=<categoryFk>` to reactivate it · invalid Bundle component → Bundle components pane → Save → Reactivate again
 ```
 
 ```
@@ -10677,9 +10998,9 @@ Exit      : direct link to `/cat/variant-attributes` while `variants` is off →
 ## SCR-CAT-002 flows
 
 ```
-FLOW — SCR-CAT-002 · organise the Category tree   traces=US-CAT-013,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,SCR-CAT-002
+FLOW — SCR-CAT-002 · organise the Category tree   traces=US-CAT-013,REQ-CAT-136,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,SCR-CAT-002
 Screens   : SCR-CAT-002
-Sequence  : Catalog menu → Categories (tree by sortOrder) → node or "New category" → Category entry drawer `?node=<categoryPk|new>` → Save | Deactivate → tree refreshed
+Sequence  : Catalog menu → Categories (tree by sortOrder) → node or "New category" → Category entry drawer `?node=<categoryPk|new>` → Save | Deactivate | Reactivate (inactive node — ADR-CAT-069) → tree refreshed
 Trigger   : the owner sets up or reorganises the classification
 Priority  : — (US-CAT-013)
 ```
@@ -10695,9 +11016,9 @@ Priority  : — (US-CAT-013)
 ## SCR-CAT-003 flows
 
 ```
-FLOW — SCR-CAT-003 · maintain Variant attributes and their values   traces=US-CAT-011,US-CAT-004,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,SCR-CAT-003,SCR-CAT-001
+FLOW — SCR-CAT-003 · maintain Variant attributes and their values   traces=US-CAT-011,US-CAT-004,REQ-CAT-137,REQ-CAT-138,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,SCR-CAT-003,SCR-CAT-001
 Screens   : SCR-CAT-003, SCR-CAT-001
-Sequence  : Catalog menu (only while `variants` is on) or Items · Variant generation picker → Variant attributes (list by sortOrder) → attribute or "New attribute" → attribute entry drawer `?attribute=<pk|new>` → "Values" summary row → values drawer `&values=open` (returns the set) → Save → back to Items when opened from there
+Sequence  : Catalog menu (only while `variants` is on) or Items · Variant generation picker → Variant attributes (list by sortOrder) → attribute or "New attribute" → attribute entry drawer `?attribute=<pk|new>` (Reactivate on an inactive attribute — ADR-CAT-069) → "Values" summary row → values drawer `&values=open` (returns the set) → Save → back to Items when opened from there
 Trigger   : the owner defines size, colour or another dimension
 Priority  : HIGH (US-CAT-011, US-CAT-004)
 ```
@@ -10775,17 +11096,17 @@ Priority  : HIGH (US-CAT-006)
 
 Module : CAT · Version : v2 · Stage : P3.2 Part B · Track : frontend · Plan : exec · Profile : commerce
 Stack  : `react-ts-vite` · routing `react-router` · server state `tanstack-query` · forms `react-hook-form` · validation `zod` · state `zustand` · one lazy chunk per composite screen
-Bound to: `api-spec-cat.yaml` (OpenAPI 3.1.0, 52 operations, base path `/api/v1/cat`, bearer JWT). The frontend executor's mock server serves the same document until the backend is delivered.
+Bound to: `api-spec-cat.yaml` (OpenAPI 3.1.0, 55 operations, base path `/api/v1/cat`, bearer JWT). The frontend executor's mock server serves the same document until the backend is delivered.
 Design : `ui-ux-spec-cat.md` (SCR-CAT-001 … 006, UXD-CAT-001 … 003) · `flow-diagram-cat.md`
-Decisions: ADR-CAT-049 (Items: one Save owning ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage and binding notes); earlier: ADR-CAT-043, ADR-CAT-044, ADR-CAT-048; gate-analysis revise: ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes); second gate-analysis revise: ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length), ADR-CAT-065 (CAT lookup keys served through API-CAT-052)
+Decisions: ADR-CAT-049 (Items: one Save owning ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage and binding notes); earlier: ADR-CAT-043, ADR-CAT-044, ADR-CAT-048; gate-analysis revise: ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes); second gate-analysis revise: ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length), ADR-CAT-065 (CAT lookup keys served through API-CAT-052); third gate-analysis revise: ADR-CAT-068 (three repairs stay allowed on an inactive Item), ADR-CAT-069 (reactivation of Categories, Variant attributes and values)
 
 This is a delta run, but the current state holds no earlier frontend plan, so every block below is ADDED. The plan says WHAT each screen reads, validates and renders. Method, path, request and response schema, paging and envelope are read in `api-spec-cat.yaml` by `x-api-id`, not copied here.
 
 ## 3.0 Binding to the API document
 
 Reconciliation against the SRS (run once, before any phase):
-- **REQ → operation**: 134 of 135 REQs bind to at least one operation that a CAT screen calls (block below). REQ-CAT-115 (storefront read) is served by `API-CAT-046`, which no CAT screen calls; SFR consumes it (ADR-CAT-051). No REQ needs an operation the document lacks. Lookup values (REQ-CAT-073, 074, 076) are served by CAT's own read `API-CAT-052` through `OwnedLookups` (UXD-CAT-001 — ADR-CAT-065), and capability flags (REQ-CAT-011 … 015) by the given (UXD-CAT-002 — ADR-CAT-050).
-- **Operation → REQ**: every one of the 52 operations carries `x-traces` to at least one REQ, so no operation is unknown. Two operations (`API-CAT-011`, `API-CAT-046`) are not called by a CAT screen (ADR-CAT-051).
+- **REQ → operation**: 137 of 138 REQs bind to at least one operation that a CAT screen calls (block below). REQ-CAT-115 (storefront read) is served by `API-CAT-046`, which no CAT screen calls; SFR consumes it (ADR-CAT-051). No REQ needs an operation the document lacks. Lookup values (REQ-CAT-073, 074, 076) are served by CAT's own read `API-CAT-052` through `OwnedLookups` (UXD-CAT-001 — ADR-CAT-065), and capability flags (REQ-CAT-011 … 015) by the given (UXD-CAT-002 — ADR-CAT-050).
+- **Operation → REQ**: every one of the 55 operations carries `x-traces` to at least one REQ, so no operation is unknown. Two operations (`API-CAT-011`, `API-CAT-046`) are not called by a CAT screen (ADR-CAT-051).
 - **Envelope**: success bodies are `ApiResponse<T>` (`data`, `code`, `messageAr`, `messageEn`). Errors are `LocalizedError` (`code`, `messageAr`, `messageEn`). Paged reads (`x-paginated`) take `page` / `size`. Two binary bodies exist: the import sheet (xlsx, `API-CAT-048`) and the label document (PDF, `API-CAT-050`).
 - **Platform-standard codes** (ADR-CAT-044) map to no RULE and are routed generically: `CAT-400-REQUEST-INVALID` → generic message · `CAT-401-UNAUTHENTICATED` → login · `CAT-403-FORBIDDEN` → unauthorized view (or a hidden affordance for an auxiliary read — ADR-CAT-051 §4) · `CAT-404-NOT-FOUND` → not-found state · `CAT-409-STALE-VERSION` → stale-version banner with Reload · a rejection of the given FILE upload (step 1 of an image or an import — ADR-CAT-056) → inline on the file input, showing the FILE envelope's messageAr / messageEn · `CAT-500-SERVER-ERROR` → generic message with Try again. In every case the text is the envelope's `messageAr` / `messageEn`.
 
@@ -10926,6 +11247,9 @@ bindings:
   - {req: REQ-CAT-133, api: [API-CAT-003]}
   - {req: REQ-CAT-134, api: [API-CAT-045]}
   - {req: REQ-CAT-135, api: [API-CAT-003, API-CAT-006, API-CAT-008, API-CAT-010, API-CAT-012, API-CAT-014, API-CAT-015, API-CAT-017, API-CAT-018, API-CAT-019]}
+  - {req: REQ-CAT-136, api: [API-CAT-053]}
+  - {req: REQ-CAT-137, api: [API-CAT-054]}
+  - {req: REQ-CAT-138, api: [API-CAT-055]}
 unmapped: []
 codes:
   - {code: "CAT-422-NAME-AR-INVALID", rule: RULE-CAT-001}
@@ -10983,7 +11307,7 @@ codes:
   - {code: "CAT-422-PARENT-INACTIVE", rule: RULE-CAT-053}
 ```
 
-<!-- PHASE:F1:START traces=REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
+<!-- PHASE:F1:START traces=REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,API-CAT-053,API-CAT-054,API-CAT-055,REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
 ## F1 — Models & Types
 
 Field and DTO binding: the request and response schemas of this module's operations in `api-spec-cat.yaml` are the source. The blocks below name which schema each screen binds, by operation, and add only the UI-side types that exist in neither the document nor the SRS (form state, pending lines, URL filter objects). TypeScript types are generated from the document (one generator run, no hand-written DTO). Every UI type below is a projection of a generated type.
@@ -10991,9 +11315,9 @@ Field and DTO binding: the request and response schemas of this module's operati
 Shared across screens:
 - `ApiResponse<T>` and `Page<T>` (`content`, `page`, `size`, `totalElements`, `totalPages`) wrap every read. `LocalizedError` is the error body.
 - `LookupOption = { code, labelAr, labelEn, isActive }` is the UI shape of a given lookup value (UXD-CAT-001). `CapabilityFlags = { variants: boolean | unknown, bundles: boolean | unknown }` is the UI shape of the given flags (UXD-CAT-002). `unknown` means unreadable (REQ-CAT-013).
-- `PendingState = 'new' | 'changed' | 'deactivate' | 'failed'` marks a child line not yet sent (ADR-CAT-049). It is UI-only and never sent.
+- `PendingState = 'new' | 'changed' | 'deactivate' | 'reactivate' | 'failed'` marks a child line not yet sent (ADR-CAT-049; `reactivate` for an inactive value line — ADR-CAT-069). It is UI-only and never sent.
 
-<!-- SUB:F1-SCR-CAT-001:START traces=REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-038,API-CAT-039,API-CAT-041,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001 -->
+<!-- SUB:F1-SCR-CAT-001:START traces=API-CAT-053,REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-038,API-CAT-039,API-CAT-041,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001 -->
 ### F1 · SCR-CAT-001 — Items
 
 Bound schemas: search `ItemSummary` page (API-CAT-038) · read `ItemDetail` with `VariantSummary`, `AttributeValueView`, `BarcodeView`, `ItemUnitView`, `BundleComponentView`, `MediaView` (API-CAT-002) · `VariantDetail` (API-CAT-007) · create `ItemCreateRequest` (API-CAT-001) · update `ItemUpdateRequest` (API-CAT-003) · state `ItemStateRequest` (API-CAT-005) · deactivate response `ItemSummary` (API-CAT-004) · `VariantGenerationRequest` → `VariantGenerationResult` (API-CAT-006) · `VariantOverrideRequest` (API-CAT-008) · `ItemUnitCreateRequest` / `ItemUnitUpdateRequest` (API-CAT-010 / 012) · `BarcodeCreateRequest` / `InternalBarcodeRequest` (API-CAT-014 / 015) · `BundleComponentsRequest` (API-CAT-017) · `ItemMediaCreateRequest` (JSON carrying `fileDocumentRef`) / `ItemMediaUpdateRequest` (API-CAT-018 / 019) · Variant, unit, barcode and media deactivations (API-CAT-009, 013, 016, 020) · `CategoryNode` (API-CAT-039) · `VariantAttributeView` (API-CAT-041) · `BarcodeLookupResult` (API-CAT-043) · `MediaView` list (API-CAT-044) · `CatalogueSettings` (API-CAT-045) · `CatalogueSearchHit` (API-CAT-047).
@@ -11005,10 +11329,10 @@ UI types:
 - `ItemRouteState = { itemPk | 'new', variant?, drawer?: '<line-kind>:<id|new>', picker?: 'variant-generation' | 'bundle-components' }`, parsed from the route and its search params.
 <!-- SUB:F1-SCR-CAT-001:END -->
 
-<!-- SUB:F1-SCR-CAT-002:START traces=REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
+<!-- SUB:F1-SCR-CAT-002:START traces=REQ-CAT-136,API-CAT-053,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
 ### F1 · SCR-CAT-002 — Categories
 
-Bound schemas: `CategoryNode` tree (API-CAT-039) · `CategoryView` (API-CAT-022) · `CategoryCreateRequest` (API-CAT-021) · `CategoryUpdateRequest` (API-CAT-023) · deactivate response `CategoryView` (API-CAT-024) · `ItemSummary` page (API-CAT-040).
+Bound schemas: `CategoryNode` tree (API-CAT-039) · `CategoryView` (API-CAT-022) · `CategoryCreateRequest` (API-CAT-021) · `CategoryUpdateRequest` (API-CAT-023) · deactivate response `CategoryView` (API-CAT-024) · `CategoryStateRequest` `{isActiveFl: true}` → `CategoryView` (API-CAT-053, reactivate) · `ItemSummary` page (API-CAT-040).
 
 UI types:
 - `CategoryTreeFilters = { text?, isActiveFl? }` (URL search params).
@@ -11017,10 +11341,10 @@ UI types:
 - `CategoryItemsFilters = { categoryPk, page, size }`.
 <!-- SUB:F1-SCR-CAT-002:END -->
 
-<!-- SUB:F1-SCR-CAT-003:START traces=REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
+<!-- SUB:F1-SCR-CAT-003:START traces=REQ-CAT-137,REQ-CAT-138,API-CAT-054,API-CAT-055,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
 ### F1 · SCR-CAT-003 — Variant attributes
 
-Bound schemas: `VariantAttributeView` with `values: VariantAttributeValueView[]` (API-CAT-041, API-CAT-026) · `VariantAttributeCreateRequest` / `VariantAttributeUpdateRequest` (API-CAT-025 / 027) · attribute deactivation (API-CAT-028) · `VariantAttributeValueCreateRequest` / `VariantAttributeValueUpdateRequest` (API-CAT-029 / 030) · value deactivation (API-CAT-031).
+Bound schemas: `VariantAttributeView` with `values: VariantAttributeValueView[]` (API-CAT-041, API-CAT-026) · `VariantAttributeCreateRequest` / `VariantAttributeUpdateRequest` (API-CAT-025 / 027) · attribute deactivation (API-CAT-028) · `VariantAttributeStateRequest` `{isActiveFl: true}` (API-CAT-054, reactivate) · `VariantAttributeValueCreateRequest` / `VariantAttributeValueUpdateRequest` (API-CAT-029 / 030) · value deactivation (API-CAT-031) · `VariantAttributeValueStateRequest` `{isActiveFl: true}` (API-CAT-055, reactivate).
 
 UI types:
 - `AttributeListFilters = { text?, isActiveFl? }`.
@@ -11061,7 +11385,7 @@ UI types:
 <!-- SUB:F1-SCR-CAT-006:END -->
 <!-- PHASE:F1:END -->
 
-<!-- PHASE:F2:START traces=REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
+<!-- PHASE:F2:START traces=REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,API-CAT-053,API-CAT-054,API-CAT-055,REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
 ## F2 — Data Hooks
 
 These blocks declare what each screen reads and changes, not hook code. Rules shared by every screen:
@@ -11080,7 +11404,7 @@ Lookups shared by all screens (one hook per key, each bound to CAT's own read `A
 
 `CAPABILITY-FLAGS-INIT` (UXD-CAT-002): reads `variants` and `bundles` through the platform app configuration, with cache key `[platform, app-config]`. An unreadable value is `unknown` and is treated as off for display, with RULE-CAT-009's text shown where the function would be.
 
-<!-- SUB:F2-SCR-CAT-001:START traces=REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-038,API-CAT-039,API-CAT-041,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001 -->
+<!-- SUB:F2-SCR-CAT-001:START traces=API-CAT-053,REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-038,API-CAT-039,API-CAT-041,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001 -->
 ### F2 · SCR-CAT-001 — Items
 
 ```yaml name=screen-hooks
@@ -11148,7 +11472,7 @@ Read run on submit of "Find by barcode" (Enter, or the scanner's suffix). A hit 
 Exported by the Items module as the catalogue provider of the shell's global search (ADR-CAT-043, ADR-CAT-051 §2). It is enabled only for terms of at least 2 characters; a shorter term shows RULE-CAT-046's text and sends nothing. Hits keep the server order (exact code or barcode first, at most 20). A hit opens `/cat/items/:itemPk`. A user without PERM_CAT_ITEMS_VIEW gets an empty list from the server (REQ-CAT-127). The provider registers only when the user holds that permission, so the shell shows no catalogue group otherwise.
 
 #### ITEM-SAVE — API-CAT-001 … API-CAT-019            traces=API-CAT-001,API-CAT-003,API-CAT-017,API-CAT-016,API-CAT-020,API-CAT-009,API-CAT-013,API-CAT-010,API-CAT-012,API-CAT-006,API-CAT-008,API-CAT-014,API-CAT-015,API-CAT-018,API-CAT-019,REQ-CAT-004,REQ-CAT-024,REQ-CAT-025,REQ-CAT-049,REQ-CAT-056,REQ-CAT-057,REQ-CAT-077,REQ-CAT-083,REQ-CAT-084,REQ-CAT-105,REQ-CAT-118
-Mutation, the screen's ONE Save (ADR-CAT-049). The calls are ORDERED: each is sent only after the previous succeeded, and a part whose lines are unchanged is not sent at all:
+Mutation, the screen's ONE Save (ADR-CAT-049). On an inactive Item only three parts can be pending — the Category (step 1, `API-CAT-003` with every other header field unchanged), the Bundle components (step 2) and a Variant generation (step 5) — because the Entry offers no other input there (F3, ADR-CAT-068). The calls are ORDERED: each is sent only after the previous succeeded, and a part whose lines are unchanged is not sent at all:
 1. `API-CAT-001` (new Item; `bundleComponents` = `bundleLines`, or `[]` for STANDARD) or `API-CAT-003` (dirty header; carries `version`).
 2. `API-CAT-017`: update of a BUNDLE Item whose `bundleLines` differ from the last read. It carries the Item `version` returned by step 1, or by the last read when step 1 was skipped.
 3. Deactivations: barcodes `API-CAT-016` → images `API-CAT-020` → Variants `API-CAT-009` → Item units `API-CAT-013`.
@@ -11163,7 +11487,7 @@ After the last call, or at the first rejection, the Item is re-read and the pend
 Errors (text = the RULE message in ar/en as the envelope carries it):
 - `CAT-422-NAME-AR-INVALID` → inline on header nameAr, or on the image line's nameAr; text: RULE-CAT-001 message (SRS)
 - `CAT-422-NAME-EN-TOO-LONG` → inline on nameEn (header or image line); text: RULE-CAT-002 message
-- `CAT-409-ITEM-NAME-DUPLICATE` → inline on nameAr; text: RULE-CAT-003 message; action "Open the existing item" → `/cat/items?text=<nameAr>&isActiveFl=true` (one active Item per name)
+- `CAT-409-ITEM-NAME-DUPLICATE` → inline on nameAr; text: RULE-CAT-003 message, whose {code} the server fills with the existing Item's code; action "Open the existing item" → `/cat/items?text=<code>&isActiveFl=true`, which lists exactly that Item. `<code>` is the one token of the envelope's messageEn that matches the CAT_ITEM code pattern (`ITM-` + 6 digits, D-11); when no token matches (a tenant changed the series pattern), the action falls back to `/cat/items?text=<nameAr>&isActiveFl=true`
 - `CAT-422-CODE-SYSTEM-ASSIGNED` → form banner; text: RULE-CAT-004 message (the UI never sends a code; seeing it is a defect)
 - `CAT-500-CODE-NOT-ISSUED` → form banner with Try again; text: RULE-CAT-005 message
 - `CAT-422-LOOKUP-VALUE-INACTIVE` → inline on every lookup field changed in the rejected call, and the lookups are re-read; text: RULE-CAT-006 message
@@ -11193,7 +11517,7 @@ Errors (text = the RULE message in ar/en as the envelope carries it):
 - `CAT-409-STALE-VERSION` → form banner "stale-version" + Reload (pending lines kept); text: catalogue CAT-409-STALE-VERSION
 - `CAT-500-CHANGE-NOT-SAVED` → form banner with Try again; text: RULE-CAT-049 message
 - `CAT-404-NOT-FOUND` → the line is dropped and the Item re-read; generic text
-- `CAT-422-PARENT-INACTIVE` → form banner, and the Item is re-read, so the Entry turns read-only; text: RULE-CAT-053 message
+- `CAT-422-PARENT-INACTIVE` → form banner, and the Item is re-read, so the Entry turns to its inactive mode (read-only except the three repairs — F3); text: RULE-CAT-053 message
 - unauthenticated → login · forbidden → unauthorized view · server → generic
 
 Invalidation on success: `[cat, items, detail, itemPk]`, `[cat, items, search]`, `[cat, variants, detail]` (this Item's Variants), `[cat, variants, media]`, `[cat, variants, search]`, `[cat, categories, items]`, `[cat, catalogue-search]`.
@@ -11206,9 +11530,9 @@ Errors:
 - `CAT-409-VARIANT-IN-ACTIVE-BUNDLE` → command banner; text: RULE-CAT-021 message
 - `CAT-409-ITEM-NAME-DUPLICATE` (reactivate) → command banner; text: RULE-CAT-003 message
 - `CAT-422-LOOKUP-VALUE-INACTIVE` (reactivate) → command banner; text: RULE-CAT-006 message
-- `CAT-422-ITEM-NO-ACTIVE-VARIANT` (reactivate) → command banner; text: RULE-CAT-050 message
-- `CAT-422-CATEGORY-INACTIVE` (reactivate) → command banner, and the Category field is highlighted; text: RULE-CAT-026 message
-- `CAT-422-BUNDLE-COMPONENT-INVALID` (reactivate) → command banner on the Bundle components pane; text: RULE-CAT-019 message
+- `CAT-422-ITEM-NO-ACTIVE-VARIANT` (reactivate) → command banner; text: RULE-CAT-050 message; action "Generate variants" opens `?picker=variant-generation` while `variants` is on (the repair of ADR-CAT-068); while it is off, the action is absent and the banner keeps the message's other next action (create a new Item)
+- `CAT-422-CATEGORY-INACTIVE` (reactivate) → command banner, and the Category field is highlighted and focused; text: RULE-CAT-026 message; action "Choose a category" focuses the Category field (a categoryFk-only Save is the repair — ADR-CAT-068), and, with PERM_CAT_CATEGORIES_VIEW, a second action "Open the category" → `/cat/categories?node=<categoryFk>`, where it can be reactivated (ADR-CAT-069)
+- `CAT-422-BUNDLE-COMPONENT-INVALID` (reactivate) → command banner on the Bundle components pane; text: RULE-CAT-019 message; action "Edit components" opens `?picker=bundle-components` while `bundles` is on (the repair of ADR-CAT-068)
 - `CAT-500-CHANGE-NOT-SAVED` → banner; text: RULE-CAT-049 message
 - the success code `CAT-200-DEACTIVATED` → notice; text: RULE-CAT-048 message
 
@@ -11229,7 +11553,7 @@ It composes the queries above. The state it owns:
 Imperative operations: `save()` (ITEM-SAVE), `deactivate()` / `reactivate()` / `publish()` / `unpublish()` (ITEM-STATE-COMMAND, each after a confirmation), `addLine(kind, value)` / `markDeactivate(kind, id)` (form state only), `applyGeneration(selection)` / `applyComponents(variants)` (from the second levels), `findByBarcode(value)`.
 <!-- SUB:F2-SCR-CAT-001:END -->
 
-<!-- SUB:F2-SCR-CAT-002:START traces=REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
+<!-- SUB:F2-SCR-CAT-002:START traces=REQ-CAT-136,API-CAT-053,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
 ### F2 · SCR-CAT-002 — Categories
 
 ```yaml name=screen-hooks
@@ -11242,6 +11566,7 @@ hooks:
   - {hook: CATEGORY-SCREEN-INIT, kind: init, cache_key: "—", errors: "no VIEW → unauthorized", loading: NONE}
   - {hook: CATEGORY-SAVE, kind: mutation, api: [API-CAT-021, API-CAT-023], errors: "see CATEGORY-SAVE below", loading: LOCAL, invalidation: "[cat, categories, tree] · [cat, categories, detail, categoryPk] · [cat, categories, items]"}
   - {hook: CATEGORY-DEACTIVATE, kind: mutation, api: [API-CAT-024], errors: "CAT-409-CATEGORY-IN-USE → drawer banner, text RULE-CAT-025 message, action opens Items of this category", loading: LOCAL, invalidation: "[cat, categories, tree] · [cat, categories, detail, categoryPk]"}
+  - {hook: CATEGORY-REACTIVATE, kind: mutation, api: [API-CAT-053], errors: "see CATEGORY-REACTIVATE below", loading: LOCAL, invalidation: "[cat, categories, tree] · [cat, categories, detail, categoryPk] · [cat, categories, items]"}
   - {hook: CATEGORY-FACADE, kind: facade}
 ```
 
@@ -11266,14 +11591,20 @@ Mutation, the drawer's one Save: create (`API-CAT-021`) or update (`API-CAT-023`
 #### CATEGORY-DEACTIVATE — API-CAT-024            traces=API-CAT-024,REQ-CAT-066,REQ-CAT-071
 Record command in the drawer, after a confirmation. The success code `CAT-200-DEACTIVATED` → notice, text: RULE-CAT-048 message.
 
+#### CATEGORY-REACTIVATE — API-CAT-053            traces=API-CAT-053,REQ-CAT-136
+Record command in the drawer of an inactive Category, after a confirmation, only while the drawer has no pending change; it sends `{isActiveFl: true}` (ADR-CAT-069). Errors:
+- `CAT-422-CATEGORY-PARENT-INVALID` → drawer banner; text: RULE-CAT-023 message; action "Open the parent" → `?node=<parentCategoryFk>`, where the parent can be reactivated first
+- `CAT-409-CATEGORY-DUPLICATE` → drawer banner and inline on nameAr; text: RULE-CAT-024 message (rename it first, then reactivate)
+- other → as §3.0
+
 #### CATEGORY-SCREEN-INIT — SCR-CAT-002
 Permission read PERM_CAT_CATEGORIES_VIEW / CREATE / UPDATE / DELETE; no lookups; entity by id: CATEGORY-QUERY. A new node takes `?parent=` as its parent.
 
 #### CATEGORY-FACADE — SCR-CAT-002
-It owns: the tree filters (URL); the open node (`?node=`) and `items=open`; the drawer form; the Items-of-category paging inside its filter object; derived loading. Operations: `save()`, `deactivate()`, `openItems()`, `openInItems()` (→ `/cat/items?categoryFk=<categoryPk>`).
+It owns: the tree filters (URL); the open node (`?node=`) and `items=open`; the drawer form; the Items-of-category paging inside its filter object; derived loading. Operations: `save()`, `deactivate()`, `reactivate()`, `openItems()`, `openInItems()` (→ `/cat/items?categoryFk=<categoryPk>`).
 <!-- SUB:F2-SCR-CAT-002:END -->
 
-<!-- SUB:F2-SCR-CAT-003:START traces=REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
+<!-- SUB:F2-SCR-CAT-003:START traces=REQ-CAT-137,REQ-CAT-138,API-CAT-054,API-CAT-055,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
 ### F2 · SCR-CAT-003 — Variant attributes
 
 ```yaml name=screen-hooks
@@ -11283,8 +11614,9 @@ hooks:
   - {hook: ATTRIBUTE-QUERY, kind: read, api: [API-CAT-026], cache_key: "[cat, variant-attributes, detail, variantAttributePk]", errors: "CAT-404-NOT-FOUND → drawer closes, not-found notice · other → generic", loading: LOCAL, invalidation: "—"}
   - {hook: CAPABILITY-FLAGS-INIT, kind: init, cache_key: "[platform, app-config]", errors: "unreadable → screen state with RULE-CAT-009 text", loading: NONE}
   - {hook: ATTRIBUTE-SCREEN-INIT, kind: init, cache_key: "—", errors: "no VIEW → unauthorized · variants off → RULE-CAT-008 state", loading: NONE}
-  - {hook: ATTRIBUTE-SAVE, kind: mutation, api: [API-CAT-025, API-CAT-027, API-CAT-031, API-CAT-029, API-CAT-030], errors: "see ATTRIBUTE-SAVE below", loading: LOCAL, invalidation: "[cat, variant-attributes, list] · [cat, variant-attributes, detail, variantAttributePk] · [cat, items, detail] · [cat, variants, detail]"}
+  - {hook: ATTRIBUTE-SAVE, kind: mutation, api: [API-CAT-025, API-CAT-027, API-CAT-031, API-CAT-055, API-CAT-029, API-CAT-030], errors: "see ATTRIBUTE-SAVE below", loading: LOCAL, invalidation: "[cat, variant-attributes, list] · [cat, variant-attributes, detail, variantAttributePk] · [cat, items, detail] · [cat, variants, detail]"}
   - {hook: ATTRIBUTE-DEACTIVATE, kind: mutation, api: [API-CAT-028], errors: "CAT-409-ATTRIBUTE-VALUE-IN-USE → drawer banner, text RULE-CAT-017 message", loading: LOCAL, invalidation: "[cat, variant-attributes, list] · [cat, variant-attributes, detail, variantAttributePk]"}
+  - {hook: ATTRIBUTE-REACTIVATE, kind: mutation, api: [API-CAT-054], errors: "CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE → drawer banner and inline on nameAr, text RULE-CAT-016 message · other → as §3.0", loading: LOCAL, invalidation: "[cat, variant-attributes, list] · [cat, variant-attributes, detail, variantAttributePk]"}
   - {hook: ATTRIBUTE-FACADE, kind: facade}
 ```
 
@@ -11294,12 +11626,13 @@ The list by sortOrder, each attribute with its values. Enabled only while `varia
 #### ATTRIBUTE-QUERY — API-CAT-026            traces=API-CAT-026,REQ-CAT-048
 Entity by id for the entry drawer: the attribute's `version` and its values with their `version`s seed the form.
 
-#### ATTRIBUTE-SAVE — API-CAT-025 … API-CAT-031            traces=API-CAT-025,API-CAT-027,API-CAT-029,API-CAT-030,API-CAT-031,REQ-CAT-042,REQ-CAT-043,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-054,REQ-CAT-055
+#### ATTRIBUTE-SAVE — API-CAT-025 … API-CAT-031, API-CAT-055            traces=API-CAT-025,API-CAT-027,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-055,REQ-CAT-042,REQ-CAT-043,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-054,REQ-CAT-055,REQ-CAT-138
 Mutation, the drawer's ONE Save. The calls are ORDERED, and each is sent only after the previous succeeded:
 1. `API-CAT-025` (new attribute) or `API-CAT-027` (dirty header, with `version`).
 2. Value deactivations `API-CAT-031`. They go first, so that a nameAr freed among the active values can be reused (RULE-CAT-016).
-3. Value creates `API-CAT-029` under the attribute's pk returned by step 1, or the existing pk.
-4. Value changes `API-CAT-030` (with `version`).
+3. Value reactivations `API-CAT-055` (lines marked `reactivate`, ADR-CAT-069), after the deactivations for the same reason.
+4. Value creates `API-CAT-029` under the attribute's pk returned by step 1, or the existing pk.
+5. Value changes `API-CAT-030` (with `version`).
 
 The value calls are not sent at all when the value set is unchanged. At the first rejection the sequence stops: the attribute is re-read, the unsent values stay pending, the failed line is marked, and the "partial-save" copy is shown when an earlier call succeeded.
 
@@ -11317,11 +11650,14 @@ Invalidation includes the Item reads, because derived Variant names change with 
 #### ATTRIBUTE-DEACTIVATE — API-CAT-028            traces=API-CAT-028,REQ-CAT-044,REQ-CAT-054
 Record command in the drawer, after a confirmation, only while the drawer has no pending change.
 
+#### ATTRIBUTE-REACTIVATE — API-CAT-054            traces=API-CAT-054,REQ-CAT-137
+Record command in the drawer of an inactive attribute, after a confirmation, only while the drawer has no pending change; it sends `{isActiveFl: true}`. Its values keep their own state: an inactive value line offers "Reactivate", which marks it `reactivate` for the next Save (ATTRIBUTE-SAVE step 3 — ADR-CAT-069).
+
 #### ATTRIBUTE-SCREEN-INIT — SCR-CAT-003
 Permission read PERM_CAT_VARIANT_ATTRIBUTES_VIEW / CREATE / UPDATE / DELETE; the `variants` flag (UXD-CAT-002); no lookups; entity by id: ATTRIBUTE-QUERY. `returnTo` is kept to go back to the Items Entry after Save.
 
 #### ATTRIBUTE-FACADE — SCR-CAT-003
-It owns: the list filters (URL); the open attribute (`?attribute=`) and `values=open`; the drawer form with the value lines; derived loading. Operations: `save()`, `deactivate()`, `applyValues(set)` (from the second level, form state only).
+It owns: the list filters (URL); the open attribute (`?attribute=`) and `values=open`; the drawer form with the value lines; derived loading. Operations: `save()`, `deactivate()`, `reactivate()`, `applyValues(set)` (from the second level, form state only).
 <!-- SUB:F2-SCR-CAT-003:END -->
 
 <!-- SUB:F2-SCR-CAT-004:START traces=REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,API-CAT-048,API-CAT-049,SCR-CAT-004 -->
@@ -11437,12 +11773,12 @@ It owns: the open drawer (`?layout=` / `?unitCode=`), the chosen check flag (`?c
 <!-- SUB:F2-SCR-CAT-006:END -->
 <!-- PHASE:F2:END -->
 
-<!-- PHASE:F3:START traces=API-CAT-052,REQ-CAT-135,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
+<!-- PHASE:F3:START traces=REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,API-CAT-053,API-CAT-054,API-CAT-055,API-CAT-052,REQ-CAT-135,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
 ## F3 — Forms & Validators
 
 Forms use `react-hook-form` with a `zod` resolver per form. A client validator mirrors a RULE only where the client holds every input the rule needs. Its message is that RULE's message (SRS), in ar and en, by reference; the client fills a placeholder only when it knows the value. The server stays authoritative, and its codes are mapped back to the same fields (F2). A limit with no RULE (a maximum length from the document) is enforced by the input's `maxLength`, not by a message. A field the server fixes after first save is rendered read-only, not validated.
 
-<!-- SUB:F3-SCR-CAT-001:START traces=API-CAT-052,REQ-CAT-135,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-038,API-CAT-039,API-CAT-041,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001 -->
+<!-- SUB:F3-SCR-CAT-001:START traces=API-CAT-053,API-CAT-052,REQ-CAT-135,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-038,API-CAT-039,API-CAT-041,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001 -->
 ### F3 · SCR-CAT-001 — Items
 
 `ItemForm` schema:
@@ -11477,12 +11813,16 @@ Line validators (each one-line drawer has its own schema; confirming returns the
 Form behaviour:
 - New Item: only nameAr is empty; the other three mandatory fields are pre-filled (REQ-CAT-024, REQ-CAT-026). Advanced is collapsed and opens automatically when one of its fields carries an error.
 - Read-only after first save: code, baseUomCode, itemKindCode, a saved unit's uomCode and conversionFactor, a saved barcode's value, type and unit (RULE-CAT-004, 007, 022, 028).
-- Inactive Item (`isActiveFl` false): the Entry renders read-only. Header fields, line edits and every add trigger (Add unit, Add barcode, Generate internal barcode, Generate variants, Add image, Add component, E-invoice override) are hidden; Reactivate and the line Deactivate actions remain, so the Item can still be cleaned up (RULE-CAT-053, REQ-CAT-135). An inactive Variant line shows no Add barcode and no E-invoice override.
+- Inactive Item (`isActiveFl` false): the Entry renders read-only except three repairs (RULE-CAT-053, REQ-CAT-135, ADR-CAT-068):
+  - the **Category** field (categoryFk) stays editable, with the active Category options; Save then sends `API-CAT-003` with every other field unchanged;
+  - **"Generate variants"** stays available while `variants` is on and the Item is STANDARD, with its picker and summary row;
+  - the **Bundle components** pane stays editable (Add component, quantity, remove) while `bundles` is on and the Item is a BUNDLE.
+  Every other header field is read-only, and every other add trigger (Add unit, Add barcode, Generate internal barcode, Add image, E-invoice override) and line edit is hidden. Reactivate and the line Deactivate actions remain, so the Item can still be cleaned up. An inactive Variant line shows no Add barcode and no E-invoice override. The reactivation refusal banners of ITEM-STATE-COMMAND link to these three affordances (F2).
 - Unsaved changes: leaving the route with pending changes asks "unsaved-leave". Closing a drawer or picker discards only its draft.
 - Server-to-field mapping: by the routing of ITEM-SAVE (F2). A code whose field cannot be told from the response marks every field changed in the rejected call.
 <!-- SUB:F3-SCR-CAT-001:END -->
 
-<!-- SUB:F3-SCR-CAT-002:START traces=REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
+<!-- SUB:F3-SCR-CAT-002:START traces=REQ-CAT-136,API-CAT-053,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
 ### F3 · SCR-CAT-002 — Categories
 
 | Field | Validator | Message |
@@ -11496,7 +11836,7 @@ Form behaviour:
 Copy "code-format": ar «من 1 إلى 30 حرفًا لاتينيًا أو رقمًا أو شرطة.» · en "1 to 30 Latin letters, digits or hyphens." (UX copy restating RULE-CAT-024's format; not a catalogue message).
 <!-- SUB:F3-SCR-CAT-002:END -->
 
-<!-- SUB:F3-SCR-CAT-003:START traces=REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
+<!-- SUB:F3-SCR-CAT-003:START traces=REQ-CAT-137,REQ-CAT-138,API-CAT-054,API-CAT-055,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
 ### F3 · SCR-CAT-003 — Variant attributes
 
 | Field | Validator | Message |
@@ -11557,7 +11897,7 @@ Turn-off check: the flag is required and is one of `variants`, `bundles` (a two-
 <!-- SUB:F3-SCR-CAT-006:END -->
 <!-- PHASE:F3:END -->
 
-<!-- PHASE:F4:START traces=REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
+<!-- PHASE:F4:START traces=REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,API-CAT-053,API-CAT-054,API-CAT-055,REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
 ## F4 — Screens & Routes
 
 Route module: `/cat/*`, registered in the platform shell under the Catalog menu. Each composite screen is one lazy chunk (`cat-items`, `cat-categories`, `cat-variant-attributes`, `cat-item-import`, `cat-barcode-labels`, `cat-settings`). Every route element is wrapped in the permission guard of its page. Open drawers and second levels are search params of the route, so:
@@ -11578,7 +11918,7 @@ Second levels render as siblings of the first level at the route outlet, never i
 | `/cat/barcode-labels` | SCR-CAT-005 | PERM_CAT_BARCODE_LABELS_VIEW | cat-barcode-labels |
 | `/cat/settings` | SCR-CAT-006 | PERM_CAT_SETTINGS_VIEW | cat-settings |
 
-<!-- SUB:F4-SCR-CAT-001:START traces=REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-038,API-CAT-039,API-CAT-041,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001 -->
+<!-- SUB:F4-SCR-CAT-001:START traces=API-CAT-053,REQ-CAT-135,API-CAT-052,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-038,API-CAT-039,API-CAT-041,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001 -->
 ### F4 · SCR-CAT-001 — Items
 
 #### ITEMS-SCREEN — SCR-CAT-001            traces=REQ-CAT-001,REQ-CAT-003,REQ-CAT-014,REQ-CAT-015,REQ-CAT-026,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,API-CAT-001,API-CAT-002,API-CAT-038
@@ -11603,11 +11943,12 @@ Second levels render as siblings of the first level at the route outlet, never i
   - "Print labels" on a Variant line → `/cat/barcode-labels?variantPk=<variantPk>`;
   - "Open Variant attributes" (picker, no active attribute) → `/cat/variant-attributes?attribute=new&returnTo=<this route>`;
   - "Import" → `/cat/item-import`;
-  - RULE-CAT-003's next action → `/cat/items?text=<nameAr>&isActiveFl=true`.
+  - RULE-CAT-003's next action → `/cat/items?text=<code>&isActiveFl=true`, `<code>` being the existing Item's code the server put in the message (fallback `text=<nameAr>` — F2 ITEM-SAVE);
+  - the reactivation refusals of RULE-CAT-050, 026 and 019 → the repair affordance on the same Entry (`?picker=variant-generation`, the Category field, `?picker=bundle-components`), and, for RULE-CAT-026 with PERM_CAT_CATEGORIES_VIEW, `/cat/categories?node=<categoryFk>` (ADR-CAT-068, ADR-CAT-069).
 - **States**: the Search empty and no-match copy; Entry not-found (CAT-404-NOT-FOUND) with "Back to search"; a skeleton per pane while loading; a pane-level error with Try again.
 <!-- SUB:F4-SCR-CAT-001:END -->
 
-<!-- SUB:F4-SCR-CAT-002:START traces=REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
+<!-- SUB:F4-SCR-CAT-002:START traces=REQ-CAT-136,API-CAT-053,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
 ### F4 · SCR-CAT-002 — Categories
 
 #### CATEGORIES-SCREEN — SCR-CAT-002            traces=REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,API-CAT-039,API-CAT-022,API-CAT-040
@@ -11616,11 +11957,11 @@ Second levels render as siblings of the first level at the route outlet, never i
 - **Cross-module**: none.
 - **Components**: `CategoriesPage` (filter bar, `CategoryTree`), `CategoryEntryDrawer` (`?node=`), and `CategoryItemsDrawer` (`&items=open`), the second level.
 - **Composition**: container drawer. The Category record has no child collection. "Items of this category" is a summary row in the entry drawer (count + 3 names + "Show") that opens `CategoryItemsDrawer`. That drawer is a sibling of the entry drawer, opened from the search params; it is read-only and returns nothing.
-- **Saves**: ONE per drawer (`CATEGORY-SAVE`). Deactivate is a record command.
+- **Saves**: ONE per drawer (`CATEGORY-SAVE`). Deactivate (active node) and Reactivate (inactive node — `CATEGORY-REACTIVATE`) are record commands.
 - **Navigation out**: a row of `CategoryItemsDrawer` → `/cat/items/:itemPk`; "Open in Items" → `/cat/items?categoryFk=<categoryPk>`.
 <!-- SUB:F4-SCR-CAT-002:END -->
 
-<!-- SUB:F4-SCR-CAT-003:START traces=REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
+<!-- SUB:F4-SCR-CAT-003:START traces=REQ-CAT-137,REQ-CAT-138,API-CAT-054,API-CAT-055,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
 ### F4 · SCR-CAT-003 — Variant attributes
 
 #### VARIANT-ATTRIBUTES-SCREEN — SCR-CAT-003            traces=REQ-CAT-014,REQ-CAT-016,REQ-CAT-048,UXD-CAT-002,API-CAT-041,API-CAT-026
@@ -11629,7 +11970,7 @@ Second levels render as siblings of the first level at the route outlet, never i
 - **Cross-module**: `variants` flag → UXD-CAT-002.
 - **Components**: `VariantAttributesPage` (filter bar, list), `AttributeEntryDrawer` (`?attribute=`), and `AttributeValuesDrawer` (`&values=open`), the second level.
 - **Composition**: container drawer. The values are a summary row in the entry drawer (active count + first 5 names + "Edit values"). `AttributeValuesDrawer` is a sibling of the entry drawer, opened from the search params; its lines scroll with its body. Confirm returns the set to the entry's form state, and Cancel discards the draft.
-- **Saves**: ONE per entry drawer (`ATTRIBUTE-SAVE`). It owns the attribute call, then the value calls, ordered: the value calls are sent only after the attribute call succeeded, and they are skipped when the value set is unchanged. Attribute Deactivate is a record command.
+- **Saves**: ONE per entry drawer (`ATTRIBUTE-SAVE`). It owns the attribute call, then the value calls, ordered: the value calls are sent only after the attribute call succeeded, and they are skipped when the value set is unchanged. Attribute Deactivate and Reactivate (`ATTRIBUTE-REACTIVATE`) are record commands; a value line's Reactivate is a pending line state sent by the Save (ADR-CAT-069).
 - **Navigation out**: after Save, when `returnTo` is set → back to that Items Entry route, which re-reads the attribute options.
 <!-- SUB:F4-SCR-CAT-003:END -->
 
@@ -11684,8 +12025,8 @@ Permission names are the backend registry's (`PERM_<PAGE_CODE>_<ACTION>`, derive
 | SCR | Guard (no VIEW → unauthorized) | no CREATE → hidden | no UPDATE → read-only / hidden | no DELETE → hidden |
 |---|---|---|---|---|
 | SCR-CAT-001 | PERM_CAT_ITEMS_VIEW | "New item", "Add unit", "Add barcode", "Generate internal barcode", "Generate variants", "Add image" (`API-CAT-001`, 010, 014, 015, 006, 018) | header fields read-only, Save hidden on an existing Item; unit flags, Variant override, image changes, Bundle components, Reactivate / Publish / Unpublish hidden (`API-CAT-003`, 012, 008, 019, 017, 005) | Deactivate on the Item, Variant, unit, barcode and image lines (`API-CAT-004`, 009, 013, 016, 020) |
-| SCR-CAT-002 | PERM_CAT_CATEGORIES_VIEW | "New category", "New sub-category" | entry fields read-only, Save hidden | Deactivate |
-| SCR-CAT-003 | PERM_CAT_VARIANT_ATTRIBUTES_VIEW (+ `variants` on) | "New attribute", "Add value" | entry and value fields read-only, Save hidden | Deactivate (attribute, value line) |
+| SCR-CAT-002 | PERM_CAT_CATEGORIES_VIEW | "New category", "New sub-category" | entry fields read-only, Save and Reactivate hidden (`API-CAT-053`) | Deactivate |
+| SCR-CAT-003 | PERM_CAT_VARIANT_ATTRIBUTES_VIEW (+ `variants` on) | "New attribute", "Add value" | entry and value fields read-only, Save and Reactivate (attribute, value line) hidden (`API-CAT-054`, 055) | Deactivate (attribute, value line) |
 | SCR-CAT-004 | PERM_CAT_ITEM_IMPORT_VIEW | "Import" (`API-CAT-049`); "Download import sheet" stays | — (no UPDATE action) | — (no DELETE action) |
 | SCR-CAT-005 | PERM_CAT_BARCODE_LABELS_VIEW | "Print" (`API-CAT-050`) | — | — |
 | SCR-CAT-006 | PERM_CAT_SETTINGS_VIEW | "New layout", "New unit code" | drawer fields read-only, Save hidden | Deactivate (layout, unit code) |
@@ -11698,7 +12039,7 @@ Further rules:
 - **Tokens**: the bearer token is attached by the platform HTTP client. CAT code never reads or stores it. A CAT-401-UNAUTHENTICATED response goes to login and returns to the same route afterwards.
 <!-- PHASE:SEC-FE:END -->
 
-<!-- PHASE:ALIGN-FE:START traces=API-CAT-052,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
+<!-- PHASE:ALIGN-FE:START traces=API-CAT-053,API-CAT-054,API-CAT-055,API-CAT-052,API-CAT-001,API-CAT-002,API-CAT-003,API-CAT-004,API-CAT-005,API-CAT-006,API-CAT-007,API-CAT-008,API-CAT-009,API-CAT-010,API-CAT-012,API-CAT-013,API-CAT-014,API-CAT-015,API-CAT-016,API-CAT-017,API-CAT-018,API-CAT-019,API-CAT-020,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-038,API-CAT-039,API-CAT-040,API-CAT-041,API-CAT-042,API-CAT-043,API-CAT-044,API-CAT-045,API-CAT-047,API-CAT-048,API-CAT-049,API-CAT-050,API-CAT-051,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,SCR-CAT-001,SCR-CAT-002,SCR-CAT-003,SCR-CAT-004,SCR-CAT-005,SCR-CAT-006 -->
 ## ALIGN-FE
 
 The checks run against the plan itself, the API document and the SRS ceiling. The cross-artifact checks are `gov.py analyze`'s. Each row names the check that backs it. The result column is copied by the orchestrator from the analyze report; this author writes no mark of their own.
@@ -11726,7 +12067,7 @@ findings: 0
 clean: true
 ```
 
-Operations coverage (52 operations of `api-spec-cat.yaml`):
+Operations coverage (55 operations of `api-spec-cat.yaml`):
 
 | Operation | API | SCR action | Route | Status |
 |---|---|---|---|---|
@@ -11754,6 +12095,7 @@ Operations coverage (52 operations of `api-spec-cat.yaml`):
 | read Category | API-CAT-022 | SCR-CAT-002 open entry | `/cat/categories?node=<categoryPk>` | ✓ |
 | update Category | API-CAT-023 | SCR-CAT-002 Save | `/cat/categories?node=<categoryPk>` | ✓ |
 | deactivate Category | API-CAT-024 | SCR-CAT-002 Deactivate | `/cat/categories?node=<categoryPk>` | ✓ |
+| reactivate Category | API-CAT-053 | SCR-CAT-002 Reactivate | `/cat/categories?node=<categoryPk>` | ✓ |
 | create Variant attribute | API-CAT-025 | SCR-CAT-003 Save (new) | `/cat/variant-attributes?attribute=new` | ✓ |
 | read Variant attribute | API-CAT-026 | SCR-CAT-003 open entry | `/cat/variant-attributes?attribute=<pk>` | ✓ |
 | update Variant attribute | API-CAT-027 | SCR-CAT-003 Save | `/cat/variant-attributes?attribute=<pk>` | ✓ |
@@ -11761,6 +12103,8 @@ Operations coverage (52 operations of `api-spec-cat.yaml`):
 | create Variant attribute value | API-CAT-029 | SCR-CAT-003 Save (new value line) | `/cat/variant-attributes?attribute=<pk>&values=open` | ✓ |
 | update Variant attribute value | API-CAT-030 | SCR-CAT-003 Save (value line changed) | `/cat/variant-attributes?attribute=<pk>&values=open` | ✓ |
 | deactivate Variant attribute value | API-CAT-031 | SCR-CAT-003 Save (value line marked) | `/cat/variant-attributes?attribute=<pk>&values=open` | ✓ |
+| reactivate Variant attribute | API-CAT-054 | SCR-CAT-003 Reactivate | `/cat/variant-attributes?attribute=<pk>` | ✓ |
+| reactivate Variant attribute value | API-CAT-055 | SCR-CAT-003 Save (value line marked reactivate) | `/cat/variant-attributes?attribute=<pk>&values=open` | ✓ |
 | create scale label layout | API-CAT-032 | SCR-CAT-006 layout Save (new) | `/cat/settings?layout=new` | ✓ |
 | update scale label layout | API-CAT-033 | SCR-CAT-006 layout Save | `/cat/settings?layout=<pk>` | ✓ |
 | deactivate scale label layout | API-CAT-034 | SCR-CAT-006 layout Deactivate | `/cat/settings?layout=<pk>` | ✓ |
@@ -11783,7 +12127,7 @@ Operations coverage (52 operations of `api-spec-cat.yaml`):
 | capability turn-off check | API-CAT-051 | SCR-CAT-006 Check | `/cat/settings?check=<flag>` | ✓ |
 | active values of a CAT lookup key | API-CAT-052 | every `*-LOOKUP` hook: SCR-CAT-001 lookup fields, filters and columns; SCR-CAT-006 drawers | `/cat/items` · `/cat/items/:itemPk` · `/cat/settings` | ✓ |
 
-Totals: 50 of 52 operations have a screen action and a route. API-CAT-011 and API-CAT-046 have neither, by decision (ADR-CAT-051).
+Totals: 53 of 55 operations have a screen action and a route. API-CAT-011 and API-CAT-046 have neither, by decision (ADR-CAT-051).
 <!-- PHASE:ALIGN-FE:END -->
 
 ## Index
@@ -11813,7 +12157,7 @@ After the `P4` verdict, the toolkit splits this plan and its registry into `/fro
 # Frontend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : frontend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193 and TC-CAT-197 … TC-CAT-207; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-209)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207 and TC-CAT-211 … TC-CAT-216; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-210)
 
 ## Header
 
@@ -11829,7 +12173,7 @@ Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared wi
 | dependency-graph | `_state/current-dependency-graph.md` | CAT v2 | CAT tier 1 |
 
 ### Delta
-The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC.
+The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC. Within v2, the third gate-analysis revise ADDED TC-CAT-210 and MODIFIED TC-CAT-126 (the jump goes to the existing Item's code — G12) and TC-CAT-209 (the inactive Entry keeps its three repairs — G2, ADR-CAT-068). No id is renumbered or REMOVED.
 
 ### Framework
 `profile.stack.testing` is **agnostic**. Each block is the whole contract. This plan names no framework, runner, selector strategy or file layout.
@@ -11837,7 +12181,7 @@ The current state holds no earlier test plan, so every TC is ADDED. The frontend
 ### Open ADRs
 - ADR-CAT-052 (this stage) is ACCEPTED and non-breaking. It covers the track split, frontend package binding, host data, option-set isolation, fields the API document does not expose, and UXD integration.
 - ADR-CAT-053 (this stage, analyze round 2) is ACCEPTED and non-breaking. It records the eight server codes the frontend plan routes to a control without binding their words (`text:`): TC-CAT-130, 143, 144, 145, 150, 157, 165 and 171 assert the routing and the verbatim display of the envelope's messageAr / messageEn, not the words, which the backend TCs assert. It also replaces the unseeded AC value H87 by a seeded value in TC-CAT-175.
-- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). None of them is BLOCKED.
+- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). From the gate-analysis round 3 they cite ADR-CAT-068 (three repairs stay allowed on an inactive Item). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). None of them is BLOCKED.
 - Host values of CAT_BRAND are created by the given mdl call `POST /api/v1/mdl/lookup-types/{id}/values` and deactivated by `DELETE /api/v1/mdl/lookup-values/{id}`, where `{id}` is the CAT_BRAND type found by `POST /api/v1/mdl/lookup-types/search` (SRS A6). Each Host data line names the call it uses.
 
 ### Shared precondition F0 (applies to every TC; each TC adds only what it states)
@@ -11849,14 +12193,14 @@ The current state holds no earlier test plan, so every TC is ADDED. The frontend
 - Every asserted message is the RULE message of the SRS in ar and en, as the plan routes it (`text: RULE-CAT-0nn message`). It is checked once with the UI language in ar and once in en (language ALL). Where the plan routes a code to a control without binding its words, the TC asserts only the routing and the unchanged display of the envelope's messageAr / messageEn; the wording is asserted on the backend track (ADR-CAT-053 §1).
 - "No request" means the mock server records no call to the named operation.
 
-<!-- PHASE:TEST-PLAN-FE:START traces=AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-005,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
+<!-- PHASE:TEST-PLAN-FE:START traces=AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-005,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
 ## PHASE TEST-PLAN-FE — module scenarios
 
-The phase holds 57 TCs, which is more than 8, so it is split into two SUBs:
-- `UI-FLOWS` (56): per-screen flows — search, create/edit, a violation shown on screen, a permission-hidden affordance.
+The phase holds 58 TCs, which is more than 8, so it is split into two SUBs:
+- `UI-FLOWS` (57): per-screen flows — search, create/edit, a violation shown on screen, a permission-hidden affordance.
 - `INT-FLOW` (1): the single module lifecycle flow.
 
-<!-- SUB:UI-FLOWS:START traces=AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
+<!-- SUB:UI-FLOWS:START traces=AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
 ### SUB UI-FLOWS
 
 #### SCR-CAT-001 — Items
@@ -11882,11 +12226,11 @@ Exercises    : SCR-CAT-001 `/cat/items/new` (ITEM-SAVE → API-CAT-001)
 Rule / code  : RULE-CAT-003 → CAT-409-ITEM-NAME-DUPLICATE
 Package      : F2-SCR-CAT-001
 Scenario     : VIOLATION · data class INVALID · language ALL
-Preconditions: F0 · an active Item named «شاحن سامسونج 25W» · API-CAT-001 answers 409 CAT-409-ITEM-NAME-DUPLICATE for that name
+Preconditions: F0 · an active Item named «شاحن سامسونج 25W» with code ITM-000012 · API-CAT-001 answers 409 CAT-409-ITEM-NAME-DUPLICATE for that name, with the RULE-CAT-003 message naming ITM-000012
 Host data    : none
 Steps        : 1. Open `/cat/items/new`. 2. Enter nameAr «شاحن سامسونج 25W». 3. Save. 4. Use the action "Open the existing item".
-Expected     : 3 → inline on nameAr: ar «يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.» · en "An active item already has this name. Open the existing item or change the name."; the route stays `/cat/items/new` (no Item created). 4 → navigates to `/cat/items?text=شاحن سامسونج 25W&isActiveFl=true`, which lists the existing Item.
-Test data    : «شاحن سامسونج 25W» (from the AC)
+Expected     : 3 → inline on nameAr: ar «يوجد صنف نشط بالاسم نفسه: ITM-000012. افتح الصنف الموجود أو غيّر الاسم.» · en "An active item already has this name: ITM-000012. Open the existing item or change the name."; the route stays `/cat/items/new` (no Item created). 4 → navigates to `/cat/items?text=ITM-000012&isActiveFl=true`, which lists exactly the existing Item (MODIFIED at the third gate-analysis revise, G12).
+Test data    : «شاحن سامسونج 25W», ITM-000012 (from the AC)
 <!-- TC:TC-CAT-126:END -->
 
 <!-- TC:TC-CAT-127:START traces=AC-CAT-013,REQ-CAT-013,SCR-CAT-001,UXD-CAT-002 -->
@@ -12646,7 +12990,7 @@ Test data    : —
 <!-- TC:TC-CAT-208:END -->
 
 <!-- TC:TC-CAT-209:START traces=AC-CAT-144,REQ-CAT-135,SCR-CAT-001 -->
-### TC-CAT-209 — A save on an Item deactivated meanwhile shows the inactive-parent banner and turns the entry read-only
+### TC-CAT-209 — A save on an Item deactivated meanwhile shows the inactive-parent banner and turns the entry to its inactive mode
 Derived from : AC-CAT-144  (REQ-CAT-135)
 Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (ITEM-SAVE routes CAT-422-PARENT-INACTIVE with `text: RULE-CAT-053 message`; F3 inactive-Item read-only)
 Rule / code  : RULE-CAT-053 → CAT-422-PARENT-INACTIVE
@@ -12655,9 +12999,23 @@ Scenario     : STATE · data class INVALID · language ALL
 Preconditions: F0 · an active Item with base unit PIECE and no Item unit CARTON, open in session 1
 Host data    : none
 Steps        : 1. In session 1, add the Item unit CARTON with conversionFactor 12 (pending). 2. In session 2, deactivate the Item. 3. In session 1, Save.
-Expected     : 3 → form banner ar «هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.» · en "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."; the Item is re-read and the entry is read-only: every header field is read-only, 0 "Add unit", "Add barcode", "Generate variants" or "Add image" triggers, and "Reactivate" is shown. The Item has no Item unit CARTON.
+Expected     : 3 → form banner ar «هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.» · en "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."; the Item is re-read and the entry turns to its inactive mode: every header field except the Category field is read-only, 0 "Add unit", "Add barcode", "Generate internal barcode" or "Add image" triggers, "Generate variants" is still shown (`variants` on, STANDARD Item — the repair of ADR-CAT-068), and "Reactivate" is shown. The Item has no Item unit CARTON (MODIFIED at the third gate-analysis revise, G2).
 Test data    : PIECE, CARTON, 12 (from the AC)
 <!-- TC:TC-CAT-209:END -->
+
+<!-- TC:TC-CAT-210:START traces=AC-CAT-154,AC-CAT-155,AC-CAT-156,REQ-CAT-135,SCR-CAT-001 -->
+### TC-CAT-210 — On an inactive Item, the three repair affordances stay available and the refusal banners link to them
+Derived from : AC-CAT-154, AC-CAT-155, AC-CAT-156  (REQ-CAT-135)
+Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (F3 inactive-Item mode; ITEM-STATE-COMMAND refusal banners → API-CAT-005; ITEM-SAVE → API-CAT-003, 006, 017)
+Rule / code  : RULE-CAT-050 → CAT-422-ITEM-NO-ACTIVE-VARIANT · RULE-CAT-026 → CAT-422-CATEGORY-INACTIVE · RULE-CAT-019 → CAT-422-BUNDLE-COMPONENT-INVALID · repairs allowed on an inactive Item (ADR-CAT-068)
+Package      : F3-SCR-CAT-001
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: F0 (`variants` and `bundles` on) · three inactive Items: I1 (STANDARD, 0 active Variants), I2 (STANDARD, categoryFk an inactive Category OLD, 1 active Variant), I3 (BUNDLE whose line names a deactivated Variant P) · an active Category NEW · the active attribute SIZE with the active value M · an active Variant Q of an active STANDARD Item
+Host data    : none
+Steps        : 1. Open I1; Reactivate; use the banner's action. 2. In the picker, select SIZE [M], Confirm and Save; Reactivate. 3. Open I2; Reactivate; use the banner's action "Choose a category". 4. Choose NEW and Save; Reactivate. 5. Open I3; Reactivate; use the banner's action. 6. Replace P by Q in the Bundle components pane and Save; Reactivate.
+Expected     : On each inactive Entry before its repair: the Category field is editable, "Generate variants" is shown on I1 and I2, the Bundle components pane is editable on I3, and every other header field is read-only, with 0 "Add unit", "Add barcode", "Generate internal barcode" or "Add image" triggers. 1 → command banner with the RULE-CAT-050 text, ar «لا يمكن إعادة تفعيل صنف بلا متغيّر نشط. أنشئ متغيّرًا له أو أنشئ صنفًا جديدًا.» · en "An item with no active variant cannot be reactivated. Generate a variant for it, or create a new item."; its action opens `?picker=variant-generation`. 2 → the Save sends API-CAT-006 and gets 201; the Reactivate succeeds and the header shows active. 3 → command banner with the RULE-CAT-026 text, ar «الفئة المختارة غير نشطة. اختر فئة نشطة.» · en "The selected category is inactive. Choose an active category."; its action focuses the Category field. 4 → the Save sends API-CAT-003 with only categoryFk changed and gets 200; the Reactivate succeeds. 5 → command banner on the Bundle components pane with the RULE-CAT-019 text, ar «المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها.» · en "A component must be an active variant of an item that is not a bundle, listed once per bundle."; its action opens `?picker=bundle-components`. 6 → the Save sends API-CAT-017 and gets 200; the Reactivate succeeds. No request answers CAT-422-PARENT-INACTIVE.
+Test data    : I1, I2, I3, OLD, NEW, SIZE M, P, Q (from the ACs; placeholders where unnamed)
+<!-- TC:TC-CAT-210:END -->
 <!-- SUB:UI-FLOWS:END -->
 
 <!-- SUB:INT-FLOW:START traces=AC-CAT-005,REQ-CAT-005,REQ-CAT-024,REQ-CAT-004,REQ-CAT-003 -->
@@ -12804,13 +13162,15 @@ Test data    : 1 image (placeholder file)
 | | | | | AC-CAT-129 | REQ-CAT-127 | TC-CAT-151 |
 | AC-CAT-130 | REQ-CAT-128 | TC-CAT-196 (backend: TC-CAT-183) | | AC-CAT-138 | REQ-CAT-131 | TC-CAT-194, 208 |
 | AC-CAT-142 | REQ-CAT-066 | TC-CAT-195 | | AC-CAT-144 | REQ-CAT-135 | TC-CAT-209 (backend: TC-CAT-198) |
+| AC-CAT-154 | REQ-CAT-135 | TC-CAT-210 (backend: TC-CAT-185, 212) | | AC-CAT-155 | REQ-CAT-135 | TC-CAT-210 (backend: TC-CAT-186, 212) |
+| AC-CAT-156 | REQ-CAT-135 | TC-CAT-210 (backend: TC-CAT-187, 212) | | | | |
 
 TC-CAT-176 (lifecycle flow) also passes through REQ-CAT-024, REQ-CAT-003 and REQ-CAT-004. Every other AC-CAT-* is covered on the backend track: see the AC → TC table of `backend-test-plan-cat.md`.
 
 ### SCR → TC (TC-CAT-…)
 | SCR | TCs |
 |---|---|
-| SCR-CAT-001 Items | 125 – 151, 176, 177 – 182, 194 – 196, 208, 209 |
+| SCR-CAT-001 Items | 125 – 151, 176, 177 – 182, 194 – 196, 208 – 210 |
 | SCR-CAT-002 Categories | 152 – 157 |
 | SCR-CAT-003 Variant attributes | 128 (menu entry), 158 – 163 |
 | SCR-CAT-004 Item import | 164 – 166 |
@@ -12824,7 +13184,7 @@ A row marked "routed, words unbound" is a code the frontend plan routes to a con
 |---|---|---|---|
 | RULE-CAT-001 | CAT-422-NAME-AR-INVALID | 133, 134 | F3 `ItemForm` nameAr · F2 ITEM-SAVE |
 | RULE-CAT-002 | CAT-422-NAME-EN-TOO-LONG | 135 | F3 `ItemForm` nameEn · F2 ITEM-SAVE |
-| RULE-CAT-003 | CAT-409-ITEM-NAME-DUPLICATE | 126 | F2 ITEM-SAVE (inline nameAr + action) |
+| RULE-CAT-003 | CAT-409-ITEM-NAME-DUPLICATE | 126 | F2 ITEM-SAVE (inline nameAr + action to the code the message names) |
 | RULE-CAT-008 | CAT-422-CAPABILITY-OFF | 158 | F2 ATTRIBUTE-SCREEN-INIT / F4 route state (the attribute reads are not flag-bound) |
 | RULE-CAT-009 | CAT-500-CAPABILITY-UNREADABLE | 127, 180 | F2 ITEM-SAVE banner · F2 CAPABILITY-FLAGS-INIT |
 | RULE-CAT-010 | CAT-200-VARIANTS-IN-USE | 171 | F2 TURN-OFF-CHECK-QUERY — routed, words unbound (wording: TC-CAT-010) |
@@ -12852,7 +13212,8 @@ A row marked "routed, words unbound" is a code the frontend plan routes to a con
 | RULE-CAT-047 | CAT-404-BARCODE-NOT-FOUND | 143 | F2 BARCODE-LOOKUP-QUERY — routed, words unbound (wording: TC-CAT-046) |
 | RULE-CAT-048 | CAT-200-DEACTIVATED | 176 | F2 ITEM-STATE-COMMAND |
 | RULE-CAT-051 | CAT-409-ITEM-UNIT-HAS-BARCODES | 196 | F3 Item unit (deactivate) · F2 ITEM-SAVE (`text: RULE-CAT-051 message`) |
-| RULE-CAT-053 | CAT-422-PARENT-INACTIVE | 209 | F2 ITEM-SAVE (form banner, `text: RULE-CAT-053 message`) · F3 inactive-Item read-only |
+| RULE-CAT-053 | CAT-422-PARENT-INACTIVE | 209 | F2 ITEM-SAVE (form banner, `text: RULE-CAT-053 message`) · F3 inactive-Item mode |
+| RULE-CAT-050, 026, 019 | CAT-422-ITEM-NO-ACTIVE-VARIANT, CAT-422-CATEGORY-INACTIVE, CAT-422-BUNDLE-COMPONENT-INVALID | 210 | F2 ITEM-STATE-COMMAND (command banners with the repair actions of ADR-CAT-068) |
 
 The other rules are asserted on the backend track. No case here asserts the words of a refusal or notice that the frontend plan leaves unbound; those eight codes are recorded as a plan gap in ADR-CAT-053 §1, for a later P3.2 delta that adds their `text:` bindings.
 
@@ -12867,7 +13228,7 @@ The other rules are asserted on the backend track. No case here asserts the word
 | Package (frontend plan unit) | # | TCs |
 |---|---|---|
 | F2-SCR-CAT-001 | 16 | 125, 126, 127, 130, 131, 137, 138, 139, 141, 143, 144, 145, 147, 149, 150, 195 |
-| F3-SCR-CAT-001 | 11 | 132, 133, 134, 135, 136, 140, 142, 146, 148, 196, 209 |
+| F3-SCR-CAT-001 | 12 | 132, 133, 134, 135, 136, 140, 142, 146, 148, 196, 209, 210 |
 | F4-SCR-CAT-001 | 9 | 128, 129, 176, 177, 178, 179, 180, 181, 182 |
 | F2-SCR-CAT-002 | 4 | 152, 154, 156, 157 |
 | F3-SCR-CAT-002 | 1 | 155 |
@@ -12891,14 +13252,14 @@ The other rules are asserted on the backend track. No case here asserts the word
 
 | Measure | Result |
 |---|---|
-| AC covered (this track) | 56 / 152 by module TCs. Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
-| AC covered (both plans) | 152 / 152 ✓, no gap. The other 96 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
+| AC covered (this track) | 59 / 160 by module TCs. Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
+| AC covered (both plans) | 160 / 160 ✓, no gap. The other 101 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
 | REQ covered (this track) | 57 REQs by module TCs (plus REQ-CAT-012, 105 and 109 through UXD TCs) |
-| REQ covered (both plans) | 135 / 135 ✓ |
+| REQ covered (both plans) | 138 / 138 ✓ |
 | SCR covered | 6 / 6 ✓ (SCR-CAT-001 … 006) |
 | UXD covered | 3 / 3 ✓. Each UXD has its rendered and its failure case (6 TCs in `INT-UXD`). |
 | Refusal texts | every wording asserted here is bound by a `text:` row of the frontend plan (msg-bound) ✓. Eight routed codes have no binding (RULE-CAT-010, 012, 025, 035, 039, 045, 046, 047): their TCs assert routing and unchanged display only, and the gap is recorded in ADR-CAT-053 §1. |
-| Track size | 63 TCs for 56 ACs and 3 UXDs (ratio < 2, within the guard) |
+| Track size | 64 TCs for 59 ACs and 3 UXDs (ratio < 2, within the guard) |
 | Host data | CAT_BRAND BRAND1_137 … BRAND5_137 (active) and BRAND6_137 (inactive) for TC-CAT-137; CAT_BRAND OLDBRAND (active, then inactive) for TC-CAT-139 — each created by `POST /api/v1/mdl/lookup-types/{id}/values` and, where inactive, deactivated by `DELETE /api/v1/mdl/lookup-values/{id}`. The AC value CAT_EINVOICE_UNIT H87 (AC-CAT-126) is not seeded; TC-CAT-175 stays on seeded data with the value BX in its place (ADR-CAT-053 §2). TC-CAT-137 and TC-CAT-138 assert closed option sets, so they run in a tenant that holds only their own values (ADR-CAT-052 §4). No value is demanded in opposite states. |
 
 <<<END ARTIFACT>>>
@@ -13510,7 +13871,7 @@ None by hand. `gov.py graph` derives the edges that target CAT and raises their 
 ### ID ranges
 | Kind | Range | Count | Next free |
 |---|---|---|---|
-| API | API-CAT-001 … API-CAT-052 | 52 | API-CAT-053 |
+| API | API-CAT-001 … API-CAT-055 | 55 | API-CAT-056 |
 | QR | QR-CAT-001 … QR-CAT-072 | 72 | QR-CAT-073 |
 
 Both streams start at 001: the current state held no backend plan for CAT. No ID of another stage is minted here.
@@ -13570,6 +13931,9 @@ Both streams start at 001: the current state held no backend plan for CAT. No ID
 | API-CAT-050 | POST | /api/v1/cat/barcode-labels | ENT-CAT-002 · CREATE | PERM_CAT_BARCODE_LABELS_CREATE | — |
 | API-CAT-051 | GET | /api/v1/cat/capability-checks/turn-off | ENT-CAT-001 · VIEW | PERM_CAT_SETTINGS_VIEW | CON-CAT-017 |
 | API-CAT-052 | GET | /api/v1/cat/lookups/{key} | ENT-CAT-001 · VIEW | the VIEW permission of any CAT page (hasAnyAuthority) | — |
+| API-CAT-053 | PATCH | /api/v1/cat/categories/{id} | ENT-CAT-006 · UPDATE (reactivate) | PERM_CAT_CATEGORIES_UPDATE | CON-CAT-003 |
+| API-CAT-054 | PATCH | /api/v1/cat/variant-attributes/{id} | ENT-CAT-003 · UPDATE (reactivate) | PERM_CAT_VARIANT_ATTRIBUTES_UPDATE | — |
+| API-CAT-055 | PATCH | /api/v1/cat/variant-attribute-values/{id} | ENT-CAT-004 · UPDATE (reactivate) | PERM_CAT_VARIANT_ATTRIBUTES_UPDATE | — |
 
 Contract coverage: CON-CAT-001 … CON-CAT-018 — 18 of 18 honoured (entity items also in the PHASE DATA-DOM entity blocks; the in-process interface `com.erp.cat.crossmodule.CatalogueReadApi` carries the eleven operation items).
 
@@ -13586,7 +13950,7 @@ XM: none — the register is `records: []`; no edge minted; `INT-C` (the last ph
 60 codes: 53 RULE rows (one per RULE-CAT-001 … 053; 6 of them are 2xx success notices — RULE-CAT-010, 011, 012, 039, 045, 048) + 7 PLATFORM-STD rows (6 of ADR-CAT-044 — the 413 and 415 rows left with the multipart surface, ADR-CAT-056 — and CAT-404-LOOKUP-KEY-UNKNOWN of ADR-CAT-065). Every row carries its ar and en message, PLATFORM-STD rows included (checklist C11). Rules without a message: none. No RULE is DEFERRED.
 
 ### API document
-api-spec-cat.yaml — OpenAPI 3.1.0, validated · operations 52 = API blocks 52 · paths 34 · catalog rows answered 60 = catalog rows 60 · no multipart request body (ADR-CAT-056) · bearer JWT security on every operation · paged operations (API-CAT-038, 040, 042, 046) carry page / size.
+api-spec-cat.yaml — OpenAPI 3.1.0, validated · operations 55 = API blocks 55 · paths 34 · catalog rows answered 60 = catalog rows 60 · no multipart request body (ADR-CAT-056) · bearer JWT security on every operation · paged operations (API-CAT-038, 040, 042, 046) carry page / size.
 
 ### Security
 6 pages (CAT_ITEMS, CAT_CATEGORIES, CAT_VARIANT_ATTRIBUTES, CAT_ITEM_IMPORT, CAT_BARCODE_LABELS, CAT_SETTINGS) · 20 permission names `PERM_<PAGE_CODE>_<ACTION>` derived by the given `sec` module · preset-role grants per SRS B4 (ADR-CAT-046).
@@ -13615,15 +13979,21 @@ Verdict as stamped by the orchestrator from `gov.py analyze` (self-check block p
 | decisions/CAT/ADR-CAT-065 | CAT lookup keys served through OwnedLookups (API-CAT-052); amends ADR-CAT-050 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-066 | in-process authorization raised as CORE-GAP; ADR-CAT-061 conditional | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-067 | every intra-module FK composite with TENANT_ID | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-068 | three repair operations stay allowed on an inactive Item (categoryFk-only update, Variant generation, Bundle components); amends ADR-CAT-063 | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-069 | reactivation of Categories, Variant attributes and values (API-CAT-053 … 055) | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-070 | Variant attributes and values stay CAT tables (checklist C5 / F3) | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-071 | item import time budget, batched code allocation, one scale-prefix lock per import | ACCEPTED (non-breaking) |
 | decisions/CAT/CORE-GAP-in-process-authorization | how a cross-module read API is authorized for callers without a permission of the owning module | OPEN (asked of erp-core) |
+| decisions/CAT/CORE-GAP-tenant-lookup-types | whether a tenant can create lookup types with nested values at runtime | OPEN (asked of erp-core) |
+| decisions/CAT/CORE-GAP-number-series-block-allocation | whether NumberSeriesApi can allocate a block of n numbers in one call | OPEN (asked of erp-core) |
 
-Next free ADR after the second gate-analysis revise: ADR-CAT-068. None BLOCKED.
+Next free ADR after the third gate-analysis revise: ADR-CAT-072. None BLOCKED.
 
 ### Traceability
-REQ covered by ≥ 1 API: 135 / 135 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
+REQ covered by ≥ 1 API: 138 / 138 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
 
 ### Event
-"P3.1 completed: CAT v2 — API 52 · QR 72 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–067, none BLOCKED · CORE-GAP 1"
+"P3.1 completed: CAT v2 — API 55 · QR 72 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–071, none BLOCKED · CORE-GAP 3"
 
 <<<END ARTIFACT>>>
 
@@ -13658,7 +14028,7 @@ Both streams start at 001, because the current state held no frontend design for
 All three UXDs trace to REQ and AC and are cited by F2 / F4 blocks of the plan (ADR-CAT-050). No XM is implied.
 
 ### API coverage
-- Used: 50 of the 52 documented operations, each with a screen action and a route (operations coverage table, ALIGN-FE). API-CAT-052 is bound to every `*-LOOKUP` hook.
+- Used: 53 of the 55 documented operations, each with a screen action and a route (operations coverage table, ALIGN-FE). API-CAT-052 is bound to every `*-LOOKUP` hook.
 - Unused: API-CAT-011 (read Item unit) and API-CAT-046 (storefront catalogue read). They are consumers' reads, recorded in ADR-CAT-051.
 - Mock: `api-spec-cat.yaml`.
 - `unmapped`: none.
@@ -13678,12 +14048,17 @@ Findings fixed during authoring:
 | decisions/CAT/ADR-CAT-050 | Display data served by the given (lookups, capability flags, image files) → UXD-CAT-001 … 003 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-051 | API coverage of the CAT screens and binding notes | ACCEPTED (non-breaking) |
 
-The next free ADR after P3.2 was ADR-CAT-052. At the gate-analysis revise, the frontend plan also cites ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants) and ADR-CAT-060 (unit used by barcodes); the next free ADR was ADR-CAT-063. At the gate-analysis round 2, it also cites ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052); the next free ADR is ADR-CAT-068. No ADR is BLOCKED, and no question was raised.
+The next free ADR after P3.2 was ADR-CAT-052. At the gate-analysis revise, the frontend plan also cites ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants) and ADR-CAT-060 (unit used by barcodes); the next free ADR was ADR-CAT-063. At the gate-analysis round 2, it also cites ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052); the next free ADR was ADR-CAT-068. At the gate-analysis round 3, it also cites ADR-CAT-068 (three repairs stay allowed on an inactive Item) and ADR-CAT-069 (reactivation of Categories, Variant attributes and values); the next free ADR is ADR-CAT-072. No ADR is BLOCKED, and no question was raised.
 
 Gate-analysis revise (frontend):
 - Category labels come from a read of the whole tree, active and inactive (CATEGORY-LABEL-QUERY); the selection control keeps the active-only read (G9).
 - Image and import files are uploaded through the given FILE client before the CAT call (G2).
 - RULE-CAT-051 and RULE-CAT-052 are mirrored by F3 validators, and their codes are routed with `text:` bindings (G7, G8).
+
+Gate-analysis round 3 (frontend):
+- On an inactive Item, the Category field, "Generate variants" (while `variants` is on) and the Bundle components pane stay available; the reactivation refusal banners link to them (G2, ADR-CAT-068).
+- Categories and Variant attributes gain Reactivate commands, and inactive value lines a Reactivate line state (API-CAT-053 … 055, ADR-CAT-069).
+- The RULE-CAT-003 next action jumps to `/cat/items?text=<code>` with the code the server puts in the message (G12).
 
 Gate-analysis round 2 (frontend):
 - Lookup hooks are bound to API-CAT-052 (G5); the attribute reads and the attribute deactivation no longer route the capability codes (G1).
@@ -13691,12 +14066,12 @@ Gate-analysis round 2 (frontend):
 - SEC-FE: a jump to another page shows only with that page's VIEW and, where flag-bound, its flag on (G12).
 
 ### Traceability
-- REQ covered by at least one SCR or F-block: 135 / 135. Orphan REQ: none.
+- REQ covered by at least one SCR or F-block: 138 / 138. Orphan REQ: none.
 - US covered by at least one flow: 22 / 22.
 - Every PHASE and SUB carries traces= (6 PHASE, 24 SUB). Every SCR traces to REQ and AC (and UXD where it shows foreign data), and every UXD traces to REQ and AC.
 
 ### Event
-"P3.2 completed: CAT v2 — SCR 6 · UXD 3 · flows 18 · F-SUBs 24 · API used 50/52 · ADR 3 (049–051, none BLOCKED)"
+"P3.2 completed: CAT v2 — SCR 6 · UXD 3 · flows 18 · F-SUBs 24 · API used 53/55 · ADR 3 (049–051, none BLOCKED)"
 
 <<<END ARTIFACT>>>
 
@@ -13749,20 +14124,20 @@ Lookups consumed: none.
 | SCR-REQ-CAT-006 | Catalogue settings / إعدادات الكتالوج | CAT_SETTINGS |
 
 ### Requirements
-- REQ count 135 · AC count 152 · RULE count 53 · ENT count 12 · SCR-REQ count 6
-- Last sequence per atom: REQ: 135, AC: 152, ENT: 12, RULE: 53, SCR-REQ: 6
+- REQ count 138 · AC count 160 · RULE count 53 · ENT count 12 · SCR-REQ count 6
+- Last sequence per atom: REQ: 138, AC: 160, ENT: 12, RULE: 53, SCR-REQ: 6
 
-REQ ids: REQ-CAT-001, REQ-CAT-002, REQ-CAT-003, REQ-CAT-004, REQ-CAT-005, REQ-CAT-006, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-010, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-015, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-020, REQ-CAT-021, REQ-CAT-022, REQ-CAT-023, REQ-CAT-024, REQ-CAT-025, REQ-CAT-026, REQ-CAT-027, REQ-CAT-028, REQ-CAT-029, REQ-CAT-030, REQ-CAT-031, REQ-CAT-032, REQ-CAT-033, REQ-CAT-034, REQ-CAT-035, REQ-CAT-036, REQ-CAT-037, REQ-CAT-038, REQ-CAT-039, REQ-CAT-040, REQ-CAT-041, REQ-CAT-042, REQ-CAT-043, REQ-CAT-044, REQ-CAT-045, REQ-CAT-046, REQ-CAT-047, REQ-CAT-048, REQ-CAT-049, REQ-CAT-050, REQ-CAT-051, REQ-CAT-052, REQ-CAT-053, REQ-CAT-054, REQ-CAT-055, REQ-CAT-056, REQ-CAT-057, REQ-CAT-058, REQ-CAT-059, REQ-CAT-060, REQ-CAT-061, REQ-CAT-062, REQ-CAT-063, REQ-CAT-064, REQ-CAT-065, REQ-CAT-066, REQ-CAT-067, REQ-CAT-068, REQ-CAT-069, REQ-CAT-070, REQ-CAT-071, REQ-CAT-072, REQ-CAT-073, REQ-CAT-074, REQ-CAT-075, REQ-CAT-076, REQ-CAT-077, REQ-CAT-078, REQ-CAT-079, REQ-CAT-080, REQ-CAT-081, REQ-CAT-082, REQ-CAT-083, REQ-CAT-084, REQ-CAT-085, REQ-CAT-086, REQ-CAT-087, REQ-CAT-088, REQ-CAT-089, REQ-CAT-090, REQ-CAT-091, REQ-CAT-092, REQ-CAT-093, REQ-CAT-094, REQ-CAT-095, REQ-CAT-096, REQ-CAT-097, REQ-CAT-098, REQ-CAT-099, REQ-CAT-100, REQ-CAT-101, REQ-CAT-102, REQ-CAT-103, REQ-CAT-104, REQ-CAT-105, REQ-CAT-106, REQ-CAT-107, REQ-CAT-108, REQ-CAT-109, REQ-CAT-110, REQ-CAT-111, REQ-CAT-112, REQ-CAT-113, REQ-CAT-114, REQ-CAT-115, REQ-CAT-116, REQ-CAT-117, REQ-CAT-118, REQ-CAT-119, REQ-CAT-120, REQ-CAT-121, REQ-CAT-122, REQ-CAT-123, REQ-CAT-124, REQ-CAT-125, REQ-CAT-126, REQ-CAT-127, REQ-CAT-128, REQ-CAT-129, REQ-CAT-130, REQ-CAT-131, REQ-CAT-132, REQ-CAT-133, REQ-CAT-134, REQ-CAT-135
+REQ ids: REQ-CAT-001, REQ-CAT-002, REQ-CAT-003, REQ-CAT-004, REQ-CAT-005, REQ-CAT-006, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-010, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-015, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-020, REQ-CAT-021, REQ-CAT-022, REQ-CAT-023, REQ-CAT-024, REQ-CAT-025, REQ-CAT-026, REQ-CAT-027, REQ-CAT-028, REQ-CAT-029, REQ-CAT-030, REQ-CAT-031, REQ-CAT-032, REQ-CAT-033, REQ-CAT-034, REQ-CAT-035, REQ-CAT-036, REQ-CAT-037, REQ-CAT-038, REQ-CAT-039, REQ-CAT-040, REQ-CAT-041, REQ-CAT-042, REQ-CAT-043, REQ-CAT-044, REQ-CAT-045, REQ-CAT-046, REQ-CAT-047, REQ-CAT-048, REQ-CAT-049, REQ-CAT-050, REQ-CAT-051, REQ-CAT-052, REQ-CAT-053, REQ-CAT-054, REQ-CAT-055, REQ-CAT-056, REQ-CAT-057, REQ-CAT-058, REQ-CAT-059, REQ-CAT-060, REQ-CAT-061, REQ-CAT-062, REQ-CAT-063, REQ-CAT-064, REQ-CAT-065, REQ-CAT-066, REQ-CAT-067, REQ-CAT-068, REQ-CAT-069, REQ-CAT-070, REQ-CAT-071, REQ-CAT-072, REQ-CAT-073, REQ-CAT-074, REQ-CAT-075, REQ-CAT-076, REQ-CAT-077, REQ-CAT-078, REQ-CAT-079, REQ-CAT-080, REQ-CAT-081, REQ-CAT-082, REQ-CAT-083, REQ-CAT-084, REQ-CAT-085, REQ-CAT-086, REQ-CAT-087, REQ-CAT-088, REQ-CAT-089, REQ-CAT-090, REQ-CAT-091, REQ-CAT-092, REQ-CAT-093, REQ-CAT-094, REQ-CAT-095, REQ-CAT-096, REQ-CAT-097, REQ-CAT-098, REQ-CAT-099, REQ-CAT-100, REQ-CAT-101, REQ-CAT-102, REQ-CAT-103, REQ-CAT-104, REQ-CAT-105, REQ-CAT-106, REQ-CAT-107, REQ-CAT-108, REQ-CAT-109, REQ-CAT-110, REQ-CAT-111, REQ-CAT-112, REQ-CAT-113, REQ-CAT-114, REQ-CAT-115, REQ-CAT-116, REQ-CAT-117, REQ-CAT-118, REQ-CAT-119, REQ-CAT-120, REQ-CAT-121, REQ-CAT-122, REQ-CAT-123, REQ-CAT-124, REQ-CAT-125, REQ-CAT-126, REQ-CAT-127, REQ-CAT-128, REQ-CAT-129, REQ-CAT-130, REQ-CAT-131, REQ-CAT-132, REQ-CAT-133, REQ-CAT-134, REQ-CAT-135, REQ-CAT-136, REQ-CAT-137, REQ-CAT-138
 
-AC ids: AC-CAT-001, AC-CAT-002, AC-CAT-003, AC-CAT-004, AC-CAT-005, AC-CAT-006, AC-CAT-007, AC-CAT-008, AC-CAT-009, AC-CAT-010, AC-CAT-011, AC-CAT-012, AC-CAT-013, AC-CAT-014, AC-CAT-015, AC-CAT-016, AC-CAT-017, AC-CAT-018, AC-CAT-019, AC-CAT-020, AC-CAT-021, AC-CAT-022, AC-CAT-023, AC-CAT-024, AC-CAT-025, AC-CAT-026, AC-CAT-027, AC-CAT-028, AC-CAT-029, AC-CAT-030, AC-CAT-031, AC-CAT-032, AC-CAT-033, AC-CAT-034, AC-CAT-035, AC-CAT-036, AC-CAT-037, AC-CAT-038, AC-CAT-039, AC-CAT-040, AC-CAT-041, AC-CAT-042, AC-CAT-043, AC-CAT-044, AC-CAT-045, AC-CAT-046, AC-CAT-047, AC-CAT-048, AC-CAT-049, AC-CAT-050, AC-CAT-051, AC-CAT-052, AC-CAT-053, AC-CAT-054, AC-CAT-055, AC-CAT-056, AC-CAT-057, AC-CAT-058, AC-CAT-059, AC-CAT-060, AC-CAT-061, AC-CAT-062, AC-CAT-063, AC-CAT-064, AC-CAT-065, AC-CAT-066, AC-CAT-067, AC-CAT-068, AC-CAT-069, AC-CAT-070, AC-CAT-071, AC-CAT-072, AC-CAT-073, AC-CAT-074, AC-CAT-075, AC-CAT-076, AC-CAT-077, AC-CAT-078, AC-CAT-079, AC-CAT-080, AC-CAT-081, AC-CAT-082, AC-CAT-083, AC-CAT-084, AC-CAT-085, AC-CAT-086, AC-CAT-087, AC-CAT-088, AC-CAT-089, AC-CAT-090, AC-CAT-091, AC-CAT-092, AC-CAT-093, AC-CAT-094, AC-CAT-095, AC-CAT-096, AC-CAT-097, AC-CAT-098, AC-CAT-099, AC-CAT-100, AC-CAT-101, AC-CAT-102, AC-CAT-103, AC-CAT-104, AC-CAT-105, AC-CAT-106, AC-CAT-107, AC-CAT-108, AC-CAT-109, AC-CAT-110, AC-CAT-111, AC-CAT-112, AC-CAT-113, AC-CAT-114, AC-CAT-115, AC-CAT-116, AC-CAT-117, AC-CAT-118, AC-CAT-119, AC-CAT-120, AC-CAT-121, AC-CAT-122, AC-CAT-123, AC-CAT-124, AC-CAT-125, AC-CAT-126, AC-CAT-127, AC-CAT-128, AC-CAT-129, AC-CAT-130, AC-CAT-131, AC-CAT-132, AC-CAT-133, AC-CAT-134, AC-CAT-135, AC-CAT-136, AC-CAT-137, AC-CAT-138, AC-CAT-139, AC-CAT-140, AC-CAT-141, AC-CAT-142, AC-CAT-143, AC-CAT-144, AC-CAT-145, AC-CAT-146, AC-CAT-147, AC-CAT-148, AC-CAT-149, AC-CAT-150, AC-CAT-151, AC-CAT-152
+AC ids: AC-CAT-001, AC-CAT-002, AC-CAT-003, AC-CAT-004, AC-CAT-005, AC-CAT-006, AC-CAT-007, AC-CAT-008, AC-CAT-009, AC-CAT-010, AC-CAT-011, AC-CAT-012, AC-CAT-013, AC-CAT-014, AC-CAT-015, AC-CAT-016, AC-CAT-017, AC-CAT-018, AC-CAT-019, AC-CAT-020, AC-CAT-021, AC-CAT-022, AC-CAT-023, AC-CAT-024, AC-CAT-025, AC-CAT-026, AC-CAT-027, AC-CAT-028, AC-CAT-029, AC-CAT-030, AC-CAT-031, AC-CAT-032, AC-CAT-033, AC-CAT-034, AC-CAT-035, AC-CAT-036, AC-CAT-037, AC-CAT-038, AC-CAT-039, AC-CAT-040, AC-CAT-041, AC-CAT-042, AC-CAT-043, AC-CAT-044, AC-CAT-045, AC-CAT-046, AC-CAT-047, AC-CAT-048, AC-CAT-049, AC-CAT-050, AC-CAT-051, AC-CAT-052, AC-CAT-053, AC-CAT-054, AC-CAT-055, AC-CAT-056, AC-CAT-057, AC-CAT-058, AC-CAT-059, AC-CAT-060, AC-CAT-061, AC-CAT-062, AC-CAT-063, AC-CAT-064, AC-CAT-065, AC-CAT-066, AC-CAT-067, AC-CAT-068, AC-CAT-069, AC-CAT-070, AC-CAT-071, AC-CAT-072, AC-CAT-073, AC-CAT-074, AC-CAT-075, AC-CAT-076, AC-CAT-077, AC-CAT-078, AC-CAT-079, AC-CAT-080, AC-CAT-081, AC-CAT-082, AC-CAT-083, AC-CAT-084, AC-CAT-085, AC-CAT-086, AC-CAT-087, AC-CAT-088, AC-CAT-089, AC-CAT-090, AC-CAT-091, AC-CAT-092, AC-CAT-093, AC-CAT-094, AC-CAT-095, AC-CAT-096, AC-CAT-097, AC-CAT-098, AC-CAT-099, AC-CAT-100, AC-CAT-101, AC-CAT-102, AC-CAT-103, AC-CAT-104, AC-CAT-105, AC-CAT-106, AC-CAT-107, AC-CAT-108, AC-CAT-109, AC-CAT-110, AC-CAT-111, AC-CAT-112, AC-CAT-113, AC-CAT-114, AC-CAT-115, AC-CAT-116, AC-CAT-117, AC-CAT-118, AC-CAT-119, AC-CAT-120, AC-CAT-121, AC-CAT-122, AC-CAT-123, AC-CAT-124, AC-CAT-125, AC-CAT-126, AC-CAT-127, AC-CAT-128, AC-CAT-129, AC-CAT-130, AC-CAT-131, AC-CAT-132, AC-CAT-133, AC-CAT-134, AC-CAT-135, AC-CAT-136, AC-CAT-137, AC-CAT-138, AC-CAT-139, AC-CAT-140, AC-CAT-141, AC-CAT-142, AC-CAT-143, AC-CAT-144, AC-CAT-145, AC-CAT-146, AC-CAT-147, AC-CAT-148, AC-CAT-149, AC-CAT-150, AC-CAT-151, AC-CAT-152, AC-CAT-153, AC-CAT-154, AC-CAT-155, AC-CAT-156, AC-CAT-157, AC-CAT-158, AC-CAT-159, AC-CAT-160
 
 RULE ids: RULE-CAT-001, RULE-CAT-002, RULE-CAT-003, RULE-CAT-004, RULE-CAT-005, RULE-CAT-006, RULE-CAT-007, RULE-CAT-008, RULE-CAT-009, RULE-CAT-010, RULE-CAT-011, RULE-CAT-012, RULE-CAT-013, RULE-CAT-014, RULE-CAT-015, RULE-CAT-016, RULE-CAT-017, RULE-CAT-018, RULE-CAT-019, RULE-CAT-020, RULE-CAT-021, RULE-CAT-022, RULE-CAT-023, RULE-CAT-024, RULE-CAT-025, RULE-CAT-026, RULE-CAT-027, RULE-CAT-028, RULE-CAT-029, RULE-CAT-030, RULE-CAT-031, RULE-CAT-032, RULE-CAT-033, RULE-CAT-034, RULE-CAT-035, RULE-CAT-036, RULE-CAT-037, RULE-CAT-038, RULE-CAT-039, RULE-CAT-040, RULE-CAT-041, RULE-CAT-042, RULE-CAT-043, RULE-CAT-044, RULE-CAT-045, RULE-CAT-046, RULE-CAT-047, RULE-CAT-048, RULE-CAT-049, RULE-CAT-050, RULE-CAT-051, RULE-CAT-052, RULE-CAT-053
 
 ### Decisions
-ADR-CAT-038, ADR-CAT-039, ADR-CAT-040, ADR-CAT-041, ADR-CAT-042, ADR-CAT-043; at the gate-analysis revise ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062; at the second gate-analysis revise ADR-CAT-063, ADR-CAT-064, ADR-CAT-065. None BLOCKED.
+ADR-CAT-038, ADR-CAT-039, ADR-CAT-040, ADR-CAT-041, ADR-CAT-042, ADR-CAT-043; at the gate-analysis revise ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062; at the second gate-analysis revise ADR-CAT-063, ADR-CAT-064, ADR-CAT-065; at the third gate-analysis revise ADR-CAT-068, ADR-CAT-069, ADR-CAT-070. None BLOCKED.
 
 ### Event
-"P1 completed: CAT v2 — REQ 135 · AC 152 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 13 (038–043, 058–060, 062–065; none BLOCKED)"
+"P1 completed: CAT v2 — REQ 138 · AC 160 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 16 (038–043, 058–060, 062–065, 068–070; none BLOCKED)"
 
 <<<END ARTIFACT>>>
 
@@ -13771,7 +14146,7 @@ ADR-CAT-038, ADR-CAT-039, ADR-CAT-040, ADR-CAT-041, ADR-CAT-042, ADR-CAT-043; at
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved 2026-10-26 — gate prd-approval)
-Counts : REQ 135 · AC 152 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 13
+Counts : REQ 138 · AC 160 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 16
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -13786,7 +14161,8 @@ Counts : REQ 135 · AC 152 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 13
 | Date | 2026-10-26 |
 | Status | DRAFT — P1 pass 1 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions applied | 13 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
+| Decisions applied | 16 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
+| Revisions (third gate-analysis revise) | ADDED: REQ-CAT-136 … REQ-CAT-138, AC-CAT-153 … AC-CAT-160 · MODIFIED: REQ-CAT-135 and RULE-CAT-053 (three repair operations stay allowed on an inactive Item — ADR-CAT-068), RULE-CAT-003, AC-CAT-007 and AC-CAT-043 (the message names the existing Item's code), RULE-CAT-016, RULE-CAT-023 and RULE-CAT-024 (also checked on reactivation — ADR-CAT-069), A7 |
 
 ## A2 — Functional context
 
@@ -13889,7 +14265,7 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 ### ENT-CAT-003 — Variant attribute / خاصية المتغيّر
 | Kind | Ownership | Business number | Operations | Cross-module | Source |
 |---|---|---|---|---|---|
-| lookup — a dimension that Variants differ by (size, colour). The tenant keeps its own growing list, so it is an entity rather than an mdl key | PRIVATE | no — code entered by the owner | create, read, list, update, deactivate | none (consumers read the names through Variant reads) | registry CAND-CAT-003; DP §8 P-03 |
+| lookup — a dimension that Variants differ by (size, colour). The tenant defines the attributes themselves at runtime, each with its own nested value list that Variant assignments reference by foreign key, so it is an entity rather than an mdl key (ADR-CAT-070) | PRIVATE | no — code entered by the owner | create, read, list, update, deactivate, reactivate | none (consumers read the names through Variant reads) | registry CAND-CAT-003; DP §8 P-03 |
 
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
@@ -13903,7 +14279,7 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 ### ENT-CAT-004 — Variant attribute value / قيمة خاصية المتغيّر
 | Kind | Ownership | Business number | Operations | Cross-module | Source |
 |---|---|---|---|---|---|
-| lookup — one value of a Variant attribute (for example M, أحمر) | PRIVATE | no | create, read, list, update, deactivate | none | US-CAT-011; DP §8 P-03 |
+| lookup — one value of a Variant attribute (for example M, أحمر); held in CAT with its attribute (ADR-CAT-070) | PRIVATE | no | create, read, list, update, deactivate, reactivate | none | US-CAT-011; DP §8 P-03 |
 
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
@@ -13931,7 +14307,7 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 ### ENT-CAT-006 — Category / فئة
 | Kind | Ownership | Business number | Operations | Cross-module | Source |
 |---|---|---|---|---|---|
-| master — a node in the tenant's item classification tree | SHARED (owner) | no — code entered by the owner | create, read, list (tree), update, deactivate | read by SFR (browse) and INS (reporting) | DP §8 P-05; registry CAND-CAT-004; US-CAT-013 |
+| master — a node in the tenant's item classification tree | SHARED (owner) | no — code entered by the owner | create, read, list (tree), update, deactivate, reactivate | read by SFR (browse) and INS (reporting) | DP §8 P-05; registry CAND-CAT-004; US-CAT-013 |
 
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
@@ -14129,9 +14505,9 @@ Source     : US-CAT-001; D-13
 Priority   : HIGH
 
 #### AC-CAT-007 — [REQ-CAT-007]
-Given : an active Item named «شاحن سامسونج 25W»
+Given : an active Item named «شاحن سامسونج 25W» with code ITM-000012
 When  : the owner creates another Item named «شاحن سامسونج 25W»
-Then  : no Item is created and the response shows ar: «يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name. Open the existing item or change the name." with the existing Item's code as the next action
+Then  : no Item is created and the response shows ar: «يوجد صنف نشط بالاسم نفسه: ITM-000012. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name: ITM-000012. Open the existing item or change the name.", naming the existing Item's code as the next action
 
 #### AC-CAT-149 — [REQ-CAT-007]
 Given : no active Item named «كوب زجاج»
@@ -14627,7 +15003,7 @@ Then  : 9 Items are created, row 4 creates nothing, and row 4 is reported for co
 #### AC-CAT-043 — [REQ-CAT-041]
 Given : an import file whose rows 2 and 9 both carry nameAr «كوب زجاج», with no such active Item in the tenant
 When  : the owner submits it
-Then  : row 2 creates the Item, row 9 is rejected for column nameAr, and the reason reads ar: «يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name. Open the existing item or change the name."
+Then  : row 2 creates the Item, row 9 is rejected for column nameAr, and the reason reads ar: «يوجد صنف نشط بالاسم نفسه: {code}. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name: {code}. Open the existing item or change the name.", with {code} the code the import gave to the Item of row 2
 
 ### REQ-CAT-042 — Create a Variant attribute
 Pattern    : event
@@ -15073,6 +15449,11 @@ Priority   : —
 Given : a Category holding 4 active Items
 When  : the owner deactivates it
 Then  : it stays active and the response shows ar: «لا يمكن إيقاف الفئة لوجود 4 فئة فرعية أو صنف نشط فيها. انقلها أو أوقفها أولًا.» · en: "The category cannot be deactivated while it holds 4 active sub-categories or items. Move or deactivate them first."
+
+#### AC-CAT-153 — [REQ-CAT-071]
+Given : an active Category «إلكترونيات» with 0 active sub-categories and 0 active Items
+When  : a request that creates the sub-category PHONES under «إلكترونيات» and a request that deactivates «إلكترونيات» are submitted in parallel
+Then  : exactly 1 request succeeds; either PHONES is created and the deactivation is refused with code CAT-409-CATEGORY-IN-USE, or «إلكترونيات» is inactive and the create is refused with code CAT-422-CATEGORY-PARENT-INVALID; no active Category has an inactive parent
 
 ### REQ-CAT-072 — Inactive Category on an Item
 Pattern    : unwanted
@@ -15998,17 +16379,79 @@ Then  : the settings list 8 active Unit e-invoice codes, and the Item is created
 
 ### REQ-CAT-135 — Change under an inactive parent
 Pattern    : unwanted
-Statement  : If a request updates an inactive Item, generates Variants, saves Bundle components, adds or updates an Item unit or adds or updates an image of an inactive Item, or adds a barcode or sets the e-invoice override of a Variant that is inactive or belongs to an inactive Item, then the system shall reject the request with RULE-CAT-053.
+Statement  : If a request changes an inactive Item other than by changing only its categoryFk, adds or updates an Item unit or adds or updates an image of an inactive Item, or adds a barcode or sets the e-invoice override of a Variant that is inactive or belongs to an inactive Item, then the system shall reject the request with RULE-CAT-053, while Variant generation, a categoryFk-only change and the replacement of the Bundle components stay allowed on the inactive Item under their own rules.
 Traces     : US-CAT-001, US-CAT-016
 Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005, ENT-CAT-007, ENT-CAT-008, ENT-CAT-009, ENT-CAT-010
-Rationale  : An inactive record has left every channel; a write under it creates data no channel can use and that the ACTIVE-state invariants (A7) never checked. Deactivating children stays allowed, so an inactive Item can always be cleaned up (ADR-CAT-063).
-Source     : US-CAT-001; US-CAT-016; ADR-CAT-063
+Rationale  : An inactive record has left every channel; a write under it creates data no channel can use and that the ACTIVE-state invariants (A7) never checked. Deactivating children stays allowed, so an inactive Item can always be cleaned up (ADR-CAT-063). The three repair operations are exactly the next actions that the reactivation refusals of REQ-CAT-130 name (RULE-CAT-050, RULE-CAT-026, RULE-CAT-019), so no inactive Item is left in a state it can never leave (ADR-CAT-068).
+Source     : US-CAT-001; US-CAT-016; ADR-CAT-063; ADR-CAT-068
 Priority   : HIGH
 
 #### AC-CAT-144 — [REQ-CAT-135]
 Given : an inactive Item with base unit PIECE and no Item unit CARTON
 When  : the owner adds the Item unit CARTON with conversionFactor 12
 Then  : no Item unit is created and the response shows ar: «هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.» · en: "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."
+
+#### AC-CAT-154 — [REQ-CAT-135]
+Given : `variants` is on, and an inactive STANDARD Item with 0 active Variants, 0 Variant attributes in use and the active attribute SIZE with the active value M
+When  : the owner generates Variants for the Item with selections SIZE [M], then reactivates the Item
+Then  : the generation creates 1 active Variant carrying M, and the reactivation sets isActiveFl to true
+
+#### AC-CAT-155 — [REQ-CAT-135]
+Given : an inactive Item with nameEn "Glass cup" and categoryFk OLD, where the Category OLD is inactive, and an active Category NEW
+When  : the owner saves the Item with categoryFk NEW and every other field unchanged, then saves it with nameEn "Glass cup 2", then reactivates it
+Then  : the first save sets categoryFk to NEW, the second save is refused with code CAT-422-PARENT-INACTIVE and nameEn stays "Glass cup", and the reactivation sets isActiveFl to true
+
+#### AC-CAT-156 — [REQ-CAT-135]
+Given : `bundles` is on, an inactive Bundle with the component lines P × 1 and C × 1 where the Variant P was deactivated, and an active Variant Q of an active STANDARD Item
+When  : the owner replaces the Bundle's component lines with C × 1 and Q × 1, then reactivates the Bundle
+Then  : the Bundle holds exactly 2 active lines (C × 1 and Q × 1), and the reactivation sets isActiveFl to true
+
+### REQ-CAT-136 — Reactivate a Category
+Pattern    : event
+Statement  : When an owner reactivates an inactive Category whose parent is empty or active and whose nameAr no active Category under the same parent carries, the system shall set its isActiveFl to true and offer it again for selection.
+Traces     : US-CAT-013
+Entities   : ENT-CAT-006
+Rationale  : A mistaken deactivation is undone without losing the Category or its code, which stays unique among active and inactive Categories (ADR-CAT-069).
+Source     : US-CAT-013; ADR-CAT-069
+Priority   : —
+
+#### AC-CAT-157 — [REQ-CAT-136]
+Given : an inactive top-level Category with code PHONES and nameAr «هواتف», and no active top-level Category named «هواتف»
+When  : the owner reactivates it
+Then  : isActiveFl is true, its code stays PHONES, and the Item entry's Category list offers it
+
+#### AC-CAT-158 — [REQ-CAT-136]
+Given : an inactive Category PHONES whose parent «إلكترونيات» is inactive
+When  : the owner reactivates PHONES
+Then  : PHONES stays inactive and the response shows ar: «الفئة الأم يجب أن تكون نشطة، وألا تكون الفئة نفسها أو إحدى فئاتها الفرعية، وألا يتجاوز العمق 5 مستويات.» · en: "The parent category must be active, must not be the category itself or one of its sub-categories, and the depth cannot exceed 5 levels."
+
+### REQ-CAT-137 — Reactivate a Variant attribute
+Pattern    : event
+Statement  : When an owner reactivates an inactive Variant attribute whose nameAr no active Variant attribute carries, the system shall set its isActiveFl to true and offer it again to Variant generation.
+Traces     : US-CAT-011
+Entities   : ENT-CAT-003
+Rationale  : A mistaken deactivation is undone without losing the attribute or its code (ADR-CAT-069).
+Source     : US-CAT-011; ADR-CAT-069
+Priority   : HIGH
+
+#### AC-CAT-159 — [REQ-CAT-137]
+Given : the inactive Variant attribute SIZE «المقاس», and no active attribute named «المقاس»
+When  : the owner reactivates SIZE
+Then  : isActiveFl is true, its code stays SIZE, and the Variant generation list offers SIZE with its active values
+
+### REQ-CAT-138 — Reactivate a Variant attribute value
+Pattern    : event
+Statement  : When an owner reactivates an inactive value of an active Variant attribute whose nameAr no active value of that attribute carries, the system shall set its isActiveFl to true and offer it again to Variant generation.
+Traces     : US-CAT-011
+Entities   : ENT-CAT-004
+Rationale  : A mistaken deactivation is undone without losing the value or its code (ADR-CAT-069).
+Source     : US-CAT-011; ADR-CAT-069
+Priority   : HIGH
+
+#### AC-CAT-160 — [REQ-CAT-138]
+Given : the active attribute SIZE with the inactive value XS «صغير جدًا», and no active value of SIZE named «صغير جدًا»
+When  : the owner reactivates XS
+Then  : isActiveFl is true, its code stays XS, and the Variant generation list for SIZE offers XS
 
 ## A5 — Business rules
 
@@ -16035,9 +16478,9 @@ Source     : PRD P-3
 Scope      : ENT-CAT-001
 Trigger    : on create · on update · on reactivation · on import row
 Statement  : The system shall prevent saving or reactivating an Item when its nameAr, after Arabic normalisation (tashkeel and tatweel removed; أ إ آ ٱ read as ا, ة as ه, ى as ي; Latin letters lower-cased; leading, trailing and repeated spaces removed — ADR-CAT-062), equals the normalised nameAr of another active Item of the tenant or of an earlier valid row of the same import file.
-Message    : ar: يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم. · en: An active item already has this name. Open the existing item or change the name.
+Message    : ar: يوجد صنف نشط بالاسم نفسه: {code}. افتح الصنف الموجود أو غيّر الاسم. · en: An active item already has this name: {code}. Open the existing item or change the name.
 Traces     : REQ-CAT-007, REQ-CAT-041
-Data source: ENT-CAT-001.nameAr, ENT-CAT-001.isActiveFl
+Data source: ENT-CAT-001.nameAr, ENT-CAT-001.isActiveFl, ENT-CAT-001.code ({code} = the code of the other active Item; for an earlier row of the same import file, the code the import gave to that row's Item)
 Source     : D-13; US-CAT-001; ADR-CAT-062
 Test-Hint  : «شنطة سفر» and «شنطه سفر» are one name; «أحمر» and «احمر» are one name.
 
@@ -16152,10 +16595,10 @@ Source     : DP §8 P-04; D-01
 
 ### RULE-CAT-016 — Attribute and value codes and names unique
 Scope      : ENT-CAT-003, ENT-CAT-004
-Trigger    : on create · on update
-Statement  : The system shall require a code of 1 to 30 Latin letters, digits or hyphens, unique per tenant for a Variant attribute and per attribute for a value, and a nameAr unique among the active records of the same scope.
+Trigger    : on create · on update · on reactivation
+Statement  : The system shall require a code of 1 to 30 Latin letters, digits or hyphens, unique per tenant for a Variant attribute and per attribute for a value, and a nameAr unique among the active records of the same scope; a record being reactivated keeps its code and must not carry the nameAr of another active record of its scope.
 Message    : ar: الرمز أو الاسم مستخدم بالفعل. استخدم رمزًا (حتى 30 حرفًا لاتينيًا أو رقمًا أو شرطة) واسمًا مختلفين. · en: The code or name is already used. Use a different code (up to 30 Latin letters, digits or hyphens) and name.
-Traces     : REQ-CAT-042, REQ-CAT-045, REQ-CAT-055
+Traces     : REQ-CAT-042, REQ-CAT-045, REQ-CAT-055, REQ-CAT-137, REQ-CAT-138
 Data source: ENT-CAT-003.code, ENT-CAT-003.nameAr, ENT-CAT-003.isActiveFl, ENT-CAT-004.variantAttributeFk, ENT-CAT-004.code, ENT-CAT-004.nameAr, ENT-CAT-004.isActiveFl
 Source     : US-CAT-011
 
@@ -16215,19 +16658,19 @@ Source     : D-04
 
 ### RULE-CAT-023 — Category hierarchy
 Scope      : ENT-CAT-006
-Trigger    : on create · on update
-Statement  : The system shall require the parent Category to be active, to be neither the Category itself nor one of its sub-categories, and the resulting depth to be at most 5 levels.
+Trigger    : on create · on update · on reactivation
+Statement  : The system shall require the parent Category to be active, to be neither the Category itself nor one of its sub-categories, and the resulting depth to be at most 5 levels; a Category being reactivated must have an empty or active parent.
 Message    : ar: الفئة الأم يجب أن تكون نشطة، وألا تكون الفئة نفسها أو إحدى فئاتها الفرعية، وألا يتجاوز العمق 5 مستويات. · en: The parent category must be active, must not be the category itself or one of its sub-categories, and the depth cannot exceed 5 levels.
-Traces     : REQ-CAT-069
+Traces     : REQ-CAT-069, REQ-CAT-136
 Data source: ENT-CAT-006.parentCategoryFk, ENT-CAT-006.isActiveFl
 Source     : D-03
 
 ### RULE-CAT-024 — Category code and sibling name unique
 Scope      : ENT-CAT-006
-Trigger    : on create · on update
-Statement  : The system shall require a code of 1 to 30 Latin letters, digits or hyphens unique per tenant, and a nameAr unique among the active Categories of the same parent.
+Trigger    : on create · on update · on reactivation
+Statement  : The system shall require a code of 1 to 30 Latin letters, digits or hyphens unique per tenant, and a nameAr unique among the active Categories of the same parent; a Category being reactivated keeps its code and must not carry the nameAr of another active Category of its parent.
 Message    : ar: يوجد رمز الفئة نفسه، أو الاسم نفسه تحت الفئة الأم نفسها. استخدم رمزًا أو اسمًا مختلفًا. · en: The category code already exists, or the name already exists under the same parent. Use a different code or name.
-Traces     : REQ-CAT-070
+Traces     : REQ-CAT-070, REQ-CAT-136
 Data source: ENT-CAT-006.code, ENT-CAT-006.nameAr, ENT-CAT-006.parentCategoryFk, ENT-CAT-006.isActiveFl
 Source     : US-CAT-013
 
@@ -16484,14 +16927,14 @@ Data source: ENT-CAT-005.variantFk, ENT-CAT-005.variantAttributeFk, ENT-CAT-005.
 Source     : US-CAT-011; RULE-CAT-013
 
 ### RULE-CAT-053 — An inactive parent refuses child writes
-Scope      : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005, ENT-CAT-007, ENT-CAT-008, ENT-CAT-009, ENT-CAT-010
-Trigger    : on Item update · on Variant generation · on Bundle component save · on Item unit create or update · on image create or update · on barcode create · on Variant e-invoice override
-Statement  : The system shall prevent updating an inactive Item, and creating or changing a Variant, Variant attribute assignment, Bundle component line, Item unit or image of an inactive Item, and adding a barcode to, or setting the e-invoice override of, a Variant that is inactive or belongs to an inactive Item. Deactivating a child record stays allowed.
+Scope      : ENT-CAT-001, ENT-CAT-002, ENT-CAT-008, ENT-CAT-009, ENT-CAT-010
+Trigger    : on Item update that changes more than categoryFk · on Item unit create or update · on image create or update · on barcode create · on Variant e-invoice override
+Statement  : The system shall prevent changing any field of an inactive Item other than categoryFk, creating or changing an Item unit or image of an inactive Item, and adding a barcode to, or setting the e-invoice override of, a Variant that is inactive or belongs to an inactive Item. Three repair operations stay allowed on an inactive Item, each under its own rules: Variant generation (RULE-CAT-008, 012, 013, 014, 020, 052), an update whose only change is categoryFk (RULE-CAT-026) and the replacement of the Bundle components (RULE-CAT-008, 018, 019) — ADR-CAT-068. Deactivating a child record stays allowed.
 Message    : ar: هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا. · en: This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant.
 Traces     : REQ-CAT-135
-Data source: ENT-CAT-001.isActiveFl, ENT-CAT-002.isActiveFl, ENT-CAT-002.itemFk, ENT-CAT-008.itemFk, ENT-CAT-009.variantFk, ENT-CAT-010.itemFk
-Source     : US-CAT-001; ADR-CAT-063
-Test-Hint  : Each child write on an inactive Item is refused; each child deactivation on it succeeds.
+Data source: ENT-CAT-001.isActiveFl, ENT-CAT-001.categoryFk, ENT-CAT-002.isActiveFl, ENT-CAT-002.itemFk, ENT-CAT-008.itemFk, ENT-CAT-009.variantFk, ENT-CAT-010.itemFk
+Source     : US-CAT-001; ADR-CAT-063; ADR-CAT-068
+Test-Hint  : Each refused write on an inactive Item is refused; each child deactivation and each of the three repairs on it succeeds.
 
 ## A6 — Lookups
 
@@ -16560,7 +17003,13 @@ Only ENT-CAT-001 Item has more than two transitions; it combines isActiveFl and 
 3. when its kind is BUNDLE, active component lines whose Variants are active and belong to active STANDARD Items (RULE-CAT-019, RULE-CAT-021);
 4. a normalised nameAr that no other active Item carries (RULE-CAT-003).
 
-Every transition into ACTIVE (create, import row, reactivate) re-establishes these invariants, not only the guard of its own trigger. While the Item is inactive, the records it points to may still change (its Category, its component Variants), and its own children may be deactivated, but no child of it may be created or changed (RULE-CAT-053, ADR-CAT-063). Reactivation is therefore refused (REQ-CAT-130) until the invariants hold again. The channel reads of an Item's children (barcode lookup, Variant search, labels) also require an active Item (REQ-CAT-086, REQ-CAT-101). Only the reads by identifier return inactive records (RULE-CAT-048).
+Every transition into ACTIVE (create, import row, reactivate) re-establishes these invariants, not only the guard of its own trigger. While the Item is inactive, the records it points to may still change (its Category, its component Variants), and its own children may be deactivated, but no child of it may be created or changed (RULE-CAT-053, ADR-CAT-063). Reactivation is therefore refused (REQ-CAT-130) until the invariants hold again. Each broken invariant has a repair that stays allowed on the inactive Item, so an inactive Item can always return to ACTIVE (ADR-CAT-068):
+- invariant 1 (no active Variant): Variant generation creates an active Variant (REQ-CAT-049; it needs `variants` on — while the flag is off, the next action is to turn it on or to create a new Item, as RULE-CAT-050's message says);
+- invariant 2 (inactive Category): an update whose only change is categoryFk points the Item to an active Category or to none (REQ-CAT-072), or the Category itself is reactivated (REQ-CAT-136, ADR-CAT-069);
+- invariant 3 (invalid component): the Bundle components are replaced with valid lines (REQ-CAT-057; it needs `bundles` on);
+- invariant 4 (name taken): the other active Item is renamed or deactivated; the Item's own name cannot change while it is inactive.
+
+The other records that can be deactivated also have a way back: Categories, Variant attributes and Variant attribute values are reactivated under their own uniqueness and hierarchy rules (REQ-CAT-136 … REQ-CAT-138), and a Variant is replaced by regenerating its combination. The channel reads of an Item's children (barcode lookup, Variant search, labels) also require an active Item (REQ-CAT-086, REQ-CAT-101). Only the reads by identifier return inactive records (RULE-CAT-048).
 
 No module-specific approval flow: no story asks for one, and the profile forbids a workflow engine.
 
@@ -16608,7 +17057,7 @@ Navigation   : Catalog / الكتالوج → Items / الأصناف; from: home
 Content shape: header + repeating lines (Variants, Item units, barcodes, Bundle components, images)
 Traces       : REQ-CAT-001 … REQ-CAT-007, REQ-CAT-014 … REQ-CAT-020, REQ-CAT-024 … REQ-CAT-035, REQ-CAT-049 … REQ-CAT-063, REQ-CAT-072 … REQ-CAT-091, REQ-CAT-096, REQ-CAT-105 … REQ-CAT-119, REQ-CAT-128 … REQ-CAT-133, REQ-CAT-135
 Composite    : Search + Entry — one screen requirement
-Inactive Item: the Entry of an inactive Item is read-only except Reactivate and the line deactivations (REQ-CAT-135, RULE-CAT-053).
+Inactive Item: the Entry of an inactive Item is read-only except Reactivate, the line deactivations and the three repairs — the Category field, "Generate variants" (while `variants` is on) and the Bundle components (while `bundles` is on) (REQ-CAT-135, RULE-CAT-053, ADR-CAT-068).
 
 ### B2 — Search / list
 | Filter | Source | Result column |
@@ -16637,13 +17086,13 @@ Sorted by nameAr (REQ-CAT-003). Applies REQ-CAT-014 and REQ-CAT-015 to filters.
 | Save | create (REQ-CAT-024, REQ-CAT-025) / update (REQ-CAT-004) | RULE-CAT-001, 002, 003, 004, 005, 006, 007, 022, 026, 042, 053 |
 | Deactivate / Reactivate | REQ-CAT-005 / REQ-CAT-006, REQ-CAT-130 | RULE-CAT-021, 041, 048 / RULE-CAT-003, 019, 026, 050 |
 | Publish / Unpublish | REQ-CAT-113 / REQ-CAT-114 | RULE-CAT-041 |
-| Generate variants | REQ-CAT-049, REQ-CAT-129 | RULE-CAT-008, 012, 013, 014, 020, 052, 053 |
+| Generate variants (also on an inactive Item — ADR-CAT-068) | REQ-CAT-049, REQ-CAT-129, REQ-CAT-135 | RULE-CAT-008, 012, 013, 014, 020, 052 |
 | Deactivate variant (its barcodes and assignments with it) | REQ-CAT-050 | RULE-CAT-015, 021, 048 |
 | Save variant e-invoice override | REQ-CAT-118 | RULE-CAT-042, 053 |
 | Add unit / change flags / deactivate unit | REQ-CAT-077 / 078 / 079, REQ-CAT-128 | RULE-CAT-027, 028, 048, 051, 053 |
 | Add GTIN / Generate internal barcode / Add scale code | REQ-CAT-083 / 084 / 096 | RULE-CAT-029, 030, 031, 032, 033, 053 |
 | Deactivate barcode | REQ-CAT-085 | RULE-CAT-048 |
-| Save Bundle components | REQ-CAT-056, REQ-CAT-057 | RULE-CAT-008, 018, 019, 053 |
+| Save Bundle components (also on an inactive Bundle — ADR-CAT-068) | REQ-CAT-056, REQ-CAT-057, REQ-CAT-135 | RULE-CAT-008, 018, 019 |
 | Upload / update / remove image | REQ-CAT-105 / 106 / 107 | RULE-CAT-038, 039, 040, 053 |
 | Import items | opens SCR-REQ-CAT-004 | — |
 | Print labels | opens SCR-REQ-CAT-005 | — |
@@ -16666,7 +17115,7 @@ Page code: CAT_ITEMS (one SEC_PAGES row)
 | update Item | PUT | /api/v1/cat/items/{id} | Item fields | Item | RULE-CAT-001, 002, 003, 004, 006, 007, 022, 026, 042, 053 | REQ-CAT-004, 117, 135 |
 | deactivate Item | DELETE | /api/v1/cat/items/{id} | id | confirmation | RULE-CAT-021, 041, 048 | REQ-CAT-005 |
 | reactivate / publish / unpublish Item | PATCH | /api/v1/cat/items/{id} | isActiveFl or publishStateCode | Item | RULE-CAT-003, 019, 026, 041, 050 | REQ-CAT-006, 113, 114, 130 |
-| generate Variants | POST | /api/v1/cat/items/{id}/variants | selected attribute values | list of Variant | RULE-CAT-008, 012, 013, 014, 020, 052, 053 | REQ-CAT-049, 129, 135 |
+| generate Variants | POST | /api/v1/cat/items/{id}/variants | selected attribute values | list of Variant | RULE-CAT-008, 012, 013, 014, 020, 052 (allowed on an inactive Item — ADR-CAT-068) | REQ-CAT-049, 129, 135 |
 | update Variant override | PUT | /api/v1/cat/variants/{id} | einvoiceCodeTypeCode, einvoiceCode | Variant | RULE-CAT-004, 042, 053 | REQ-CAT-118, 135 |
 | deactivate Variant | DELETE | /api/v1/cat/variants/{id} | id | confirmation | RULE-CAT-015, 021, 048 | REQ-CAT-050 |
 | add Item unit | POST | /api/v1/cat/items/{id}/units | uomCode, conversionFactor, flags | Item unit | RULE-CAT-006, 027, 053 | REQ-CAT-077, 135 |
@@ -16676,7 +17125,7 @@ Page code: CAT_ITEMS (one SEC_PAGES row)
 | generate internal barcode | POST | /api/v1/cat/variants/{id}/barcodes/internal | uomCode | Barcode | RULE-CAT-005, 031, 053 | REQ-CAT-084, 135 |
 | deactivate barcode | DELETE | /api/v1/cat/barcodes/{id} | id | confirmation | RULE-CAT-048 | REQ-CAT-085 |
 | barcode lookup (incl. scale label) | GET | /api/v1/cat/barcodes/lookup | value | Variant, Item, unit, embedded value | RULE-CAT-035, 047 | REQ-CAT-086, 090, 097, 100 |
-| save Bundle components | PUT | /api/v1/cat/items/{id}/bundle-components | component lines | list of Bundle component | RULE-CAT-008, 018, 019, 053 | REQ-CAT-056, 057, 135 |
+| save Bundle components | PUT | /api/v1/cat/items/{id}/bundle-components | component lines | list of Bundle component | RULE-CAT-008, 018, 019 (allowed on an inactive Item — ADR-CAT-068) | REQ-CAT-056, 057, 135 |
 | add image | POST | /api/v1/cat/items/{id}/media | fileDocumentRef (the file uploaded through the core FILE endpoints — ADR-CAT-056), nameAr, nameEn, variantFk | Item media | RULE-CAT-038, 039, 040, 053 | REQ-CAT-105, 108, 135 |
 | update image | PUT | /api/v1/cat/media/{id} | sortOrder, isPrimaryFl, names, variantFk | Item media | RULE-CAT-039, 040, 053 | REQ-CAT-106, 135 |
 | remove image | DELETE | /api/v1/cat/media/{id} | id | confirmation | RULE-CAT-039 | REQ-CAT-107, 111 |
@@ -16690,11 +17139,11 @@ Cross-module read operations (contract stage P1.5, not HTTP): read Item / Varian
 ### B1 — Definition
 Purpose      : Organise Items into a tree of Categories and sub-categories.
 Entities     : ENT-CAT-006, ENT-CAT-001 (Items of a Category)
-Operations   : list (tree), create, read, update (move), deactivate, list Items of a Category
+Operations   : list (tree), create, read, update (move), deactivate, reactivate, list Items of a Category
 Users        : Owner (all), Seller/cashier and Warehouse staff (read)
 Navigation   : Catalog / الكتالوج → Categories / الفئات; from: Items; to: Items (filtered by Category)
 Content shape: true hierarchy (parent/child)
-Traces       : REQ-CAT-064 … REQ-CAT-072
+Traces       : REQ-CAT-064 … REQ-CAT-072, REQ-CAT-136
 Composite    : Master + Detail (tree + node entry) — one screen requirement
 
 ### B2 — Search / list
@@ -16713,6 +17162,7 @@ Tree ordered by sortOrder under each parent (REQ-CAT-067).
 |---|---|---|
 | Save | REQ-CAT-064 / REQ-CAT-065 | RULE-CAT-001, 002, 023, 024 |
 | Deactivate | REQ-CAT-066 | RULE-CAT-025, 048 |
+| Reactivate | REQ-CAT-136 | RULE-CAT-023, 024 |
 | Show Items | REQ-CAT-068 | — |
 
 ### B4 — Access
@@ -16732,6 +17182,7 @@ Page code: CAT_CATEGORIES
 | read Category | GET | /api/v1/cat/categories/{id} | id | Category | — | REQ-CAT-067 |
 | update Category | PUT | /api/v1/cat/categories/{id} | names, parentCategoryFk, sortOrder | Category | RULE-CAT-023, 024 (code fixed) | REQ-CAT-065 |
 | deactivate Category | DELETE | /api/v1/cat/categories/{id} | id | confirmation | RULE-CAT-025, 048 | REQ-CAT-066 |
+| reactivate Category | PATCH | /api/v1/cat/categories/{id} | isActiveFl true | Category | RULE-CAT-023, 024 | REQ-CAT-136 |
 | Items of a Category | GET | /api/v1/cat/categories/{id}/items | id, paging | Page of Item | — | REQ-CAT-068 |
 
 ## SCR-REQ-CAT-003 — Variant attributes / خصائص المتغيّرات
@@ -16739,11 +17190,11 @@ Page code: CAT_CATEGORIES
 ### B1 — Definition
 Purpose      : Keep the tenant's Variant attributes (size, colour) and their values.
 Entities     : ENT-CAT-003, ENT-CAT-004
-Operations   : list, create, read, update, deactivate (attribute and value)
+Operations   : list, create, read, update, deactivate, reactivate (attribute and value)
 Users        : Owner (all), Seller/cashier and Warehouse staff (read)
 Navigation   : Catalog / الكتالوج → Variant attributes / خصائص المتغيّرات (menu entry present only while `variants` is on — REQ-CAT-014); from: Items; to: Items
 Content shape: header + repeating lines (attribute + its values)
-Traces       : REQ-CAT-014, REQ-CAT-016, REQ-CAT-042 … REQ-CAT-048, REQ-CAT-054, REQ-CAT-055
+Traces       : REQ-CAT-014, REQ-CAT-016, REQ-CAT-042 … REQ-CAT-048, REQ-CAT-054, REQ-CAT-055, REQ-CAT-137, REQ-CAT-138
 Composite    : Master + Detail — one screen requirement
 
 ### B2 — Search / list
@@ -16762,6 +17213,7 @@ Ordered by sortOrder (REQ-CAT-048).
 |---|---|---|
 | Save attribute / value | REQ-CAT-042, 043 / REQ-CAT-045, 046 | RULE-CAT-001, 002, 008, 016 |
 | Deactivate attribute / value (allowed while `variants` is off — RULE-CAT-008) | REQ-CAT-044 / REQ-CAT-047 | RULE-CAT-017 |
+| Reactivate attribute / value (allowed while `variants` is off — RULE-CAT-008) | REQ-CAT-137 / REQ-CAT-138 | RULE-CAT-016 |
 
 ### B4 — Access
 Page code: CAT_VARIANT_ATTRIBUTES
@@ -16779,9 +17231,11 @@ Page code: CAT_VARIANT_ATTRIBUTES
 | create attribute | POST | /api/v1/cat/variant-attributes | code, nameAr, nameEn, sortOrder | Variant attribute | RULE-CAT-001, 002, 008, 016 | REQ-CAT-042 |
 | update attribute | PUT | /api/v1/cat/variant-attributes/{id} | nameAr, nameEn, sortOrder | Variant attribute | RULE-CAT-001, 002, 008, 016 | REQ-CAT-043 |
 | deactivate attribute | DELETE | /api/v1/cat/variant-attributes/{id} | id | confirmation | RULE-CAT-017 | REQ-CAT-044 |
+| reactivate attribute | PATCH | /api/v1/cat/variant-attributes/{id} | isActiveFl true | Variant attribute | RULE-CAT-016 | REQ-CAT-137 |
 | create value | POST | /api/v1/cat/variant-attributes/{id}/values | code, nameAr, nameEn, sortOrder | Variant attribute value | RULE-CAT-001, 002, 008, 016 | REQ-CAT-045 |
 | update value | PUT | /api/v1/cat/variant-attribute-values/{id} | nameAr, nameEn, sortOrder | Variant attribute value | RULE-CAT-001, 002, 008, 016 | REQ-CAT-046 |
 | deactivate value | DELETE | /api/v1/cat/variant-attribute-values/{id} | id | confirmation | RULE-CAT-017 | REQ-CAT-047 |
+| reactivate value | PATCH | /api/v1/cat/variant-attribute-values/{id} | isActiveFl true | Variant attribute value | RULE-CAT-016 | REQ-CAT-138 |
 
 ## SCR-REQ-CAT-004 — Item import / استيراد الأصناف
 
@@ -16908,7 +17362,7 @@ Page code: CAT_SETTINGS
 
 | US | REQ | AC | RULE | ENT | SCR-REQ |
 |---|---|---|---|---|---|
-| US-CAT-001 | REQ-CAT-001 … 007, 130, 131, 132, 135 | AC-CAT-001 … 007, 132 … 134, 137 … 139, 144, 149 | RULE-CAT-003, 019, 026, 041, 048, 050, 053 | ENT-CAT-001, 002, 005, 006, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
+| US-CAT-001 | REQ-CAT-001 … 007, 130, 131, 132, 135 | AC-CAT-001 … 007, 132 … 134, 137 … 139, 144, 149, 154 … 156 | RULE-CAT-003, 019, 026, 041, 048, 050, 053 | ENT-CAT-001, 002, 005, 006, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
 | US-CAT-002 | REQ-CAT-008 … 010, 133 | AC-CAT-008 … 010, 140 | RULE-CAT-049 | ENT-CAT-001, 002, 005, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
 | US-CAT-003 | REQ-CAT-011 … 013 | AC-CAT-011 … 013 | RULE-CAT-009 | ENT-CAT-001, 002, 003, 005, 007 | SCR-REQ-CAT-001, 003 |
 | US-CAT-004 | REQ-CAT-014 … 016 | AC-CAT-014 … 017, 143 | RULE-CAT-008 | ENT-CAT-001, 002, 003, 004, 005, 007 | SCR-REQ-CAT-001, 003 |
@@ -16918,9 +17372,9 @@ Page code: CAT_SETTINGS
 | US-CAT-008 | REQ-CAT-028 … 031 | AC-CAT-029 … 032 | RULE-CAT-001, 002 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
 | US-CAT-009 | REQ-CAT-032 … 035, 134 | AC-CAT-033 … 036, 141 | RULE-CAT-004, 005 | ENT-CAT-001, 002, 012 | SCR-REQ-CAT-001, 006 |
 | US-CAT-010 | REQ-CAT-036 … 041 | AC-CAT-037 … 043 | RULE-CAT-003, 044, 045 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-004 |
-| US-CAT-011 | REQ-CAT-042 … 055, 129 | AC-CAT-044 … 057, 131, 145, 146, 147 | RULE-CAT-001, 013, 014, 015, 016, 017, 048, 052 | ENT-CAT-001, 002, 003, 004, 005 | SCR-REQ-CAT-001, 003 |
+| US-CAT-011 | REQ-CAT-042 … 055, 129, 137, 138 | AC-CAT-044 … 057, 131, 145, 146, 147, 159, 160 | RULE-CAT-001, 013, 014, 015, 016, 017, 048, 052 | ENT-CAT-001, 002, 003, 004, 005 | SCR-REQ-CAT-001, 003 |
 | US-CAT-012 | REQ-CAT-056 … 063, 130 | AC-CAT-058 … 065, 134, 151 | RULE-CAT-018, 019, 020, 021, 022 | ENT-CAT-001, 002, 005, 007 | SCR-REQ-CAT-001 |
-| US-CAT-013 | REQ-CAT-064 … 072 | AC-CAT-066 … 074, 142 | RULE-CAT-001, 023, 024, 025, 026, 048 | ENT-CAT-001, 006 | SCR-REQ-CAT-002 |
+| US-CAT-013 | REQ-CAT-064 … 072, 136 | AC-CAT-066 … 074, 142, 153, 157, 158 | RULE-CAT-001, 023, 024, 025, 026, 048 | ENT-CAT-001, 006 | SCR-REQ-CAT-002 |
 | US-CAT-014 | REQ-CAT-073 … 076 | AC-CAT-075 … 078 | RULE-CAT-006 | ENT-CAT-001, 008, 009, 011, 012 | SCR-REQ-CAT-001 |
 | US-CAT-015 | REQ-CAT-077 … 082 | AC-CAT-079 … 084 | RULE-CAT-007, 027, 028, 048 | ENT-CAT-001, 008 | SCR-REQ-CAT-001 |
 | US-CAT-016 | REQ-CAT-083 … 091, 128, 135 | AC-CAT-085 … 093, 130, 135, 150 | RULE-CAT-029, 030, 031, 032, 047, 048, 051, 053 | ENT-CAT-001, 002, 008, 009, 011 | SCR-REQ-CAT-001 |
@@ -16973,6 +17427,9 @@ Every story maps to ≥ 1 REQ, including ≥ 1 REQ with pattern `unwanted`. Ever
 | ADR-CAT-063 | An inactive parent refuses child writes (REQ-CAT-135, RULE-CAT-053); deactivating a Variant also deactivates its barcodes (REQ-CAT-050) | gate-analysis round 2, G2 | ACCEPTED (non-breaking) |
 | ADR-CAT-064 | The scale code length of a layout is fixed after creation; type and decimals change only how the embedded value is read; a deactivated layout leaves its SCALE barcodes stored (REQ-CAT-093, REQ-CAT-094) | gate-analysis round 2, G3 | ACCEPTED (non-breaking) |
 | ADR-CAT-065 | CAT serves its own lookup keys to the screens through `OwnedLookups` (`GET /api/v1/cat/lookups/{key}`); amends ADR-CAT-050 §1 and §2 | gate-analysis round 2, G5; erp-core checklist C6 | ACCEPTED (non-breaking) |
+| ADR-CAT-068 | Three repair operations stay allowed on an inactive Item — Variant generation, a categoryFk-only update and the replacement of the Bundle components (REQ-CAT-135, RULE-CAT-053, A7); amends ADR-CAT-063 | gate-analysis round 3, G1 | ACCEPTED (non-breaking) |
+| ADR-CAT-069 | Categories, Variant attributes and Variant attribute values can be reactivated (REQ-CAT-136 … REQ-CAT-138) | gate-analysis round 3, G10 | ACCEPTED (non-breaking) |
+| ADR-CAT-070 | Variant attributes and their values are CAT tables, not mdl lookup types (erp-core checklist C5 / F3); CORE-GAP-tenant-lookup-types raised | gate-analysis round 3, G11 | ACCEPTED (non-breaking) |
 
 No ADR is BLOCKED. No question was raised.
 
@@ -16998,7 +17455,7 @@ Custom roles receive actions through the given `sec` module. Permission names ar
 Module : CAT · Version : v2 · Stage : P3.2 Part A · Profile : commerce
 Inputs : srs (SCR-REQ-CAT-001 … 006, ENT/RULE/permission matrix), prd (US-CAT-001 … 022)
 Mints  : SCR-CAT-001 … SCR-CAT-006 · UXD-CAT-001 … UXD-CAT-003 (both streams start at 001; the current state holds no earlier frontend design)
-Decisions: ADR-CAT-049 (Items: one Save, ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage, binding notes) · gate-analysis round 2: ADR-CAT-063 (inactive parent refuses child writes) · ADR-CAT-064 (layout keeps its scale code length) · ADR-CAT-065 (CAT lookup keys served through API-CAT-052)
+Decisions: ADR-CAT-049 (Items: one Save, ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage, binding notes) · gate-analysis round 2: ADR-CAT-063 (inactive parent refuses child writes) · ADR-CAT-064 (layout keeps its scale code length) · ADR-CAT-065 (CAT lookup keys served through API-CAT-052) · gate-analysis round 3: ADR-CAT-068 (three repairs stay allowed on an inactive Item) · ADR-CAT-069 (reactivation of Categories, Variant attributes and values)
 
 This is a delta run, but the current state holds no earlier ui-ux-spec, so every block below is ADDED. Screens follow the composite-screen rule: Search + Entry and Master + Detail are ONE screen with ONE `SCR-*`, and the sub-views sit under it. Fields and permissions are copied from the SRS, and labels are given in ar and en. The spec states intent. Components, hooks and routes in code belong to the frontend execution plan.
 
@@ -17031,7 +17488,7 @@ Shared UX copy (not catalogue messages):
 | save-first | احفظ تغييراتك أولًا. | Save your changes first. |
 | flag-unreadable | (RULE-CAT-009 message, SRS) | (RULE-CAT-009 message, SRS) |
 
-## SCR-CAT-001 — Items / الأصناف                 traces=REQ-CAT-135,AC-CAT-144,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-025,AC-CAT-026,AC-CAT-027,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-074,AC-CAT-075,AC-CAT-076,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-098,AC-CAT-099,AC-CAT-101,AC-CAT-102,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-127,AC-CAT-128,AC-CAT-129,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-137,AC-CAT-138,AC-CAT-139,AC-CAT-140,AC-CAT-142,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003
+## SCR-CAT-001 — Items / الأصناف                 traces=REQ-CAT-135,AC-CAT-144,AC-CAT-154,AC-CAT-155,AC-CAT-156,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-025,AC-CAT-026,AC-CAT-027,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-074,AC-CAT-075,AC-CAT-076,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-098,AC-CAT-099,AC-CAT-101,AC-CAT-102,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-127,AC-CAT-128,AC-CAT-129,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-137,AC-CAT-138,AC-CAT-139,AC-CAT-140,AC-CAT-142,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003
 
 Source            : SCR-REQ-CAT-001 · page code CAT_ITEMS · owning ENT-CAT-001 (with ENT-CAT-002, 005, 007, 008, 009, 010; ENT-CAT-006 by reference)
 UI pattern        : Search + Entry (composite). Content shape: header + repeating lines (Variants, Item units, barcodes, Bundle components, images)
@@ -17146,7 +17603,12 @@ Pane action: "Add image / إضافة صورة" (one-line drawer: file JPG/PNG/WE
 
 "Publish / نشر" · "Unpublish / إلغاء النشر" · "Deactivate / إيقاف" · "Reactivate / إعادة تفعيل" · "Print labels / طباعة الملصقات" (jump). Each runs at once after a confirmation, and only while the form has no pending change. Otherwise the button is disabled and shows the "save first" hint (ADR-CAT-049 §5).
 
-An inactive Item opens read-only: its fields and lines cannot be edited and no line can be added. Only "Reactivate" and the line "Deactivate" actions stay available. If a save still reaches an inactive Item or Variant, the form shows the RULE-CAT-053 message (REQ-CAT-135, ADR-CAT-063).
+An inactive Item opens read-only, except for the three repairs that let it be reactivated (REQ-CAT-135, ADR-CAT-063, ADR-CAT-068):
+- the **Category** field stays editable (active Categories only), so an Item whose Category went inactive can be moved;
+- **"Generate variants"** stays available while `variants` is on, so an Item with no active Variant can get one;
+- the **Bundle components** pane stays editable while `bundles` is on, so a Bundle with an invalid component can be fixed.
+
+Every other field and line is read-only, and no other line can be added. "Reactivate", "Save" (for the three repairs) and the line "Deactivate" actions stay available. When Reactivate is refused, its banner names the reason and links to the matching repair: RULE-CAT-050 → "Generate variants" · RULE-CAT-026 → the Category field (and "Open the category" in Categories, where it can be reactivated) · RULE-CAT-019 → the Bundle components pane. If a save still reaches an inactive Item or Variant with another change, the form shows the RULE-CAT-053 message.
 
 Screen copy:
 
@@ -17166,12 +17628,12 @@ Screen copy:
 | scan-weight | الوزن المضمّن: {value} {unit} | Embedded weight: {value} {unit} |
 | scan-price | السعر المضمّن: {value} | Embedded price: {value} |
 
-## SCR-CAT-002 — Categories / الفئات                 traces=REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074
+## SCR-CAT-002 — Categories / الفئات                 traces=REQ-CAT-136,AC-CAT-153,AC-CAT-157,AC-CAT-158,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074
 
 Source            : SCR-REQ-CAT-002 · page code CAT_CATEGORIES · owning ENT-CAT-006 (ENT-CAT-001 for the Items of a Category)
 UI pattern        : Master + Detail (tree + node entry), composite. Content shape: true hierarchy (parent/child)
 Sub-views         : Tree (master, with text and active filters) · Category entry (detail) — under this ONE SCR. The entry has one second-level view: the Items of this Category
-Fields shown      : code الرمز / Code (mandatory; read-only after creation — the update request carries no code) · nameAr الاسم بالعربية / Arabic name (mandatory) · nameEn الاسم بالإنجليزية / English name (Advanced) · parentCategoryFk الفئة الأم / Parent category (Advanced; tree select of active Categories, empty = top level; the node itself and its sub-categories are disabled — RULE-CAT-023) · sortOrder الترتيب / Sort order (Advanced; default next under the parent) · isActiveFl نشط / Active (read-only; changed by Deactivate). Tree node: code, nameAr (nameEn in en, falling back to nameAr), inactive nodes greyed when the active filter is off. Items of this Category (second level): code الرمز / Code · nameAr الاسم بالعربية / Arabic name · nameEn الاسم بالإنجليزية / English name — paged
+Fields shown      : code الرمز / Code (mandatory; read-only after creation — the update request carries no code) · nameAr الاسم بالعربية / Arabic name (mandatory) · nameEn الاسم بالإنجليزية / English name (Advanced) · parentCategoryFk الفئة الأم / Parent category (Advanced; tree select of active Categories, empty = top level; the node itself and its sub-categories are disabled — RULE-CAT-023) · sortOrder الترتيب / Sort order (Advanced; default next under the parent) · isActiveFl نشط / Active (read-only; changed by Deactivate on an active node and by Reactivate / إعادة تفعيل on an inactive one — REQ-CAT-136, ADR-CAT-069). Tree node: code, nameAr (nameEn in en, falling back to nameAr), inactive nodes greyed when the active filter is off. Items of this Category (second level): code الرمز / Code · nameAr الاسم بالعربية / Arabic name · nameEn الاسم بالإنجليزية / English name — paged
 Composition       : container drawer · Category record → none · items of this category → summary row + second level · submits: one
 Permissions       : PERM_CAT_CATEGORIES_VIEW (gateway) · PERM_CAT_CATEGORIES_CREATE · PERM_CAT_CATEGORIES_UPDATE · PERM_CAT_CATEGORIES_DELETE — Owner: VIEW, CREATE, UPDATE, DELETE · Seller/cashier: VIEW · Warehouse staff: VIEW (SRS B4)
 Cross-module data : none
@@ -17192,19 +17654,19 @@ Screen copy:
 | empty-tree | لا توجد فئات بعد. أنشئ أول فئة. | No categories yet. Create the first category. |
 | empty-items | لا توجد أصناف نشطة في هذه الفئة. | No active items in this category. |
 
-## SCR-CAT-003 — Variant attributes / خصائص المتغيّرات                 traces=REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-014,AC-CAT-016,AC-CAT-017,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-056,AC-CAT-057,UXD-CAT-002
+## SCR-CAT-003 — Variant attributes / خصائص المتغيّرات                 traces=REQ-CAT-137,REQ-CAT-138,AC-CAT-159,AC-CAT-160,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-014,AC-CAT-016,AC-CAT-017,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-056,AC-CAT-057,UXD-CAT-002
 
 Source            : SCR-REQ-CAT-003 · page code CAT_VARIANT_ATTRIBUTES · owning ENT-CAT-003 (values ENT-CAT-004)
 UI pattern        : Master + Detail, composite. Content shape: header + repeating lines (attribute + its values)
 Sub-views         : List (master, text and active filters, ordered by sortOrder) · Attribute entry (detail) — under this ONE SCR. The entry has one second-level view: the values editor
-Fields shown      : attribute — code الرمز / Code (mandatory; read-only after creation) · nameAr الاسم بالعربية / Arabic name (mandatory) · nameEn الاسم بالإنجليزية / English name (Advanced) · sortOrder الترتيب / Sort order (Advanced; default next) · isActiveFl نشط / Active (read-only; changed by Deactivate). Value lines — code الرمز / Code (mandatory; read-only after creation) · nameAr الاسم بالعربية / Arabic name (mandatory) · nameEn الاسم بالإنجليزية / English name · sortOrder الترتيب / Sort order · isActiveFl نشط / Active (changed by the line's Deactivate). List row: code, nameAr, nameEn, active, value count
+Fields shown      : attribute — code الرمز / Code (mandatory; read-only after creation) · nameAr الاسم بالعربية / Arabic name (mandatory) · nameEn الاسم بالإنجليزية / English name (Advanced) · sortOrder الترتيب / Sort order (Advanced; default next) · isActiveFl نشط / Active (read-only; changed by Deactivate, or by Reactivate / إعادة تفعيل on an inactive attribute — REQ-CAT-137). Value lines — code الرمز / Code (mandatory; read-only after creation) · nameAr الاسم بالعربية / Arabic name (mandatory) · nameEn الاسم بالإنجليزية / English name · sortOrder الترتيب / Sort order · isActiveFl نشط / Active (changed by the line's Deactivate, or by its Reactivate on an inactive value — REQ-CAT-138, ADR-CAT-069). List row: code, nameAr, nameEn, active, value count
 Composition       : container drawer · attribute record → none · values → summary row + second level · submits: one
 Permissions       : PERM_CAT_VARIANT_ATTRIBUTES_VIEW (gateway) · PERM_CAT_VARIANT_ATTRIBUTES_CREATE · PERM_CAT_VARIANT_ATTRIBUTES_UPDATE · PERM_CAT_VARIANT_ATTRIBUTES_DELETE — Owner: VIEW, CREATE, UPDATE, DELETE · Seller/cashier: VIEW · Warehouse staff: VIEW (SRS B4)
 Cross-module data : availability of the whole screen and its menu entry → UXD-CAT-002 (`variants` flag, erp-core cu)
 Navigation        : `/cat/variant-attributes?text=&isActiveFl=` (list) · `?attribute=<variantAttributePk|new>` opens the entry drawer · `&values=open` opens the values editor · `&returnTo=<encoded Items Entry path>` returns to the Items Entry after Save · from: Catalog menu (only while `variants` is on), Items Variant generation picker · to: Items Entry (when `returnTo` is set)
 States            : empty — no attribute: "No variant attributes yet" + "New attribute" · flag off: RULE-CAT-008 text with «variants» (direct link while the flag is off) · loading · error (generic) · offline (not required by the SRS)
 
-The "Values" summary row shows the active value count and a capped preview of the first 5 value names in sortOrder, with an "Edit values / تعديل القيم" trigger. The values editor is a second-level drawer, a sibling of the entry drawer, opened from `&values=open`. It lists the value lines in the body's own scroll, offers "Add value / إضافة قيمة" (a new line), reorder, and Deactivate per line (marked pending). Confirm returns the edited set to the entry's form state; Cancel discards the draft. The editor saves nothing. The entry's Save is the one save.
+The "Values" summary row shows the active value count and a capped preview of the first 5 value names in sortOrder, with an "Edit values / تعديل القيم" trigger. The values editor is a second-level drawer, a sibling of the entry drawer, opened from `&values=open`. It lists the value lines in the body's own scroll, offers "Add value / إضافة قيمة" (a new line), reorder, Deactivate per active line and Reactivate per inactive line (each marked pending). Confirm returns the edited set to the entry's form state; Cancel discards the draft. The editor saves nothing. The entry's Save is the one save.
 
 Screen copy:
 

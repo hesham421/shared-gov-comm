@@ -143,7 +143,7 @@ Priority  : HIGH (US-CAT-011, US-CAT-004)
 ## SCR-CAT-004 flows
 
 ```
-FLOW — SCR-CAT-004 · import Items from Excel   traces=US-CAT-010,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,SCR-CAT-004,SCR-CAT-001
+FLOW — SCR-CAT-004 · import Items from Excel   traces=US-CAT-010,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-139,SCR-CAT-004,SCR-CAT-001
 Screens   : SCR-CAT-004, SCR-CAT-001
 Sequence  : setup wizard step 5 "import items" or Items · Search → "Import" → Item import → "Download import sheet" → fill offline → choose xlsx → Import → result (rows read, Items created, rejected rows with row, column, reason) → "Open Items" → Items · Search
 Trigger   : the owner brings an existing item list in during setup

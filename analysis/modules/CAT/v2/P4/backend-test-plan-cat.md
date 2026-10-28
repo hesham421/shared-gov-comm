@@ -1,15 +1,15 @@
 # Backend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : backend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the frontend test plan (this file: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207 and TC-CAT-211 … TC-CAT-216; frontend: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-210)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the frontend test plan (this file: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207 and TC-CAT-211 … TC-CAT-217; frontend: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-210)
 
 ## Header
 
 ### Sources (generated current state)
 | Input | File | Version | Use |
 |---|---|---|---|
-| srs | `_state/current-srs.md` | CAT v2 (P1) | derivation source: AC-CAT-001 … 160 (Given / When / Then), RULE-CAT-001 … 053 messages, lookups block |
-| registry-srs | `_state/current-registry-srs.md` | CAT v2 (P1) | ID ranges (REQ 138 · AC 160 · RULE 53) |
+| srs | `_state/current-srs.md` | CAT v2 (P1) | derivation source: AC-CAT-001 … 161 (Given / When / Then), RULE-CAT-001 … 053 messages, lookups block |
+| registry-srs | `_state/current-registry-srs.md` | CAT v2 (P1) | ID ranges (REQ 139 · AC 161 · RULE 53) |
 | registry-db | `_state/current-registry-db.md` | CAT v2 (P2) | XM register `records: []` → no integration TC |
 | backend-execution-plan | `_state/current-backend-execution-plan.md` | CAT v2 (P3.1) | API-CAT-001 … 055, Error Catalog codes, split units (Package) |
 | frontend-execution-plan | `_state/current-frontend-execution-plan.md` | CAT v2 (P3.2) | cross-check of the track split (ADR-CAT-052 §1) |
@@ -17,7 +17,7 @@ Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared wi
 | dependency-graph | `_state/current-dependency-graph.md` | CAT v2 | CAT is tier 1, no outbound edge |
 
 ### Delta
-The current state holds no earlier test plan, so every TC is ADDED. The TC stream starts at 001. Within v2, the third gate-analysis revise ADDED TC-CAT-211 … TC-CAT-216 and MODIFIED TC-CAT-003, TC-CAT-020 and TC-CAT-203 (the RULE-CAT-003 message names the existing Item's code — G12) and TC-CAT-185, TC-CAT-186 and TC-CAT-187 (each now repairs the Item and reactivates it — G3, ADR-CAT-068). No id is renumbered or REMOVED.
+The current state holds no earlier test plan, so every TC is ADDED. The TC stream starts at 001. Within v2, the third gate-analysis revise ADDED TC-CAT-211 … TC-CAT-216 and MODIFIED TC-CAT-003, TC-CAT-020 and TC-CAT-203 (the RULE-CAT-003 message names the existing Item's code — G12) and TC-CAT-185, TC-CAT-186 and TC-CAT-187 (each now repairs the Item and reactivates it — G3, ADR-CAT-068). The fourth gate-analysis revise ADDED TC-CAT-217 (an import past its 120-second limit is rolled back whole — G4, REQ-CAT-139, ADR-CAT-071) and MODIFIED TC-CAT-188 (the GTIN of a deactivated Item stays active and refuses another Variant — G6). No id is renumbered or REMOVED.
 
 ### Framework
 `profile.stack.testing` is **agnostic**. Each block below is the whole contract: the consumer repo chooses its tool and turns each TC into a test. This plan names no framework, annotation or file layout.
@@ -37,14 +37,14 @@ The current state holds no earlier test plan, so every TC is ADDED. The TC strea
 - Error bodies are read as `LocalizedException → {code, messageAr, messageEn}`. Success notices are read from `ApiResponse<T>` `code` / `messageAr` / `messageEn` (ADR-CAT-048).
 - "Owner" below is that user. Every message is asserted in ar and en, copied from the SRS.
 
-<!-- PHASE:TEST-PLAN-BE:START traces=AC-CAT-153,AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-157,AC-CAT-158,AC-CAT-159,AC-CAT-160,REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-025,AC-CAT-026,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-037,AC-CAT-038,AC-CAT-039,AC-CAT-040,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135,AC-CAT-152,AC-CAT-076,REQ-CAT-074 -->
+<!-- PHASE:TEST-PLAN-BE:START traces=AC-CAT-161,REQ-CAT-139,AC-CAT-153,AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-157,AC-CAT-158,AC-CAT-159,AC-CAT-160,REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-025,AC-CAT-026,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-037,AC-CAT-038,AC-CAT-039,AC-CAT-040,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135,AC-CAT-152,AC-CAT-076,REQ-CAT-074 -->
 ## PHASE TEST-PLAN-BE — module scenarios
 
-The phase holds 152 TCs, which is more than 12, so it is split into two SUBs:
-- `RULE-SCENARIOS` (83): each AC whose Then names a RULE refusal, a RULE notice or a RULE-governed state transition, including the parallel-request cases of the concurrency guards (TC-CAT-200 … 205, 211) and the inactive-parent matrix (TC-CAT-212).
+The phase holds 153 TCs, which is more than 12, so it is split into two SUBs:
+- `RULE-SCENARIOS` (84): each AC whose Then names a RULE refusal, a RULE notice or a RULE-governed state transition, including the parallel-request cases of the concurrency guards (TC-CAT-200 … 205, 211) and the inactive-parent matrix (TC-CAT-212) and the import time limit (TC-CAT-217).
 - `API-SCENARIOS` (69): endpoint-driven ACs — happy paths, reads, paging, search, events, permission, tenant isolation, optimistic lock, tenant provisioning, CAT lookup reads, reactivation of Categories, Variant attributes and values.
 
-<!-- SUB:RULE-SCENARIOS:START traces=AC-CAT-153,AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-158,REQ-CAT-136,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-086,REQ-CAT-101,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-009,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-019,AC-CAT-020,AC-CAT-023,AC-CAT-024,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-035,AC-CAT-036,AC-CAT-038,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-087,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-096,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-110,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-128,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-009,REQ-CAT-013,REQ-CAT-016,REQ-CAT-018,REQ-CAT-019,REQ-CAT-022,REQ-CAT-023,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-034,REQ-CAT-035,REQ-CAT-037,REQ-CAT-040,REQ-CAT-041,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-085,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-094,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-108,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-126,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135 -->
+<!-- SUB:RULE-SCENARIOS:START traces=AC-CAT-161,REQ-CAT-139,AC-CAT-153,AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-158,REQ-CAT-136,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-086,REQ-CAT-101,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-009,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-019,AC-CAT-020,AC-CAT-023,AC-CAT-024,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-035,AC-CAT-036,AC-CAT-038,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-087,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-096,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-110,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-128,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-009,REQ-CAT-013,REQ-CAT-016,REQ-CAT-018,REQ-CAT-019,REQ-CAT-022,REQ-CAT-023,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-034,REQ-CAT-035,REQ-CAT-037,REQ-CAT-040,REQ-CAT-041,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-085,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-094,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-108,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-126,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135 -->
 ### SUB RULE-SCENARIOS
 
 <!-- TC:TC-CAT-001:START traces=AC-CAT-005,REQ-CAT-005,API-CAT-004,API-CAT-002 -->
@@ -1013,18 +1013,18 @@ Expected     : 1 → 422, code CAT-422-BUNDLE-COMPONENT-INVALID, messageAr «ا�
 Test data    : Bundle B, Variants P, C and Q (from the AC; placeholders)
 <!-- TC:TC-CAT-187:END -->
 
-<!-- TC:TC-CAT-188:START traces=AC-CAT-135,REQ-CAT-086,API-CAT-004,API-CAT-043 -->
-### TC-CAT-188 — A barcode of a deactivated Item no longer resolves
-Derived from : AC-CAT-135  (REQ-CAT-086)
-Exercises    : API-CAT-004 DELETE /api/v1/cat/items/{id} · API-CAT-043 GET /api/v1/cat/barcodes/lookup
-Rule / code  : RULE-CAT-047 → CAT-404-BARCODE-NOT-FOUND
+<!-- TC:TC-CAT-188:START traces=AC-CAT-135,REQ-CAT-086,REQ-CAT-005,API-CAT-004,API-CAT-043,API-CAT-002,API-CAT-014 -->
+### TC-CAT-188 — A barcode of a deactivated Item no longer resolves, yet still holds its value
+Derived from : AC-CAT-135  (REQ-CAT-086; the barcode kept active by REQ-CAT-005)
+Exercises    : API-CAT-004 DELETE /api/v1/cat/items/{id} · API-CAT-043 GET /api/v1/cat/barcodes/lookup · API-CAT-002 GET /api/v1/cat/items/{id} · API-CAT-014 POST /api/v1/cat/variants/{id}/barcodes
+Rule / code  : RULE-CAT-047 → CAT-404-BARCODE-NOT-FOUND · RULE-CAT-029 → CAT-409-BARCODE-DUPLICATE
 Package      : SVC-API-SEARCH
 Scenario     : STATE · data class EDGE · language ALL
-Preconditions: S0 · an active Item whose active Variant carries the active GTIN 6223000000021 · no active scale label layout
+Preconditions: S0 · an active Item with code ITM-000005 (series CAT_ITEM positioned at ITM-000004 before its creation) whose active Variant carries the active GTIN 6223000000021 · an active Variant W of another active Item · no active scale label layout
 Host data    : none
-Steps        : 1. As the Owner, DELETE the Item. 2. As a Seller/cashier, GET the lookup with value 6223000000021.
-Expected     : 1 → 200. 2 → 404, code CAT-404-BARCODE-NOT-FOUND, messageAr «لا يوجد صنف بهذا الباركود. ابحث بالاسم أو أضف الباركود إلى الصنف.», messageEn "No item has this barcode. Search by name or add the barcode to the item."; no Variant is returned.
-Test data    : 6223000000021 (from the AC; check digit 1)
+Steps        : 1. As the Owner, DELETE the Item. 2. As a Seller/cashier, GET the lookup with value 6223000000021. 3. As the Owner, GET the Item. 4. As the Owner, POST to W the barcode {barcodeValue: 6223000000021, barcodeTypeCode: GTIN}.
+Expected     : 1 → 200. 2 → 404, code CAT-404-BARCODE-NOT-FOUND, messageAr «لا يوجد صنف بهذا الباركود. ابحث بالاسم أو أضف الباركود إلى الصنف.», messageEn "No item has this barcode. Search by name or add the barcode to the item."; no Variant is returned. 3 → isActiveFl false, and the barcode 6223000000021 is still returned with isActiveFl true: deactivating an Item leaves its barcodes active (REQ-CAT-005). 4 → 409, code CAT-409-BARCODE-DUPLICATE, messageAr «هذا الباركود مستخدم في الصنف ITM-000005. افتح ذلك الصنف أو استخدم باركودًا آخر.», messageEn "This barcode is already used by item ITM-000005. Open that item or use another barcode."; nothing is saved. (The owner releases the GTIN with API-CAT-016, which stays allowed on the inactive Item — TC-CAT-212 step 2.)
+Test data    : 6223000000021 (from the AC; check digit 1); ITM-000005 (this case's own Item code)
 <!-- TC:TC-CAT-188:END -->
 
 <!-- TC:TC-CAT-189:START traces=AC-CAT-136,REQ-CAT-101,API-CAT-042 -->
@@ -1223,6 +1223,20 @@ Steps        : 1. PATCH PHONES with {isActiveFl: true}. 2. GET PHONES. 3. PATCH 
 Expected     : 1 → 422, code CAT-422-CATEGORY-PARENT-INVALID, messageAr «الفئة الأم يجب أن تكون نشطة، وألا تكون الفئة نفسها أو إحدى فئاتها الفرعية، وألا يتجاوز العمق 5 مستويات.», messageEn "The parent category must be active, must not be the category itself or one of its sub-categories, and the depth cannot exceed 5 levels.". 2 → isActiveFl false. 3 → 200; isActiveFl true. 4 → 200; isActiveFl true, parentCategoryFk «إلكترونيات».
 Test data    : PHONES, «إلكترونيات» (from the AC)
 <!-- TC:TC-CAT-214:END -->
+
+<!-- TC:TC-CAT-217:START traces=AC-CAT-161,REQ-CAT-139,API-CAT-049,API-CAT-038,API-CAT-042,API-CAT-043,API-CAT-032 -->
+### TC-CAT-217 — An import past its 120-second limit is rolled back whole
+Derived from : AC-CAT-161  (REQ-CAT-139)
+Exercises    : API-CAT-049 POST /api/v1/cat/item-imports · API-CAT-038 GET /api/v1/cat/items · API-CAT-042 GET /api/v1/cat/variants · API-CAT-043 GET /api/v1/cat/barcodes/lookup · API-CAT-032 POST /api/v1/cat/scale-label-layouts
+Rule / code  : RULE-CAT-049 → CAT-500-CHANGE-NOT-SAVED · time budget and whole-import rollback of ADR-CAT-071
+Package      : SVC-API-INT
+Scenario     : VIOLATION · data class EDGE · language ALL
+Preconditions: S0 · the tenant holds 0 Items and no scale label layout · an xlsx on the import sheet with 5,000 valid rows (distinct Arabic names, no Category), 100 of which carry a valid, unused GTIN beginning with 622 · the write pass of API-CAT-049 is delayed past the 120-second transaction timeout at the persistence seam, after its first batch of 500 rows is inserted and before the second (ADR-CAT-052 §6), the same fault-injection seam as TC-CAT-004 · the outbox is observed
+Host data    : none
+Steps        : 1. POST the file. 2. GET /api/v1/cat/items (no filter). 3. GET /api/v1/cat/variants. 4. As a Seller/cashier, GET the lookup with the GTIN of the file's first GTIN row. 5. Count the cat.CatalogueChanged events delivered after step 1. 6. Remove the injected delay and POST a scale label layout {key: 21}.
+Expected     : 1 → 500, code CAT-500-CHANGE-NOT-SAVED, messageAr «تعذّر حفظ التغيير ولم يُرسل أي إشعار بالتغيير. أعد المحاولة.», messageEn "The change was not saved and no change notice was sent. Try again.". 2 → totalElements 0: the first batch, already inserted, was rolled back with the rest. 3 → totalElements 0. 4 → 404, code CAT-404-BARCODE-NOT-FOUND: no barcode was stored. 5 → 0 events. 6 → 201 at once: the scale-prefix lock was released by the rollback.
+Test data    : 5,000 rows, 100 GTINs (placeholders `<name-1..5000>`, `<GTIN-1..100>`); the 120-second limit and the 500-row batch of ADR-CAT-071; layout key 21 (this case's own)
+<!-- TC:TC-CAT-217:END -->
 <!-- SUB:RULE-SCENARIOS:END -->
 
 <!-- SUB:API-SCENARIOS:START traces=AC-CAT-157,AC-CAT-159,AC-CAT-160,REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-008,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-018,AC-CAT-021,AC-CAT-022,AC-CAT-025,AC-CAT-026,AC-CAT-029,AC-CAT-030,AC-CAT-033,AC-CAT-034,AC-CAT-037,AC-CAT-039,AC-CAT-040,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-079,AC-CAT-080,AC-CAT-085,AC-CAT-086,AC-CAT-088,AC-CAT-094,AC-CAT-095,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-103,AC-CAT-104,AC-CAT-107,AC-CAT-109,AC-CAT-111,AC-CAT-117,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-127,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-008,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-017,REQ-CAT-020,REQ-CAT-021,REQ-CAT-024,REQ-CAT-025,REQ-CAT-028,REQ-CAT-029,REQ-CAT-032,REQ-CAT-033,REQ-CAT-036,REQ-CAT-038,REQ-CAT-039,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-077,REQ-CAT-078,REQ-CAT-083,REQ-CAT-084,REQ-CAT-086,REQ-CAT-092,REQ-CAT-093,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-101,REQ-CAT-102,REQ-CAT-105,REQ-CAT-107,REQ-CAT-109,REQ-CAT-115,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-125,REQ-CAT-127,AC-CAT-152,AC-CAT-076,REQ-CAT-074 -->
@@ -2203,7 +2217,7 @@ CAT has no `XM-*` edge. The registry-db XM register is `records: []`, SRS A8 has
 ## TC TRACEABILITY INDEX
 
 ### AC → TC (and REQ → TC)
-Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-041 → TC-CAT-019, 020. REQ-CAT-086 → TC-CAT-105, 188. REQ-CAT-101 → TC-CAT-111, 189. REQ-CAT-130 → TC-CAT-185, 186, 187. REQ-CAT-135 → TC-CAT-185, 186, 187, 198, 212. REQ-CAT-136 → TC-CAT-213, 214. Every other REQ maps to one TC.
+Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-041 → TC-CAT-019, 020. REQ-CAT-086 → TC-CAT-105, 188. REQ-CAT-101 → TC-CAT-111, 189. REQ-CAT-130 → TC-CAT-185, 186, 187. REQ-CAT-135 → TC-CAT-185, 186, 187, 198, 212. REQ-CAT-136 → TC-CAT-213, 214. REQ-CAT-005 → TC-CAT-001, 188 (188 also asserts that the barcodes stay active). Every other REQ maps to one TC.
 
 | AC | REQ | TC |
 |---|---|---|
@@ -2367,12 +2381,13 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | AC-CAT-158 | REQ-CAT-136 | TC-CAT-214 |
 | AC-CAT-159 | REQ-CAT-137 | TC-CAT-215 |
 | AC-CAT-160 | REQ-CAT-138 | TC-CAT-216 |
+| AC-CAT-161 | REQ-CAT-139 | TC-CAT-217 |
 
 ### API → TC (TC-CAT-…)
 | API | TCs |
 |---|---|
 | API-CAT-001 | 003, 005, 007, 012, 013, 014, 016, 027, 028, 035, 036, 071, 074, 076, 077, 078, 080, 081, 093, 190, 193, 203 |
-| API-CAT-002 | 001, 007, 008, 009, 015, 021, 022, 023, 029, 031, 037, 038, 041, 054, 056, 057, 061, 062, 065, 066, 068, 070, 073, 077, 078, 079, 092, 094, 095, 097, 113, 114, 117, 184, 185, 186, 187, 190, 191, 192, 197, 198, 200, 201, 202, 205, 212 |
+| API-CAT-002 | 001, 007, 008, 009, 015, 021, 022, 023, 029, 031, 037, 038, 041, 054, 056, 057, 061, 062, 065, 066, 068, 070, 073, 077, 078, 079, 092, 094, 095, 097, 113, 114, 117, 184, 185, 186, 187, 188, 190, 191, 192, 197, 198, 200, 201, 202, 205, 212 |
 | API-CAT-003 | 004, 015, 031, 041, 062, 068, 069, 070, 117, 186, 190, 191, 192, 212 |
 | API-CAT-004 | 001, 188, 190, 197 |
 | API-CAT-005 | 002, 059, 060, 061, 185, 186, 187, 212 |
@@ -2384,7 +2399,7 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | API-CAT-011 | 038, 040, 102, 122, 183 |
 | API-CAT-012 | 040, 102, 212 |
 | API-CAT-013 | 038, 183, 212 |
-| API-CAT-014 | 043, 044, 045, 047, 050, 103, 109, 199, 204, 212 |
+| API-CAT-014 | 043, 044, 045, 047, 050, 103, 109, 188, 199, 204, 212 |
 | API-CAT-015 | 104, 212 |
 | API-CAT-016 | 042, 212 |
 | API-CAT-017 | 007, 094, 187, 205, 212 |
@@ -2402,24 +2417,24 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | API-CAT-029 | 088 |
 | API-CAT-030 | 089 |
 | API-CAT-031 | 025, 090 |
-| API-CAT-032 | 049, 106 |
+| API-CAT-032 | 049, 106, 217 |
 | API-CAT-033 | 107, 206 |
 | API-CAT-034 | 048 |
 | API-CAT-035 | 063, 120 |
 | API-CAT-036 | 121 |
 | API-CAT-037 | 122 |
-| API-CAT-038 | 016, 018, 065, 067, 203 |
+| API-CAT-038 | 016, 018, 065, 067, 203, 217 |
 | API-CAT-039 | 033, 098, 099, 211, 213 |
 | API-CAT-040 | 100 |
 | API-CAT-041 | 026, 087, 090, 091, 215 |
-| API-CAT-042 | 111, 189 |
-| API-CAT-043 | 042, 046, 048, 051, 105, 110, 188, 199, 204, 206 |
+| API-CAT-042 | 111, 189, 217 |
+| API-CAT-043 | 042, 046, 048, 051, 105, 110, 188, 199, 204, 206, 217 |
 | API-CAT-044 | 115 |
 | API-CAT-045 | 049, 063, 107, 108, 121, 193 |
 | API-CAT-046 | 116 |
 | API-CAT-047 | 060, 064, 123, 124 |
 | API-CAT-048 | 082 |
-| API-CAT-049 | 017, 018, 019, 020, 083, 084 |
+| API-CAT-049 | 017, 018, 019, 020, 083, 084, 217 |
 | API-CAT-050 | 052, 053, 112 |
 | API-CAT-051 | 010, 011, 075 |
 | API-CAT-052 | 207 |
@@ -2458,7 +2473,7 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | RULE-CAT-026 | CAT-422-CATEGORY-INACTIVE | 035, 186 (reactivation, then repaired) · 212 (categoryFk-only repair) |
 | RULE-CAT-027 | CAT-422-ITEM-UNIT-INVALID | 039 · 101 |
 | RULE-CAT-028 | CAT-422-CONVERSION-FACTOR-FIXED | 040 |
-| RULE-CAT-029 | CAT-409-BARCODE-DUPLICATE | 043, 204 (parallel adds) · 199 (value released by a Variant deactivation) |
+| RULE-CAT-029 | CAT-409-BARCODE-DUPLICATE | 043, 188 (value still held by the barcode of a deactivated Item), 204 (parallel adds) · 199 (value released by a Variant deactivation) |
 | RULE-CAT-030 | CAT-422-GTIN-INVALID | 044 |
 | RULE-CAT-031 | CAT-422-BARCODE-UNIT-INVALID | 045 |
 | RULE-CAT-032 | CAT-409-BARCODE-SCALE-PREFIX | 047 |
@@ -2478,7 +2493,7 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | RULE-CAT-046 | CAT-400-SEARCH-TERM-TOO-SHORT | 064 |
 | RULE-CAT-047 | CAT-404-BARCODE-NOT-FOUND | 046, 188 (Item deactivated) · 042, 048 |
 | RULE-CAT-048 | CAT-200-DEACTIVATED | 001, 038, 042, 098, 197 · 021, 199 (barcodes follow the Variant) |
-| RULE-CAT-049 | CAT-500-CHANGE-NOT-SAVED | 004 · 059, 069 (event after commit) |
+| RULE-CAT-049 | CAT-500-CHANGE-NOT-SAVED | 004, 217 (import past its time limit, rolled back whole) · 059, 069 (event after commit) |
 | RULE-CAT-050 | CAT-422-ITEM-NO-ACTIVE-VARIANT | 185 (then repaired by generation) |
 | RULE-CAT-051 | CAT-409-ITEM-UNIT-HAS-BARCODES | 183 |
 | RULE-CAT-052 | CAT-422-VARIANT-ATTRIBUTE-MISSING | 184 |
@@ -2496,7 +2511,7 @@ none — no `XM-*` exists (registry-db `records: []`).
 | DATA-DOM-LOOKUP | 2 | 048, 122 |
 | SVC-API-CRUD | 106 | 001, 002, 003, 006, 007, 008, 009, 012, 013, 014, 015, 016, 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 033, 034, 035, 036, 038, 039, 040, 041, 042, 043, 044, 045, 047, 049, 050, 054, 055, 056, 057, 058, 059, 060, 061, 062, 063, 065, 066, 068, 070, 073, 074, 076, 077, 078, 085, 086, 087, 088, 089, 090, 093, 094, 095, 096, 097, 098, 101, 102, 103, 104, 106, 107, 109, 113, 114, 117, 118, 119, 120, 121, 183, 184, 185, 186, 187, 192, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 211, 212, 213, 214, 215, 216 |
 | SVC-API-SEARCH | 17 | 046, 051, 064, 067, 091, 099, 100, 105, 108, 110, 111, 115, 116, 123, 188, 189, 207 |
-| SVC-API-INT | 13 | 010, 011, 017, 018, 019, 020, 052, 053, 075, 082, 083, 084, 112 |
+| SVC-API-INT | 14 | 010, 011, 017, 018, 019, 020, 052, 053, 075, 082, 083, 084, 112, 217 |
 | SEC-BE | 2 | 124, 190 |
 | DOC · ALIGN-BE · INT-C | 0 | no TC — `INT-C` has no block (no XM); `DOC` and `ALIGN-BE` implement no AC of their own (ADR-CAT-052 §2) |
 
@@ -2504,13 +2519,13 @@ none — no `XM-*` exists (registry-db `records: []`).
 
 | Measure | Result |
 |---|---|
-| AC covered (this track) | 154 / 160 ✓. The 6 others are observable on a screen only and are covered on the frontend track: AC-CAT-014 → TC-CAT-128, AC-CAT-015 → TC-CAT-129, AC-CAT-027 → TC-CAT-132, AC-CAT-075 → TC-CAT-137, AC-CAT-138 → TC-CAT-194, AC-CAT-142 → TC-CAT-195 (ADR-CAT-052 §1). AC-CAT-076 has its server read here (TC-CAT-207) and its field on the frontend (TC-CAT-138). |
-| AC covered (both plans) | 160 / 160 ✓, no gap |
-| REQ covered (this track) | 134 / 138 ✓. REQ-CAT-014, 015, 026 and 073 are covered on the frontend track (TC-CAT-128, 129, 132, 137). |
-| REQ covered (both plans) | 138 / 138 ✓ |
+| AC covered (this track) | 155 / 161 ✓. The 6 others are observable on a screen only and are covered on the frontend track: AC-CAT-014 → TC-CAT-128, AC-CAT-015 → TC-CAT-129, AC-CAT-027 → TC-CAT-132, AC-CAT-075 → TC-CAT-137, AC-CAT-138 → TC-CAT-194, AC-CAT-142 → TC-CAT-195 (ADR-CAT-052 §1). AC-CAT-076 has its server read here (TC-CAT-207) and its field on the frontend (TC-CAT-138). |
+| AC covered (both plans) | 161 / 161 ✓, no gap |
+| REQ covered (this track) | 135 / 139 ✓. REQ-CAT-014, 015, 026 and 073 are covered on the frontend track (TC-CAT-128, 129, 132, 137). |
+| REQ covered (both plans) | 139 / 139 ✓ |
 | API covered | 55 / 55 ✓. This includes API-CAT-011 and API-CAT-046, which no CAT screen calls (ADR-CAT-051), and API-CAT-052 (TC-CAT-207); API-CAT-053 … 055 by TC-CAT-213 … 216. |
 | RULE covered | 53 / 53 ✓, each with its catalog code where the rule raises one |
 | Concurrency guards | 8 / 8 — stale version (TC-CAT-192) and the seven parallel-request cases: RULE-CAT-015 (TC-CAT-200), 014 (201), 039 (202), 003 (203), 029 (204), 021 / 019 (205), 025 / 023 (211, the Category tree lock), each naming the guard and its owning unit |
 | XM edges covered | 0 / 0 — no edge, so the `INT-XM` phase is absent |
-| Track size | 152 TCs for 154 ACs (ratio < 1.0, within the ~2× guard; TC-CAT-185 … 187 and 212 each cover more than one AC). No boundary twin is added; every BOUNDARY-class TC is the AC's own case. |
+| Track size | 153 TCs for 155 ACs (ratio < 1.0, within the ~2× guard; TC-CAT-185 … 187 and 212 each cover more than one AC). No boundary twin is added; every BOUNDARY-class TC is the AC's own case. |
 | Host data | CAT_BRAND BRAND_068 (TC-CAT-068, created active by `POST /api/v1/mdl/lookup-types/{id}/values`), CAT_BRAND OLDBRAND (TC-CAT-037, created by the same call, then made inactive by `DELETE /api/v1/mdl/lookup-values/{id}`); CAT_BRAND XYZ absent (TC-CAT-019, 036: never created). The AC values CAT_UOM BAG (AC-CAT-122 … 124) and CAT_EINVOICE_UNIT H87 (AC-CAT-126) are not seeded; TC-CAT-120, 121, 122 stay on seeded data with the unit DOZEN and TC-CAT-063 with the e-invoice unit BX in their place (ADR-CAT-053 §2). No value is demanded in opposite states, and every TC runs in its own tenant (ADR-CAT-052 §3, §4). |

@@ -227,7 +227,7 @@ Screen copy:
 | add-value | إضافة قيمة | Add value |
 | empty | لا توجد خصائص بعد. أنشئ خاصية مثل المقاس أو اللون. | No variant attributes yet. Create one such as size or colour. |
 
-## SCR-CAT-004 — Item import / استيراد الأصناف                 traces=REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,AC-CAT-037,AC-CAT-038,AC-CAT-039,AC-CAT-040,AC-CAT-041,AC-CAT-042,AC-CAT-043
+## SCR-CAT-004 — Item import / استيراد الأصناف                 traces=REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-139,AC-CAT-037,AC-CAT-038,AC-CAT-039,AC-CAT-040,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-161
 
 Source            : SCR-REQ-CAT-004 · page code CAT_ITEM_IMPORT · owning ENT-CAT-001 (ENT-CAT-002, ENT-CAT-009 created per row)
 UI pattern        : Wizard step (upload + result list). It is also mounted as step 5 "import items" of the setup wizard (wizard owner: P-02)
@@ -237,7 +237,7 @@ Composition       : container page · import file → none · rejected rows → 
 Permissions       : PERM_CAT_ITEM_IMPORT_VIEW (gateway) · PERM_CAT_ITEM_IMPORT_CREATE — Owner: VIEW, CREATE (SRS B4)
 Cross-module data : none
 Navigation        : `/cat/item-import` · from: Catalog menu, Items Search "Import", setup wizard step 5 · to: Items Search `/cat/items` ("Open Items")
-States            : empty — before a file is chosen: the three steps (download, fill, import) · loading — "Importing…" while the file is processed (LOCAL, the button shows progress) · error (file rejected: RULE-CAT-044 text; generic otherwise) · offline (not required by the SRS)
+States            : empty — before a file is chosen: the three steps (download, fill, import) · loading — "Importing…" while the file is processed (LOCAL, the button shows progress) · error (file rejected: RULE-CAT-044 text; import past its time limit and rolled back whole: RULE-CAT-049 text, nothing created — REQ-CAT-139; generic otherwise) · offline (not required by the SRS)
 
 The rejected-rows list sits inline under the counts, in the page's own scroll. It is read-only and has no save of its own.
 

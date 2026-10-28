@@ -1,7 +1,7 @@
 # Frontend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : frontend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207 and TC-CAT-211 … TC-CAT-216; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-210)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207 and TC-CAT-211 … TC-CAT-217; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-210)
 
 ## Header
 
@@ -1096,10 +1096,10 @@ The other rules are asserted on the backend track. No case here asserts the word
 
 | Measure | Result |
 |---|---|
-| AC covered (this track) | 59 / 160 by module TCs. Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
-| AC covered (both plans) | 160 / 160 ✓, no gap. The other 101 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
+| AC covered (this track) | 59 / 161 by module TCs. Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
+| AC covered (both plans) | 161 / 161 ✓, no gap. The other 102 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
 | REQ covered (this track) | 57 REQs by module TCs (plus REQ-CAT-012, 105 and 109 through UXD TCs) |
-| REQ covered (both plans) | 138 / 138 ✓ |
+| REQ covered (both plans) | 139 / 139 ✓ |
 | SCR covered | 6 / 6 ✓ (SCR-CAT-001 … 006) |
 | UXD covered | 3 / 3 ✓. Each UXD has its rendered and its failure case (6 TCs in `INT-UXD`). |
 | Refusal texts | every wording asserted here is bound by a `text:` row of the frontend plan (msg-bound) ✓. Eight routed codes have no binding (RULE-CAT-010, 012, 025, 035, 039, 045, 046, 047): their TCs assert routing and unchanged display only, and the gap is recorded in ADR-CAT-053 §1. |

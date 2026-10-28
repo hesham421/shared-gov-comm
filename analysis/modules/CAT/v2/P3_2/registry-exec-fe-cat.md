@@ -65,8 +65,12 @@ Gate-analysis round 2 (frontend):
 - An inactive Item renders read-only, and CAT-422-PARENT-INACTIVE is routed with the RULE-CAT-053 text (G2); a layout's scaleCodeLength is create-only (G3).
 - SEC-FE: a jump to another page shows only with that page's VIEW and, where flag-bound, its flag on (G12).
 
+Gate-analysis round 4 (frontend):
+- The Variant generation picker reads API-CAT-041 with `isActiveFl=true`, which filters the attributes and their values; the Variant attributes list sends no filter by default and the values editor reads API-CAT-026, so inactive values stay visible and can be reactivated (G3).
+- REQ-CAT-139 (an import past its time limit is rolled back whole) is bound to API-CAT-049 and routed by IMPORT-SUBMIT (G4). No ADR was raised; the next free ADR stays ADR-CAT-072.
+
 ### Traceability
-- REQ covered by at least one SCR or F-block: 138 / 138. Orphan REQ: none.
+- REQ covered by at least one SCR or F-block: 139 / 139. Orphan REQ: none.
 - US covered by at least one flow: 22 / 22.
 - Every PHASE and SUB carries traces= (6 PHASE, 24 SUB). Every SCR traces to REQ and AC (and UXD where it shows foreign data), and every UXD traces to REQ and AC.
 

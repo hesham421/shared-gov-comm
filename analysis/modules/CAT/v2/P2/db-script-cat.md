@@ -1,7 +1,7 @@
 ﻿# DB SCRIPT — Catalog / الكتالوج (CAT)
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P2
-Inputs : srs (P1, CAT v2 — REQ 127 · ENT 12 · RULE 49), registry-srs, contract (P1.5, CON 18)
+Inputs : srs (P1, CAT v2 — REQ 139 · AC 161 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the fourth gate-analysis revise
 Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 12 (given CORE_TENANT — ADR-CAT-055) · lookup keys 10 (34 seeded values)
 Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -19,7 +19,7 @@ Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 | Type declared here (not in the syntax map) | logical `number` → `INTEGER` (sortOrder, scaleCodeLength, valueDecimals). The profile `syntax_map` has no integer entry, so it is declared once here |
 | Date | 2026-10-26 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067. The next free ADR sequence is 068 |
+| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067. The next free ADR sequence, per the current registries, is 072 |
 | Migration file | `V1000__cat_catalog.sql` in the application's `classpath:db/migration` (erp-core conventions § Migrations: `V1000+`, `V<N>__<module>_<snake_case>.sql`). It is the first CAT script; a later change is a new `V1001+` script, never an edit |
 
 ## 2 — DB field traceability matrix
@@ -979,7 +979,7 @@ VALUES
 | D-P2-17 | Profile check CM-8: CAT holds no stock quantity, no monetary amount and no price (SRS A2 out of scope: PRC, INV). No warehouse, currency or price-list dimension applies to a CAT row | SRS A2; profile CM-8 | — |
 | D-P2-18 | Delta: the current state holds no earlier CAT db-script, so this v2 migration creates every object. The DBF sequence starts at 001 (next free 162). No XM exists (next free XM sequence 001) | brief delta rule; change-manifest CS-CAT-001 | — |
 
-No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. The next free ADR sequence for CAT is 068. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
+No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. The next free ADR sequence for CAT, per the current registries, is 072. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
 
 ## 6 — Registry content
 

@@ -2001,7 +2001,7 @@ paths:
       operationId: listVariantAttributesWithValues
       summary: list Variant attributes with values
       x-api-id: API-CAT-041
-      x-traces: [REQ-CAT-014, REQ-CAT-048, DBF-CAT-035, DBF-CAT-036, DBF-CAT-037, DBF-CAT-039, DBF-CAT-040, DBF-CAT-047, DBF-CAT-051, DBF-CAT-053]
+      x-traces: [REQ-CAT-014, REQ-CAT-048, DBF-CAT-035, DBF-CAT-036, DBF-CAT-037, DBF-CAT-039, DBF-CAT-040, DBF-CAT-047, DBF-CAT-051, DBF-CAT-052, DBF-CAT-053]
       parameters:
       - name: text
         in: query
@@ -2010,6 +2010,7 @@ paths:
       - name: isActiveFl
         in: query
         required: false
+        description: 'filters both the attributes and their values — an attribute is returned only when its isActiveFl equals the filter, and of each returned attribute only the values whose isActiveFl equals it; omitted, every attribute is returned with every value, active and inactive. The Variant generation picker sends true; the Variant attributes screen sends none by default'
         schema: {type: boolean}
       responses:
         '200':
@@ -3364,6 +3365,7 @@ paths:
       summary: catalogue search (global search)
       x-api-id: API-CAT-047
       x-traces: [REQ-CAT-125, REQ-CAT-126, REQ-CAT-127, DBF-CAT-001, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-014, DBF-CAT-110, DBF-CAT-113]
+      description: 'any authenticated caller; a caller without PERM_CAT_ITEMS_VIEW is answered 200 with an empty list, never 403 (REQ-CAT-127) — the permission is checked in code by the read service, the same way for CatalogueReadApi.searchCatalogue'
       parameters:
       - name: term
         in: query
@@ -3443,7 +3445,7 @@ paths:
       operationId: importItems
       summary: import items
       x-api-id: API-CAT-049
-      x-traces: [REQ-CAT-037, REQ-CAT-038, REQ-CAT-039, REQ-CAT-040, REQ-CAT-041, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012,
+      x-traces: [REQ-CAT-037, REQ-CAT-038, REQ-CAT-039, REQ-CAT-040, REQ-CAT-041, REQ-CAT-139, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012,
         DBF-CAT-013, DBF-CAT-014, DBF-CAT-015, DBF-CAT-023, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114]
       requestBody:
         required: true
