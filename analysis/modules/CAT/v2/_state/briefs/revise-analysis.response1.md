@@ -1,10 +1,43 @@
-All six findings (G1–G6) are applied across 15 artifact files. No new ADR was needed, the new IDs continue their existing sequences, and no question was raised. The api-spec still parses as valid YAML (34 paths). I have not re-run `gov.py analyze`, so the self-check blocks are still the orchestrator's placeholders.
+I applied all four findings by editing the source files in place. I didn't paste full-file `<<<FILE>>>` blocks because the backend plan is thousands of lines long. Nothing is committed. I haven't run `gov.py analyze`. My only checks were that the API spec still parses as YAML and that the query count matches in all three places (74 detailed entries, 74 summary rows, `QR: 74` in the totals).
 
-- **G1 (catalogue search permission):** API-CAT-047 now says its facade carries only `@PreAuthorize("isAuthenticated()")`. `CatCatalogueReadService.searchCatalogue` checks PERM_CAT_ITEMS_VIEW in code and returns an empty list when the caller lacks it, so the HTTP path and `CatalogueReadApi.searchCatalogue` behave the same. The same exception is now stated in the PHASE CORE module structure, the SEC-BE paragraph, the CatalogueReadApi note and table, and an operation description in the api-spec.
-- **G2 (import vs. Category deactivation):** the API-CAT-049 write pass now starts by re-reading every referenced Category with QR-CAT-032 FOR SHARE. Rows whose Category has become inactive are rejected with RULE-CAT-026 (column category, reported through CAT-200-IMPORT-ROW-REJECTED). The Repository line, the lock order (scale-prefix lock, then Category rows in categoryPk order) and QR-CAT-032's locking note all cover this now.
-- **G3 (`isActiveFl` on the attribute list):** API-CAT-041, QR-CAT-026 and the api-spec parameter now say the filter applies to both attributes and values, and omitting it returns all of both. In the frontend plan's F2, the generation picker sends `isActiveFl=true`. The Variant attributes list sends no filter by default. The values editor reads API-CAT-026, which returns every value. TC-CAT-090 now matches the plan.
-- **G4 (import time limit):** new REQ-CAT-139 (unwanted pattern) and AC-CAT-161 in the SRS. New TC-CAT-217 in SVC-API-INT, built like TC-CAT-004: it injects a delay after the first batch and checks 0 Items, Variants, barcodes and events, CAT-500-CHANGE-NOT-SAVED, and that the scale-prefix lock is released. REQ-CAT-139 is also bound to API-CAT-049 (and its api-spec trace), the frontend plan, the UI spec and flow, the SRS matrix, the registries and the coverage tables.
-- **G5 (stale headers):** I re-stamped the counts and next-ID lines in the contract, db-script and registry-db, and updated the other counts (now REQ 139, AC 161, RULE 53, next free ADR 072). The revise checklist itself is not in the files I'm allowed to write. I recorded the new "re-stamp downstream header counts" step as OPEN platform finding 8 in `business-policies-cat.md`, owned by the factory.
-- **G6 (Item barcodes on deactivation):** REQ-CAT-005 and SRS A7 now say an Item's barcodes stay active when it is deactivated, and the owner releases a GTIN with API-CAT-016. API-CAT-004 and API-CAT-016 in the backend plan say the same. TC-CAT-188 now also checks that the GTIN is still active and that adding it to another Variant is refused with CAT-409-BARCODE-DUPLICATE.
+**G1 — images must be in public storage (MINOR)**
+- RULE-CAT-038 and API-CAT-018 now require the file to be in the tenant's public image storage. Otherwise the request is refused with `CAT-422-IMAGE-NOT-ACCEPTED`.
+- Both now also say that one file reference can back several image records, because removing an image never deletes its file (ADR-CAT-056 §4).
+- I updated the matching wording in the error catalog trigger, the given-usage row and the API-CAT-018 description in `api-spec-cat.yaml`.
+- New backend test TC-CAT-218 (package SVC-API-CRUD) uploads an image to private storage and expects 422 with nothing created. It then attaches one public file twice and expects two records, exactly one of them primary.
 
-`_state/briefs/revise-analysis.md` was already modified before I started, and I didn't touch it.
+**G2 — lock on attribute value create (MINOR)**
+- API-CAT-029 now reads the attribute `FOR SHARE` through QR-CAT-022 and names that guard on its Concurrency line.
+- QR-CAT-022's locking line now covers value create as well as reactivation.
+- I also updated API-CAT-028's Concurrency line to match.
+
+**G3 — empty generation request (MINOR)**
+- API-CAT-006 now rejects an empty `selections` list, or an attribute with no values, with `CAT-400-REQUEST-INVALID`.
+- `minItems: 1` is on both arrays in the API spec. I also marked both fields of each selection as required, which the plan already said they were.
+- TC-CAT-184 has a second row covering both empty cases, run against an Item with no attribute in use.
+
+**G4 — advisory locks (MAJOR)**
+- Two new native queries in the catalog:
+  - **QR-CAT-073**, Category tree lock: `SELECT pg_advisory_xact_lock(CAST(:tenant AS integer), hashtext('CAT_CATEGORY_TREE'))`
+  - **QR-CAT-074**, scale-prefix lock: the same form with `'CAT_SCALE_PREFIX'`
+- `:tenant` comes from `TenantContext.require()`. Both repository methods carry `@TenantUnscoped(reason = "advisory lock keyed by TENANT_ID", adr = "ADR-CAT-047")`.
+- QR-CAT-073 is cited by API-CAT-021, 023, 024 and 053; QR-CAT-074 by API-CAT-014, 015, 032 and 049.
+- The old `(TENANT_ID, '…')` wording, which matched no PostgreSQL signature, is replaced everywhere.
+- "Four native queries" is now "six" in PHASE CORE and the query catalog preface.
+- I amended ADR-CAT-047 with the exact key form and noted the G2 lock there too.
+- One assumption to check: casting the tenant ID to `integer` is only safe while tenant IDs stay below 2^31. The plan says the core issues them from 1, but I haven't confirmed that against erp-core.
+
+**Bookkeeping**
+- The plan header and totals now say 74 queries. QR-CAT-073 is listed under ENT-CAT-006 and QR-CAT-074 under ENT-CAT-011 in the summary, coverage table and repository lists.
+- `registry-exec-be-cat.md`: the query range now ends at QR-CAT-074 (next free QR-CAT-075), plus a note on this revise.
+- In the backend test plan I updated the delta note, the test counts (154 tests, 85 in the rule-scenarios group), the traceability tables and the note on which tests cover `CAT-400-REQUEST-INVALID`.
+- I also changed the shared test-ID range in the header of `frontend-test-plan-cat.md` to include TC-CAT-218.
+- No new ADR was raised; the next free ADR number stays 072.
+
+The changes are in:
+- `analysis/modules/CAT/v2/P3_1/backend-execution-plan-cat.md`
+- `analysis/modules/CAT/v2/P3_1/api-spec-cat.yaml`
+- `analysis/modules/CAT/v2/P3_1/registry-exec-be-cat.md`
+- `analysis/modules/CAT/v2/P4/backend-test-plan-cat.md`
+- `analysis/modules/CAT/v2/P4/frontend-test-plan-cat.md`
+- `analysis/decisions/CAT/ADR-CAT-047.md`

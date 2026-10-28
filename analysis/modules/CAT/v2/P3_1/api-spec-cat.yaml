@@ -500,13 +500,17 @@ paths:
               properties:
                 selections:
                   type: array
+                  minItems: 1
                   items:
                     type: object
                     properties:
                       variantAttributeFk: {type: integer, format: int64}
                       variantAttributeValueFks:
                         type: array
+                        minItems: 1
                         items: {type: integer, format: int64}
+                    required: [variantAttributeFk, variantAttributeValueFks]
+                  description: at least one attribute, each with at least one value; an empty array answers CAT-400-REQUEST-INVALID
                   x-dbf: DBF-CAT-063
               required: [selections]
               title: VariantGenerationRequest
@@ -1339,7 +1343,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: the image bytes were uploaded beforehand through the given erp-core FILE endpoint (public image storage), which returned fileDocumentRef (ADR-CAT-056)
+              description: the image bytes were uploaded beforehand through the given erp-core FILE endpoint (public image storage), which returned fileDocumentRef (ADR-CAT-056); a document held in any other storage of the tenant (for example the private storage) is refused with CAT-422-IMAGE-NOT-ACCEPTED (RULE-CAT-038); one fileDocumentRef may be attached to several media records
               properties:
                 fileDocumentRef: {type: integer, format: int64, x-dbf: DBF-CAT-122}
                 nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-123}

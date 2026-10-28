@@ -4,7 +4,7 @@
 | Kind | Range | Count | Next free |
 |---|---|---|---|
 | API | API-CAT-001 … API-CAT-055 | 55 | API-CAT-056 |
-| QR | QR-CAT-001 … QR-CAT-072 | 72 | QR-CAT-073 |
+| QR | QR-CAT-001 … QR-CAT-074 | 74 | QR-CAT-075 |
 
 Both streams start at 001: the current state held no backend plan for CAT. No ID of another stage is minted here.
 
@@ -70,7 +70,7 @@ Both streams start at 001: the current state held no backend plan for CAT. No ID
 Contract coverage: CON-CAT-001 … CON-CAT-018 — 18 of 18 honoured (entity items also in the PHASE DATA-DOM entity blocks; the in-process interface `com.erp.cat.crossmodule.CatalogueReadApi` carries the eleven operation items).
 
 ### Query catalogue
-QR-CAT-001 … 010 → ENT-CAT-001 · 011 … 017 → ENT-CAT-002 · 018 … 021 → ENT-CAT-005 · 022 … 026 → ENT-CAT-003 · 027 … 031 → ENT-CAT-004 · 032 … 038 → ENT-CAT-006 · 039 … 042 → ENT-CAT-007 · 043 … 046, 071 → ENT-CAT-008 · 047 … 053, 072 → ENT-CAT-009 · 054 … 058 → ENT-CAT-010 · 059 … 064 → ENT-CAT-011 · 065 … 070 → ENT-CAT-012. Every QR is reached by ≥ 1 API and every API with a database operation cites its QRs (API-CAT-048 and API-CAT-052 have none). Native / join / lock deviations: ADR-CAT-047.
+QR-CAT-001 … 010 → ENT-CAT-001 · 011 … 017 → ENT-CAT-002 · 018 … 021 → ENT-CAT-005 · 022 … 026 → ENT-CAT-003 · 027 … 031 → ENT-CAT-004 · 032 … 038, 073 → ENT-CAT-006 · 039 … 042 → ENT-CAT-007 · 043 … 046, 071 → ENT-CAT-008 · 047 … 053, 072 → ENT-CAT-009 · 054 … 058 → ENT-CAT-010 · 059 … 064, 074 → ENT-CAT-011 · 065 … 070 → ENT-CAT-012. Every QR is reached by ≥ 1 API and every API with a database operation cites its QRs (API-CAT-048 and API-CAT-052 have none). Native / join / lock deviations: ADR-CAT-047.
 
 ### Entities / tables bound
 12 of 12 entities bound to their db-script tables (CAT_ITEM, CAT_VARIANT, CAT_VAR_ATTR, CAT_VAR_ATTR_VALUE, CAT_VAR_ATTR_ASSIGN, CAT_CATEGORY, CAT_BUNDLE_COMP, CAT_ITEM_UNIT, CAT_BARCODE, CAT_ITEM_MEDIA, CAT_SCALE_LABEL_LAYOUT, CAT_UNIT_EINVOICE_CODE); 161 of 161 DBF in the DB Alignment Manifest; 0 PENDING DB. Lookups reused: the 10 CAT-owned keys of SRS A6 (CAT_ITEM_KIND, CAT_PUBLISH_STATE, CAT_BRAND, CAT_UOM, CAT_TAX_CLASS, CAT_EINVOICE_ITEM_CODE_TYPE, CAT_EINVOICE_UNIT, CAT_BARCODE_TYPE, CAT_SCALE_VALUE_TYPE, CAT_CHANGE_KIND); new keys: none.
@@ -123,8 +123,10 @@ The fourth gate-analysis revise raised no ADR; the next free ADR sequence for CA
 
 Fourth gate-analysis revise (backend): API-CAT-047's facade carries only `@PreAuthorize("isAuthenticated()")` and the read service checks PERM_CAT_ITEMS_VIEW in code (G1); API-CAT-049's write pass re-reads its Categories FOR SHARE after the scale-prefix lock and rejects rows of a Category deactivated meanwhile with RULE-CAT-026 (G2); API-CAT-041 / QR-CAT-026 apply `isActiveFl` to attributes and values alike (G3); API-CAT-049 traces REQ-CAT-139, the import time limit (G4); API-CAT-004 leaves an Item's barcodes active and API-CAT-016 stays allowed on an inactive Item (G6).
 
+Fifth gate-analysis revise (backend), no ADR raised (ADR-CAT-047 amended): RULE-CAT-038 / API-CAT-018 refuse a FILE document outside the tenant's public image storage, and one fileDocumentRef may back several media records (G1, TC-CAT-218); API-CAT-029 reads its attribute FOR SHARE through QR-CAT-022 (G2); API-CAT-006 answers CAT-400-REQUEST-INVALID to an empty `selections` or an empty value list, and the API document carries `minItems: 1` on both arrays (G3, TC-CAT-184 row 2); the two advisory locks are catalogued as native statements QR-CAT-073 (Category tree, API-CAT-021, 023, 024, 053) and QR-CAT-074 (scale prefix, API-CAT-014, 015, 032, 049), each `pg_advisory_xact_lock(CAST(:tenant AS integer), hashtext(<name>))` with `@TenantUnscoped(reason = "advisory lock keyed by TENANT_ID", adr = "ADR-CAT-047")` — six native queries in all (G4). The next free ADR sequence stays 072.
+
 ### Traceability
 REQ covered by ≥ 1 API: 139 / 139 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
 
 ### Event
-"P3.1 completed: CAT v2 — API 55 · QR 72 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–071, none BLOCKED · CORE-GAP 3"
+"P3.1 completed: CAT v2 — API 55 · QR 74 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–071, none BLOCKED · CORE-GAP 3"
