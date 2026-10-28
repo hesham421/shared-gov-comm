@@ -78,11 +78,12 @@ Priority  : MEDIUM (US-CAT-019)
 ```
 
 ```
-FLOW — SCR-CAT-001 · publish, unpublish, deactivate, reactivate   traces=US-CAT-020,US-CAT-001,REQ-CAT-005,REQ-CAT-006,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-062,SCR-CAT-001
+FLOW — SCR-CAT-001 · publish, unpublish, deactivate, reactivate   traces=US-CAT-020,US-CAT-001,REQ-CAT-130,REQ-CAT-135,REQ-CAT-005,REQ-CAT-006,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-062,SCR-CAT-001
 Screens   : SCR-CAT-001
 Sequence  : Items · Entry (no pending change) → Publish | Unpublish | Deactivate | Reactivate → confirmation → state badge updates → back to Items · Search
 Trigger   : the owner decides what is offered online, or retires / returns an Item
 Priority  : MEDIUM (US-CAT-020); HIGH (US-CAT-001)
+Exit      : Reactivate refused → the banner links to the repair on the same Entry, which stays available on the inactive Item (ADR-CAT-068): no active Variant → "Generate variants" · inactive Category → the Category field, or Categories `?node=<categoryFk>` to reactivate it · invalid Bundle component → Bundle components pane → Save → Reactivate again
 ```
 
 ```
@@ -114,9 +115,9 @@ Exit      : direct link to `/cat/variant-attributes` while `variants` is off →
 ## SCR-CAT-002 flows
 
 ```
-FLOW — SCR-CAT-002 · organise the Category tree   traces=US-CAT-013,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,SCR-CAT-002
+FLOW — SCR-CAT-002 · organise the Category tree   traces=US-CAT-013,REQ-CAT-136,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,SCR-CAT-002
 Screens   : SCR-CAT-002
-Sequence  : Catalog menu → Categories (tree by sortOrder) → node or "New category" → Category entry drawer `?node=<categoryPk|new>` → Save | Deactivate → tree refreshed
+Sequence  : Catalog menu → Categories (tree by sortOrder) → node or "New category" → Category entry drawer `?node=<categoryPk|new>` → Save | Deactivate | Reactivate (inactive node — ADR-CAT-069) → tree refreshed
 Trigger   : the owner sets up or reorganises the classification
 Priority  : — (US-CAT-013)
 ```
@@ -132,9 +133,9 @@ Priority  : — (US-CAT-013)
 ## SCR-CAT-003 flows
 
 ```
-FLOW — SCR-CAT-003 · maintain Variant attributes and their values   traces=US-CAT-011,US-CAT-004,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,SCR-CAT-003,SCR-CAT-001
+FLOW — SCR-CAT-003 · maintain Variant attributes and their values   traces=US-CAT-011,US-CAT-004,REQ-CAT-137,REQ-CAT-138,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,SCR-CAT-003,SCR-CAT-001
 Screens   : SCR-CAT-003, SCR-CAT-001
-Sequence  : Catalog menu (only while `variants` is on) or Items · Variant generation picker → Variant attributes (list by sortOrder) → attribute or "New attribute" → attribute entry drawer `?attribute=<pk|new>` → "Values" summary row → values drawer `&values=open` (returns the set) → Save → back to Items when opened from there
+Sequence  : Catalog menu (only while `variants` is on) or Items · Variant generation picker → Variant attributes (list by sortOrder) → attribute or "New attribute" → attribute entry drawer `?attribute=<pk|new>` (Reactivate on an inactive attribute — ADR-CAT-069) → "Values" summary row → values drawer `&values=open` (returns the set) → Save → back to Items when opened from there
 Trigger   : the owner defines size, colour or another dimension
 Priority  : HIGH (US-CAT-011, US-CAT-004)
 ```

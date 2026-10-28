@@ -43,6 +43,11 @@ Questions are forbidden in this lane. Every point below is decided non-breaking,
 6. **Fault injection.** AC-CAT-009 (commit failure), AC-CAT-013 (flag read without value) and AC-CAT-036 (number series error) need a failure of a given seam. The TCs state it as a precondition on the given's seam: the outbox / persistence commit, `SettingsApi`, or `NumberSeriesApi` made to fail. They do not specify a tool (`profile.stack.testing` is agnostic).
 7. **UXD integration.** UXD-CAT-001 (lookup values), UXD-CAT-002 (capability flags) and UXD-CAT-003 (image files) are foreign-owned fields that SCR-CAT-001 renders. Their owner is the given erp-core. The frontend plan's `INT-UXD` phase is populated with the two cases of engine §5 per UXD (rendered, and empty or owner failure), grouped under the owner `erp-core`. That is 6 TCs. The backend `INT-XM` phase is absent, because no `XM-*` exists.
 
+## Notes added later
+
+- **Counts superseded (gate-analysis round 3, G6).** The counts in point 1 ("124 of 129 ACs", "52 ACs", "129 of 129") are those of the first P4 run. They are superseded: after the second gate-analysis revise the backend track covered 146 ACs and both tracks together 152; after the third revise (AC-CAT-153 … 160) the backend track covers 154 of 160 ACs and both tracks together 160. The COVERAGE sections of the two test plans are the authoritative counts.
+- **Point 5, the next-action code of AC-CAT-007, is closed (gate-analysis round 3, G12).** The RULE-CAT-003 message now carries `{code}`, filled from QR-CAT-002, so the envelope's messageAr / messageEn name the existing Item's code. TC-CAT-003 and TC-CAT-126 assert it directly, and the frontend jumps to `/cat/items?text=<code>&isActiveFl=true`. AC-CAT-007, TC-CAT-003 and TC-CAT-126 are MODIFIED, not renumbered.
+
 ## Consequences
 
 - No AC, rule, message, endpoint or field is invented. Every TC cites its AC, its REQ and the API or SCR it exercises.

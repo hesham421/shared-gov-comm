@@ -28,6 +28,8 @@ Writes under an inactive parent create data that no channel can use and that the
    - Refusing instead would make a Variant with barcodes impossible to deactivate without clearing its barcodes by hand first. That is the same result with more steps.
 5. **Frontend.** The Entry of an inactive Item is read-only except Reactivate and the line deactivations. ITEM-SAVE routes `CAT-422-PARENT-INACTIVE` to the form banner with the RULE-CAT-053 text.
 
+**Amended by ADR-CAT-068 (gate-analysis round 3).** Points 2, 3 and 5 are narrowed: Variant generation (API-CAT-006), an update whose only change is categoryFk (API-CAT-003) and the replacement of the Bundle components (API-CAT-017) stay allowed on an inactive Item, because they are the repairs that the reactivation refusals name. The Entry of an inactive Item keeps those three affordances.
+
 ## Consequences
 - New REQ-CAT-135, RULE-CAT-053, AC-CAT-144 and AC-CAT-145, QR-CAT-072, TC-CAT-198 and TC-CAT-199. The Error Catalog grows by one row.
 - The api-spec answers `CAT-422-PARENT-INACTIVE` on the ten endpoints. API-CAT-009 traces DBF-CAT-113 and DBF-CAT-114.

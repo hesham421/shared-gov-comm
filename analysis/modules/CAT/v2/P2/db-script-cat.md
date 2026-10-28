@@ -853,7 +853,7 @@ CREATE INDEX IDX_CAT_BARCODE_BARCODE_VALUE_TRGM ON CAT_BARCODE USING gin (BARCOD
 -- ──────────────────────────────────────────────────────────────────
 
 -- 8a — lookup types. Table owned by erp-core modules.mdl (MDL_LOOKUP_TYPE); the keys are owned by CAT (SRS A6).
--- OWNER_MODULE_CODE 'CAT' is the permission module CatPermissionContributor declares (RULE-MDL-001 is checked
+-- OWNER_MODULE_CODE 'CAT' is the permission module CatPermissions declares (RULE-MDL-001 is checked
 -- application-side against SEC_MODULE_REG, which the given fills from the contributor at startup).
 INSERT INTO MDL_LOOKUP_TYPE (LOOKUP_TYPE_PK, TENANT_ID, KEY, OWNER_MODULE_CODE, NAME_AR, NAME_EN, IS_ACTIVE_FL, CREATED_BY, CREATED_AT)
 SELECT nextval('SEQ_MDL_LOOKUP_TYPE'), 1, v.TYPE_KEY, 'CAT', v.NAME_AR, v.NAME_EN, TRUE, 'SYSTEM', CURRENT_TIMESTAMP

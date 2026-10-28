@@ -28,7 +28,7 @@ Both streams start at 001, because the current state held no frontend design for
 All three UXDs trace to REQ and AC and are cited by F2 / F4 blocks of the plan (ADR-CAT-050). No XM is implied.
 
 ### API coverage
-- Used: 50 of the 52 documented operations, each with a screen action and a route (operations coverage table, ALIGN-FE). API-CAT-052 is bound to every `*-LOOKUP` hook.
+- Used: 53 of the 55 documented operations, each with a screen action and a route (operations coverage table, ALIGN-FE). API-CAT-052 is bound to every `*-LOOKUP` hook.
 - Unused: API-CAT-011 (read Item unit) and API-CAT-046 (storefront catalogue read). They are consumers' reads, recorded in ADR-CAT-051.
 - Mock: `api-spec-cat.yaml`.
 - `unmapped`: none.
@@ -48,12 +48,17 @@ Findings fixed during authoring:
 | decisions/CAT/ADR-CAT-050 | Display data served by the given (lookups, capability flags, image files) → UXD-CAT-001 … 003 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-051 | API coverage of the CAT screens and binding notes | ACCEPTED (non-breaking) |
 
-The next free ADR after P3.2 was ADR-CAT-052. At the gate-analysis revise, the frontend plan also cites ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants) and ADR-CAT-060 (unit used by barcodes); the next free ADR was ADR-CAT-063. At the gate-analysis round 2, it also cites ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052); the next free ADR is ADR-CAT-068. No ADR is BLOCKED, and no question was raised.
+The next free ADR after P3.2 was ADR-CAT-052. At the gate-analysis revise, the frontend plan also cites ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants) and ADR-CAT-060 (unit used by barcodes); the next free ADR was ADR-CAT-063. At the gate-analysis round 2, it also cites ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052); the next free ADR was ADR-CAT-068. At the gate-analysis round 3, it also cites ADR-CAT-068 (three repairs stay allowed on an inactive Item) and ADR-CAT-069 (reactivation of Categories, Variant attributes and values); the next free ADR is ADR-CAT-072. No ADR is BLOCKED, and no question was raised.
 
 Gate-analysis revise (frontend):
 - Category labels come from a read of the whole tree, active and inactive (CATEGORY-LABEL-QUERY); the selection control keeps the active-only read (G9).
 - Image and import files are uploaded through the given FILE client before the CAT call (G2).
 - RULE-CAT-051 and RULE-CAT-052 are mirrored by F3 validators, and their codes are routed with `text:` bindings (G7, G8).
+
+Gate-analysis round 3 (frontend):
+- On an inactive Item, the Category field, "Generate variants" (while `variants` is on) and the Bundle components pane stay available; the reactivation refusal banners link to them (G2, ADR-CAT-068).
+- Categories and Variant attributes gain Reactivate commands, and inactive value lines a Reactivate line state (API-CAT-053 … 055, ADR-CAT-069).
+- The RULE-CAT-003 next action jumps to `/cat/items?text=<code>` with the code the server puts in the message (G12).
 
 Gate-analysis round 2 (frontend):
 - Lookup hooks are bound to API-CAT-052 (G5); the attribute reads and the attribute deactivation no longer route the capability codes (G1).
@@ -61,9 +66,9 @@ Gate-analysis round 2 (frontend):
 - SEC-FE: a jump to another page shows only with that page's VIEW and, where flag-bound, its flag on (G12).
 
 ### Traceability
-- REQ covered by at least one SCR or F-block: 135 / 135. Orphan REQ: none.
+- REQ covered by at least one SCR or F-block: 138 / 138. Orphan REQ: none.
 - US covered by at least one flow: 22 / 22.
 - Every PHASE and SUB carries traces= (6 PHASE, 24 SUB). Every SCR traces to REQ and AC (and UXD where it shows foreign data), and every UXD traces to REQ and AC.
 
 ### Event
-"P3.2 completed: CAT v2 — SCR 6 · UXD 3 · flows 18 · F-SUBs 24 · API used 50/52 · ADR 3 (049–051, none BLOCKED)"
+"P3.2 completed: CAT v2 — SCR 6 · UXD 3 · flows 18 · F-SUBs 24 · API used 53/55 · ADR 3 (049–051, none BLOCKED)"

@@ -413,9 +413,16 @@ paths:
           application/json:
             schema:
               type: object
+              description: exactly one of isActiveFl (reactivate; only true — deactivation is DELETE) or publishStateCode (publish / unpublish) — ADR-CAT-048
               properties:
-                isActiveFl: {type: boolean, x-dbf: DBF-CAT-014}
+                isActiveFl: {type: boolean, enum: [true], x-dbf: DBF-CAT-014}
                 publishStateCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-013}
+              additionalProperties: false
+              minProperties: 1
+              maxProperties: 1
+              oneOf:
+              - required: [isActiveFl]
+              - required: [publishStateCode]
               title: ItemStateRequest
       responses:
         '200':
@@ -548,8 +555,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED, CAT-422-PARENT-INACTIVE
-          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED, CAT-422-PARENT-INACTIVE]
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1304,8 +1311,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID, CAT-422-PARENT-INACTIVE
-          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID, CAT-422-PARENT-INACTIVE]
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1845,6 +1852,83 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
+    patch:
+      operationId: reactivateCategory
+      summary: reactivate Category
+      x-api-id: API-CAT-053
+      x-traces: [REQ-CAT-136, DBF-CAT-071, DBF-CAT-073, DBF-CAT-076, DBF-CAT-077, DBF-CAT-079]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: reactivation only — isActiveFl must be true; deactivation is DELETE (ADR-CAT-069)
+              properties:
+                isActiveFl: {type: boolean, enum: [true], x-dbf: DBF-CAT-076}
+              required: [isActiveFl]
+              additionalProperties: false
+              title: CategoryStateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/CategoryView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-CATEGORY-DUPLICATE
+          x-error-codes: [CAT-409-CATEGORY-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CATEGORY-PARENT-INVALID
+          x-error-codes: [CAT-422-CATEGORY-PARENT-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
   /api/v1/cat/variant-attributes:
     post:
       operationId: createVariantAttribute
@@ -2157,6 +2241,77 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
+    patch:
+      operationId: reactivateVariantAttribute
+      summary: reactivate Variant attribute
+      x-api-id: API-CAT-054
+      x-traces: [REQ-CAT-137, DBF-CAT-035, DBF-CAT-037, DBF-CAT-040, DBF-CAT-042]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: reactivation only — isActiveFl must be true; deactivation is DELETE (ADR-CAT-069)
+              properties:
+                isActiveFl: {type: boolean, enum: [true], x-dbf: DBF-CAT-040}
+              required: [isActiveFl]
+              additionalProperties: false
+              title: VariantAttributeStateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+          x-error-codes: [CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
   /api/v1/cat/variant-attributes/{id}/values:
     post:
       operationId: createVariantAttributeValue
@@ -2365,6 +2520,77 @@ paths:
         '409':
           description: error — CAT-409-ATTRIBUTE-VALUE-IN-USE
           x-error-codes: [CAT-409-ATTRIBUTE-VALUE-IN-USE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    patch:
+      operationId: reactivateVariantAttributeValue
+      summary: reactivate Variant attribute value
+      x-api-id: API-CAT-055
+      x-traces: [REQ-CAT-138, DBF-CAT-047, DBF-CAT-049, DBF-CAT-052, DBF-CAT-053, DBF-CAT-055]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: reactivation only — isActiveFl must be true; deactivation is DELETE (ADR-CAT-069)
+              properties:
+                isActiveFl: {type: boolean, enum: [true], x-dbf: DBF-CAT-052}
+              required: [isActiveFl]
+              additionalProperties: false
+              title: VariantAttributeValueStateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeValueView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+          x-error-codes: [CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}

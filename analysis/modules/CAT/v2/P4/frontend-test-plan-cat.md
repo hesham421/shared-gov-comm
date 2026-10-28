@@ -1,7 +1,7 @@
 # Frontend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : frontend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193 and TC-CAT-197 … TC-CAT-207; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-209)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207 and TC-CAT-211 … TC-CAT-216; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-210)
 
 ## Header
 
@@ -17,7 +17,7 @@ Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared wi
 | dependency-graph | `_state/current-dependency-graph.md` | CAT v2 | CAT tier 1 |
 
 ### Delta
-The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC.
+The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC. Within v2, the third gate-analysis revise ADDED TC-CAT-210 and MODIFIED TC-CAT-126 (the jump goes to the existing Item's code — G12) and TC-CAT-209 (the inactive Entry keeps its three repairs — G2, ADR-CAT-068). No id is renumbered or REMOVED.
 
 ### Framework
 `profile.stack.testing` is **agnostic**. Each block is the whole contract. This plan names no framework, runner, selector strategy or file layout.
@@ -25,7 +25,7 @@ The current state holds no earlier test plan, so every TC is ADDED. The frontend
 ### Open ADRs
 - ADR-CAT-052 (this stage) is ACCEPTED and non-breaking. It covers the track split, frontend package binding, host data, option-set isolation, fields the API document does not expose, and UXD integration.
 - ADR-CAT-053 (this stage, analyze round 2) is ACCEPTED and non-breaking. It records the eight server codes the frontend plan routes to a control without binding their words (`text:`): TC-CAT-130, 143, 144, 145, 150, 157, 165 and 171 assert the routing and the verbatim display of the envelope's messageAr / messageEn, not the words, which the backend TCs assert. It also replaces the unseeded AC value H87 by a seeded value in TC-CAT-175.
-- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). None of them is BLOCKED.
+- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). From the gate-analysis round 3 they cite ADR-CAT-068 (three repairs stay allowed on an inactive Item). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). None of them is BLOCKED.
 - Host values of CAT_BRAND are created by the given mdl call `POST /api/v1/mdl/lookup-types/{id}/values` and deactivated by `DELETE /api/v1/mdl/lookup-values/{id}`, where `{id}` is the CAT_BRAND type found by `POST /api/v1/mdl/lookup-types/search` (SRS A6). Each Host data line names the call it uses.
 
 ### Shared precondition F0 (applies to every TC; each TC adds only what it states)
@@ -37,14 +37,14 @@ The current state holds no earlier test plan, so every TC is ADDED. The frontend
 - Every asserted message is the RULE message of the SRS in ar and en, as the plan routes it (`text: RULE-CAT-0nn message`). It is checked once with the UI language in ar and once in en (language ALL). Where the plan routes a code to a control without binding its words, the TC asserts only the routing and the unchanged display of the envelope's messageAr / messageEn; the wording is asserted on the backend track (ADR-CAT-053 §1).
 - "No request" means the mock server records no call to the named operation.
 
-<!-- PHASE:TEST-PLAN-FE:START traces=AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-005,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
+<!-- PHASE:TEST-PLAN-FE:START traces=AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-005,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
 ## PHASE TEST-PLAN-FE — module scenarios
 
-The phase holds 57 TCs, which is more than 8, so it is split into two SUBs:
-- `UI-FLOWS` (56): per-screen flows — search, create/edit, a violation shown on screen, a permission-hidden affordance.
+The phase holds 58 TCs, which is more than 8, so it is split into two SUBs:
+- `UI-FLOWS` (57): per-screen flows — search, create/edit, a violation shown on screen, a permission-hidden affordance.
 - `INT-FLOW` (1): the single module lifecycle flow.
 
-<!-- SUB:UI-FLOWS:START traces=AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
+<!-- SUB:UI-FLOWS:START traces=AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
 ### SUB UI-FLOWS
 
 #### SCR-CAT-001 — Items
@@ -70,11 +70,11 @@ Exercises    : SCR-CAT-001 `/cat/items/new` (ITEM-SAVE → API-CAT-001)
 Rule / code  : RULE-CAT-003 → CAT-409-ITEM-NAME-DUPLICATE
 Package      : F2-SCR-CAT-001
 Scenario     : VIOLATION · data class INVALID · language ALL
-Preconditions: F0 · an active Item named «شاحن سامسونج 25W» · API-CAT-001 answers 409 CAT-409-ITEM-NAME-DUPLICATE for that name
+Preconditions: F0 · an active Item named «شاحن سامسونج 25W» with code ITM-000012 · API-CAT-001 answers 409 CAT-409-ITEM-NAME-DUPLICATE for that name, with the RULE-CAT-003 message naming ITM-000012
 Host data    : none
 Steps        : 1. Open `/cat/items/new`. 2. Enter nameAr «شاحن سامسونج 25W». 3. Save. 4. Use the action "Open the existing item".
-Expected     : 3 → inline on nameAr: ar «يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.» · en "An active item already has this name. Open the existing item or change the name."; the route stays `/cat/items/new` (no Item created). 4 → navigates to `/cat/items?text=شاحن سامسونج 25W&isActiveFl=true`, which lists the existing Item.
-Test data    : «شاحن سامسونج 25W» (from the AC)
+Expected     : 3 → inline on nameAr: ar «يوجد صنف نشط بالاسم نفسه: ITM-000012. افتح الصنف الموجود أو غيّر الاسم.» · en "An active item already has this name: ITM-000012. Open the existing item or change the name."; the route stays `/cat/items/new` (no Item created). 4 → navigates to `/cat/items?text=ITM-000012&isActiveFl=true`, which lists exactly the existing Item (MODIFIED at the third gate-analysis revise, G12).
+Test data    : «شاحن سامسونج 25W», ITM-000012 (from the AC)
 <!-- TC:TC-CAT-126:END -->
 
 <!-- TC:TC-CAT-127:START traces=AC-CAT-013,REQ-CAT-013,SCR-CAT-001,UXD-CAT-002 -->
@@ -834,7 +834,7 @@ Test data    : —
 <!-- TC:TC-CAT-208:END -->
 
 <!-- TC:TC-CAT-209:START traces=AC-CAT-144,REQ-CAT-135,SCR-CAT-001 -->
-### TC-CAT-209 — A save on an Item deactivated meanwhile shows the inactive-parent banner and turns the entry read-only
+### TC-CAT-209 — A save on an Item deactivated meanwhile shows the inactive-parent banner and turns the entry to its inactive mode
 Derived from : AC-CAT-144  (REQ-CAT-135)
 Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (ITEM-SAVE routes CAT-422-PARENT-INACTIVE with `text: RULE-CAT-053 message`; F3 inactive-Item read-only)
 Rule / code  : RULE-CAT-053 → CAT-422-PARENT-INACTIVE
@@ -843,9 +843,23 @@ Scenario     : STATE · data class INVALID · language ALL
 Preconditions: F0 · an active Item with base unit PIECE and no Item unit CARTON, open in session 1
 Host data    : none
 Steps        : 1. In session 1, add the Item unit CARTON with conversionFactor 12 (pending). 2. In session 2, deactivate the Item. 3. In session 1, Save.
-Expected     : 3 → form banner ar «هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.» · en "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."; the Item is re-read and the entry is read-only: every header field is read-only, 0 "Add unit", "Add barcode", "Generate variants" or "Add image" triggers, and "Reactivate" is shown. The Item has no Item unit CARTON.
+Expected     : 3 → form banner ar «هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.» · en "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."; the Item is re-read and the entry turns to its inactive mode: every header field except the Category field is read-only, 0 "Add unit", "Add barcode", "Generate internal barcode" or "Add image" triggers, "Generate variants" is still shown (`variants` on, STANDARD Item — the repair of ADR-CAT-068), and "Reactivate" is shown. The Item has no Item unit CARTON (MODIFIED at the third gate-analysis revise, G2).
 Test data    : PIECE, CARTON, 12 (from the AC)
 <!-- TC:TC-CAT-209:END -->
+
+<!-- TC:TC-CAT-210:START traces=AC-CAT-154,AC-CAT-155,AC-CAT-156,REQ-CAT-135,SCR-CAT-001 -->
+### TC-CAT-210 — On an inactive Item, the three repair affordances stay available and the refusal banners link to them
+Derived from : AC-CAT-154, AC-CAT-155, AC-CAT-156  (REQ-CAT-135)
+Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (F3 inactive-Item mode; ITEM-STATE-COMMAND refusal banners → API-CAT-005; ITEM-SAVE → API-CAT-003, 006, 017)
+Rule / code  : RULE-CAT-050 → CAT-422-ITEM-NO-ACTIVE-VARIANT · RULE-CAT-026 → CAT-422-CATEGORY-INACTIVE · RULE-CAT-019 → CAT-422-BUNDLE-COMPONENT-INVALID · repairs allowed on an inactive Item (ADR-CAT-068)
+Package      : F3-SCR-CAT-001
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: F0 (`variants` and `bundles` on) · three inactive Items: I1 (STANDARD, 0 active Variants), I2 (STANDARD, categoryFk an inactive Category OLD, 1 active Variant), I3 (BUNDLE whose line names a deactivated Variant P) · an active Category NEW · the active attribute SIZE with the active value M · an active Variant Q of an active STANDARD Item
+Host data    : none
+Steps        : 1. Open I1; Reactivate; use the banner's action. 2. In the picker, select SIZE [M], Confirm and Save; Reactivate. 3. Open I2; Reactivate; use the banner's action "Choose a category". 4. Choose NEW and Save; Reactivate. 5. Open I3; Reactivate; use the banner's action. 6. Replace P by Q in the Bundle components pane and Save; Reactivate.
+Expected     : On each inactive Entry before its repair: the Category field is editable, "Generate variants" is shown on I1 and I2, the Bundle components pane is editable on I3, and every other header field is read-only, with 0 "Add unit", "Add barcode", "Generate internal barcode" or "Add image" triggers. 1 → command banner with the RULE-CAT-050 text, ar «لا يمكن إعادة تفعيل صنف بلا متغيّر نشط. أنشئ متغيّرًا له أو أنشئ صنفًا جديدًا.» · en "An item with no active variant cannot be reactivated. Generate a variant for it, or create a new item."; its action opens `?picker=variant-generation`. 2 → the Save sends API-CAT-006 and gets 201; the Reactivate succeeds and the header shows active. 3 → command banner with the RULE-CAT-026 text, ar «الفئة المختارة غير نشطة. اختر فئة نشطة.» · en "The selected category is inactive. Choose an active category."; its action focuses the Category field. 4 → the Save sends API-CAT-003 with only categoryFk changed and gets 200; the Reactivate succeeds. 5 → command banner on the Bundle components pane with the RULE-CAT-019 text, ar «المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها.» · en "A component must be an active variant of an item that is not a bundle, listed once per bundle."; its action opens `?picker=bundle-components`. 6 → the Save sends API-CAT-017 and gets 200; the Reactivate succeeds. No request answers CAT-422-PARENT-INACTIVE.
+Test data    : I1, I2, I3, OLD, NEW, SIZE M, P, Q (from the ACs; placeholders where unnamed)
+<!-- TC:TC-CAT-210:END -->
 <!-- SUB:UI-FLOWS:END -->
 
 <!-- SUB:INT-FLOW:START traces=AC-CAT-005,REQ-CAT-005,REQ-CAT-024,REQ-CAT-004,REQ-CAT-003 -->
@@ -992,13 +1006,15 @@ Test data    : 1 image (placeholder file)
 | | | | | AC-CAT-129 | REQ-CAT-127 | TC-CAT-151 |
 | AC-CAT-130 | REQ-CAT-128 | TC-CAT-196 (backend: TC-CAT-183) | | AC-CAT-138 | REQ-CAT-131 | TC-CAT-194, 208 |
 | AC-CAT-142 | REQ-CAT-066 | TC-CAT-195 | | AC-CAT-144 | REQ-CAT-135 | TC-CAT-209 (backend: TC-CAT-198) |
+| AC-CAT-154 | REQ-CAT-135 | TC-CAT-210 (backend: TC-CAT-185, 212) | | AC-CAT-155 | REQ-CAT-135 | TC-CAT-210 (backend: TC-CAT-186, 212) |
+| AC-CAT-156 | REQ-CAT-135 | TC-CAT-210 (backend: TC-CAT-187, 212) | | | | |
 
 TC-CAT-176 (lifecycle flow) also passes through REQ-CAT-024, REQ-CAT-003 and REQ-CAT-004. Every other AC-CAT-* is covered on the backend track: see the AC → TC table of `backend-test-plan-cat.md`.
 
 ### SCR → TC (TC-CAT-…)
 | SCR | TCs |
 |---|---|
-| SCR-CAT-001 Items | 125 – 151, 176, 177 – 182, 194 – 196, 208, 209 |
+| SCR-CAT-001 Items | 125 – 151, 176, 177 – 182, 194 – 196, 208 – 210 |
 | SCR-CAT-002 Categories | 152 – 157 |
 | SCR-CAT-003 Variant attributes | 128 (menu entry), 158 – 163 |
 | SCR-CAT-004 Item import | 164 – 166 |
@@ -1012,7 +1028,7 @@ A row marked "routed, words unbound" is a code the frontend plan routes to a con
 |---|---|---|---|
 | RULE-CAT-001 | CAT-422-NAME-AR-INVALID | 133, 134 | F3 `ItemForm` nameAr · F2 ITEM-SAVE |
 | RULE-CAT-002 | CAT-422-NAME-EN-TOO-LONG | 135 | F3 `ItemForm` nameEn · F2 ITEM-SAVE |
-| RULE-CAT-003 | CAT-409-ITEM-NAME-DUPLICATE | 126 | F2 ITEM-SAVE (inline nameAr + action) |
+| RULE-CAT-003 | CAT-409-ITEM-NAME-DUPLICATE | 126 | F2 ITEM-SAVE (inline nameAr + action to the code the message names) |
 | RULE-CAT-008 | CAT-422-CAPABILITY-OFF | 158 | F2 ATTRIBUTE-SCREEN-INIT / F4 route state (the attribute reads are not flag-bound) |
 | RULE-CAT-009 | CAT-500-CAPABILITY-UNREADABLE | 127, 180 | F2 ITEM-SAVE banner · F2 CAPABILITY-FLAGS-INIT |
 | RULE-CAT-010 | CAT-200-VARIANTS-IN-USE | 171 | F2 TURN-OFF-CHECK-QUERY — routed, words unbound (wording: TC-CAT-010) |
@@ -1040,7 +1056,8 @@ A row marked "routed, words unbound" is a code the frontend plan routes to a con
 | RULE-CAT-047 | CAT-404-BARCODE-NOT-FOUND | 143 | F2 BARCODE-LOOKUP-QUERY — routed, words unbound (wording: TC-CAT-046) |
 | RULE-CAT-048 | CAT-200-DEACTIVATED | 176 | F2 ITEM-STATE-COMMAND |
 | RULE-CAT-051 | CAT-409-ITEM-UNIT-HAS-BARCODES | 196 | F3 Item unit (deactivate) · F2 ITEM-SAVE (`text: RULE-CAT-051 message`) |
-| RULE-CAT-053 | CAT-422-PARENT-INACTIVE | 209 | F2 ITEM-SAVE (form banner, `text: RULE-CAT-053 message`) · F3 inactive-Item read-only |
+| RULE-CAT-053 | CAT-422-PARENT-INACTIVE | 209 | F2 ITEM-SAVE (form banner, `text: RULE-CAT-053 message`) · F3 inactive-Item mode |
+| RULE-CAT-050, 026, 019 | CAT-422-ITEM-NO-ACTIVE-VARIANT, CAT-422-CATEGORY-INACTIVE, CAT-422-BUNDLE-COMPONENT-INVALID | 210 | F2 ITEM-STATE-COMMAND (command banners with the repair actions of ADR-CAT-068) |
 
 The other rules are asserted on the backend track. No case here asserts the words of a refusal or notice that the frontend plan leaves unbound; those eight codes are recorded as a plan gap in ADR-CAT-053 §1, for a later P3.2 delta that adds their `text:` bindings.
 
@@ -1055,7 +1072,7 @@ The other rules are asserted on the backend track. No case here asserts the word
 | Package (frontend plan unit) | # | TCs |
 |---|---|---|
 | F2-SCR-CAT-001 | 16 | 125, 126, 127, 130, 131, 137, 138, 139, 141, 143, 144, 145, 147, 149, 150, 195 |
-| F3-SCR-CAT-001 | 11 | 132, 133, 134, 135, 136, 140, 142, 146, 148, 196, 209 |
+| F3-SCR-CAT-001 | 12 | 132, 133, 134, 135, 136, 140, 142, 146, 148, 196, 209, 210 |
 | F4-SCR-CAT-001 | 9 | 128, 129, 176, 177, 178, 179, 180, 181, 182 |
 | F2-SCR-CAT-002 | 4 | 152, 154, 156, 157 |
 | F3-SCR-CAT-002 | 1 | 155 |
@@ -1079,12 +1096,12 @@ The other rules are asserted on the backend track. No case here asserts the word
 
 | Measure | Result |
 |---|---|
-| AC covered (this track) | 56 / 152 by module TCs. Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
-| AC covered (both plans) | 152 / 152 ✓, no gap. The other 96 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
+| AC covered (this track) | 59 / 160 by module TCs. Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
+| AC covered (both plans) | 160 / 160 ✓, no gap. The other 101 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
 | REQ covered (this track) | 57 REQs by module TCs (plus REQ-CAT-012, 105 and 109 through UXD TCs) |
-| REQ covered (both plans) | 135 / 135 ✓ |
+| REQ covered (both plans) | 138 / 138 ✓ |
 | SCR covered | 6 / 6 ✓ (SCR-CAT-001 … 006) |
 | UXD covered | 3 / 3 ✓. Each UXD has its rendered and its failure case (6 TCs in `INT-UXD`). |
 | Refusal texts | every wording asserted here is bound by a `text:` row of the frontend plan (msg-bound) ✓. Eight routed codes have no binding (RULE-CAT-010, 012, 025, 035, 039, 045, 046, 047): their TCs assert routing and unchanged display only, and the gap is recorded in ADR-CAT-053 §1. |
-| Track size | 63 TCs for 56 ACs and 3 UXDs (ratio < 2, within the guard) |
+| Track size | 64 TCs for 59 ACs and 3 UXDs (ratio < 2, within the guard) |
 | Host data | CAT_BRAND BRAND1_137 … BRAND5_137 (active) and BRAND6_137 (inactive) for TC-CAT-137; CAT_BRAND OLDBRAND (active, then inactive) for TC-CAT-139 — each created by `POST /api/v1/mdl/lookup-types/{id}/values` and, where inactive, deactivated by `DELETE /api/v1/mdl/lookup-values/{id}`. The AC value CAT_EINVOICE_UNIT H87 (AC-CAT-126) is not seeded; TC-CAT-175 stays on seeded data with the value BX in its place (ADR-CAT-053 §2). TC-CAT-137 and TC-CAT-138 assert closed option sets, so they run in a tenant that holds only their own values (ADR-CAT-052 §4). No value is demanded in opposite states. |
