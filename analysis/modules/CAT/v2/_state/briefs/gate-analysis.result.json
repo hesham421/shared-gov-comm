@@ -4,7 +4,7 @@
   "version": 2,
   "scores": {
     "unambiguous": 2,
-    "verifiable": 2,
+    "verifiable": 3,
     "complete": 2,
     "consistent": 2,
     "singular": 3,
@@ -55,24 +55,29 @@
   ],
   "analyze_confirmed": [
     {
-      "finding": "C5.13@srs:462 AC-CAT-013 'could'",
+      "finding": "C5.13 AC-CAT-013 'could'",
       "confirmed": false,
-      "note": "False positive. The word sits inside the verbatim RULE-CAT-009 message («could not be checked») that the Then quotes."
+      "note": "False positive. The word sits inside the quoted RULE-CAT-009 message. The Then clause can be measured: nothing is saved, and the exact message is shown."
     },
     {
-      "finding": "C5.13@srs:780 AC-CAT-036 'could'",
+      "finding": "C5.13 AC-CAT-036 'could'",
       "confirmed": false,
-      "note": "False positive. The word sits inside the verbatim RULE-CAT-005 message."
+      "note": "False positive. The word sits inside the quoted RULE-CAT-005 message. The measure is 0 Items and 0 Variants stored."
     },
     {
-      "finding": "C5.13@srs:1305 AC-CAT-072 'مختلف'",
+      "finding": "C5.13 AC-CAT-072 'مختلف'",
       "confirmed": false,
-      "note": "False positive. The word sits inside the verbatim RULE-CAT-024 message."
+      "note": "False positive. The word sits inside the quoted RULE-CAT-024 message. The measured outcome is that no Category is created."
     },
     {
-      "finding": "C5.13@srs:1745 AC-CAT-102 'could'",
+      "finding": "C5.13 AC-CAT-102 'could'",
       "confirmed": false,
-      "note": "False positive. The word sits inside the verbatim RULE-CAT-035 message. Every clause that examined nothing is empty by nature: there is no XM and no cross-module id."
+      "note": "False positive. The word sits inside the quoted RULE-CAT-035 message. The measure is that no Variant is returned."
+    },
+    {
+      "finding": "coverage: C6.10, C6.12, C6.15, C6.3, C7.24, C7.26, C7.27, C7.28, C7.5, C7.5b examined nothing",
+      "confirmed": true,
+      "note": "Empty by nature. The XM register is empty and CAT has no cross-module edge. C6.15 examined nothing only because the given-tenant FK is exempted implicitly; platform finding 1 is still OPEN with the factory."
     }
   ],
   "findings": [
@@ -80,109 +85,106 @@
       "id": "G1",
       "severity": "MAJOR",
       "section": "backend",
-      "artifact": "srs",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "complete",
-      "problem": "The next action of RULE-CAT-037 («Generate an internal barcode for them, then print») cannot be taken by the role that prints labels. Warehouse staff hold PERM_CAT_BARCODE_LABELS_CREATE, but API-CAT-015 requires PERM_CAT_ITEMS_CREATE, which only the Owner holds (SRS B4). The «Open item» jump on SCR-CAT-005 opens a read-only Item, so the role reaches a dead end (KB §6.5).",
-      "fix": "Add a «generate internal barcode» action for flagged lines on SCR-CAT-005. Guard it with PERM_CAT_BARCODE_LABELS_CREATE and reuse the API-CAT-015 service logic and its locks. Add the REQ, AC, API block, api-spec operation and TC for it. Record the choice in an ADR. The alternative is to make the RULE-CAT-037 next action depend on the role («ask the owner»), but that is weaker.",
+      "clause": "complete (P1 counter-case: label barcode)",
+      "problem": "REQ-CAT-102, REQ-CAT-101, QR-CAT-047 and QR-CAT-016 take a Variant's earliest-created active barcode whatever its type or unit, and RULE-CAT-037 counts any active barcode. Two counter-cases have no statement and no test. (1) If the only active barcode is a SCALE code of 4 to 6 digits, the label is printed with a code that is unreadable on its own. (2) If the earliest barcode is bound to CARTON, a piece label scans as a carton.",
+      "fix": "Use only active GTIN or INTERNAL barcodes whose uomCode equals the Item's baseUomCode, earliest-created first. Change REQ-CAT-101, REQ-CAT-102 and the specs of QR-CAT-016 and QR-CAT-047 accordingly. RULE-CAT-037 then counts only such barcodes, and a Variant with none is flagged and gets the existing API-CAT-056 next action. Add one AC and one TC for each of the two counter-cases.",
       "adr": true
     },
     {
       "id": "G2",
       "severity": "MAJOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
+      "section": "backend",
+      "artifact": "srs",
       "line": null,
-      "clause": "verifiable",
-      "problem": "Four concurrency guards stated in the backend plan have no parallel-request test case: (a) a barcode add racing a scale-layout create, under QR-CAT-074; (b) an Item unit deactivation racing a barcode add, under the Item lock of ADR-CAT-060; (c) a Variant generation racing a value deactivation, under the QR-CAT-031 FOR SHARE read; (d) an Item save into a Category racing that Category's deactivation, under the QR-CAT-032 FOR SHARE read.",
-      "fix": "Add AC-CAT-167 … 170 in the style of AC-CAT-149 … 153, with one parallel TC each. Each TC shows exactly one request succeeding, names the refusal code, and names the guard and the unit that owns it. Update the «Concurrency guards» coverage row.",
-      "adr": false
+      "clause": "unambiguous (seam CON-CAT-006 → INV/SLS)",
+      "problem": "The unit of the Bundle component quantity (ENT-CAT-007.quantity) is never stated, yet INV and SLS split a Bundle into component movements. Units with a conversion factor make this ambiguous: two implementers can read the same quantity differently.",
+      "fix": "State that the quantity is always in the base unit of the component Variant's Item. Change ENT-CAT-007, REQ-CAT-056, REQ-CAT-058 and CON-CAT-006 to say so. Return the unit as a derived property componentBaseUomCode in BundleComponentView, the DTO, the api-spec and the manifest, and show it in the Bundle components pane. Add one AC and one TC.",
+      "adr": true
     },
     {
       "id": "G3",
       "severity": "MINOR",
-      "section": "backend",
-      "artifact": "api-spec",
+      "section": "frontend",
+      "artifact": "frontend-execution-plan",
       "line": null,
-      "clause": "complete",
-      "problem": "Bundle `quantity` (NUMERIC(18,3)) and `conversionFactor` (NUMERIC(18,6)) have no upper bound or scale limit in the document. An oversized value overflows the column and comes back as CAT-500-SERVER-ERROR.",
-      "fix": "In API-CAT-001, 010 and 017, add `exclusiveMinimum: 0`, a `maximum` that fits the column precision, and `multipleOf` for the scale. Restate RULE-CAT-018 and RULE-CAT-027 with the bound. Answer CAT-400-REQUEST-INVALID above the bound. Add boundary rows to TC-CAT-027 and TC-CAT-039.",
-      "adr": false
-    },
-    {
-      "id": "G4",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "unambiguous",
-      "problem": "API-CAT-003 does not say whether RULE-CAT-003 runs on the categoryFk-only repair path of an inactive Item. If it does, a name already taken by another Item blocks the repair of invariant 2.",
-      "fix": "In API-CAT-003 Validations, state that on this path only RULE-CAT-026 and the version check run, and that RULE-CAT-003 is checked again at reactivation.",
-      "adr": false
-    },
-    {
-      "id": "G6",
-      "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "consistent",
-      "problem": "Pattern (P4): an update of an inactive record has no one rule. API-CAT-033 and 036 refuse it with CAT-400-REQUEST-INVALID. API-CAT-012 (Item unit), 019 (media), 023 (Category), 027 (attribute) and 030 (value) do not say. The harmful case is API-CAT-019: QR-CAT-055 loads a removed image, and PUT with isPrimaryFl true clears the active primary first, leaving the Item's active images without a primary. UQ_CAT_ITEM_MEDIA_PRIMARY covers active rows only, so the database does not catch it, and RULE-CAT-039 is broken. This replaces the earlier G5.",
-      "fix": "Add one rule to the PHASE CORE API conventions: a PUT on a record whose own isActiveFl is false answers CAT-400-REQUEST-INVALID and writes nothing. The repair path is reactivation (API-CAT-005, 053 … 055) or, for a removed image, a new upload. Cite the rule in API-CAT-012, 019, 023, 027 and 030, and add it to the CAT-400-REQUEST-INVALID trigger list. Add rows to TC-CAT-223 for each endpoint, including the removed-image case with an assertion that the active primary is unchanged.",
-      "adr": false
-    },
-    {
-      "id": "G7",
-      "severity": "MINOR",
-      "section": "tests",
-      "artifact": "frontend-test-plan",
-      "line": null,
-      "clause": "consistent",
-      "problem": "The COVERAGE section says «60 / 164 by module TCs», but the SRS and the backend plan count 166 ACs (AC-CAT-165 and 166 were added at the ninth revise). The header Delta says no TC changed, but the count was not re-stamped. This is the same issue as platform finding 8.",
-      "fix": "Re-stamp the COVERAGE rows of the frontend test plan from registry-srs (AC 166; this track 60, the other 106 on the backend).",
+      "clause": "consistent (pattern: stale counts, platform finding 8)",
+      "problem": "The frontend plan's header and its ALIGN-FE heading say 55 operations, and the amended note of ADR-CAT-051 says 55 operations with 53 used. The API document holds 56 operations and the totals say 54 of 56. This is the same stale-count defect that platform finding 8 records.",
+      "fix": "Re-stamp the counts to 56 operations and 54 used in the frontend plan's header, its ALIGN-FE heading and the amended note of ADR-CAT-051. The rule-level fix stays with the factory under platform finding 8.",
       "adr": false
     }
   ],
   "adrs_reviewed": [
     {
-      "id": "ADR-CAT-045",
+      "id": "ADR-CAT-044",
       "status_ok": true,
-      "note": "Status reads ACCEPTED while §1 and §4 are superseded by ADR-CAT-061. The header note records this, which is acceptable."
+      "note": "Six PLATFORM-STD rows, each with ar and en text and bundle entries."
     },
     {
-      "id": "ADR-CAT-054",
+      "id": "ADR-CAT-047",
       "status_ok": true,
-      "note": "SUPERSEDED by ADR-CAT-055. No downstream artifact follows it."
+      "note": "Six native statements, all carrying @TenantUnscoped. The lock order is stated and the (int,int) lock key is valid."
+    },
+    {
+      "id": "ADR-CAT-055",
+      "status_ok": true,
+      "note": "Matches checklist C1. Platform finding 1 stays OPEN."
+    },
+    {
+      "id": "ADR-CAT-056",
+      "status_ok": true,
+      "note": "No multipart endpoint (checklist F4 and C7). Amended by ADR-CAT-076."
     },
     {
       "id": "ADR-CAT-061",
       "status_ok": true,
-      "note": "Conditional on CORE-GAP-in-process-authorization (ADR-CAT-066). It is not BLOCKED, and the contract §0 and the plan state the condition."
+      "note": "Held conditional by ADR-CAT-066 and the CORE-GAP on in-process authorization."
+    },
+    {
+      "id": "ADR-CAT-063",
+      "status_ok": true,
+      "note": "Narrowed by ADR-CAT-068 in a consistent way."
+    },
+    {
+      "id": "ADR-CAT-065",
+      "status_ok": true,
+      "note": "OwnedLookups is limited to the 10 CAT keys."
     },
     {
       "id": "ADR-CAT-070",
       "status_ok": true,
-      "note": "It justifies the C5/F3 deviation and raises a CORE-GAP, as F9 requires."
+      "note": "A justified deviation from checklist C5 and F3, with a CORE-GAP raised."
     },
     {
-      "id": "ADR-CAT-074",
+      "id": "ADR-CAT-072",
       "status_ok": true,
-      "note": "It amends ADR-CAT-071. The plan and TC-CAT-217 follow it."
+      "note": "The default-Variant move is consistent across A7, the contract, the API blocks, the QRs and the TCs."
     },
     {
       "id": "ADR-CAT-076",
       "status_ok": true,
-      "note": "It follows the published FileDocumentLookupApi. The import's delivery dependency is recorded as OPEN platform finding 11."
+      "note": "The FILE category enforces the image checks. The import is a delivery dependency on a CORE-GAP."
     },
     {
       "id": "ADR-CAT-077",
       "status_ok": true,
-      "note": "Reflected in the SRS, the contract, the plan, the api-spec, the frontend plan and TC-CAT-224."
+      "note": "Category events are added consistently across the artifacts."
     },
     {
-      "id": "ADR-CAT-052",
+      "id": "ADR-CAT-078",
       "status_ok": true,
-      "note": "Its counts are superseded, and its own «Notes added later» says so. The 11 OPEN platform findings are genuinely outside CAT, and each names an owner and evidence."
+      "note": "Closes the RULE-CAT-037 dead end. G1 refines which barcode the label uses."
+    },
+    {
+      "id": "ADR-CAT-051",
+      "status_ok": false,
+      "note": "The counts in its amended note are stale (G3)."
+    },
+    {
+      "id": "ADR-CAT-001..037",
+      "status_ok": true,
+      "note": "Dialogue decisions. The superseded ones are marked and none is BLOCKED."
     }
   ],
   "verdict": "REVISE"
