@@ -1,7 +1,9 @@
-# G1 stays MAJOR
+# G1, G2, G3 confirmed as MINOR
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: CAT        Version: v2
-Written: 2026-10-28T13:17:56+00:00
+Written: 2026-10-28T13:36:27+00:00
 
-API-CAT-047 Layers does carry the VIEW `@PreAuthorize` on its facade. That contradicts REQ-CAT-127 and the api-spec, which has no 403 response.
+- G1: API-CAT-018 never checks which storage the file is in. I agree with round 1.
+- G2: API-CAT-029 reads the attribute with no lock, while API-CAT-055 reads it FOR SHARE. The race is real but its effect is small: the attribute is inactive, so generation excludes it anyway. MINOR stands.
+- G3: an empty `selections` array reaches no rule. I agree.

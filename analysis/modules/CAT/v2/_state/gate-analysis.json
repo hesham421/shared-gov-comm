@@ -12,10 +12,10 @@
   ],
   "verdict": "REVISE",
   "scores": {
-    "unambiguous": 1,
-    "verifiable": 2,
+    "unambiguous": 3,
+    "verifiable": 3,
     "complete": 2,
-    "consistent": 1,
+    "consistent": 3,
     "singular": 3,
     "feasible": 2,
     "traceable": 3
@@ -23,68 +23,46 @@
   "findings": [
     {
       "id": "G1",
-      "severity": "MAJOR",
+      "severity": "MINOR",
       "section": "backend",
       "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "consistent",
-      "problem": "API-CAT-047 contradicts itself. Its Layers line puts `CatSearchQueryFacade.searchCatalogue` behind `@PreAuthorize` on the screen VIEW permission. Its Validations and Security lines, REQ-CAT-127, AC-CAT-129, TC-CAT-124, ADR-CAT-061 §3 and the api-spec (which has no 403 response) all require a caller without PERM_CAT_ITEMS_VIEW to get 200 with an empty list. With the annotation in place, Spring Security answers 403 before the empty-result logic runs. The HTTP path and the in-process `CatalogueReadApi.searchCatalogue` path would then behave differently.",
-      "fix": "In API-CAT-047 Layers and in the CatalogueReadApi table, state that `CatSearchQueryFacade.searchCatalogue` carries only `@PreAuthorize(\"isAuthenticated()\")`. `CatCatalogueReadService.searchCatalogue` checks PERM_CAT_ITEMS_VIEW in code and returns an empty list when the caller lacks it. Add this exception to the PHASE SEC-BE paragraph that already names API-CAT-047.",
+      "clause": "complete (P2 closure: who may create a record, and what it depends on)",
+      "problem": "RULE-CAT-038 and API-CAT-018 check only the type, size and availability of fileDocumentRef. Nothing requires the FILE document to be in public image storage, so an image uploaded to private storage is accepted and the storefront then cannot show it (UXD-CAT-003 and CON-CAT-015 assume a public file). Whether one ref may be attached to two media rows is also unstated. No statement and no test case covers either case.",
+      "fix": "Add to RULE-CAT-038 and to the API-CAT-018 Validations: the FILE document must be in the public image storage of the caller's tenant, otherwise CAT-422-IMAGE-NOT-ACCEPTED. Add one backend test case (package SVC-API-CRUD) for an image uploaded to private storage. State that one ref may be attached to several media rows, since removing an image never deletes its file (ADR-CAT-056 §4).",
       "adr": false
     },
     {
       "id": "G2",
-      "severity": "MAJOR",
+      "severity": "MINOR",
       "section": "backend",
       "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "concurrency (backend row)",
-      "problem": "API-CAT-024's Concurrency line credits API-CAT-049 with reading the Category FOR SHARE, but API-CAT-049 does not. It resolves category codes in the lock-free validation pass (QR-CAT-032, no lock). Its write pass re-reads only the scale layouts under the scale-prefix lock. A Category deactivated between the two passes can still receive imported active Items. Each such Item then points to an inactive Category, which breaks RULE-CAT-026 and invariant 2 of SRS A7 (ADR-CAT-059).",
-      "fix": "Add a step at the start of the API-CAT-049 write pass: re-read every Category referenced by a valid row with QR-CAT-032 FOR SHARE, and reject each row whose Category is now inactive with RULE-CAT-026 (column category, inside CAT-200-IMPORT-ROW-REJECTED) before its batch is inserted. Add QR-CAT-032 (FOR SHARE) to the Repository line and the lock order (scale-prefix lock, then Category rows) to the Concurrency line. Add API-CAT-049 to QR-CAT-032's FOR SHARE locking note.",
+      "clause": "concurrency (engine template: a named guard for every decision that is then written)",
+      "problem": "API-CAT-029 (create Variant attribute value) reads the attribute with QR-CAT-022 and takes no lock, while API-CAT-028 (deactivate attribute) locks it FOR UPDATE. A create that read the attribute as active can therefore commit an active value under an attribute that is deactivated meanwhile. API-CAT-055 already reads the attribute FOR SHARE for this reason.",
+      "fix": "In API-CAT-029, read the attribute FOR SHARE: set QR-CAT-022's locking to FOR SHARE on value create, as on value reactivation. Name this guard on the Concurrency line of API-CAT-029 and in QR-CAT-022.",
       "adr": false
     },
     {
       "id": "G3",
-      "severity": "MAJOR",
+      "severity": "MINOR",
       "section": "backend",
       "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "unambiguous",
-      "problem": "API-CAT-041 and QR-CAT-026 apply `isActiveFl` to attributes only (DBF-CAT-040); the second read of QR-CAT-026 returns every value. TC-CAT-090 nevertheless asserts that `GET /variant-attributes?isActiveFl=true` omits the inactive value XS. The frontend ATTRIBUTE-OPTIONS-QUERY also promises 'active values'. SCR-CAT-003 needs inactive values to stay visible, or Reactivate of a value (API-CAT-055) cannot be reached. As written, TC-CAT-090 fails against the plan, and two implementers would build the filter differently.",
-      "fix": "In API-CAT-041, QR-CAT-026 and the api-spec parameter description, state that `isActiveFl` filters both the attributes and their values, and that omitting it returns all of both. In F2, state that the generation picker sends isActiveFl=true and that the SCR-CAT-003 list and values editor send no filter.",
+      "clause": "complete (P1 inversion: empty and edge input)",
+      "problem": "The plan does not say what API-CAT-006 does with an empty `selections` array, or with a selection whose `variantAttributeValueFks` is empty. On an Item with no attribute in use, such a request reaches no rule. TC-CAT-184 covers only a request that omits an attribute already in use.",
+      "fix": "Add to the API-CAT-006 Validations: an empty `selections`, or an attribute with no value, answers CAT-400-REQUEST-INVALID. Add `minItems: 1` to both arrays in api-spec-cat.yaml. Add the empty-selection case to TC-CAT-184 as a second row.",
       "adr": false
     },
     {
       "id": "G4",
-      "severity": "MINOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
-      "line": null,
-      "clause": "verifiable",
-      "problem": "ADR-CAT-071 and API-CAT-049 commit to a 120 s timeout with a whole-import rollback: nothing stored, no events, code gaps left, lock released, CAT-500-CHANGE-NOT-SAVED. They also set a 60 s budget for 5,000 rows. No REQ, AC or TC covers this behaviour.",
-      "fix": "Add one REQ with the unwanted pattern and one AC: an import that exceeds its timeout is rolled back whole, stores 0 Items, Variants, barcodes and events, and answers CAT-500-CHANGE-NOT-SAVED. Add one backend TC in SVC-API-INT that injects a delayed write pass, in the style of TC-CAT-004.",
-      "adr": false
-    },
-    {
-      "id": "G5",
-      "severity": "MINOR",
+      "severity": "MAJOR",
       "section": "backend",
-      "artifact": "contract",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "traceable (stale upstream headers)",
-      "problem": "Several header lines were not refreshed after the gate-analysis revises. The contract says 'REQ 127'. The db-script says 'REQ 127 · RULE 49' and 'next free ADR sequence is 068', and so does registry-db. The current registries give REQ 138, RULE 53 and next free ADR 072. The rule that allowed this: a revise re-renders only the artifacts it edits.",
-      "fix": "Refresh the Inputs, Counts and next-id lines of the contract, db-script and registry-db from the current registries. Add a step to the revise checklist: re-stamp the header counts of every downstream artifact from the registries.",
-      "adr": false
-    },
-    {
-      "id": "G6",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "srs",
-      "line": null,
-      "clause": "complete",
-      "problem": "The analysis never says what happens to an Item's barcodes when the Item is deactivated. ADR-CAT-063 cascades barcodes only on Variant deactivation. After an Item is deactivated, its Variants' barcodes stop resolving (ADR-CAT-059) but stay active, so they keep blocking their values under RULE-CAT-029. Keeping them is probably intended, since the Item can be reactivated, but no artifact says so.",
-      "fix": "State in REQ-CAT-005 and SRS A7 that deactivating an Item leaves its barcodes active, so it can be reactivated with them, and that the owner releases a GTIN with API-CAT-016, which stays allowed on an inactive Item. Extend the TC-CAT-188 expected result: the same GTIN added to another Variant is refused with CAT-409-BARCODE-DUPLICATE.",
+      "clause": "erp-core checklist C3: \"Every native query / `JdbcTemplate` statement names `TENANT_ID` and its method carries `@TenantUnscoped(reason, adr)`\"",
+      "problem": "Three advisory locks are native statements: the Category tree lock (API-CAT-021, 023, 024, 053), the scale-prefix lock (API-CAT-014, 015, 032) and the single scale-prefix lock of the import (API-CAT-049). None is a QR of the catalog, and none is given `@TenantUnscoped`. PHASE CORE says only four native queries exist (QR-CAT-006, 008, 009, 037). The key as written, `pg_advisory_xact_lock(TENANT_ID, 'CAT_CATEGORY_TREE')`, matches no PostgreSQL signature; only `(bigint)` and `(int, int)` exist. The statement cannot be implemented as specified, and its tenant-scoping annotation is not stated.",
+      "fix": "Add two NATIVE catalog rows. QR-CAT-073 'Category tree lock': `SELECT pg_advisory_xact_lock(:tenant, hashtext('CAT_CATEGORY_TREE'))` (int, int form; :tenant cast to int). QR-CAT-074 'Scale-prefix lock': the same form with 'CAT_SCALE_PREFIX'. Bind :tenant from `TenantContext.require()`. Give both repository methods `@TenantUnscoped(reason = \"advisory lock keyed by TENANT_ID\", adr = \"ADR-CAT-047\")`. Cite QR-CAT-073 and 074 in the Repository lines of API-CAT-014, 015, 021, 023, 024, 032, 049 and 053. In PHASE CORE and the QR catalog preface, change 'four native queries' to six. Amend ADR-CAT-047 (Locks) with the exact key form.",
       "adr": false
     }
   ],
@@ -105,8 +83,8 @@
       "to": [
         "AC"
       ],
-      "total": 138,
-      "covered": 138,
+      "total": 139,
+      "covered": 139,
       "pct": 100.0
     },
     {
@@ -115,8 +93,8 @@
       "to": [
         "API"
       ],
-      "total": 138,
-      "covered": 138,
+      "total": 139,
+      "covered": 139,
       "pct": 100.0
     },
     {
@@ -126,8 +104,8 @@
         "SCR",
         "UXD"
       ],
-      "total": 138,
-      "covered": 138,
+      "total": 139,
+      "covered": 139,
       "pct": 100.0
     },
     {
@@ -136,10 +114,10 @@
       "to": [
         "TC"
       ],
-      "total": 160,
-      "covered": 160,
+      "total": 161,
+      "covered": 161,
       "pct": 100.0
     }
   ],
-  "at": "2026-10-28T13:17:56+00:00"
+  "at": "2026-10-28T13:36:27+00:00"
 }
