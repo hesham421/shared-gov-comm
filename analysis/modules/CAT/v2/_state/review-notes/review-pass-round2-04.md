@@ -1,7 +1,7 @@
-# G4–G8 confirmed as MINOR. G4 is fixed by relabelling, not by an API change.
+# G3 stays MAJOR. Hibernate does not batch inserts with IDENTITY keys, so "JDBC batching" either does nothing or means `JdbcTemplate`. `JdbcTemplate` would need checklist C3 (`TENANT_ID` named, `@TenantUnscoped`), and nothing declares it. The 60 s budget assumes batching.
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: CAT        Version: v2
-Written: 2026-10-28T13:51:41+00:00
+Written: 2026-10-28T14:14:22+00:00
 
 
