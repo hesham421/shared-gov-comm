@@ -1,0 +1,288 @@
+{
+  "gate": "analysis",
+  "stages": [
+    "P0",
+    "P0.5",
+    "P1",
+    "P1.5",
+    "P2",
+    "P3.1",
+    "P3.2",
+    "P4"
+  ],
+  "verdict": "REVISE",
+  "scores": {
+    "unambiguous": 2,
+    "verifiable": 2,
+    "complete": 2,
+    "consistent": 2,
+    "singular": 2,
+    "feasible": 2,
+    "traceable": 3
+  },
+  "findings": [
+    {
+      "id": "G1",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "db-script",
+      "line": null,
+      "clause": "\"C1 Every table has TENANT_ID BIGINT NOT NULL, FK_<TABLE>_TENANT → CORE_TENANT(ID), an index led by TENANT_ID, every UNIQUE composite with TENANT_ID\"",
+      "problem": "D-P2-03 leaves out FK_<TABLE>_TENANT → CORE_TENANT on all 12 tables. CAT_ITEM and CAT_CATEGORY have no plain index led by TENANT_ID; they rely on partial or functional uniques.",
+      "fix": "Reverse D-P2-03. Add FK_CAT_<TABLE>_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID) to BLOCK 5d for all 12 tables. Add IDX_<TABLE>_TENANT_ID wherever no non-partial UNIQUE leads with TENANT_ID. Update registry-db and the DB alignment manifest. This creates no XM edge, because CORE_TENANT is given.",
+      "adr": false
+    },
+    {
+      "id": "G2",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "\"F4 ... or a multipart endpoint of the module\" / \"C7 Every byte goes through FilePrivateStoreApi / FileImageStoreApi / the FILE endpoints\"",
+      "problem": "API-CAT-018 (image upload) and API-CAT-049 (Item import) are multipart endpoints of CAT itself.",
+      "fix": "Upload the bytes through the given FILE endpoints: the public image store for images, the private store for the xlsx. Change API-CAT-018 and API-CAT-049 to JSON bodies that carry fileDocumentRef. API-CAT-049 then reads the file through the given file API. Drop the CAT-413 and CAT-415 rows. Update the api-spec, ADR-CAT-048 §4, ADR-CAT-049 step 8, F2/F4 of SCR-CAT-001 and SCR-CAT-004, and TC-CAT-056, 113, 146, 165 and 166.",
+      "adr": true
+    },
+    {
+      "id": "G3",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "\"F7 A second export path: a CSV / XLSX / PDF writer\" / \"C10 Every list export / tabular report is a ReportProvider bean\"",
+      "problem": "API-CAT-048 builds the import xlsx inside CatItemImportService.buildSheet.",
+      "fix": "Produce the sheet from a ReportProvider bean (CatItemImportSheetReportProvider) served through the given report or export path. State in the plan whether API-CAT-048 is kept or retired. Align the api-spec media type and TC-CAT-082 and TC-CAT-164.",
+      "adr": true
+    },
+    {
+      "id": "G4",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "\"C3 Every native query / JdbcTemplate statement names TENANT_ID and its method carries @TenantUnscoped(reason, adr)\" / \"F2\"",
+      "problem": "The QR catalog says the tenant filter is written once and implied below. That does not hold for the native queries (QR-CAT-006, 008, 009, 037) or the advisory-lock statements, and none of them carries @TenantUnscoped. This is a rule-level gap: it affects every native query in the catalog.",
+      "fix": "Write AND TENANT_ID = :tenant in each native logical spec, including inside every recursive CTE branch. Add a clause to ADR-CAT-047 that every native method carries @TenantUnscoped(reason=..., adr=\"ADR-CAT-047\"), and that every advisory-lock key takes the tenant from TenantContext.",
+      "adr": false
+    },
+    {
+      "id": "G5",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "\"C13 ... every service method has @PreAuthorize(\\\"hasAuthority(T(…<Module>Permissions).PERM_…)\\\") referencing its own module only\"",
+      "problem": "The permission is checked per endpoint, and the same service methods sit behind CatalogueReadApi for SFR (shoppers in the CUSTOMER realm), INV, PUR, SLS and PRC (ADR-CAT-045). Under C13 those callers would be refused. Without C13 the plan breaks the checklist. The plan does not say which way it goes.",
+      "fix": "Put @PreAuthorize on every CAT service method behind HTTP. Add a CatalogueReadService for CatalogueReadApi with no PERM check, plain tenant-scoped reads only, and keep the REQ-CAT-127 check inside searchCatalogue. Rename the contributor CatPermissions. State the split per method in the in-process contract table. Add a TC for a storefront read through CatalogueReadApi by a CUSTOMER-realm user.",
+      "adr": true
+    },
+    {
+      "id": "G6",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "srs",
+      "line": null,
+      "clause": "P1 silent path (REQ-CAT-006, RULE-CAT-015, RULE-CAT-025/026)",
+      "problem": "Two counter-cases have no statement and no TC. (1) RULE-CAT-015 protects the last Variant only of an active Item, so an inactive Item can lose all its Variants; reactivating it then gives an active Item with 0 Variants. (2) An inactive Item whose Category was deactivated in the meantime comes back as an active Item in an inactive Category.",
+      "fix": "Add an unwanted REQ and RULE for reactivation: refuse it when the Item has no active Variant (new row CAT-422-REACTIVATE-NO-VARIANT) or when its categoryFk is inactive (CAT-422-CATEGORY-INACTIVE). Check both in API-CAT-005 under the Item lock. Add the api-spec rows and two TCs.",
+      "adr": false
+    },
+    {
+      "id": "G7",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "srs",
+      "line": null,
+      "clause": "P2 closure: a record is withdrawn while something depends on it (RULE-CAT-031, REQ-CAT-079)",
+      "problem": "API-CAT-013 deactivates an Item unit even while active barcodes are bound to it. API-CAT-043 then returns a uomCode whose unit is no longer active.",
+      "fix": "Add a rule: deactivating an Item unit is refused while an active barcode carries its uomCode. Use a new row CAT-409-UNIT-IN-USE-BY-BARCODE ({count}), check it under the Item lock, and add a count QR, an REQ, an AC and a TC.",
+      "adr": false
+    },
+    {
+      "id": "G8",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "srs",
+      "line": null,
+      "clause": "verifiable / consistent (RULE-CAT-035, D-05)",
+      "problem": "Two ACs carry wrong check digits. AC-CAT-099 and TC-CAT-110 use 2001230012347; the correct digit is 2. AC-CAT-086 and TC-CAT-104 use 0400000000420; the correct digit is 8. A conforming implementation fails both TCs. AC-CAT-096's 2000123012347 is also wrong (6), but that AC still holds.",
+      "fix": "Correct the values in the SRS ACs, the backend TCs and any frontend references: 2001230012342, 0400000000428, and 2000123012346 for AC-CAT-096.",
+      "adr": false
+    },
+    {
+      "id": "G9",
+      "severity": "MAJOR",
+      "section": "frontend",
+      "artifact": "frontend-execution-plan",
+      "line": null,
+      "clause": "P3 read binding: every foreign id a screen renders resolves to a label",
+      "problem": "categoryFk is labelled from the active-only tree, so an inactive Item in an inactive Category renders an unresolved id.",
+      "fix": "Split the two uses: options read the active tree, labels read the unfiltered tree (or ItemSummary and ItemDetail carry categoryNameAr and categoryNameEn). State this in F2 ITEM-SEARCH-QUERY, ITEM-QUERY and CATEGORY-OPTIONS-QUERY, and add a TC.",
+      "adr": false
+    },
+    {
+      "id": "G10",
+      "severity": "MINOR",
+      "section": "backend",
+      "artifact": "srs",
+      "line": null,
+      "clause": "P2 edge: changing a value others depend on (RULE-CAT-034/033)",
+      "problem": "API-CAT-033 can change scaleCodeLength while active SCALE barcodes of the old length exist.",
+      "fix": "Refuse the change while such barcodes exist. Add a catalog row and a TC, and state the rule in RULE-CAT-034.",
+      "adr": false
+    },
+    {
+      "id": "G11",
+      "severity": "MINOR",
+      "section": "tests",
+      "artifact": "backend-test-plan",
+      "line": null,
+      "clause": "P1: counter-case with a statement but no test case",
+      "problem": "Four stated behaviours have no TC: RULE-CAT-021 on Item deactivation, the RULE-CAT-023 depth limit of 5, CAT-409-STALE-VERSION, and a cross-tenant read answered as CAT-404.",
+      "fix": "Add the four TCs, plus the TCs for G6, G7, G15 and G17.",
+      "adr": false
+    },
+    {
+      "id": "G12",
+      "severity": "MINOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "\"F9 A workaround for a missing core capability instead of CORE-GAP-<topic>.md\" / §7 platform findings",
+      "problem": "Two gaps are recorded nowhere. The mdl add-value call has no published verb or path (ADR-CAT-052 §3, ADR-CAT-053), and the owner of the capability flags is still OPEN (P-02). No platform finding and no CORE-GAP ADR exists for either.",
+      "fix": "Record two platform findings: the lookup-value maintenance call (owner erp-core mdl) and the flag owner (P-02). File CORE-GAP-lookup-value-maintenance.md and cite it from the Host data lines of the TCs.",
+      "adr": true
+    },
+    {
+      "id": "G13",
+      "severity": "MINOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "\"C15\" / \"C16 @Audited\" / \"C18 META-INF/erp/modules/<code>.yaml\" / \"C19 OutboxPublisher.publish(\\\"<code>.<Name>\\\", payload)\" / \"C20 ModuleBoundaryRules\"",
+      "problem": "The plan gives no evidence for the module manifest and its api-paths, the ModuleBoundaryRules test and CI job, @Audited entities, V1000+__cat_* migration naming, or the outbox event name cat.CatalogueChanged.",
+      "fix": "Add a 'Module packaging' block to PHASE CORE that covers each of these five items.",
+      "adr": false
+    },
+    {
+      "id": "G14",
+      "severity": "MINOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "consistent (soft-delete UPDATE QRs vs DELETE endpoints)",
+      "problem": "QR-004, 014, 025, 030, 035, 046 and 068 filter on VERSION = :version, but the DELETE requests carry no version.",
+      "fix": "State once, in PHASE CORE: deactivation uses the version of the row read under lock.",
+      "adr": false
+    },
+    {
+      "id": "G15",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "P4 pattern: RULE-CAT-048 \"exclude from new selections\" does not reach the Item's Variants",
+      "problem": "API-CAT-004 deactivates the Item but leaves its Variants active. Three places then still treat those Variants as selectable: QR-CAT-052 (barcode lookup, so the point of sale sells a deactivated Item), QR-CAT-016 (Variant search for labels), and QR-CAT-017 with RULE-CAT-019 (a Bundle can take a component from an inactive Item). Barcodes of the inactive Item keep blocking new barcodes, which is acceptable.",
+      "fix": "Define once in PHASE CORE: a selectable Variant is one where Variant.isActiveFl and Item.isActiveFl are both true. Apply it to QR-CAT-016, 052 and 017 and to RULE-CAT-019 and RULE-CAT-037. Keep reads by identifier (CON-CAT-008) unchanged. Add SRS ACs and TCs for scanning, Bundle components and labels on an inactive Item.",
+      "adr": false
+    },
+    {
+      "id": "G16",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "\"C12 Business rules live on the entity's Domain companion (create() / from()), the service orchestrates\"",
+      "problem": "PHASE CORE says every RULE is enforced in the service layer, and every DOMAIN RULES entry names that layer.",
+      "fix": "Move each RULE into a <Entity>Domain companion (create(), from() and its transitions). The service keeps the orchestration: locks, MdlLookupApi, NumberSeriesApi, repository counts it passes into the Domain. Update PHASE CORE and every RULE's layer field.",
+      "adr": false
+    },
+    {
+      "id": "G17",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "concurrency: a named guard for every read-then-write decision (API-CAT-021/023 vs API-CAT-024)",
+      "problem": "Category create and move take the tree advisory lock and read the parent without FOR SHARE. Category deactivation takes only the row FOR UPDATE and then counts children. A child created under a parent that is being deactivated can pass both checks, giving an active child under an inactive parent. Separately, the API-CAT-049 validation pass reads Categories outside the write transaction, although API-CAT-024 states that 049 reads them FOR SHARE.",
+      "fix": "Make API-CAT-024 take the same tree lock as create and move, or read the parent FOR SHARE in API-CAT-021 and 023. In the API-CAT-049 write pass, read the row's Category FOR SHARE again. Update ADR-CAT-047 and add a concurrency TC.",
+      "adr": false
+    },
+    {
+      "id": "G18",
+      "severity": "MINOR",
+      "section": "backend",
+      "artifact": "srs",
+      "line": null,
+      "clause": "§7 decisions: ADR status and downstream agreement",
+      "problem": "Three earlier ADRs are contradicted by later ones but still read RESOLVED-IN-DIALOGUE. ADR-CAT-025 (a bundle is defined by its composition lines, no item kind) is contradicted by D-04 and CAT_ITEM_KIND. ADR-CAT-026 (the scale pattern is a cu setting) is contradicted by ADR-CAT-042. ADR-CAT-028 (POL-CAT-010) is contradicted by ADR-CAT-031.",
+      "fix": "Mark ADR-CAT-025 SUPERSEDED by ADR-CAT-038/D-04, ADR-CAT-026 by ADR-CAT-042, and ADR-CAT-028 by ADR-CAT-031, each with a back-reference.",
+      "adr": false
+    },
+    {
+      "id": "G19",
+      "severity": "MINOR",
+      "section": "backend",
+      "artifact": "srs",
+      "line": null,
+      "clause": "\"F5 A second ... settings mechanism: ... a settings table\"",
+      "problem": "CAT_SCALE_LABEL_LAYOUT and CAT_UNIT_EINVOICE_CODE are tables of kind config, and ADR-CAT-042 does not explain why they are not a settings table.",
+      "fix": "Amend ADR-CAT-042: these tables are structured catalogue reference data with their own rules and data sources (C5.12), not operator settings, and SettingsApi holds no rows keyed per prefix or per unit. If the given erp-core reviewers reject that, file a CORE-GAP.",
+      "adr": true
+    }
+  ],
+  "coverage": [
+    {
+      "id": "us-req",
+      "from": "US",
+      "to": [
+        "REQ"
+      ],
+      "total": 22,
+      "covered": 22,
+      "pct": 100.0
+    },
+    {
+      "id": "req-ac",
+      "from": "REQ",
+      "to": [
+        "AC"
+      ],
+      "total": 127,
+      "covered": 127,
+      "pct": 100.0
+    },
+    {
+      "id": "req-api",
+      "from": "REQ",
+      "to": [
+        "API"
+      ],
+      "total": 127,
+      "covered": 127,
+      "pct": 100.0
+    },
+    {
+      "id": "req-ux",
+      "from": "REQ",
+      "to": [
+        "SCR",
+        "UXD"
+      ],
+      "total": 127,
+      "covered": 127,
+      "pct": 100.0
+    },
+    {
+      "id": "ac-tc",
+      "from": "AC",
+      "to": [
+        "TC"
+      ],
+      "total": 129,
+      "covered": 129,
+      "pct": 100.0
+    }
+  ],
+  "at": "2026-10-28T08:11:42+00:00"
+}
