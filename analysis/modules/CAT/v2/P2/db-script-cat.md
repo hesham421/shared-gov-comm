@@ -1,8 +1,8 @@
-# DB SCRIPT — Catalog / الكتالوج (CAT)
+﻿# DB SCRIPT — Catalog / الكتالوج (CAT)
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P2
 Inputs : srs (P1, CAT v2 — REQ 127 · ENT 12 · RULE 49), registry-srs, contract (P1.5, CON 18)
-Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · lookup keys 10 (34 seeded values)
+Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 0 (column-only, ADR-CAT-054) · lookup keys 10 (34 seeded values)
 Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
 
@@ -19,7 +19,7 @@ Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 | Type declared here (not in the syntax map) | logical `number` → `INTEGER` (sortOrder, scaleCodeLength, valueDecimals). The profile `syntax_map` has no integer entry, so it is declared once here |
 | Date | 2026-10-26 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). 0 ADR. The next free ADR sequence is unchanged (044) |
+| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). 1 ADR (ADR-CAT-054). The next free ADR sequence is 055 |
 
 ## 2 — DB field traceability matrix
 
@@ -734,6 +734,9 @@ ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_CAT_ITEM
 ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_CAT_VARIANT
     FOREIGN KEY (TENANT_ID, VARIANT_FK, ITEM_FK) REFERENCES CAT_VARIANT (TENANT_ID, VARIANT_PK, ITEM_FK);
 
+-- TENANT_ID is column-only: the tenant table belongs to the given erp-core (ADR-CAT-054)
+
+
 -- ──────────────────────────────────────────────────────────────────
 -- BLOCK 6 — TRIGGERS
 -- none: no SRS RULE requires a trigger; audit columns are filled by the platform; no PK trigger.
@@ -744,6 +747,8 @@ ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_CAT_VARIANT
 -- ──────────────────────────────────────────────────────────────────
 
 -- tenant-leading index (given tenancy convention) where no non-partial UNIQUE already leads with TENANT_ID
+CREATE INDEX IDX_CAT_ITEM_TENANT_ID                ON CAT_ITEM (TENANT_ID);
+CREATE INDEX IDX_CAT_CATEGORY_TENANT_ID            ON CAT_CATEGORY (TENANT_ID);
 CREATE INDEX IDX_CAT_VAR_ATTR_ASSIGN_TENANT_ID    ON CAT_VAR_ATTR_ASSIGN (TENANT_ID);
 CREATE INDEX IDX_CAT_BUNDLE_COMP_TENANT_ID        ON CAT_BUNDLE_COMP (TENANT_ID);
 CREATE INDEX IDX_CAT_ITEM_UNIT_TENANT_ID          ON CAT_ITEM_UNIT (TENANT_ID);
@@ -890,7 +895,7 @@ COMMIT;
 |---|---|---|---|
 | D-P2-01 | Identifier transformation: camelCase → UPPER_SNAKE_CASE, unquoted. PostgreSQL stores the name in lower case, which matches the given's physical naming. Tables are named `CAT_` + entity abbreviation (VAR_ATTR = Variant attribute, COMP = component) | brief §3; given migrations convention | Rename in a later delta (breaking for consumers of physical names) |
 | D-P2-02 | Every table carries the given entity column set: TENANT_ID, VERSION, CREATED_BY, CREATED_AT, UPDATED_BY, UPDATED_AT. This includes the lookup tables (ENT-CAT-003, 004) and config tables (ENT-CAT-011, 012), whose SRS kind lists no audit fields. The source is the given's tenancy rule (every table has `TENANT_ID BIGINT NOT NULL`; every entity extends `AuditableEntity`). SRS A2 says "Tenancy is handled by the given core", and SRS A3 says audit fields are filled by the system. Without these columns the given's base entity cannot map the table | SRS A2, A3; given erp-core 1.6.0 conventions (tenancy, migrations) | Drop the columns from the lookup and config tables only if the given allows an entity that does not extend `AuditableEntity` |
-| D-P2-03 | No `FK_<TABLE>_TENANT → CORE_TENANT` constraint here. The script's DDL references only tables it creates (S-1, S-6, C6.15), and the given's tenant filter isolates rows. Every UNIQUE is composite with TENANT_ID, and every table has an index that leads with TENANT_ID | brief §5.1, S-6; given tenancy convention | P3.1 adds the tenant constraint if the given's architecture tests require it |
+| D-P2-03 | Every table has a `TENANT_ID` NOT NULL column, an index led by `TENANT_ID` (a non-partial UNIQUE of 5b or an `IDX_<TABLE>_TENANT_ID` of BLOCK 7), and every UNIQUE composite with `TENANT_ID`. The tenant table is the given erp-core `CORE_TENANT`; the column is column-only and no FK constraint to it is created here, live or commented (C6.15; ADR-CAT-054). The given's tenancy layer enforces tenant validity | brief §5.1; ADR-CAT-054 | — |
 | D-P2-04 | The PK is `{entity}Pk` with the identity clause. This replaces the given's `ID` + `SEQ_<TABLE>` default, because the profile decision governs and one database carries one PK strategy | profile `stack.db.pk_generation`, `naming.pk_pattern`; brief §4 | Profile change only |
 | D-P2-05 | Lookup-backed columns are `VARCHAR(50)` and hold the code. They carry no CHECK of allowed codes and no DB default. The service applies the SRS defaults (STANDARD, PIECE, STANDARD, UNPUBLISHED — D-09) and validates against the active values in `mdl` (RULE-CAT-006) | profile lookups rule; given lookups convention | — |
 | D-P2-06 | Logical `number` → `INTEGER`, declared once in the header. Decimal precision: `quantity` NUMERIC(18,3) and `conversionFactor` NUMERIC(18,6). The SRS fixes the scale only; 15 and 12 integer digits are enough for any retail quantity | SRS A3 (3 and 6 decimals) | Widen the precision in a later delta (non-breaking) |
@@ -912,3 +917,4 @@ No ADR was raised and no question was asked. The next free ADR sequence for CAT 
 ## 6 — Registry content
 
 See `registry-db-cat.md` (same content). Event: "P2 completed: CAT v2 — 12 tables, 161 DBF, 0 XM".
+

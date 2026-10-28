@@ -818,7 +818,7 @@ Priority   : HIGH
 #### AC-CAT-040 — [REQ-CAT-039]
 Given : an import of 50 rows of which 1 is rejected
 When  : the import ends
-Then  : the result shows rows read 50, Items created 49, rows rejected 1, and for row 7 the column nameAr with ar: «الصف 7، العمود nameAr: أدخل الاسم بالعربية. صحّح الصف وأعد استيراده.» · en: "Row 7, column nameAr: Enter the Arabic name. Correct the row and import it again."
+Then  : the result shows rows read 50, Items created 49, rows rejected 1, and for row 7 the column nameAr with ar: «الصف 7، العمود nameAr: أدخل الاسم بالعربية (حتى 200 حرف) متضمنًا حرفًا عربيًا واحدًا على الأقل. صحّح الصف وأعد استيراده.» · en: "Row 7, column nameAr: Enter the Arabic name (up to 200 characters) with at least one Arabic letter. Correct the row and import it again."
 
 ### REQ-CAT-040 — Import file not accepted
 Pattern    : unwanted
@@ -1456,7 +1456,7 @@ Priority   : —
 #### AC-CAT-086 — [REQ-CAT-084]
 Given : series CAT_INTERNAL_BARCODE last issued 0000000041
 When  : the owner requests an internal barcode for a Variant
-Then  : the Variant gets the active INTERNAL barcode 0400000000420 (04 + 0000000042 + check digit 0)
+Then  : the Variant gets the active INTERNAL barcode 0400000000428 (04 + 0000000042 + check digit 8)
 
 ### REQ-CAT-085 — Deactivate a barcode
 Pattern    : event
@@ -1595,7 +1595,7 @@ Priority   : LOW
 
 #### AC-CAT-096 — [REQ-CAT-094]
 Given : the active layout with prefix 20
-When  : the owner deactivates it and a seller/cashier scans 2000123012347
+When  : the owner deactivates it and a seller/cashier scans 2000123012346
 Then  : isActiveFl is false and the lookup returns no Variant with the RULE-CAT-047 message
 
 ### REQ-CAT-095 — Read the catalogue settings
@@ -1637,7 +1637,7 @@ Priority   : LOW
 
 #### AC-CAT-099 — [REQ-CAT-097]
 Given : the active layout prefix 20, scaleCodeLength 5, WEIGHT, valueDecimals 3, and a Variant with SCALE barcode 01230
-When  : a seller/cashier scans 2001230012347 (prefix 20, code 01230, value 01234, check digit 7)
+When  : a seller/cashier scans 2001230012342 (prefix 20, code 01230, value 01234, check digit 2)
 Then  : the response returns that Variant with a weight of 1.234 in the Item's base unit
 
 ### REQ-CAT-098 — Invalid scale label layout
@@ -2067,7 +2067,7 @@ Then  : the catalogue contributes 0 results
 ### RULE-CAT-001 — Arabic name required
 Scope      : ENT-CAT-001, ENT-CAT-003, ENT-CAT-004, ENT-CAT-006, ENT-CAT-010
 Trigger    : on create · on update · on import row
-Statement  : The system shall require a nameAr of 1 to 200 characters that contains at least one Arabic letter when a record of scope is saved.
+Statement  : The system shall require a nameAr of 1 to 200 characters that contains at least one Arabic letter when a record of scope is saved. An Arabic letter is a character in U+0621 to U+064A; the client, the service and the database check use this one set.
 Message    : ar: أدخل الاسم بالعربية (حتى 200 حرف) متضمنًا حرفًا عربيًا واحدًا على الأقل. · en: Enter the Arabic name (up to 200 characters) with at least one Arabic letter.
 Traces     : REQ-CAT-027, REQ-CAT-030, REQ-CAT-042, REQ-CAT-045, REQ-CAT-064, REQ-CAT-105
 Data source: ENT-CAT-001.nameAr, ENT-CAT-003.nameAr, ENT-CAT-004.nameAr, ENT-CAT-006.nameAr, ENT-CAT-010.nameAr
@@ -2465,7 +2465,7 @@ Source     : US-CAT-010; D-10
 ### RULE-CAT-045 — Import row validation
 Scope      : ENT-CAT-001, ENT-CAT-009
 Trigger    : on import row
-Statement  : The system shall validate each data row against RULE-CAT-001, RULE-CAT-002, RULE-CAT-003, RULE-CAT-006, RULE-CAT-026, RULE-CAT-029, RULE-CAT-030 and RULE-CAT-042, skip every row that fails, and report its row number, column and reason.
+Statement  : The system shall validate each data row against RULE-CAT-001, RULE-CAT-002, RULE-CAT-003, RULE-CAT-006, RULE-CAT-026, RULE-CAT-029, RULE-CAT-030 and RULE-CAT-042, skip every row that fails, and report its row number, column and reason. A category code that matches no active Category is a failure of column category with the RULE-CAT-026 message.
 Message    : ar: الصف {row}، العمود {column}: {reason}. صحّح الصف وأعد استيراده. · en: Row {row}, column {column}: {reason}. Correct the row and import it again.
 Traces     : REQ-CAT-037, REQ-CAT-041
 Data source: ENT-CAT-001.nameAr, ENT-CAT-001.nameEn, ENT-CAT-001.baseUomCode, ENT-CAT-001.categoryFk, ENT-CAT-001.brandCode, ENT-CAT-001.taxClassCode, ENT-CAT-001.einvoiceCodeTypeCode, ENT-CAT-001.einvoiceCode, ENT-CAT-009.barcodeValue

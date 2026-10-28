@@ -1,5 +1,5 @@
 # ADR-CAT-026 — A Variant carries 0..n barcodes, each optionally tied to a unit; scale codes follow a tenant pattern held in `cu`; no new flag
-Status      : RESOLVED-IN-DIALOGUE
+Status      : SUPERSEDED — by ADR-CAT-042 and SRS D-05 (scale label layouts are CAT config entities, not a `cu` tenant pattern)
 Stage       : P0        Module: CAT        Version: v2
 Lane        : analysis-dialogue · round 2 · claude:sonnet
 Decided     : 2026-10-26T09:46:00+00:00

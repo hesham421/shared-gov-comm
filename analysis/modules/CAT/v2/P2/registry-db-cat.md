@@ -1,4 +1,4 @@
-## REGISTRY — P2 — CAT v2
+﻿## REGISTRY — P2 — CAT v2
 
 ### Tables
 | Table | ENT id | Kind | DBF range |
@@ -15,6 +15,8 @@
 | CAT_ITEM_MEDIA | ENT-CAT-010 | master (dependent) | DBF-CAT-121 … DBF-CAT-135 |
 | CAT_SCALE_LABEL_LAYOUT | ENT-CAT-011 | config | DBF-CAT-136 … DBF-CAT-149 |
 | CAT_UNIT_EINVOICE_CODE | ENT-CAT-012 | config | DBF-CAT-150 … DBF-CAT-161 |
+
+Tenant: every table carries a column-only TENANT_ID (given CORE_TENANT, no FK constraint, ADR-CAT-054) and an index led by TENANT_ID.
 
 Given tables read, never created: MDL_LOOKUP_TYPE and MDL_LOOKUP_VALUE (`erp-core:modules.mdl`, seeded only), CORE_NUMBER_SERIES (`erp-core:modules.sequence`, seeded only), FILE_DOCUMENT (`erp-core:modules.file`, soft read through `CAT_ITEM_MEDIA.FILE_DOCUMENT_REF`) and CORE_TENANT (`erp-core:modules.tenant`, through `TENANT_ID`).
 
@@ -57,3 +59,4 @@ DEFAULTs D-P2-01 … D-P2-18 (db-script §5). No ADR, none BLOCKED. The next fre
 
 ### Cascade
 None by hand. `gov.py graph` derives the edges that target CAT and raises their resolution events (shared/XM-PROTOCOL.md §5). No consumer edge exists yet.
+

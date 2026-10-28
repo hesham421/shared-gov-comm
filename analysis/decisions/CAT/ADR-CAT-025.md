@@ -1,5 +1,5 @@
 # ADR-CAT-025 — CAT owns the bundle composition; an Item is a bundle when it has composition lines; INV and SLS explode it to components; no pre-assembled kits
-Status      : RESOLVED-IN-DIALOGUE
+Status      : SUPERSEDED — by ADR-CAT-039 and SRS D-04 (a Bundle is an Item of kind BUNDLE with component lines; the kind is fixed after first save)
 Stage       : P0        Module: CAT        Version: v2
 Lane        : analysis-dialogue · round 2 · claude:sonnet
 Decided     : 2026-10-26T09:46:00+00:00

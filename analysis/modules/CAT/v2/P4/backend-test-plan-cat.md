@@ -710,11 +710,11 @@ Exercises    : API-CAT-034 DELETE /api/v1/cat/scale-label-layouts/{id} · API-CA
 Rule / code  : RULE-CAT-047 → CAT-404-BARCODE-NOT-FOUND
 Package      : DATA-DOM-LOOKUP
 Scenario     : STATE · data class VALID · language ALL
-Preconditions: S0 · the active layout with prefix 20 · no other active layout · no active barcode equals 2000123012347
+Preconditions: S0 · the active layout with prefix 20 · no other active layout · no active barcode equals 2000123012346
 Host data    : none
-Steps        : 1. DELETE the layout. 2. As a Seller/cashier, GET the lookup with value 2000123012347.
+Steps        : 1. DELETE the layout. 2. As a Seller/cashier, GET the lookup with value 2000123012346.
 Expected     : 1 → 200, data.isActiveFl false. 2 → 404, code CAT-404-BARCODE-NOT-FOUND, messageAr «لا يوجد صنف بهذا الباركود. ابحث بالاسم أو أضف الباركود إلى الصنف.», messageEn "No item has this barcode. Search by name or add the barcode to the item."; no Variant.
-Test data    : prefix 20, 2000123012347 (from the AC)
+Test data    : prefix 20, 2000123012346 (from the AC)
 <!-- TC:TC-CAT-048:END -->
 
 <!-- TC:TC-CAT-049:START traces=AC-CAT-100,REQ-CAT-098,API-CAT-032,API-CAT-045 -->
@@ -1221,7 +1221,7 @@ Scenario     : HAPPY · data class INVALID · language ALL
 Preconditions: S0 · an xlsx on the import sheet with 50 data rows; row 7 has an empty nameAr; the other rows are valid
 Host data    : none
 Steps        : 1. POST the file.
-Expected     : 200; data.rowsRead 50, data.itemsCreated 49, data.rowsRejected 1; data.rejectedRows[0] has rowNumber 7, column nameAr, messageAr «الصف 7، العمود nameAr: أدخل الاسم بالعربية. صحّح الصف وأعد استيراده.», messageEn "Row 7, column nameAr: Enter the Arabic name. Correct the row and import it again.".
+Expected     : 200; data.rowsRead 50, data.itemsCreated 49, data.rowsRejected 1; data.rejectedRows[0] has rowNumber 7, column nameAr, messageAr «الصف 7، العمود nameAr: أدخل الاسم بالعربية (حتى 200 حرف) متضمنًا حرفًا عربيًا واحدًا على الأقل. صحّح الصف وأعد استيراده.», messageEn "Row 7, column nameAr: Enter the Arabic name (up to 200 characters) with at least one Arabic letter. Correct the row and import it again.".
 Test data    : 50 rows, row 7 (from the AC)
 <!-- TC:TC-CAT-084:END -->
 
@@ -1501,8 +1501,8 @@ Scenario     : HAPPY · data class VALID · language ALL
 Preconditions: S0 · series CAT_INTERNAL_BARCODE last issued 0000000041 · an active Variant · no active layout with prefix 04
 Host data    : none
 Steps        : 1. POST the internal barcode request (no uomCode).
-Expected     : 201; the Variant gets the active INTERNAL barcode 0400000000420 (04 + 0000000042 + check digit 0).
-Test data    : 0000000041 → 0400000000420 (from the AC)
+Expected     : 201; the Variant gets the active INTERNAL barcode 0400000000428 (04 + 0000000042 + check digit 8).
+Test data    : 0000000041 → 0400000000428 (from the AC)
 <!-- TC:TC-CAT-104:END -->
 
 <!-- TC:TC-CAT-105:START traces=AC-CAT-088,REQ-CAT-086,API-CAT-043 -->
@@ -1584,9 +1584,9 @@ Package      : SVC-API-SEARCH
 Scenario     : HAPPY · data class VALID · language ALL
 Preconditions: S0 · the active layout prefix 20, scaleCodeLength 5, WEIGHT, valueDecimals 3 · a Variant with the SCALE barcode 01230 · the caller is a Seller/cashier
 Host data    : none
-Steps        : 1. GET the lookup with value 2001230012347.
+Steps        : 1. GET the lookup with value 2001230012342.
 Expected     : 200; that Variant, embeddedValue 1.234, embeddedValueTypeCode WEIGHT, uomCode = the Item's base unit.
-Test data    : 2001230012347 (prefix 20, code 01230, value 01234, check digit 7 — from the AC)
+Test data    : 2001230012342 (prefix 20, code 01230, value 01234, check digit 2 — from the AC)
 <!-- TC:TC-CAT-110:END -->
 
 <!-- TC:TC-CAT-111:START traces=AC-CAT-103,REQ-CAT-101,API-CAT-042 -->

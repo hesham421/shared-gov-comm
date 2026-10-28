@@ -651,7 +651,7 @@ Forms use `react-hook-form` with a `zod` resolver per form. A client validator m
 
 | Field | Validator | Message |
 |---|---|---|
-| nameAr | required · 1–200 characters · contains ≥ 1 Arabic letter (U+0600–U+06FF) · stored as typed, Latin letters, digits and symbols kept (REQ-CAT-028) | RULE-CAT-001 |
+| nameAr | required · 1–200 characters · contains ≥ 1 Arabic letter (U+0621–U+064A, the set of RULE-CAT-001) · stored as typed, Latin letters, digits and symbols kept (REQ-CAT-028) | RULE-CAT-001 |
 | nameEn | ≤ 200 characters | RULE-CAT-002 |
 | baseUomCode, taxClassCode, itemKindCode | required (pre-filled; create only for baseUomCode and itemKindCode) · an active option of its lookup | RULE-CAT-006 |
 | categoryFk | optional · an active node of CATEGORY-OPTIONS-QUERY | RULE-CAT-026 |

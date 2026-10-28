@@ -12,6 +12,9 @@ Status : ACCEPTED (non-breaking) · Stage : P1 · Module : CAT v2 · Date : 2026
 - The e-invoice unit of each unit of measure is the CAT config entity ENT-CAT-012, with lookup CAT_EINVOICE_UNIT.
 - Both are maintained on the Catalogue settings screen (SCR-REQ-CAT-006).
 
+## Why this is not a settings table (F5)
+ENT-CAT-011 and ENT-CAT-012 are reference data. Each row is a keyed, versioned record with its own business key, active flag and rules (RULE-CAT-034, RULE-CAT-043), and other records are checked against them (RULE-CAT-032, 033, 035). They are not free-form key/value settings. The capability flags remain the only settings, in the given `cu`.
+
 ## Consequences
 - RULE-CAT-032 … RULE-CAT-035 and RULE-CAT-043 are enforceable, with declared data sources.
 - Nothing provided by erp-core is rebuilt; the given `cu` keeps the capability flags only.

@@ -1,5 +1,5 @@
 # ADR-CAT-028 — Item names are Arabic-mandatory and English-optional
-Status      : RESOLVED-IN-DIALOGUE
+Status      : SUPERSEDED — by SRS D-07 / RULE-CAT-001 (nameAr must contain at least one Arabic letter; nameEn optional)
 Stage       : P0        Module: CAT        Version: v2
 Lane        : analysis-dialogue · round 2 · claude:sonnet
 Decided     : 2026-10-26T09:46:00+00:00
