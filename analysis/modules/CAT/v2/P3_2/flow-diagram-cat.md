@@ -153,12 +153,12 @@ Priority  : HIGH (US-CAT-010)
 ## SCR-CAT-005 flows
 
 ```
-FLOW — SCR-CAT-005 · print barcode labels   traces=US-CAT-018,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,SCR-CAT-005,SCR-CAT-001
+FLOW — SCR-CAT-005 · print barcode labels   traces=US-CAT-018,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-148,SCR-CAT-005,SCR-CAT-001
 Screens   : SCR-CAT-005, SCR-CAT-001
 Sequence  : Catalog menu, or Items · Entry → "Print labels" (`/cat/barcode-labels?variantPk=<variantPk>`) → Barcode labels → "Add variants" → Variant picker (second level: search by code, name, barcode) → copies per line → Print → printable document opens
 Trigger   : warehouse staff label goods without a manufacturer barcode
 Priority  : — (US-CAT-018)
-Exit      : RULE-CAT-037 → lines without a barcode are marked; each offers "Open item" → Items · Entry `/cat/items/:itemPk` to generate an internal barcode
+Exit      : RULE-CAT-037 → lines without a barcode are marked; each offers "Generate internal barcode" on this screen (REQ-CAT-148, ADR-CAT-078) → the line takes the barcode → Print again; "Open item" → Items · Entry `/cat/items/:itemPk` stays for reading the Item
 ```
 
 ## SCR-CAT-006 flows

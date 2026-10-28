@@ -1,34 +1,35 @@
-I applied all four findings by editing the source files in place, as the earlier revises did, instead of pasting complete-file `<<<FILE>>>` blocks; the plans run to thousands of lines. Nothing is committed and I haven't run `gov.py analyze`. My own checks: `api-spec-cat.yaml` still parses with 55 operations, and every fenced YAML block in the SRS, contract, db-script and both plans parses. I didn't run the rewritten SQL function against a real PostgreSQL.
+I've applied all six findings of the REVISE brief to the CAT v2 artifacts. I edited the files in place in the repo instead of sending them back as complete-file `<<<FILE>>>` blocks; the result is the same as the earlier "REVISE applied" commits. Every YAML block validates against its schema and the api-spec parses. I didn't run the governance tool (`gov.py`), so the gate itself hasn't been re-run on this.
 
-**G1 — Category change events (MAJOR, new ADR-CAT-077).** I took the recommended option.
-- **What changed:** REQ-CAT-008, RULE-CAT-049, CON-CAT-018 and the backend plan's event list now include ENT-CAT-006 (Category).
-- **Payload:** a Category event has `recordPk` set to the categoryPk and an empty `itemPk`. A request that changes nothing, such as deactivating an already inactive Category, publishes no event.
-- **Endpoints:** API-CAT-021, 023, 024 and 053 now publish CREATED, UPDATED, DEACTIVATED and REACTIVATED events. Each is marked `Honours: CON-CAT-018`, traces REQ-CAT-008, and lists CAT-500-CHANGE-NOT-SAVED in the plan, the error catalog and the api-spec.
-- **Contract:** the ADR records this as additive. The payload fields are unchanged and no consumer cites CON-CAT-018 yet.
-- **Frontend:** the Categories save, deactivate and reactivate actions now show CAT-500-CHANGE-NOT-SAVED in a banner with the RULE-CAT-049 message.
-- **Tests:** new AC-CAT-165 and TC-CAT-224, which checks one event per create, update, deactivation and reactivation, and none on a repeated deactivation.
+**G1 – generate an internal barcode from the label screen** (ADR-CAT-078, ACCEPTED)
+- I added a new endpoint, API-CAT-056 (`POST /api/v1/cat/barcode-labels/variants/{id}/internal-barcode`). It needs PERM_CAT_BARCODE_LABELS_CREATE and reuses the service, rules and locks of API-CAT-015.
+- New ids: REQ-CAT-148, AC-CAT-171, backend test TC-CAT-231 and frontend test TC-CAT-232.
+- The frontend plan has a new mutation hook (`LABEL-INTERNAL-BARCODE`) and a "Generate internal barcode" action on each flagged line of SCR-CAT-005. The UI spec and flow diagram are updated to match.
+- The ADR records two rejected options: widening API-CAT-015, and showing a different next action depending on the user's role.
 
-**G2 — Arabic normaliser (MAJOR).**
-- **Database:** `CAT_NORMALIZE_AR` now removes `E'[\\u064B-\\u065F\\u0670\\u0640]'`, so Arabic-Indic digits are kept.
-- **Java side:** RULE-CAT-003 in the SRS and backend plan now names that exact set. The backend plan also names the service normaliser that must remove the same set; I called it `CatArabicNormalizer`, since nothing in the artifacts named it before.
-- **Test:** new TC-CAT-225 checks that «علبة ٢٥» and «علبة ٣٠» are both created and «أحمر» / «احمر» still collide with CAT-409-ITEM-NAME-DUPLICATE. It also compares the database and Java normalisers on the same inputs. That comparison is a white-box step.
+**G2 – parallel-request races**
+- I added AC-CAT-167 to 170, one per race, each with a parallel-request test (TC-CAT-227 to 230).
+- The "Concurrency guards" coverage row now reads 12 / 12.
 
-**G3 — import rows and scale prefixes.**
-- RULE-CAT-045 now lists RULE-CAT-032, and RULE-CAT-032 now also applies on import rows.
-- New AC-CAT-166 and TC-CAT-226 cover GTIN 2000000000008 while a layout with prefix 20 is active. TC-CAT-226 joins the import tests that wait on the open file-reading gap in erp-core.
+**G3 – Bundle quantity and conversion factor bounds**
+- In API-CAT-001 and 017, `quantity` now has `exclusiveMinimum: 0`, `maximum: 999999.999` and `multipleOf: 0.001`.
+- In API-CAT-010, `conversionFactor` now has `exclusiveMinimum: 0`, `maximum: 999999.999999` and `multipleOf: 0.000001`.
+- RULE-CAT-018 and RULE-CAT-027 are restated with these bounds. A value outside them answers CAT-400-REQUEST-INVALID before the rule runs.
+- TC-CAT-027 now has 6 boundary rows and TC-CAT-039 has 5.
+- No database change was needed; the bounds fit the existing columns.
 
-**G4 — label request.** `LabelRequest.lines.items` now has `required: [variantPk, copies]`. I edited that schema directly rather than regenerating the whole api-spec; the only other api-spec changes are the G1 additions.
+**G4 – categoryFk-only repair in API-CAT-003**
+- The text now says only RULE-CAT-026 and the version check run on that path, and that RULE-CAT-003 is checked again at reactivation.
 
-**Bookkeeping:** the AC count is now 166, the SRS cites 20 ADRs, and the next free ADR is 078 in the SRS, its registry, the contract, the db-script and the registries. The backend test plan now has 161 TCs.
+**G6 – updating an inactive record**
+- PHASE CORE has a new rule: a PUT on a record whose own `isActiveFl` is false answers CAT-400-REQUEST-INVALID and writes nothing.
+- It's cited in API-CAT-012, 019, 023, 027 and 030, and in the CAT-400 trigger. Inactive Items and Variants are left out because RULE-CAT-053 already governs them.
+- TC-CAT-223 has new rows 11 to 15. They include the removed-image case, which checks that the active primary image stays unchanged.
 
-**Files changed:**
-- New: `analysis/decisions/CAT/ADR-CAT-077.md`
-- P0: `business-policies-cat.md` (stamp only)
-- P1: `srs-cat.md`, `registry-srs-cat.md`
-- P1.5: `contract-cat.md`
-- P2: `db-script-cat.md`, `registry-db-cat.md`
-- P3.1: `backend-execution-plan-cat.md`, `api-spec-cat.yaml`, `registry-exec-be-cat.md`
-- P3.2: `frontend-execution-plan-cat.md`, `registry-exec-fe-cat.md`
-- P4: `backend-test-plan-cat.md`, `frontend-test-plan-cat.md`
+**G7 – frontend coverage re-stamp**
+- The frontend test plan's coverage rows are re-stamped from registry-srs: AC 61 / 171 on this track and 171 / 171 across both plans, REQ 148 / 148.
 
-**Not changed:** `platform-summary.md`, `module-registry-cat.md`, `prd-cat.md`, `flow-diagram-cat.md` and `ui-ux-spec-cat.md` needed no edits. `platform/contracts/contract-cat.md`, `change-manifest.md` and the `_state/current-*` copies are outside the writable list, so they need regenerating.
+**Knock-on updates**
+- New totals: REQ 148, AC 171, API 56 (35 paths), 166 backend tests and 66 frontend tests. The next free ADR is 079.
+- These are re-stamped in both registries, the business policies, the contract and the db-script. None of these files still shows an old count.
+
+Four items in `git status` were already modified or untracked before I started, and I didn't touch them: `platform/contracts/contract-cat.md`, `_state/briefs/revise-analysis.md`, `backend/modules/CAT/` and `frontend/modules/CAT/`. Nothing is committed yet.

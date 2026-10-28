@@ -23,7 +23,7 @@
     "C9.2": 30,
     "C9.3": 3,
     "C9.4": 6,
-    "C9.5": 55,
+    "C9.5": 56,
     "C9.6": 3,
     "C9.7": 6,
     "C9.8": 9,
@@ -52,8 +52,8 @@
       "to": [
         "AC"
       ],
-      "total": 147,
-      "covered": 147,
+      "total": 148,
+      "covered": 148,
       "pct": 100.0
     },
     {
@@ -62,8 +62,8 @@
       "to": [
         "API"
       ],
-      "total": 147,
-      "covered": 147,
+      "total": 148,
+      "covered": 148,
       "pct": 100.0
     },
     {
@@ -73,8 +73,8 @@
         "SCR",
         "UXD"
       ],
-      "total": 147,
-      "covered": 147,
+      "total": 148,
+      "covered": 148,
       "pct": 100.0
     },
     {
@@ -83,8 +83,8 @@
       "to": [
         "TC"
       ],
-      "total": 166,
-      "covered": 166,
+      "total": 171,
+      "covered": 171,
       "pct": 100.0
     }
   ],
@@ -119,28 +119,28 @@
       "ui-ux-spec"
     ],
     "inputs": {
-      "api-spec": "901cf0633e7e07034e3ccf71e1075d6f0722171b68ee29476d5bdbca7759c1bf",
-      "backend-execution-plan": "f268529a210d7ed9360c0b2cea3d3c17c21ee9807ac07a0b8e60d5e249ab6249",
-      "backend-test-plan": "3aefc3070e78e6a22315ea86309bd95615adf9f859fb16e8dca72e4c38f8e4ec",
-      "business-policies": "4a4e5ed132fce45da63b00a2c4017147e403daf6ca9a833bb9d66d5ea85a13d4",
+      "api-spec": "698e2e60d6018b01829b25016989584ff3d4befb9759a6cce7a51d01303af3fa",
+      "backend-execution-plan": "6c0f022f66cbea665c6b6ace6c3d62958f01b259ee78c3e6083b805e553c66a9",
+      "backend-test-plan": "73408465b394f72caae4cc2f10606cc7459ea7d5d21210b18faafa9eeefe4082",
+      "business-policies": "b696c5f2e5af5cd75f1d8a9562040dcc0373f23c4e294ed8028499adb43dc682",
       "change-manifest": "c73904194b81e6c528a8a564463529aef00c68314b69a50756bf31c31cdc9dc9",
-      "contract": "7458a5287a2e16aa8b2a7632f1cb47c964b44bc2b47a2bcd56ad540901aea2b4",
-      "db-script": "2d500266a4e45d290064120d03683aa6e7827fdd9a29145ff2cbfbf3abce61d6",
+      "contract": "006ca5d66c8615822bde422db1aa558f8a159070103fc8ae0fd54982563f0fa9",
+      "db-script": "8b7639234d95124b8e8dded361c02c7796849e95ba0cd07a28dfe21f558e9df3",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
-      "flow-diagram": "f75a7d69ab69c113b8d9e6764aa3da1673307ee23bc46b8e89ffb520811d98f2",
-      "frontend-execution-plan": "757a141ec39184bd4b4fd1286a8588127bce4ea9b2dcb7b2da1ff865146d3fc6",
-      "frontend-test-plan": "9d1b2f0c0ce52da4962411e2ea0ff6b7aa7c91574a01705193a65b8d14aac3ee",
+      "flow-diagram": "e49a2b7a471c79bdefa4102d494c083ad3d6b0f1d5c24cbc5968effa6a705116",
+      "frontend-execution-plan": "2888b33da96e0350ee5d65c076fe63035fc110f04863fdd3928754ff57fff96e",
+      "frontend-test-plan": "122d1b040a57126fa9d99e23aa7cecdc6dddc8eb9e7f38c6202dcfe4ff61a956",
       "module-registry": "5fc7c7c7a020ebee8280a8519ade559492413ef6f6eeaf7ef6f157d19f9c1a0d",
       "platform-summary": "8869f2caaaa63ad4690042b1ddd12bd37461bc901343d1924927ebb4c7ac9967",
       "prd": "5e6157b1493b752f2ec9686b7621e181123364bb4031c5515b2dbc6e88bac5da",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
-      "registry-db": "da3c36b9e1689442e9f11be945db60ea20283ba701530cc4531b288069973d08",
-      "registry-exec-be": "51f7cac88aa8cb84b88b433950b049ed7a4e6f2f00d3ff8107d9a0c7614749fa",
-      "registry-exec-fe": "86ec1919162bf08d11d7ac66dbc94dd117da005d90fd40d59104fc38245cc601",
-      "registry-srs": "4b14bce54c067e7cd979be9886bf147101a23d18beb808aa07a9a4c1f4687634",
-      "srs": "ad3d16293e58b1373c313c8753326e52a24138873d57ae356d4470505b9d644c",
-      "ui-ux-spec": "e90f06b7ae7328a94893fd1dd4baed8e04d80f705eea91b2b4a543ae9c91dde2"
+      "registry-db": "6c9958fdaffddbc8ede2ec99833b52548a2d8cae39918ef3ea061be49c443159",
+      "registry-exec-be": "6c587aa53605bdd4a81ffb397e83b9db2f9ef0f4bf31814fda9af57e9c3583dc",
+      "registry-exec-fe": "a88818c825949fc8fc9b1b3a05879b622aefb22e7f7efb8d4e6658778b099b10",
+      "registry-srs": "eb3d4c88a743ceb606ff0023cb7b71a825b494c2a1bb90b8a21cdb8e5b1050c1",
+      "srs": "33fd5986401fec6ff75b37443f318ce341313889f3afc9601141f44977cfe0aa",
+      "ui-ux-spec": "d8afcb934406d011d227f9d39fc40194757b426ff03ed393a3b3e90dc97d9c43"
     },
-    "at": "2026-10-28T16:14:42+00:00"
+    "at": "2026-10-28T16:43:01+00:00"
   }
 }

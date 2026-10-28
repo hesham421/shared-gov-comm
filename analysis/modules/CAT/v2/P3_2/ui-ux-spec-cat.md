@@ -3,7 +3,7 @@
 Module : CAT · Version : v2 · Stage : P3.2 Part A · Profile : commerce
 Inputs : srs (SCR-REQ-CAT-001 … 006, ENT/RULE/permission matrix), prd (US-CAT-001 … 022)
 Mints  : SCR-CAT-001 … SCR-CAT-006 · UXD-CAT-001 … UXD-CAT-003 (both streams start at 001; the current state holds no earlier frontend design)
-Decisions: ADR-CAT-073 (inactive lookup value shown as its code) · ADR-CAT-075 (Item reads carry the Category label) · ADR-CAT-049 (Items: one Save, ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage, binding notes) · gate-analysis round 2: ADR-CAT-063 (inactive parent refuses child writes) · ADR-CAT-064 (layout keeps its scale code length) · ADR-CAT-065 (CAT lookup keys served through API-CAT-052) · gate-analysis round 3: ADR-CAT-068 (three repairs stay allowed on an inactive Item) · ADR-CAT-069 (reactivation of Categories, Variant attributes and values)
+Decisions: ADR-CAT-073 (inactive lookup value shown as its code) · ADR-CAT-075 (Item reads carry the Category label) · ADR-CAT-049 (Items: one Save, ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage, binding notes) · gate-analysis round 2: ADR-CAT-063 (inactive parent refuses child writes) · ADR-CAT-064 (layout keeps its scale code length) · ADR-CAT-065 (CAT lookup keys served through API-CAT-052) · gate-analysis round 3: ADR-CAT-068 (three repairs stay allowed on an inactive Item) · ADR-CAT-069 (reactivation of Categories, Variant attributes and values) · gate-analysis round 10: ADR-CAT-078 (the barcode label screen generates the missing internal barcode itself)
 
 This is a delta run, but the current state holds no earlier ui-ux-spec, so every block below is ADDED. Screens follow the composite-screen rule: Search + Entry and Master + Detail are ONE screen with ONE `SCR-*`, and the sub-views sit under it. Fields and permissions are copied from the SRS, and labels are given in ar and en. The spec states intent. Components, hooks and routes in code belong to the frontend execution plan.
 
@@ -253,7 +253,7 @@ Screen copy:
 | steps | 1) نزّل ورقة الاستيراد · 2) املأها · 3) استوردها | 1) Download the import sheet · 2) Fill it in · 3) Import it |
 | open-items | افتح الأصناف | Open Items |
 
-## SCR-CAT-005 — Barcode labels / ملصقات الباركود                 traces=REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-136
+## SCR-CAT-005 — Barcode labels / ملصقات الباركود                 traces=REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-148,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-136,AC-CAT-171
 
 Source            : SCR-REQ-CAT-005 · page code CAT_BARCODE_LABELS · owning ENT-CAT-002 (ENT-CAT-009 read)
 UI pattern        : Search + Entry, composite. Content shape: header + repeating lines (Variant, copies)
@@ -262,10 +262,10 @@ Fields shown      : line — Variant (ENT-CAT-002) shown as code الرمز / Co
 Composition       : container page · label lines → inline · variant picker → summary row + second level · submits: one
 Permissions       : PERM_CAT_BARCODE_LABELS_VIEW (gateway) · PERM_CAT_BARCODE_LABELS_CREATE — Owner: VIEW, CREATE · Warehouse staff: VIEW, CREATE (SRS B4)
 Cross-module data : none
-Navigation        : `/cat/barcode-labels` · `?variantPk=<variantPk>` seeds one line (from Items) · `?picker=variants&text=` opens the Variant picker · from: Catalog menu, Items Entry "Print labels" · to: Items Entry `/cat/items/:itemPk` ("Open item" on a line without a barcode)
+Navigation        : `/cat/barcode-labels` · `?variantPk=<variantPk>` seeds one line (from Items) · `?picker=variants&text=` opens the Variant picker · from: Catalog menu, Items Entry "Print labels" · to: Items Entry `/cat/items/:itemPk` ("Open item" on a line without a barcode, for a user holding PERM_CAT_ITEMS_VIEW; the barcode itself is generated on this screen — ADR-CAT-078)
 States            : empty — no line: "Add variants to print their labels" + "Add variants" · picker with no match: "No variants match" · loading · error (generic; RULE-CAT-036 / 037 texts at the lines) · offline (not required by the SRS)
 
-The lines sit inline in a pane under the screen header. A copies field is a single number input, no taller than the fields beside it. The Variant picker is a second-level drawer, a sibling of the page. It searches by code, name or barcode (paged), multi-selects, and on Confirm returns the chosen Variants as new lines (copies 1, duplicates merged). It saves nothing. Print is the one submit, and it opens the printable document.
+The lines sit inline in a pane under the screen header. A copies field is a single number input, no taller than the fields beside it. The Variant picker is a second-level drawer, a sibling of the page. It searches by code, name or barcode (paged), multi-selects, and on Confirm returns the chosen Variants as new lines (copies 1, duplicates merged). It saves nothing. Print is the one submit, and it opens the printable document. A line without an active barcode is flagged "No active barcode" and offers "Generate internal barcode / إنشاء باركود داخلي" (REQ-CAT-148, ADR-CAT-078): a record command on that line, run at once after a confirmation and shown only with PERM_CAT_BARCODE_LABELS_CREATE. It binds the new barcode to the Item's base unit; on success the line shows the barcode and its flag clears, so the user prints without leaving the screen. A refusal is shown on the line.
 
 Screen copy:
 
@@ -277,6 +277,8 @@ Screen copy:
 | empty | أضف متغيّرات لطباعة ملصقاتها. | Add variants to print their labels. |
 | no-barcode | لا يوجد باركود نشط | No active barcode |
 | open-item | افتح الصنف | Open item |
+| generate-internal | إنشاء باركود داخلي | Generate internal barcode |
+| generate-internal-confirm | سيُنشأ باركود داخلي بوحدة القياس الأساسية للصنف. هل تريد المتابعة؟ | An internal barcode will be created in the item's base unit. Continue? |
 
 ## SCR-CAT-006 — Catalogue settings / إعدادات الكتالوج                 traces=AC-CAT-152,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-098,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-134,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-100,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,AC-CAT-141,UXD-CAT-001
 

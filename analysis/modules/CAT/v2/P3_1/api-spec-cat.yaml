@@ -45,11 +45,11 @@ paths:
                     type: object
                     properties:
                       componentVariantFk: {type: integer, format: int64}
-                      quantity: {type: number}
+                      quantity: {type: number, exclusiveMinimum: 0, maximum: 999999.999, multipleOf: 0.001, default: 1, description: 'NUMERIC(18,3) — above zero, at most 999999.999, at most 3 decimals (RULE-CAT-018); a value outside the bounds answers CAT-400-REQUEST-INVALID'}
                       sortOrder: {type: integer, format: int32}
                     required: [componentVariantFk]
                   default: []
-                  description: optional; holds ≥ 1 line only when itemKindCode is BUNDLE (RULE-CAT-018); a non-empty list on a STANDARD Item, or a componentVariantFk listed twice, answers CAT-400-REQUEST-INVALID before any rule runs
+                  description: optional; holds ≥ 1 line only when itemKindCode is BUNDLE (RULE-CAT-018); a non-empty list on a STANDARD Item, a componentVariantFk listed twice, or a quantity outside its bounds answers CAT-400-REQUEST-INVALID before any rule runs
                   x-dbf: DBF-CAT-089
               required: [nameAr]
               title: ItemCreateRequest
@@ -785,7 +785,7 @@ paths:
               type: object
               properties:
                 uomCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-097}
-                conversionFactor: {type: number, x-dbf: DBF-CAT-098}
+                conversionFactor: {type: number, exclusiveMinimum: 0, maximum: 999999.999999, multipleOf: 0.000001, x-dbf: DBF-CAT-098, description: 'NUMERIC(18,6) — above zero, at most 999999.999999, at most 6 decimals (RULE-CAT-027); a value outside the bounds answers CAT-400-REQUEST-INVALID'}
                 isPurchaseFl: {type: boolean, x-dbf: DBF-CAT-099}
                 isSalesFl: {type: boolean, x-dbf: DBF-CAT-100}
               required: [uomCode, conversionFactor]
@@ -898,6 +898,7 @@ paths:
       summary: update Item unit
       x-api-id: API-CAT-012
       x-traces: [REQ-CAT-135, REQ-CAT-078, REQ-CAT-081, DBF-CAT-096, DBF-CAT-098, DBF-CAT-099, DBF-CAT-100, DBF-CAT-104]
+      description: 'the Item unit must be active (otherwise CAT-400-REQUEST-INVALID, nothing written — one rule for every PUT on an inactive record); an inactive unit is not reactivated: the owner adds the unit again (API-CAT-010)'
       parameters:
       - name: id
         in: path
@@ -1266,10 +1267,10 @@ paths:
                     properties:
                       bundleComponentPk: {type: integer, format: int64}
                       componentVariantFk: {type: integer, format: int64}
-                      quantity: {type: number}
+                      quantity: {type: number, exclusiveMinimum: 0, maximum: 999999.999, multipleOf: 0.001, description: 'NUMERIC(18,3) — above zero, at most 999999.999, at most 3 decimals (RULE-CAT-018); a value outside the bounds answers CAT-400-REQUEST-INVALID'}
                       sortOrder: {type: integer, format: int32}
                     required: [componentVariantFk, quantity]
-                  description: the complete new set of active lines; a bundleComponentPk that is not an active line of this Bundle, a kept line whose componentVariantFk differs from the stored one, or a line or component listed twice answers CAT-400-REQUEST-INVALID before any rule runs
+                  description: the complete new set of active lines; a bundleComponentPk that is not an active line of this Bundle, a kept line whose componentVariantFk differs from the stored one, a line or component listed twice, or a quantity outside its bounds answers CAT-400-REQUEST-INVALID before any rule runs
                   x-dbf: DBF-CAT-084
                 version: {type: integer, format: int64, x-dbf: DBF-CAT-017}
               required: [lines, version]
@@ -1411,6 +1412,7 @@ paths:
       summary: update image
       x-api-id: API-CAT-019
       x-traces: [REQ-CAT-135, REQ-CAT-106, REQ-CAT-112, DBF-CAT-121, DBF-CAT-123, DBF-CAT-124, DBF-CAT-125, DBF-CAT-126, DBF-CAT-128, DBF-CAT-129, DBF-CAT-131]
+      description: 'the media record must be active (otherwise CAT-400-REQUEST-INVALID, nothing written — one rule for every PUT on an inactive record), read under the Item lock; a removed image is not updated and never takes isPrimaryFl, so the active primary is left as it is; the owner uploads the file again (API-CAT-018)'
       parameters:
       - name: id
         in: path
@@ -1727,6 +1729,7 @@ paths:
       summary: update Category
       x-api-id: API-CAT-023
       x-traces: [REQ-CAT-008, REQ-CAT-065, REQ-CAT-069, REQ-CAT-070, DBF-CAT-071, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-077, DBF-CAT-079]
+      description: 'the Category must be active (otherwise CAT-400-REQUEST-INVALID, nothing written — one rule for every PUT on an inactive record); an inactive Category is reactivated first (API-CAT-053)'
       parameters:
       - name: id
         in: path
@@ -2119,6 +2122,7 @@ paths:
       summary: update Variant attribute
       x-api-id: API-CAT-027
       x-traces: [REQ-CAT-043, REQ-CAT-055, DBF-CAT-035, DBF-CAT-037, DBF-CAT-038, DBF-CAT-039, DBF-CAT-042]
+      description: 'the Variant attribute must be active (otherwise CAT-400-REQUEST-INVALID, nothing written — one rule for every PUT on an inactive record); an inactive attribute is reactivated first (API-CAT-054)'
       parameters:
       - name: id
         in: path
@@ -2407,6 +2411,7 @@ paths:
       summary: update Variant attribute value
       x-api-id: API-CAT-030
       x-traces: [REQ-CAT-046, REQ-CAT-055, DBF-CAT-047, DBF-CAT-049, DBF-CAT-050, DBF-CAT-051, DBF-CAT-055]
+      description: 'the Variant attribute value must be active (otherwise CAT-400-REQUEST-INVALID, nothing written — one rule for every PUT on an inactive record); an inactive value is reactivated first (API-CAT-055)'
       parameters:
       - name: id
         in: path
@@ -3583,6 +3588,83 @@ paths:
         '500':
           description: error — CAT-500-SERVER-ERROR
           x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/barcode-labels/variants/{id}/internal-barcode:
+    post:
+      operationId: generateLabelInternalBarcode
+      summary: generate the missing internal barcode of a label line
+      x-api-id: API-CAT-056
+      x-traces: [REQ-CAT-148, REQ-CAT-084, REQ-CAT-104, DBF-CAT-006, DBF-CAT-022, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114]
+      description: 'the barcode label page''s own entry to the internal-barcode generation of API-CAT-015 (same service, rules and locks), guarded by PERM_CAT_BARCODE_LABELS_CREATE so that warehouse staff can act on RULE-CAT-037''s next action (ADR-CAT-078); the label screen sends no uomCode, so the barcode is bound to the Item''s base unit'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uomCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-112}
+              additionalProperties: false
+              title: LabelInternalBarcodeRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/BarcodeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-BARCODE-SCALE-PREFIX, CAT-409-BARCODE-DUPLICATE
+          x-error-codes: [CAT-409-BARCODE-SCALE-PREFIX, CAT-409-BARCODE-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-PARENT-INACTIVE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}

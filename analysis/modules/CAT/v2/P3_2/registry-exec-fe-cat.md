@@ -28,7 +28,7 @@ Both streams start at 001, because the current state held no frontend design for
 All three UXDs trace to REQ and AC and are cited by F2 / F4 blocks of the plan (ADR-CAT-050). No XM is implied.
 
 ### API coverage
-- Used: 53 of the 55 documented operations, each with a screen action and a route (operations coverage table, ALIGN-FE). API-CAT-052 is bound to every `*-LOOKUP` hook.
+- Used: 54 of the 56 documented operations, each with a screen action and a route (operations coverage table, ALIGN-FE). API-CAT-052 is bound to every `*-LOOKUP` hook.
 - Unused: API-CAT-011 (read Item unit) and API-CAT-046 (storefront catalogue read). They are consumers' reads, recorded in ADR-CAT-051.
 - Mock: `api-spec-cat.yaml`.
 - `unmapped`: none.
@@ -90,12 +90,17 @@ The next free ADR was ADR-CAT-077.
 Gate-analysis round 9 (frontend):
 - The Categories mutations (CATEGORY-SAVE, CATEGORY-DEACTIVATE, CATEGORY-REACTIVATE) route CAT-500-CHANGE-NOT-SAVED to a drawer banner with the RULE-CAT-049 text, because API-CAT-021, 023, 024 and 053 now record catalogue-change events (ADR-CAT-077); the REQ-CAT-008 binding lists those four operations.
 - No screen, route or field changes; the label request already sends `variantPk` and `copies` on every line, which api-spec-cat.yaml now requires.
-The next free ADR is ADR-CAT-078.
+The next free ADR was ADR-CAT-078.
+
+Gate-analysis round 10 (frontend):
+- SCR-CAT-005: a line flagged without an active barcode offers "Generate internal barcode", a record command bound to API-CAT-056 (LABEL-INTERNAL-BARCODE) under PERM_CAT_BARCODE_LABELS_CREATE; on success the line takes the barcode and Print can run, so warehouse staff reach RULE-CAT-037's next action (ADR-CAT-078). The api-surface binds REQ-CAT-148 to API-CAT-056; ALIGN-FE counts 54 of 56 operations used. ui-ux-spec and flow diagram of SCR-CAT-005 updated.
+- F3: the Bundle quantity and the conversion factor validators carry the upper bounds of the API document (999,999.999 / 999,999.999999); an inactive Category opens read-only except Reactivate.
+The next free ADR is ADR-CAT-079.
 
 ### Traceability
-- REQ covered by at least one SCR or F-block: 147 / 147. Orphan REQ: none.
+- REQ covered by at least one SCR or F-block: 148 / 148. Orphan REQ: none.
 - US covered by at least one flow: 22 / 22.
 - Every PHASE and SUB carries traces= (6 PHASE, 24 SUB). Every SCR traces to REQ and AC (and UXD where it shows foreign data), and every UXD traces to REQ and AC.
 
 ### Event
-"P3.2 completed: CAT v2 — SCR 6 · UXD 3 · flows 18 · F-SUBs 24 · API used 53/55 · ADR 3 (049–051, none BLOCKED)"
+"P3.2 completed: CAT v2 — SCR 6 · UXD 3 · flows 18 · F-SUBs 24 · API used 54/56 · ADR 3 (049–051, none BLOCKED)"

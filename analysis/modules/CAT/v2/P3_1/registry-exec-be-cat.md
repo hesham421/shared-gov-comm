@@ -3,7 +3,7 @@
 ### ID ranges
 | Kind | Range | Count | Next free |
 |---|---|---|---|
-| API | API-CAT-001 … API-CAT-055 | 55 | API-CAT-056 |
+| API | API-CAT-001 … API-CAT-056 | 56 | API-CAT-057 |
 | QR | QR-CAT-001 … QR-CAT-075 | 75 | QR-CAT-076 |
 
 Both streams start at 001: the current state held no backend plan for CAT. No ID of another stage is minted here.
@@ -66,6 +66,7 @@ Both streams start at 001: the current state held no backend plan for CAT. No ID
 | API-CAT-053 | PATCH | /api/v1/cat/categories/{id} | ENT-CAT-006 · UPDATE (reactivate) | PERM_CAT_CATEGORIES_UPDATE | CON-CAT-003, CON-CAT-018 |
 | API-CAT-054 | PATCH | /api/v1/cat/variant-attributes/{id} | ENT-CAT-003 · UPDATE (reactivate) | PERM_CAT_VARIANT_ATTRIBUTES_UPDATE | — |
 | API-CAT-055 | PATCH | /api/v1/cat/variant-attribute-values/{id} | ENT-CAT-004 · UPDATE (reactivate) | PERM_CAT_VARIANT_ATTRIBUTES_UPDATE | — |
+| API-CAT-056 | POST | /api/v1/cat/barcode-labels/variants/{id}/internal-barcode | ENT-CAT-009 · CREATE | PERM_CAT_BARCODE_LABELS_CREATE | CON-CAT-005, CON-CAT-018 |
 
 Contract coverage: CON-CAT-001 … CON-CAT-018 — 18 of 18 honoured (entity items also in the PHASE DATA-DOM entity blocks; the in-process interface `com.erp.cat.crossmodule.CatalogueReadApi` carries the eleven operation items).
 
@@ -82,7 +83,7 @@ XM: none — the register is `records: []`; no edge minted; `INT-C` (the last ph
 60 codes: 53 RULE rows (one per RULE-CAT-001 … 053; 6 of them are 2xx success notices — RULE-CAT-010, 011, 012, 039, 045, 048) + 7 PLATFORM-STD rows (6 of ADR-CAT-044 — the 413 and 415 rows left with the multipart surface, ADR-CAT-056 — and CAT-404-LOOKUP-KEY-UNKNOWN of ADR-CAT-065). Every row carries its ar and en message, PLATFORM-STD rows included (checklist C11). Rules without a message: none. No RULE is DEFERRED.
 
 ### API document
-api-spec-cat.yaml — OpenAPI 3.1.0, validated · operations 55 = API blocks 55 · paths 34 · catalog rows answered 60 = catalog rows 60 · no multipart request body (ADR-CAT-056) · bearer JWT security on every operation · paged operations (API-CAT-038, 040, 042, 046) carry page / size.
+api-spec-cat.yaml — OpenAPI 3.1.0, validated · operations 56 = API blocks 56 · paths 35 · catalog rows answered 60 = catalog rows 60 · no multipart request body (ADR-CAT-056) · bearer JWT security on every operation · paged operations (API-CAT-038, 040, 042, 046) carry page / size.
 
 ### Security
 6 pages (CAT_ITEMS, CAT_CATEGORIES, CAT_VARIANT_ATTRIBUTES, CAT_ITEM_IMPORT, CAT_BARCODE_LABELS, CAT_SETTINGS) · 20 permission names `PERM_<PAGE_CODE>_<ACTION>` derived by the given `sec` module · preset-role grants per SRS B4 (ADR-CAT-046).
@@ -121,6 +122,7 @@ Verdict as stamped by the orchestrator from `gov.py analyze` (self-check block p
 | decisions/CAT/ADR-CAT-075 | ItemSummary / ItemDetail carry the derived categoryCode, categoryNameAr, categoryNameEn; amends ADR-CAT-048 §5 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-076 | image type, size and public storage enforced by the FILE category CAT_ITEM_IMAGE at upload; API-CAT-018 checks availability, a public URL and the 20-image count; the import's byte read waits on the core; amends ADR-CAT-056 §2 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-077 | Category changes publish catalogue-change events (ENT-CAT-006 in RULE-CAT-049 and CON-CAT-018, itemPk empty); API-CAT-021, 023, 024 and 053 record CREATED, UPDATED, DEACTIVATED and REACTIVATED | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-078 | the barcode label screen generates the missing internal barcode of a line itself: API-CAT-056 under PERM_CAT_BARCODE_LABELS_CREATE shares the body, rules and locks of API-CAT-015 | ACCEPTED (non-breaking) |
 | decisions/CAT/CORE-GAP-in-process-authorization | how a cross-module read API is authorized for callers without a permission of the owning module | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-tenant-lookup-types | whether a tenant can create lookup types with nested values at runtime | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-number-series-block-allocation | whether NumberSeriesApi can allocate a block of n numbers in one call | OPEN (asked of erp-core) |
@@ -155,10 +157,17 @@ Ninth gate-analysis revise (backend), ADR-CAT-077 raised:
 - G2: `CAT_NORMALIZE_AR` (db-script BLOCK 1) removes its set by code point (U+064B–U+065F, U+0670, U+0640), so the Arabic-Indic digits are kept; RULE-CAT-003 names the set and the service normaliser `CatArabicNormalizer` that removes the same set. TC-CAT-225 tests it.
 - G3: RULE-CAT-045 lists RULE-CAT-032, and RULE-CAT-032 triggers on import row; API-CAT-049 cites it. TC-CAT-226 tests it.
 - G4: `LabelRequest.lines.items` of API-CAT-050 carries `required: [variantPk, copies]` in api-spec-cat.yaml, as the plan states.
-The next free ADR sequence is 078.
+The next free ADR sequence was 078.
+
+Tenth gate-analysis revise (backend), ADR-CAT-078 raised:
+- G1: API-CAT-056 `POST /api/v1/cat/barcode-labels/variants/{id}/internal-barcode` (REQ-CAT-148), guarded by PERM_CAT_BARCODE_LABELS_CREATE, runs the body of API-CAT-015 (same rules, Item lock and scale-prefix lock), so warehouse staff can act on RULE-CAT-037's next action. It is listed under SCR-REQ-CAT-005 CREATE, in the API lists of QR-CAT-010, 012, 044, 048, 049, 059, 074 and in the `api` lists of the catalog rows API-CAT-015 raises. TC-CAT-231 tests it.
+- G3: PHASE CORE gains "Request numbers": the Bundle `quantity` (API-CAT-001, 017) and the Item unit `conversionFactor` (API-CAT-010) carry `exclusiveMinimum: 0`, a `maximum` that fits the column (999999.999 / 999999.999999) and `multipleOf` for the scale; a value outside them answers CAT-400-REQUEST-INVALID. RULE-CAT-018 and RULE-CAT-027 state the bounds. TC-CAT-027 and TC-CAT-039 carry the boundary rows.
+- G4: API-CAT-003 states that on the categoryFk-only repair of an inactive Item only RULE-CAT-026 and the version check run, and that RULE-CAT-003 is checked again at reactivation.
+- G6: PHASE CORE gains "Update of an inactive record": a PUT on a record whose own isActiveFl is false answers CAT-400-REQUEST-INVALID and writes nothing (API-CAT-012, 019, 023, 027, 030, with 033 and 036 already so); for 012 and 019 the record is re-read under the Item lock; a removed image never takes isPrimaryFl. The CAT-400-REQUEST-INVALID trigger lists it; TC-CAT-223 rows 11 … 15 test it.
+The concurrency guards the plan already states (QR-CAT-074, the Item lock of ADR-CAT-060, QR-CAT-031 and QR-CAT-032 FOR SHARE) get their parallel tests TC-CAT-227 … 230 (G2). The next free ADR sequence is 079.
 
 ### Traceability
-REQ covered by ≥ 1 API: 147 / 147 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
+REQ covered by ≥ 1 API: 148 / 148 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
 
 ### Event
-"P3.1 completed: CAT v2 — API 55 · QR 75 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–077, none BLOCKED · CORE-GAP 5"
+"P3.1 completed: CAT v2 — API 56 · QR 75 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–078, none BLOCKED · CORE-GAP 5"
