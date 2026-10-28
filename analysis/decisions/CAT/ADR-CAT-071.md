@@ -20,5 +20,9 @@ API-CAT-049 imports up to 5,000 rows synchronously, in one transaction. It drew 
 ## Consequences
 - API-CAT-049's Orchestration and Concurrency lines carry the budget, the batches, the lock and the timeout behaviour. No schema, endpoint or code changes.
 
+## Amended (gate-analysis round 7, G3 — ADR-CAT-074)
+- §4: the batch's rows are saved as entities through QR-CAT-003, QR-CAT-011 and QR-CAT-049, one INSERT each, flushed at the end of the batch under its savepoint. "JDBC batching" is withdrawn: identity keys rule it out for entity saves, and no native statement is added.
+- §1: the 60 s figure (15 s validation, 45 s write) is a target to be measured on the reference deployment by TC-CAT-217's undelayed run. The 120 s hard limit of §2 and the rollback of §3 are unchanged.
+
 ## Traces
 REQ-CAT-037 · REQ-CAT-038 · REQ-CAT-040 · REQ-CAT-041 · RULE-CAT-005 · RULE-CAT-032 · RULE-CAT-049 · API-CAT-049 · API-CAT-032 · CORE-GAP-number-series-block-allocation

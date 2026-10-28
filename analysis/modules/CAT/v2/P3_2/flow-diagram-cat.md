@@ -45,7 +45,7 @@ Priority  : HIGH (US-CAT-001, US-CAT-002, US-CAT-021); — (US-CAT-014)
 ```
 
 ```
-FLOW — SCR-CAT-001 · generate Variants from attribute values   traces=US-CAT-011,US-CAT-005,REQ-CAT-014,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-061,SCR-CAT-001,SCR-CAT-003
+FLOW — SCR-CAT-001 · generate Variants from attribute values   traces=US-CAT-011,US-CAT-005,REQ-CAT-141,REQ-CAT-014,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-061,SCR-CAT-001,SCR-CAT-003
 Screens   : SCR-CAT-001, SCR-CAT-003
 Sequence  : Items · Entry → Variants pane → "Generate variants" → Variant generation picker (second level: up to 3 active attributes, values per attribute) → Confirm (returns the selection) → Save → Variants pane lists the existing Variants with their first values and the new combinations
 Trigger   : the owner's business uses variants (`variants` on) and the Item is STANDARD
@@ -78,7 +78,7 @@ Priority  : MEDIUM (US-CAT-019)
 ```
 
 ```
-FLOW — SCR-CAT-001 · publish, unpublish, deactivate, reactivate   traces=US-CAT-020,US-CAT-001,REQ-CAT-130,REQ-CAT-135,REQ-CAT-005,REQ-CAT-006,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-062,SCR-CAT-001
+FLOW — SCR-CAT-001 · publish, unpublish, deactivate, reactivate   traces=US-CAT-020,US-CAT-001,REQ-CAT-130,REQ-CAT-135,REQ-CAT-140,REQ-CAT-142,REQ-CAT-143,REQ-CAT-144,REQ-CAT-145,REQ-CAT-146,REQ-CAT-147,REQ-CAT-005,REQ-CAT-006,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-062,SCR-CAT-001
 Screens   : SCR-CAT-001
 Sequence  : Items · Entry (no pending change) → Publish | Unpublish | Deactivate | Reactivate → confirmation → state badge updates → back to Items · Search
 Trigger   : the owner decides what is offered online, or retires / returns an Item

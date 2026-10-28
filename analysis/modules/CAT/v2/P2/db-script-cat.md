@@ -1,7 +1,7 @@
 ﻿# DB SCRIPT — Catalog / الكتالوج (CAT)
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P2
-Inputs : srs (P1, CAT v2 — REQ 139 · AC 164 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the sixth gate-analysis revise
+Inputs : srs (P1, CAT v2 — REQ 147 · AC 164 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the seventh gate-analysis revise
 Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 12 (given CORE_TENANT — ADR-CAT-055) · lookup keys 10 (34 seeded values)
 Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -19,7 +19,7 @@ Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 | Type declared here (not in the syntax map) | logical `number` → `INTEGER` (sortOrder, scaleCodeLength, valueDecimals). The profile `syntax_map` has no integer entry, so it is declared once here |
 | Date | 2026-10-26 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067, ADR-CAT-072 (the default Variant moves; `UQ_CAT_VARIANT_DEFAULT` kept, comments only). The next free ADR sequence, per the current registries, is 073 |
+| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067, ADR-CAT-072 (the default Variant moves; `UQ_CAT_VARIANT_DEFAULT` kept, comments only). The next free ADR sequence, per the current registries, is 076 |
 | Migration file | `V1000__cat_catalog.sql` in the application's `classpath:db/migration` (erp-core conventions § Migrations: `V1000+`, `V<N>__<module>_<snake_case>.sql`). It is the first CAT script; a later change is a new `V1001+` script, never an edit |
 
 ## 2 — DB field traceability matrix
@@ -51,7 +51,7 @@ rows:
   # ── CAT_VARIANT — ENT-CAT-002 Variant (master; nameAr / nameEn derived at read, D-P2-08) ──
   - {id: DBF-CAT-022, table: CAT_VARIANT, column: VARIANT_PK, type: "BIGINT", entity_field: ENT-CAT-002.variantPk, traces: [ENT-CAT-002, REQ-CAT-025, REQ-CAT-050], nullable: "NOT NULL", default: "identity"}
   - {id: DBF-CAT-023, table: CAT_VARIANT, column: CODE, type: "VARCHAR(20)", entity_field: ENT-CAT-002.code, traces: [ENT-CAT-002, REQ-CAT-033, REQ-CAT-034], nullable: "NOT NULL", default: "—"}
-  - {id: DBF-CAT-024, table: CAT_VARIANT, column: IS_DEFAULT_FL, type: "BOOLEAN", entity_field: ENT-CAT-002.isDefaultFl, traces: [ENT-CAT-002, REQ-CAT-025, REQ-CAT-018], nullable: "NOT NULL", default: "FALSE"}
+  - {id: DBF-CAT-024, table: CAT_VARIANT, column: IS_DEFAULT_FL, type: "BOOLEAN", entity_field: ENT-CAT-002.isDefaultFl, traces: [ENT-CAT-002, REQ-CAT-025, REQ-CAT-140, REQ-CAT-141, REQ-CAT-018], nullable: "NOT NULL", default: "FALSE"}
   - {id: DBF-CAT-025, table: CAT_VARIANT, column: EINVOICE_CODE_TYPE_CODE, type: "VARCHAR(50)", entity_field: ENT-CAT-002.einvoiceCodeTypeCode, traces: [ENT-CAT-002, REQ-CAT-118, REQ-CAT-119, REQ-CAT-123], nullable: "NULL", default: "—"}
   - {id: DBF-CAT-026, table: CAT_VARIANT, column: EINVOICE_CODE, type: "VARCHAR(100)", entity_field: ENT-CAT-002.einvoiceCode, traces: [ENT-CAT-002, REQ-CAT-118, REQ-CAT-119, REQ-CAT-123], nullable: "NULL", default: "—"}
   - {id: DBF-CAT-027, table: CAT_VARIANT, column: IS_ACTIVE_FL, type: "BOOLEAN", entity_field: ENT-CAT-002.isActiveFl, traces: [ENT-CAT-002, REQ-CAT-050, REQ-CAT-053, REQ-CAT-062], nullable: "NOT NULL", default: "TRUE"}
@@ -979,7 +979,7 @@ VALUES
 | D-P2-17 | Profile check CM-8: CAT holds no stock quantity, no monetary amount and no price (SRS A2 out of scope: PRC, INV). No warehouse, currency or price-list dimension applies to a CAT row | SRS A2; profile CM-8 | — |
 | D-P2-18 | Delta: the current state holds no earlier CAT db-script, so this v2 migration creates every object. The DBF sequence starts at 001 (next free 162). No XM exists (next free XM sequence 001) | brief delta rule; change-manifest CS-CAT-001 | — |
 
-No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. ADR-CAT-072 (the default Variant moves) changes only the comments of `IS_DEFAULT_FL` and `UQ_CAT_VARIANT_DEFAULT`: the index stays non-partial, because the service clears the former default before it sets the new one. The next free ADR sequence for CAT, per the current registries, is 073. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
+No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. ADR-CAT-072 (the default Variant moves) changes only the comments of `IS_DEFAULT_FL` and `UQ_CAT_VARIANT_DEFAULT`: the index stays non-partial, because the service clears the former default before it sets the new one. The next free ADR sequence for CAT, per the current registries, is 076. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
 
 ## 6 — Registry content
 

@@ -1,34 +1,45 @@
-I applied all nine findings by editing the source files in place, the same way as the last revise. I didn't paste full-file `<<<FILE>>>` blocks because the plans are thousands of lines long. Nothing is committed and I haven't run `gov.py analyze`. My checks were that `api-spec-cat.yaml` still parses (55 operations), the query count agrees in all three places (75), and the backend test count and its package rows agree (157).
+I applied all eight findings by editing the source files in place, the same way as the last two revises. I didn't paste full-file `<<<FILE>>>` blocks because the plans run to thousands of lines. Nothing is committed and I haven't run `gov.py analyze`. My own checks passed:
+- `api-spec-cat.yaml` still parses, with 55 operations.
+- The SRS has 147 REQs, each with its own ACs.
+- Each new REQ is traced by an endpoint, a frontend binding and at least one backend test.
+- The test counts are unchanged: 157 backend and 65 frontend.
 
 **MAJOR**
-- **G1 (TC-CAT-199, AC-CAT-145):** step 2 and the AC now expect the inactive Variant to come back with no active barcode. Steps 3 and 4 still prove the barcode value is released.
-- **G2 (name taken while inactive):**
-  - REQ-CAT-130 now names RULE-CAT-003, and RULE-CAT-003 traces back to it.
-  - New AC-CAT-162 and backend TC-CAT-219 (in SVC-API-CRUD). The test is refused with `ITM-000031`, then the other Item is deactivated and the reactivation succeeds.
-  - On the frontend, the reactivation banner gets an "Open the existing item" action, covered by TC-CAT-220.
-  - API-CAT-005 names the repair.
-- **G3 (default Variant moves), new ADR-CAT-072:**
-  - Deactivating the default Variant (API-CAT-009) moves the flag to the active Variant with the lowest code.
-  - Generating Variants for an Item with no active Variant (API-CAT-006) gives the flag to the first new Variant.
-  - I kept the existing unique index on the default flag rather than making it partial. A new query, QR-CAT-075, clears the old default before QR-CAT-014 sets the new one, so the only db-script change is to comments.
-  - Updated REQ-CAT-025, A7 (new invariant 5), the `isDefaultFl` field note and the CON-CAT-002 wording.
-  - New AC-CAT-163 and 164, tested by TC-CAT-221 and 222. TC-CAT-185 and TC-CAT-200 now also check the default.
+- **G1 (inactive lookup value label):**
+  - New ADR-CAT-073 and `CORE-GAP-lookup-inactive-value-label.md`.
+  - API-CAT-052 still returns active values only. Until the core answers, a value deactivated later shows as its raw code on every screen.
+  - The frontend plan's `LookupOption` drops `isActive` and now matches the API document. UXD-CAT-001 is narrowed to match.
+  - TC-CAT-139 and TC-CAT-177 use host brands whose labels differ from their codes (OLDBRAND and a new RETIRED_177, added to the SRS lookup values) and assert the code is shown.
+  - Platform finding 10 records the gap.
+- **G3 (import batching):** I took the recommended option, recorded as ADR-CAT-074, which amends ADR-CAT-071.
+  - The import saves entities through QR-CAT-003, 011 and 049, keeping the savepoint per batch and the row-by-row replay. "JDBC batching" is gone, and there are still six native statements.
+  - The 60 s figure is now a target, measured by a new undelayed run in TC-CAT-217. The 120 s limit stays the guarantee.
+  - TC-CAT-217's fault point now reads "after the first 500 rows are saved".
+- **G4 (bulk updates):** QR-CAT-020, 072 and 075 now load the rows as entities and save each one. Every change is audited and gets its own change event with its record id. QR-CAT-075 flushes between clearing the old default and setting the new one.
 
 **MINOR**
-- **G4:** the Categories jump is relabelled "Items directly in this category / الأصناف المباشرة في هذه الفئة" in the UI/UX spec, the flow diagram and the frontend plan. No API change.
-- **G5:** ADR-CAT-051 has an "Amended" note: 55 operations, 53 used, API-CAT-011 and 046 unused.
-- **G6:** added platform finding #9 in `business-policies-cat.md`, asking the factory to cover dependent masters in the profile's entity defaults. ADR-CAT-039 stays.
-- **G7:**
-  - API-CAT-049 rejects a GTIN repeated in the import file on the later row. Its `{code}` is the code the earlier row's Item received, filled in after the write pass.
-  - API-CAT-015 draws one more number from the internal-barcode series before answering CAT-409-BARCODE-DUPLICATE.
-  - I also aligned RULE-CAT-029 in the SRS and the plan with the in-file check.
-- **G8:** AC-CAT-096 and TC-CAT-048 now scan 2001230012342.
-- **G9:** API-CAT-033 refuses an update to an inactive layout with CAT-400-REQUEST-INVALID. The scale-layout and unit e-invoice code state machines say an inactive record is replaced by a new one under the same key.
+- **G2 (request size and paging):**
+  - Every paged read goes through the given `PageableBuilder` (size ≤ 200, page ≥ 0), and the native queries take their LIMIT and OFFSET from it.
+  - The API document now caps the arrays: selections 3, values per selection 300, Bundle lines 100, label lines 5,000. It also bounds the page and size parameters.
+  - API-CAT-006 checks the 300-Variant limit arithmetically before building any combination.
+  - TC-CAT-184 has a row 3 where 4 attributes get CAT-400-REQUEST-INVALID.
+- **G5 (Category label):** New ADR-CAT-075, with amendment notes on ADR-CAT-048 and ADR-CAT-051.
+  - The Item read schemas now carry the Category's code and names, filled by a join in the read queries.
+  - The separate Category-tree label read is dropped from the frontend plan.
+  - TC-CAT-195 adds a step for a user who can't read the Category tree.
+- **G6 (empty import cells):** API-CAT-049 now says an empty base unit or tax class cell takes PIECE / STANDARD, and a filled cell is checked against the active values and never overridden. I covered this by extending TC-CAT-083 rather than adding a new test.
+- **G7 (bundled REQs):**
+  - New REQ-CAT-140 and 141 are split from REQ-CAT-025 (one per default-Variant move).
+  - New REQ-CAT-142, 143 and 144 are split from REQ-CAT-130 (one per reactivation refusal).
+  - The fix text only named those two, but the problem also listed REQ-CAT-135, so I split it too. New REQ-CAT-145, 146 and 147 cover the three repairs allowed on an inactive Item.
+  - Eight ACs are re-pointed, not renumbered. The rules, endpoints, API traces, frontend bindings and tests now point at the new REQs.
+- **G8 (dependent master entities):** No CAT change while ADR-CAT-039 stands. Platform finding 9 stays OPEN and notes this round.
 
-**Bookkeeping:** I updated the header counts and next-ID lines in every downstream file to AC 164, QR 75, next free ADR 073, and test IDs 219–222.
+**Bookkeeping:** downstream headers now read REQ 147 · AC 164 · RULE 53 · next free ADR 076, in the contract, db-script and all registries.
 
-**Changed files:**
-- `analysis/decisions/CAT/ADR-CAT-072.md` (new) and `ADR-CAT-051.md`
+**Files changed:**
+- New: ADR-CAT-073, 074, 075 and `CORE-GAP-lookup-inactive-value-label.md`.
+- Amended: ADR-CAT-048, 051 and 071.
 - P0: `business-policies-cat.md`
 - P1: `srs-cat.md`, `registry-srs-cat.md`
 - P1.5: `contract-cat.md`
@@ -38,4 +49,5 @@ I applied all nine findings by editing the source files in place, the same way a
 - P4: `backend-test-plan-cat.md`, `frontend-test-plan-cat.md`
 
 **Not changed:**
-- `platform/contracts/contract-cat.md` and `change-manifest.md` were outside the writable list. The published contract copy still has the old CON-CAT-002 wording until it is regenerated.
+- `platform-summary.md`, `module-registry-cat.md` and `prd-cat.md` needed no edits.
+- `platform/contracts/contract-cat.md`, `change-manifest.md` and the `_state/current-*` copies were outside the writable list, so they need regenerating.

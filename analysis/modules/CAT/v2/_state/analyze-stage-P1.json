@@ -20,13 +20,13 @@
   "skipped": [],
   "coverage": {
     "C0.1": 19,
-    "C5.2": 139,
-    "C5.3": 139,
-    "C5.4": 139,
+    "C5.2": 147,
+    "C5.3": 147,
+    "C5.4": 147,
     "C5.5": 164,
     "C5.6": 53,
-    "C5.8": 368,
-    "C5.13": 356,
+    "C5.8": 376,
+    "C5.13": 364,
     "C5.14": 164,
     "C5.15": 12,
     "C5.16": 22,
@@ -50,8 +50,8 @@
       "to": [
         "AC"
       ],
-      "total": 139,
-      "covered": 139,
+      "total": 147,
+      "covered": 147,
       "pct": 100.0
     },
     {
@@ -60,8 +60,8 @@
       "to": [
         "API"
       ],
-      "total": 139,
-      "covered": 139,
+      "total": 147,
+      "covered": 147,
       "pct": 100.0
     },
     {
@@ -71,8 +71,8 @@
         "SCR",
         "UXD"
       ],
-      "total": 139,
-      "covered": 139,
+      "total": 147,
+      "covered": 147,
       "pct": 100.0
     },
     {
@@ -93,7 +93,7 @@
       "check": "ambiguity",
       "message": "`AC-CAT-013` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
       "artifact": "srs",
-      "line": 454
+      "line": 455
     },
     {
       "severity": "MINOR",
@@ -101,7 +101,7 @@
       "check": "ambiguity",
       "message": "`AC-CAT-036` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
       "artifact": "srs",
-      "line": 782
+      "line": 773
     },
     {
       "severity": "MINOR",
@@ -109,7 +109,7 @@
       "check": "ambiguity",
       "message": "`AC-CAT-072` uses '\u0645\u062e\u062a\u0644\u0641' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
       "artifact": "srs",
-      "line": 1302
+      "line": 1293
     },
     {
       "severity": "MINOR",
@@ -117,7 +117,7 @@
       "check": "ambiguity",
       "message": "`AC-CAT-102` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
       "artifact": "srs",
-      "line": 1742
+      "line": 1733
     }
   ],
   "provenance": {
@@ -150,28 +150,28 @@
       "ui-ux-spec"
     ],
     "inputs": {
-      "api-spec": "1ca0bc1690c9bb6b359d5df5e009d017fa9e14029319bff6b731539ec585b552",
-      "backend-execution-plan": "6155313ed62e2622359c78b863c3739ba987d09ce21a5b41f3e2317680c02f43",
-      "backend-test-plan": "b95bdb658769b3c81000a00172e8bddbcd1c5f170b226ccb545c75b79d94067d",
-      "business-policies": "a949913a7ac9cb716132a9117fa83c6be39cd589b38582b1a8ee2e8a2733d4c6",
+      "api-spec": "965c8ae0415d61dd33f74095603a36ace9a418fa061e27f8d7f3fec19f335910",
+      "backend-execution-plan": "8c502a60bf6d4c29103dcbccf7d5a9074f8a0840235f0a31af816e13a0dfbb1a",
+      "backend-test-plan": "e94fbda1cf355f16d6534dd1b2f4734ffcf850db81a69dc7162778bd187311f9",
+      "business-policies": "3d66bc70044960b4f45e2da559462ef8937010a6c9deddce5db52e009e827bbd",
       "change-manifest": "c73904194b81e6c528a8a564463529aef00c68314b69a50756bf31c31cdc9dc9",
-      "contract": "e20aa1f2cf14a7e2d54e3c878d21c40960bd8196a234182034c48bc41106ab03",
-      "db-script": "41c5efd68ab007277efe9298b828569db72aa1549def4cb482e8c44208914b2f",
+      "contract": "d93e15b36dc75424684656e30edcae139d0fdf152e70ae4499516bf42aed4fc9",
+      "db-script": "318de76f6264a13ea7ee0950b5a4955053045c34b85c163d545e3758f6ecef67",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
-      "flow-diagram": "b3c7c58a9653c75431d15b892200a0eb35eb45d4d8004c5f7ac74f0952270bb7",
-      "frontend-execution-plan": "6bb34fd7240aced281dda4c69c8bcb6d5fb6a31468c410e2ddab681dfdd4e05d",
-      "frontend-test-plan": "ab91d4850f635af5b2c8d57e051f34079aea62de1c20a2a9e206dfbae3f636c0",
+      "flow-diagram": "f75a7d69ab69c113b8d9e6764aa3da1673307ee23bc46b8e89ffb520811d98f2",
+      "frontend-execution-plan": "12d98c071d9659edab23f6f09c467b34a8e682fdff0bbd0c194a158d6222bc09",
+      "frontend-test-plan": "22be818125b2d059af6538aa9ea37d8b7a4685d07c8ffa55d5063a27660d5f46",
       "module-registry": "5fc7c7c7a020ebee8280a8519ade559492413ef6f6eeaf7ef6f157d19f9c1a0d",
       "platform-summary": "8869f2caaaa63ad4690042b1ddd12bd37461bc901343d1924927ebb4c7ac9967",
       "prd": "5e6157b1493b752f2ec9686b7621e181123364bb4031c5515b2dbc6e88bac5da",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
-      "registry-db": "202d931539ff2f173ceb0a58adb9d36d4c6f911e190d552e361bcdaa9dbe21ec",
-      "registry-exec-be": "a8b302dfd02db3a10ff924c19310335a018267ca323a6b0abb479039d90e2310",
-      "registry-exec-fe": "f7445a4023cdb252a36c4c63e69a83dcba122a9f3878466cfbbc170827d02abf",
-      "registry-srs": "9c6a77110d9f9005e52c911d90ad6556bb2a4f51be51df9e9961d28939a94d28",
-      "srs": "f2cf1d543eebf7f910b0c50fa3d75315aaa8eb7a7908f6c6e57789eebc2dd870",
-      "ui-ux-spec": "cdd64702ead3394a25a794676133c400dac283c329ff76ed08c5fce3056e4e90"
+      "registry-db": "549ee6f7cc5621695ea2ff960c83cd2f6f76f73208554407123a2a77c90af663",
+      "registry-exec-be": "89c411a5a6b48ef9b01e841b307dc3d9a39fb0384a2a5b55aa6097a78c108796",
+      "registry-exec-fe": "feadb7445b2dcbf24f6416f2860068d0bb7378a694c24fcafebf7bba75aa8ee6",
+      "registry-srs": "16f4335dbd2b8c363f9eaceb27139fcd6f1e8021d6cb194d3694bba53c9872cb",
+      "srs": "307aebb7116dc67f0474cccd31132e7d16ee8312b73d6789b87baad8965a259a",
+      "ui-ux-spec": "8f0995e0f4d137ca2ede5ad4f8209176c3a38ac681dfde8b0147a1d99849a3c0"
     },
-    "at": "2026-10-28T14:05:19+00:00"
+    "at": "2026-10-28T14:33:11+00:00"
   }
 }

@@ -40,6 +40,7 @@ paths:
                 code: {type: string, maxLength: 20}
                 bundleComponents:
                   type: array
+                  maxItems: 100
                   items:
                     type: object
                     properties:
@@ -142,11 +143,11 @@ paths:
       - name: page
         in: query
         required: false
-        schema: {type: integer, format: int32}
+        schema: {type: integer, format: int32, minimum: 0, default: 0}
       - name: size
         in: query
         required: false
-        schema: {type: integer, format: int32}
+        schema: {type: integer, format: int32, minimum: 1, maximum: 200, default: 20}
       x-paginated: true
       responses:
         '200':
@@ -253,7 +254,7 @@ paths:
       operationId: updateItem
       summary: update Item
       x-api-id: API-CAT-003
-      x-traces: [REQ-CAT-135, REQ-CAT-131, REQ-CAT-132, REQ-CAT-133, REQ-CAT-004, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-030, REQ-CAT-031, REQ-CAT-034, REQ-CAT-063, REQ-CAT-072, REQ-CAT-073, REQ-CAT-075, REQ-CAT-076, REQ-CAT-082, REQ-CAT-117, REQ-CAT-123, DBF-CAT-001,
+      x-traces: [REQ-CAT-135, REQ-CAT-146, REQ-CAT-131, REQ-CAT-132, REQ-CAT-133, REQ-CAT-004, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-030, REQ-CAT-031, REQ-CAT-034, REQ-CAT-063, REQ-CAT-072, REQ-CAT-073, REQ-CAT-075, REQ-CAT-076, REQ-CAT-082, REQ-CAT-117, REQ-CAT-123, DBF-CAT-001,
         DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012, DBF-CAT-015, DBF-CAT-017, DBF-CAT-020]
       parameters:
       - name: id
@@ -401,7 +402,7 @@ paths:
       operationId: reactivatePublishOrUnpublishItem
       summary: reactivate, publish or unpublish Item
       x-api-id: API-CAT-005
-      x-traces: [REQ-CAT-130, REQ-CAT-006, REQ-CAT-113, REQ-CAT-114, REQ-CAT-116, DBF-CAT-001, DBF-CAT-003, DBF-CAT-013, DBF-CAT-014, DBF-CAT-027, DBF-CAT-028]
+      x-traces: [REQ-CAT-130, REQ-CAT-142, REQ-CAT-143, REQ-CAT-144, REQ-CAT-006, REQ-CAT-113, REQ-CAT-114, REQ-CAT-116, DBF-CAT-001, DBF-CAT-003, DBF-CAT-013, DBF-CAT-014, DBF-CAT-027, DBF-CAT-028]
       parameters:
       - name: id
         in: path
@@ -484,7 +485,7 @@ paths:
       operationId: generateVariants
       summary: generate Variants
       x-api-id: API-CAT-006
-      x-traces: [REQ-CAT-135, REQ-CAT-129, REQ-CAT-025, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-033, REQ-CAT-035, REQ-CAT-049, REQ-CAT-051, REQ-CAT-052, REQ-CAT-061, DBF-CAT-005, DBF-CAT-022,
+      x-traces: [REQ-CAT-145, REQ-CAT-129, REQ-CAT-141, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-033, REQ-CAT-035, REQ-CAT-049, REQ-CAT-051, REQ-CAT-052, REQ-CAT-061, DBF-CAT-005, DBF-CAT-022,
         DBF-CAT-023, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-061, DBF-CAT-062, DBF-CAT-063, DBF-CAT-064, DBF-CAT-114]
       parameters:
       - name: id
@@ -501,6 +502,7 @@ paths:
                 selections:
                   type: array
                   minItems: 1
+                  maxItems: 3
                   items:
                     type: object
                     properties:
@@ -508,9 +510,10 @@ paths:
                       variantAttributeValueFks:
                         type: array
                         minItems: 1
+                        maxItems: 300
                         items: {type: integer, format: int64}
                     required: [variantAttributeFk, variantAttributeValueFks]
-                  description: at least one attribute, each with at least one value; an empty array answers CAT-400-REQUEST-INVALID
+                  description: 1 to 3 attributes, each with 1 to 300 values; an empty or larger array answers CAT-400-REQUEST-INVALID; RULE-CAT-014 is then decided arithmetically on the product of the value counts, before any combination is built
                   x-dbf: DBF-CAT-063
               required: [selections]
               title: VariantGenerationRequest
@@ -707,7 +710,7 @@ paths:
       operationId: deactivateVariant
       summary: deactivate Variant
       x-api-id: API-CAT-009
-      x-traces: [REQ-CAT-025, REQ-CAT-050, REQ-CAT-053, REQ-CAT-062, DBF-CAT-022, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-014, DBF-CAT-061, DBF-CAT-062, DBF-CAT-089, DBF-CAT-113, DBF-CAT-114]
+      x-traces: [REQ-CAT-140, REQ-CAT-050, REQ-CAT-053, REQ-CAT-062, DBF-CAT-022, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-014, DBF-CAT-061, DBF-CAT-062, DBF-CAT-089, DBF-CAT-113, DBF-CAT-114]
       parameters:
       - name: id
         in: path
@@ -1242,7 +1245,7 @@ paths:
       operationId: saveBundleComponents
       summary: save Bundle components
       x-api-id: API-CAT-017
-      x-traces: [REQ-CAT-135, REQ-CAT-013, REQ-CAT-015, REQ-CAT-016, REQ-CAT-020, REQ-CAT-056, REQ-CAT-057, REQ-CAT-059, REQ-CAT-060, DBF-CAT-005, DBF-CAT-017, DBF-CAT-084, DBF-CAT-085, DBF-CAT-086, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
+      x-traces: [REQ-CAT-147, REQ-CAT-013, REQ-CAT-015, REQ-CAT-016, REQ-CAT-020, REQ-CAT-056, REQ-CAT-057, REQ-CAT-059, REQ-CAT-060, DBF-CAT-005, DBF-CAT-017, DBF-CAT-084, DBF-CAT-085, DBF-CAT-086, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
       parameters:
       - name: id
         in: path
@@ -1257,6 +1260,7 @@ paths:
               properties:
                 lines:
                   type: array
+                  maxItems: 100
                   items:
                     type: object
                     properties:
@@ -3019,11 +3023,11 @@ paths:
       - name: page
         in: query
         required: false
-        schema: {type: integer, format: int32}
+        schema: {type: integer, format: int32, minimum: 0, default: 0}
       - name: size
         in: query
         required: false
-        schema: {type: integer, format: int32}
+        schema: {type: integer, format: int32, minimum: 1, maximum: 200, default: 20}
       x-paginated: true
       responses:
         '200':
@@ -3091,11 +3095,11 @@ paths:
       - name: page
         in: query
         required: false
-        schema: {type: integer, format: int32}
+        schema: {type: integer, format: int32, minimum: 0, default: 0}
       - name: size
         in: query
         required: false
-        schema: {type: integer, format: int32}
+        schema: {type: integer, format: int32, minimum: 1, maximum: 200, default: 20}
       x-paginated: true
       responses:
         '200':
@@ -3312,11 +3316,11 @@ paths:
       - name: page
         in: query
         required: false
-        schema: {type: integer, format: int32}
+        schema: {type: integer, format: int32, minimum: 0, default: 0}
       - name: size
         in: query
         required: false
-        schema: {type: integer, format: int32}
+        schema: {type: integer, format: int32, minimum: 1, maximum: 200, default: 20}
       x-paginated: true
       responses:
         '200':
@@ -3528,6 +3532,8 @@ paths:
               properties:
                 lines:
                   type: array
+                  minItems: 1
+                  maxItems: 5000
                   items:
                     type: object
                     properties:
@@ -3633,7 +3639,7 @@ paths:
       summary: active values of a CAT lookup key
       x-api-id: API-CAT-052
       x-traces: [REQ-CAT-073, REQ-CAT-074, REQ-CAT-076, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-013, DBF-CAT-025, DBF-CAT-097, DBF-CAT-111, DBF-CAT-112, DBF-CAT-141, DBF-CAT-151, DBF-CAT-154]
-      description: 'OwnedLookups.read over MdlLookupApi for one of the 10 CAT keys of SRS A6 only; never a pass-through for other keys (ADR-CAT-065). Any CAT page VIEW permission.'
+      description: 'OwnedLookups.read over MdlLookupApi for one of the 10 CAT keys of SRS A6 only; never a pass-through for other keys (ADR-CAT-065). Any CAT page VIEW permission. Returns the active values only, and LookupOption carries no activity flag: erp-core 1.6.0 publishes only MdlLookupApi.readActiveValuesByKey, so a screen renders a code that is not among them as the raw code (interim, ADR-CAT-073). When CORE-GAP-lookup-inactive-value-label is answered, an optional codes parameter and LookupOption.isActiveFl are added.'
       parameters:
       - name: key
         in: path
@@ -3700,6 +3706,9 @@ components:
         nameEn: {type: string}
         displayNameEn: {type: string}
         categoryFk: {type: integer, format: int64}
+        categoryCode: {type: string, description: 'derived — code of the Category categoryFk points to, active or inactive; empty when categoryFk is empty (ADR-CAT-075)'}
+        categoryNameAr: {type: string, description: 'derived — nameAr of that Category (ADR-CAT-075)'}
+        categoryNameEn: {type: string, description: 'derived — nameEn of that Category (ADR-CAT-075)'}
         brandCode: {type: string}
         itemKindCode: {type: string}
         publishStateCode: {type: string}
@@ -3715,6 +3724,9 @@ components:
         itemKindCode: {type: string}
         baseUomCode: {type: string}
         categoryFk: {type: integer, format: int64}
+        categoryCode: {type: string, description: 'derived — code of the Category categoryFk points to, active or inactive; empty when categoryFk is empty (ADR-CAT-075)'}
+        categoryNameAr: {type: string, description: 'derived — nameAr of that Category (ADR-CAT-075)'}
+        categoryNameEn: {type: string, description: 'derived — nameEn of that Category (ADR-CAT-075)'}
         brandCode: {type: string}
         taxClassCode: {type: string}
         einvoiceCodeTypeCode: {type: string}

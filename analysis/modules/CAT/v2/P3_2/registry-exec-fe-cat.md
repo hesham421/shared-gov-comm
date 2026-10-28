@@ -73,10 +73,16 @@ Gate-analysis round 6 (frontend):
 - The Categories jump to the Items search is relabelled "Items directly in this category / الأصناف المباشرة في هذه الفئة" in the ui-ux-spec, the flow diagram and F2 / F4 / SEC-FE of SCR-CAT-002, because API-CAT-038 filters on the exact Category while the drawer's count covers the active sub-tree (G4). No API change.
 - ITEM-STATE-COMMAND's reactivation refusal under RULE-CAT-003 offers "Open the existing item" with the code the message names (G2, AC-CAT-162, TC-CAT-220).
 - REQ-CAT-025 (the default Variant moves — ADR-CAT-072) is also bound to API-CAT-006 and API-CAT-009.
-- ADR-CAT-051 carries an "Amended" note with the current counts: 55 operations, 53 used, API-CAT-011 and 046 unused (G5). The next free ADR is ADR-CAT-073.
+- ADR-CAT-051 carries an "Amended" note with the current counts: 55 operations, 53 used, API-CAT-011 and 046 unused (G5). The next free ADR was ADR-CAT-073.
+
+Gate-analysis round 7 (frontend):
+- F1 `LookupOption` drops `isActive` and matches `API-CAT-052` (`code`, `labelAr`, `labelEn`, `sortOrder`); a code on a record that is not among the active options renders as the raw code, and UXD-CAT-001 is narrowed to that (G1, ADR-CAT-073, CORE-GAP-lookup-inactive-value-label).
+- The Category column, header and field are labelled from `categoryNameAr` / `categoryNameEn` of the Item read; CATEGORY-LABEL-QUERY is dropped, and a 403 on the Category tree hides only the selection field and filter (G5, ADR-CAT-075).
+- The api-surface bindings cover the REQs split from REQ-CAT-025, 130 and 135: REQ-CAT-140 → API-CAT-009, 141 and 145 → API-CAT-006, 142 … 144 → API-CAT-005, 146 → API-CAT-003, 147 → API-CAT-017 (G7).
+The next free ADR is ADR-CAT-076.
 
 ### Traceability
-- REQ covered by at least one SCR or F-block: 139 / 139. Orphan REQ: none.
+- REQ covered by at least one SCR or F-block: 147 / 147. Orphan REQ: none.
 - US covered by at least one flow: 22 / 22.
 - Every PHASE and SUB carries traces= (6 PHASE, 24 SUB). Every SCR traces to REQ and AC (and UXD where it shows foreign data), and every UXD traces to REQ and AC.
 

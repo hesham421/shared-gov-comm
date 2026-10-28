@@ -1,7 +1,7 @@
 # CONTRACT — Catalog / الكتالوج (CAT) — outbound promise
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P1.5
-Inputs : srs (P1, CAT v2 — REQ 139 · AC 164 · ENT 12 · RULE 53), registry-srs (re-stamped from the current registries at the sixth gate-analysis revise; CON-CAT-002 wording amended by ADR-CAT-072)
+Inputs : srs (P1, CAT v2 — REQ 147 · AC 164 · ENT 12 · RULE 53), registry-srs (re-stamped from the current registries at the seventh gate-analysis revise; CON-CAT-002 wording amended by ADR-CAT-072)
 Counts : CON 18 (entity items 6 · operation items 11 · event item 1)
 Status : DRAFT — P1.5 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -41,7 +41,7 @@ Consumers store `itemPk`. `code` is unique per tenant and never changes (RULE-CA
 ### CON-CAT-002 — Variant (متغيّر الصنف / Variant)
 
 Entity    : ENT-CAT-002 — key columns: code (business key, series CAT_VARIANT, read-only), variantPk (identifier) · identifier type: BIGINT
-Traces    : ENT-CAT-002, REQ-CAT-025, REQ-CAT-033, REQ-CAT-017
+Traces    : ENT-CAT-002, REQ-CAT-025, REQ-CAT-140, REQ-CAT-141, REQ-CAT-033, REQ-CAT-017
 
 Stock, price, barcode and the e-invoice override attach to the Variant (D-01). Every Item has at least one Variant, and an active Item always has exactly one active default Variant (`isDefaultFl` true), the Variant stock and price consumers fall back to. When the default Variant is deactivated, the flag moves to the Item's remaining active Variant with the lowest code; when Variants are generated for an Item with no active Variant, the first Variant created becomes the default (REQ-CAT-025, ADR-CAT-072). A consumer therefore reads the default from the Variant reads and never assumes it is the Variant created with the Item. Turning `variants` on never changes an existing `variantPk`, code or barcode (REQ-CAT-017).
 
@@ -188,6 +188,6 @@ The contract does not promise any entity that a given provides. Tenant, User, Ro
 - [x] Every SHARED ENT of the SRS has an entity item (ENT-CAT-001, 002, 006, 007, 008, 009). No consumer's A8 block exists yet that names any other CAT entity, and no PRIVATE entity is promised.
 - [x] Every operation item has a `Signature` line and names no path or verb.
 - [x] Every item traces to at least one ENT and one REQ (C13.5).
-- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). The contract itself raised no ADR; ADR-CAT-072 (gate-analysis round 6) amends the wording of CON-CAT-002 without changing its key columns or identifier type. Per the current registries the next free ADR is ADR-CAT-073.
+- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). The contract itself raised no ADR; ADR-CAT-072 (gate-analysis round 6) amends the wording of CON-CAT-002 without changing its key columns or identifier type. Per the current registries the next free ADR is ADR-CAT-076.
 - [x] §4 carries the SRS `given-usage` rows verbatim, in the same order.
 - [x] Every item title carries ar and en.

@@ -29,5 +29,8 @@ The frontend plan binds the six CAT screens to `api-spec-cat.yaml` (51 operation
 ## Amended (gate-analysis round 6, G5)
 The counts above were written against the first P3.1 document (51 operations, "2 of 51" unused). The API document now holds **55 operations**: the gate-analysis revises added API-CAT-052 (active values of a CAT lookup key — ADR-CAT-065) and API-CAT-053 … 055 (reactivation of Categories, Variant attributes and values — ADR-CAT-069). **53 of the 55 are used** by a CAT screen action and route. The unused operations are still exactly **API-CAT-011** (read Item unit) and **API-CAT-046** (storefront catalogue read), for the reasons of §1. The frontend plan's operations coverage table, its registry and `api-spec-cat.yaml` carry the same counts.
 
+## Amended (gate-analysis round 7, G5 — ADR-CAT-075)
+§4's first bullet and §5's second bullet no longer hold. The Item reads now carry `categoryCode`, `categoryNameAr` and `categoryNameEn` (ADR-CAT-075), so the Items screen labels the Category column, header and field from the Item read, not from the Category tree. When the Category tree (`API-CAT-039`) answers CAT-403-FORBIDDEN, only the Category selection field and the Category filter are hidden; the column still shows the Category's name.
+
 ## Traces
 REQ-CAT-079 · REQ-CAT-086 · REQ-CAT-104 · REQ-CAT-115 · REQ-CAT-122 · REQ-CAT-125 · REQ-CAT-056 · API-CAT-011 · API-CAT-046 · API-CAT-047 · API-CAT-043 · API-CAT-042 · API-CAT-007
