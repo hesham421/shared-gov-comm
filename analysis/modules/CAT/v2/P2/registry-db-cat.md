@@ -55,7 +55,7 @@ Other seeds:
 - Migration file: `V1000__cat_catalog.sql`
 
 ### Decisions
-DEFAULTs D-P2-01 … D-P2-18 (db-script §5). ADR-CAT-055 (tenant FK restored; supersedes ADR-CAT-054), ADR-CAT-058 (tenant provisioning of seeds), ADR-CAT-062 (CAT_NORMALIZE_AR, pg_trgm indexes), ADR-CAT-067 (tenant-composite intra-module FKs). None BLOCKED. The next free ADR sequence, per the current registries (re-stamped at the fourth gate-analysis revise), is 072. Inputs: srs REQ 139 · AC 161 · ENT 12 · RULE 53.
+DEFAULTs D-P2-01 … D-P2-18 (db-script §5). ADR-CAT-055 (tenant FK restored; supersedes ADR-CAT-054), ADR-CAT-058 (tenant provisioning of seeds), ADR-CAT-062 (CAT_NORMALIZE_AR, pg_trgm indexes), ADR-CAT-067 (tenant-composite intra-module FKs), ADR-CAT-072 (the default Variant moves; UQ_CAT_VARIANT_DEFAULT kept non-partial, comments only). None BLOCKED. The next free ADR sequence, per the current registries (re-stamped at the sixth gate-analysis revise), is 073. Inputs: srs REQ 139 · AC 164 · ENT 12 · RULE 53.
 
 ### Event
 "P2 completed: CAT v2 — 12 tables, 161 DBF, 0 XM"

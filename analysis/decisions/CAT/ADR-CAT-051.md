@@ -26,5 +26,8 @@ The frontend plan binds the six CAT screens to `api-spec-cat.yaml` (51 operation
 - The operations coverage table of the frontend plan marks `API-CAT-011` and `API-CAT-046` with ✗ and cites this ADR. Every other operation has a screen action and a route.
 - No REQ is left without an SCR or F-block.
 
+## Amended (gate-analysis round 6, G5)
+The counts above were written against the first P3.1 document (51 operations, "2 of 51" unused). The API document now holds **55 operations**: the gate-analysis revises added API-CAT-052 (active values of a CAT lookup key — ADR-CAT-065) and API-CAT-053 … 055 (reactivation of Categories, Variant attributes and values — ADR-CAT-069). **53 of the 55 are used** by a CAT screen action and route. The unused operations are still exactly **API-CAT-011** (read Item unit) and **API-CAT-046** (storefront catalogue read), for the reasons of §1. The frontend plan's operations coverage table, its registry and `api-spec-cat.yaml` carry the same counts.
+
 ## Traces
 REQ-CAT-079 · REQ-CAT-086 · REQ-CAT-104 · REQ-CAT-115 · REQ-CAT-122 · REQ-CAT-125 · REQ-CAT-056 · API-CAT-011 · API-CAT-046 · API-CAT-047 · API-CAT-043 · API-CAT-042 · API-CAT-007

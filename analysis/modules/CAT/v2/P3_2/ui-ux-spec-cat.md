@@ -185,10 +185,10 @@ Fields shown      : code الرمز / Code (mandatory; read-only after creation 
 Composition       : container drawer · Category record → none · items of this category → summary row + second level · submits: one
 Permissions       : PERM_CAT_CATEGORIES_VIEW (gateway) · PERM_CAT_CATEGORIES_CREATE · PERM_CAT_CATEGORIES_UPDATE · PERM_CAT_CATEGORIES_DELETE — Owner: VIEW, CREATE, UPDATE, DELETE · Seller/cashier: VIEW · Warehouse staff: VIEW (SRS B4)
 Cross-module data : none
-Navigation        : `/cat/categories?text=&isActiveFl=` (tree) · `?node=<categoryPk|new>` opens the entry drawer (`&parent=<categoryPk>` seeds the parent of a new node) · `&items=open` opens the Items of this Category · from: Catalog menu, Items · to: Items Entry `/cat/items/:itemPk` (one Item of the list) · Items Search `/cat/items?categoryFk=<categoryPk>` ("Open in Items", seeds the one Category)
+Navigation        : `/cat/categories?text=&isActiveFl=` (tree) · `?node=<categoryPk|new>` opens the entry drawer (`&parent=<categoryPk>` seeds the parent of a new node) · `&items=open` opens the Items of this Category · from: Catalog menu, Items · to: Items Entry `/cat/items/:itemPk` (one Item of the list) · Items Search `/cat/items?categoryFk=<categoryPk>` ("Items directly in this category / الأصناف المباشرة في هذه الفئة", seeds the one Category; the search filters on the Category itself, not its sub-categories, so the jump is labelled apart from the "Items of this category" count, which covers the active sub-tree)
 States            : empty — no Category: "No categories yet" + "New category" · Items of this Category empty: "No active items in this category" · loading · error (generic) · offline (not required by the SRS)
 
-The "Items of this category" summary row shows the total count (from the first page) and a capped preview of 3 names. Opening it shows the paged list in a second-level drawer, a sibling of the entry drawer. The list is read-only: it returns nothing and saves nothing.
+The "Items of this category" summary row shows the total count (from the first page) and a capped preview of 3 names; both cover the active Items of the Category and of its active sub-categories (REQ-CAT-068). Opening it shows the paged list in a second-level drawer, a sibling of the entry drawer. The list is read-only: it returns nothing and saves nothing. The jump to the Items search is labelled "Items directly in this category", because that search filters on the Category alone and lists fewer Items than the count when the Category has sub-categories.
 
 Screen copy:
 
@@ -198,7 +198,7 @@ Screen copy:
 | new-category | فئة جديدة | New category |
 | new-sub | فئة فرعية جديدة | New sub-category |
 | items-of | أصناف هذه الفئة | Items of this category |
-| open-in-items | افتح في الأصناف | Open in Items |
+| items-directly-in | الأصناف المباشرة في هذه الفئة | Items directly in this category |
 | empty-tree | لا توجد فئات بعد. أنشئ أول فئة. | No categories yet. Create the first category. |
 | empty-items | لا توجد أصناف نشطة في هذه الفئة. | No active items in this category. |
 

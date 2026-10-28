@@ -1,7 +1,7 @@
 ﻿# DB SCRIPT — Catalog / الكتالوج (CAT)
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P2
-Inputs : srs (P1, CAT v2 — REQ 139 · AC 161 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the fourth gate-analysis revise
+Inputs : srs (P1, CAT v2 — REQ 139 · AC 164 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the sixth gate-analysis revise
 Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 12 (given CORE_TENANT — ADR-CAT-055) · lookup keys 10 (34 seeded values)
 Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -19,7 +19,7 @@ Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 | Type declared here (not in the syntax map) | logical `number` → `INTEGER` (sortOrder, scaleCodeLength, valueDecimals). The profile `syntax_map` has no integer entry, so it is declared once here |
 | Date | 2026-10-26 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067. The next free ADR sequence, per the current registries, is 072 |
+| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067, ADR-CAT-072 (the default Variant moves; `UQ_CAT_VARIANT_DEFAULT` kept, comments only). The next free ADR sequence, per the current registries, is 073 |
 | Migration file | `V1000__cat_catalog.sql` in the application's `classpath:db/migration` (erp-core conventions § Migrations: `V1000+`, `V<N>__<module>_<snake_case>.sql`). It is the first CAT script; a later change is a new `V1001+` script, never an edit |
 
 ## 2 — DB field traceability matrix
@@ -576,7 +576,7 @@ COMMENT ON COLUMN CAT_VAR_ATTR_VALUE.UPDATED_AT IS 'DBF-CAT-059 — Last update 
 COMMENT ON TABLE CAT_VARIANT IS 'ENT-CAT-002 Variant / متغيّر الصنف — sellable, stockable version of an Item; names derived at read (D-15)';
 COMMENT ON COLUMN CAT_VARIANT.VARIANT_PK IS 'DBF-CAT-022 — Variant identifier (identity)';
 COMMENT ON COLUMN CAT_VARIANT.CODE IS 'DBF-CAT-023 — Variant code from core number series CAT_VARIANT, read-only (RULE-CAT-004)';
-COMMENT ON COLUMN CAT_VARIANT.IS_DEFAULT_FL IS 'DBF-CAT-024 — True for the Variant created with the Item; one per Item';
+COMMENT ON COLUMN CAT_VARIANT.IS_DEFAULT_FL IS 'DBF-CAT-024 — True for one Variant per Item: the Variant created with the Item, until the default moves to an active Variant (REQ-CAT-025, ADR-CAT-072)';
 COMMENT ON COLUMN CAT_VARIANT.EINVOICE_CODE_TYPE_CODE IS 'DBF-CAT-025 — E-invoice code type override, lookup CAT_EINVOICE_ITEM_CODE_TYPE code (RULE-CAT-042)';
 COMMENT ON COLUMN CAT_VARIANT.EINVOICE_CODE IS 'DBF-CAT-026 — E-invoice code override (RULE-CAT-042)';
 COMMENT ON COLUMN CAT_VARIANT.IS_ACTIVE_FL IS 'DBF-CAT-027 — Active flag (RULE-CAT-015, RULE-CAT-021, RULE-CAT-048)';
@@ -702,7 +702,7 @@ CREATE UNIQUE INDEX UQ_CAT_SCALE_LABEL_LAYOUT_KEY ON CAT_SCALE_LABEL_LAYOUT (TEN
 CREATE UNIQUE INDEX UQ_CAT_UNIT_EINVOICE_CODE_KEY ON CAT_UNIT_EINVOICE_CODE (TENANT_ID, KEY) WHERE IS_ACTIVE_FL;                                 -- RULE-CAT-043
 CREATE UNIQUE INDEX UQ_CAT_ITEM_NAME_AR           ON CAT_ITEM (TENANT_ID, CAT_NORMALIZE_AR(NAME_AR)) WHERE IS_ACTIVE_FL;                         -- RULE-CAT-003, ADR-CAT-062
 CREATE UNIQUE INDEX UQ_CAT_VAR_ATTR_VALUE_NAME_AR ON CAT_VAR_ATTR_VALUE (TENANT_ID, VARIANT_ATTRIBUTE_FK, NAME_AR) WHERE IS_ACTIVE_FL;          -- RULE-CAT-016
-CREATE UNIQUE INDEX UQ_CAT_VARIANT_DEFAULT        ON CAT_VARIANT (TENANT_ID, ITEM_FK) WHERE IS_DEFAULT_FL;                                      -- REQ-CAT-025
+CREATE UNIQUE INDEX UQ_CAT_VARIANT_DEFAULT        ON CAT_VARIANT (TENANT_ID, ITEM_FK) WHERE IS_DEFAULT_FL;                                      -- REQ-CAT-025, ADR-CAT-072 (at most one default per Item; the service clears the former default before it sets the new one)
 CREATE UNIQUE INDEX UQ_CAT_VAR_ATTR_ASSIGN_ATTR   ON CAT_VAR_ATTR_ASSIGN (TENANT_ID, VARIANT_FK, VARIANT_ATTRIBUTE_FK) WHERE IS_ACTIVE_FL;     -- RULE-CAT-013
 CREATE UNIQUE INDEX UQ_CAT_BUNDLE_COMP_VARIANT    ON CAT_BUNDLE_COMP (TENANT_ID, BUNDLE_ITEM_FK, COMPONENT_VARIANT_FK) WHERE IS_ACTIVE_FL;     -- RULE-CAT-019
 CREATE UNIQUE INDEX UQ_CAT_ITEM_UNIT_UOM          ON CAT_ITEM_UNIT (TENANT_ID, ITEM_FK, UOM_CODE) WHERE IS_ACTIVE_FL;                           -- RULE-CAT-027
@@ -979,7 +979,7 @@ VALUES
 | D-P2-17 | Profile check CM-8: CAT holds no stock quantity, no monetary amount and no price (SRS A2 out of scope: PRC, INV). No warehouse, currency or price-list dimension applies to a CAT row | SRS A2; profile CM-8 | — |
 | D-P2-18 | Delta: the current state holds no earlier CAT db-script, so this v2 migration creates every object. The DBF sequence starts at 001 (next free 162). No XM exists (next free XM sequence 001) | brief delta rule; change-manifest CS-CAT-001 | — |
 
-No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. The next free ADR sequence for CAT, per the current registries, is 072. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
+No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. ADR-CAT-072 (the default Variant moves) changes only the comments of `IS_DEFAULT_FL` and `UQ_CAT_VARIANT_DEFAULT`: the index stays non-partial, because the service clears the former default before it sets the new one. The next free ADR sequence for CAT, per the current registries, is 073. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
 
 ## 6 — Registry content
 

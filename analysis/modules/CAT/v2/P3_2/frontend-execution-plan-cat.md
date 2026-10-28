@@ -43,7 +43,7 @@ bindings:
   - {req: REQ-CAT-022, api: [API-CAT-051]}
   - {req: REQ-CAT-023, api: [API-CAT-051]}
   - {req: REQ-CAT-024, api: [API-CAT-001]}
-  - {req: REQ-CAT-025, api: [API-CAT-001]}
+  - {req: REQ-CAT-025, api: [API-CAT-001, API-CAT-006, API-CAT-009]}
   - {req: REQ-CAT-026, api: [API-CAT-001]}
   - {req: REQ-CAT-027, api: [API-CAT-001]}
   - {req: REQ-CAT-028, api: [API-CAT-001]}
@@ -435,7 +435,7 @@ Mutation, a record command outside the form, enabled only when the form has no p
 Errors:
 - `CAT-422-PUBLISH-BLOCKED` → command banner; text: RULE-CAT-041 message
 - `CAT-409-VARIANT-IN-ACTIVE-BUNDLE` → command banner; text: RULE-CAT-021 message
-- `CAT-409-ITEM-NAME-DUPLICATE` (reactivate) → command banner; text: RULE-CAT-003 message
+- `CAT-409-ITEM-NAME-DUPLICATE` (reactivate) → command banner; text: RULE-CAT-003 message (the server fills {code} with the code of the other active Item); action "Open the existing item" → `/cat/items?text=<code>&isActiveFl=true`, `<code>` taken from the message as in ITEM-SAVE — the repair is to rename or deactivate that Item, since the inactive Item's own name cannot change (AC-CAT-162)
 - `CAT-422-LOOKUP-VALUE-INACTIVE` (reactivate) → command banner; text: RULE-CAT-006 message
 - `CAT-422-ITEM-NO-ACTIVE-VARIANT` (reactivate) → command banner; text: RULE-CAT-050 message; action "Generate variants" opens `?picker=variant-generation` while `variants` is on (the repair of ADR-CAT-068); while it is off, the action is absent and the banner keeps the message's other next action (create a new Item)
 - `CAT-422-CATEGORY-INACTIVE` (reactivate) → command banner, and the Category field is highlighted and focused; text: RULE-CAT-026 message; action "Choose a category" focuses the Category field (a categoryFk-only Save is the repair — ADR-CAT-068), and, with PERM_CAT_CATEGORIES_VIEW, a second action "Open the category" → `/cat/categories?node=<categoryFk>`, where it can be reactivated (ADR-CAT-069)
@@ -508,7 +508,7 @@ Record command in the drawer of an inactive Category, after a confirmation, only
 Permission read PERM_CAT_CATEGORIES_VIEW / CREATE / UPDATE / DELETE; no lookups; entity by id: CATEGORY-QUERY. A new node takes `?parent=` as its parent.
 
 #### CATEGORY-FACADE — SCR-CAT-002
-It owns: the tree filters (URL); the open node (`?node=`) and `items=open`; the drawer form; the Items-of-category paging inside its filter object; derived loading. Operations: `save()`, `deactivate()`, `reactivate()`, `openItems()`, `openInItems()` (→ `/cat/items?categoryFk=<categoryPk>`).
+It owns: the tree filters (URL); the open node (`?node=`) and `items=open`; the drawer form; the Items-of-category paging inside its filter object; derived loading. Operations: `save()`, `deactivate()`, `reactivate()`, `openItems()`, `openDirectItems()` ("Items directly in this category" → `/cat/items?categoryFk=<categoryPk>`; API-CAT-038 filters on the Category itself, not on its sub-categories, unlike the sub-tree count of CATEGORY-ITEMS-QUERY — so the jump carries its own label).
 <!-- SUB:F2-SCR-CAT-002:END -->
 
 <!-- SUB:F2-SCR-CAT-003:START traces=REQ-CAT-137,REQ-CAT-138,API-CAT-054,API-CAT-055,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
@@ -865,7 +865,7 @@ Second levels render as siblings of the first level at the route outlet, never i
 - **Components**: `CategoriesPage` (filter bar, `CategoryTree`), `CategoryEntryDrawer` (`?node=`), and `CategoryItemsDrawer` (`&items=open`), the second level.
 - **Composition**: container drawer. The Category record has no child collection. "Items of this category" is a summary row in the entry drawer (count + 3 names + "Show") that opens `CategoryItemsDrawer`. That drawer is a sibling of the entry drawer, opened from the search params; it is read-only and returns nothing.
 - **Saves**: ONE per drawer (`CATEGORY-SAVE`). Deactivate (active node) and Reactivate (inactive node — `CATEGORY-REACTIVATE`) are record commands.
-- **Navigation out**: a row of `CategoryItemsDrawer` → `/cat/items/:itemPk`; "Open in Items" → `/cat/items?categoryFk=<categoryPk>`.
+- **Navigation out**: a row of `CategoryItemsDrawer` → `/cat/items/:itemPk`; "Items directly in this category / الأصناف المباشرة في هذه الفئة" → `/cat/items?categoryFk=<categoryPk>`. The jump is labelled apart from "Items of this category": the drawer's count covers the active sub-tree (API-CAT-040), while the Items search filters on the exact `categoryFk` (API-CAT-038), so the two lists differ for a Category with sub-categories. No API change; widening API-CAT-038 to the sub-tree is left to a later delta.
 <!-- SUB:F4-SCR-CAT-002:END -->
 
 <!-- SUB:F4-SCR-CAT-003:START traces=REQ-CAT-137,REQ-CAT-138,API-CAT-054,API-CAT-055,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-016,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-054,REQ-CAT-055,API-CAT-025,API-CAT-026,API-CAT-027,API-CAT-028,API-CAT-029,API-CAT-030,API-CAT-031,API-CAT-041,UXD-CAT-002,SCR-CAT-003 -->
@@ -941,7 +941,7 @@ Permission names are the backend registry's (`PERM_<PAGE_CODE>_<ACTION>`, derive
 Further rules:
 - **Mixed permissions inside the Items Save**: a call is never queued for an action the user cannot take, because the affordance is hidden. A 403 on a queued call stops the sequence like any rejection (ADR-CAT-049 §4).
 - **Capability flags are not permissions**: flag-bound affordances are absent while their flag is off (REQ-CAT-014, REQ-CAT-015). The server still refuses a flag-off call (`CAT-422-CAPABILITY-OFF`, REQ-CAT-016), and that refusal is routed as F2 states.
-- **Jumps to other pages**: a jump to another CAT page is shown only when the user holds that page's VIEW permission and, when that page is bound to a capability flag, only while the flag is on. On SCR-CAT-001 this governs "Print labels" (PERM_CAT_BARCODE_LABELS_VIEW), "Import" (PERM_CAT_ITEM_IMPORT_VIEW) and "Open Variant attributes" (PERM_CAT_VARIANT_ATTRIBUTES_VIEW and `variants` on); the same rule governs "Open item" and the dependent-Item links (PERM_CAT_ITEMS_VIEW) and "Open in Items" (PERM_CAT_ITEMS_VIEW) on the other screens. A user who lacks the target page's VIEW never reaches the unauthorized view through a CAT jump.
+- **Jumps to other pages**: a jump to another CAT page is shown only when the user holds that page's VIEW permission and, when that page is bound to a capability flag, only while the flag is on. On SCR-CAT-001 this governs "Print labels" (PERM_CAT_BARCODE_LABELS_VIEW), "Import" (PERM_CAT_ITEM_IMPORT_VIEW) and "Open Variant attributes" (PERM_CAT_VARIANT_ATTRIBUTES_VIEW and `variants` on); the same rule governs "Open item" and the dependent-Item links (PERM_CAT_ITEMS_VIEW) and "Items directly in this category" (PERM_CAT_ITEMS_VIEW) on the other screens. A user who lacks the target page's VIEW never reaches the unauthorized view through a CAT jump.
 - **Global search**: `catalogueSearchProvider` registers only for a user holding PERM_CAT_ITEMS_VIEW. The server returns no Item results without it (REQ-CAT-127).
 - **Tokens**: the bearer token is attached by the platform HTTP client. CAT code never reads or stores it. A CAT-401-UNAUTHENTICATED response goes to login and returns to the same route afterwards.
 <!-- PHASE:SEC-FE:END -->

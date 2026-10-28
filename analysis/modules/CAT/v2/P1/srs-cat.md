@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved 2026-10-26 — gate prd-approval)
-Counts : REQ 139 · AC 161 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 16
+Counts : REQ 139 · AC 164 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 17
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -17,9 +17,10 @@ Counts : REQ 139 · AC 161 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 16
 | Date | 2026-10-26 |
 | Status | DRAFT — P1 pass 1 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions applied | 16 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
+| Decisions applied | 17 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise; ADR-CAT-072 at the sixth gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
 | Revisions (third gate-analysis revise) | ADDED: REQ-CAT-136 … REQ-CAT-138, AC-CAT-153 … AC-CAT-160 · MODIFIED: REQ-CAT-135 and RULE-CAT-053 (three repair operations stay allowed on an inactive Item — ADR-CAT-068), RULE-CAT-003, AC-CAT-007 and AC-CAT-043 (the message names the existing Item's code), RULE-CAT-016, RULE-CAT-023 and RULE-CAT-024 (also checked on reactivation — ADR-CAT-069), A7 |
 | Revisions (fourth gate-analysis revise) | ADDED: REQ-CAT-139, AC-CAT-161 (an import past its time limit is rolled back whole — ADR-CAT-071) · MODIFIED: REQ-CAT-005 and A7 (deactivating an Item leaves its barcodes active; a GTIN is released by deactivating the barcode), RULE-CAT-049 (traces REQ-CAT-139) |
+| Revisions (sixth gate-analysis revise) | ADDED: AC-CAT-162 (reactivation refused when another active Item took the name), AC-CAT-163 and AC-CAT-164 (the default Variant moves — ADR-CAT-072) · MODIFIED: REQ-CAT-025, A7 and ENT-CAT-002.isDefaultFl (an active Item always has exactly one active default Variant), REQ-CAT-130 and RULE-CAT-003 (RULE-CAT-003 named on reactivation), RULE-CAT-029 (a GTIN repeated in one import file), AC-CAT-096 (scans the code of the precondition's SCALE barcode), AC-CAT-145 (the read of an inactive Variant returns no active barcode) |
 
 ## A2 — Functional context
 
@@ -114,7 +115,7 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 | code | text (≤ 20) | yes | core number series CAT_VARIANT (D-11) | read-only (RULE-CAT-004) | الرمز | Code |
 | nameAr | text (≤ 400) | yes | derived at read: Item nameAr, then the value nameAr of each assignment in attribute sortOrder, joined by " / " (D-15) | not entered | الاسم بالعربية | Arabic name |
 | nameEn | text (≤ 400) | no | derived the same way from the nameEn values, with nameAr used where nameEn is empty | not entered | الاسم بالإنجليزية | English name |
-| isDefaultFl | flag | yes | true for the Variant created with the Item | — | المتغيّر الأساسي | Default variant |
+| isDefaultFl | flag | yes | true for exactly one Variant of the Item: the Variant created with the Item, until the default moves (REQ-CAT-025, ADR-CAT-072) | — | المتغيّر الأساسي | Default variant |
 | einvoiceCodeTypeCode | lookup | no | CAT_EINVOICE_ITEM_CODE_TYPE | override (RULE-CAT-042) | نوع رمز الفاتورة الإلكترونية | E-invoice code type |
 | einvoiceCode | text (≤ 100) | no | entered | override (RULE-CAT-042) | رمز الفاتورة الإلكترونية | E-invoice code |
 | isActiveFl | flag | yes | default true | RULE-CAT-015, RULE-CAT-021, RULE-CAT-048 | نشط | Active |
@@ -621,17 +622,27 @@ Then  : the Item is created with itemKindCode STANDARD, baseUomCode PIECE, taxCl
 
 ### REQ-CAT-025 — Default Variant created with the Item
 Pattern    : event
-Statement  : When an Item is created, the system shall create one default Variant for it with isDefaultFl true.
+Statement  : When an Item is created, the system shall create one default Variant for it with isDefaultFl true; when the default Variant is deactivated while another Variant of the Item is active, the system shall move isDefaultFl, in the same transaction, to the remaining active Variant with the lowest code; and when Variants are generated for an Item with no active Variant, the system shall give isDefaultFl to the first Variant created and clear it on the inactive former default.
 Traces     : US-CAT-007
 Entities   : ENT-CAT-001, ENT-CAT-002
-Rationale  : Stock, price and barcode always have a Variant to attach to (D-01).
-Source     : US-CAT-007; DP §8 P-04
+Rationale  : Stock, price and barcode always have a Variant to attach to (D-01), and consumers always find one active default Variant on an active Item to fall back to (CON-CAT-002, ADR-CAT-072).
+Source     : US-CAT-007; DP §8 P-04; ADR-CAT-072
 Priority   : HIGH
 
 #### AC-CAT-026 — [REQ-CAT-025]
 Given : no Item named «كوب زجاج» exists
 When  : the owner creates it
 Then  : the Item has exactly 1 Variant, with isDefaultFl true, isActiveFl true and a code from the series CAT_VARIANT
+
+#### AC-CAT-163 — [REQ-CAT-025]
+Given : an active Item with 3 active Variants VAR-000010 (isDefaultFl true), VAR-000011 and VAR-000012, none of them a Bundle component
+When  : the owner deactivates VAR-000010
+Then  : VAR-000011 has isDefaultFl true, VAR-000010 has isDefaultFl false, and the Item has exactly 1 Variant with isDefaultFl true
+
+#### AC-CAT-164 — [REQ-CAT-025]
+Given : `variants` is on, an inactive STANDARD Item whose only Variant V (isDefaultFl true) was deactivated, and the active attribute SIZE with the active value M
+When  : the owner generates Variants for the Item with selections SIZE [M], then reactivates the Item
+Then  : the new Variant carrying M has isDefaultFl true, V has isDefaultFl false, and the reactivated Item has exactly 1 Variant with isDefaultFl true, which is active
 
 ### REQ-CAT-026 — At most four mandatory entries
 Pattern    : ubiquitous
@@ -991,7 +1002,7 @@ Then  : the Item read returns 3 active Variants, and a read by that Variant's va
 #### AC-CAT-145 — [REQ-CAT-050]
 Given : an Item with 2 active Variants, the first carrying the active GTIN 6223000000014
 When  : the owner deactivates the first Variant, then adds the GTIN 6223000000014 to a Variant of another Item
-Then  : the deactivated Variant's barcode 6223000000014 has isActiveFl false, and the GTIN is saved as an active barcode of the other Variant
+Then  : a read of the deactivated Variant returns it with isActiveFl false and with no active barcode, and the GTIN 6223000000014 is saved as an active barcode of the other Variant
 
 ### REQ-CAT-051 — Duplicate combination
 Pattern    : unwanted
@@ -1645,8 +1656,8 @@ Source     : US-CAT-017; ADR-CAT-064
 Priority   : LOW
 
 #### AC-CAT-096 — [REQ-CAT-094]
-Given : the active layout with prefix 20
-When  : the owner deactivates it and a seller/cashier scans 2000123012346
+Given : the active layout with prefix 20 (scaleCodeLength 5), no other active layout, and a Variant with the active SCALE barcode 01230
+When  : the owner deactivates the layout and a seller/cashier scans 2001230012342 (prefix 20, code 01230, valid check digit)
 Then  : isActiveFl is false and the lookup returns no Variant with the RULE-CAT-047 message
 
 ### REQ-CAT-095 — Read the catalogue settings
@@ -2151,7 +2162,7 @@ Then  : 0 Variants are created and the response shows ar: «اختر قيمة و
 
 ### REQ-CAT-130 — Reactivation into an invalid state
 Pattern    : unwanted
-Statement  : If an owner reactivates an Item that has no active Variant, whose categoryFk points to an inactive Category, or which is a Bundle holding a component that RULE-CAT-019 refuses, then the system shall reject the reactivation with RULE-CAT-050, RULE-CAT-026 or RULE-CAT-019 and keep the Item inactive.
+Statement  : If an owner reactivates an Item that has no active Variant, whose categoryFk points to an inactive Category, which is a Bundle holding a component that RULE-CAT-019 refuses, or whose normalised nameAr another active Item carries, then the system shall reject the reactivation with RULE-CAT-050, RULE-CAT-026, RULE-CAT-019 or RULE-CAT-003 and keep the Item inactive.
 Traces     : US-CAT-001, US-CAT-012
 Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-006, ENT-CAT-007
 Rationale  : Every transition into ACTIVE re-establishes the Item invariants of A7.
@@ -2172,6 +2183,11 @@ Then  : isActiveFl stays false and the response shows ar: «الفئة المخ�
 Given : an inactive Bundle with 2 component lines, one of whose component Variants was deactivated after the Bundle was deactivated
 When  : the owner reactivates the Bundle
 Then  : isActiveFl stays false and the response shows ar: «المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها.» · en: "A component must be an active variant of an item that is not a bundle, listed once per bundle."
+
+#### AC-CAT-162 — [REQ-CAT-130]
+Given : an inactive Item named «كوب زجاج» with 1 active Variant and no Category, and another active Item named «كوب زجاج» with code ITM-000031, created while the first was inactive
+When  : the owner reactivates the first Item
+Then  : the first Item stays inactive and the response shows ar: «يوجد صنف نشط بالاسم نفسه: ITM-000031. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name: ITM-000031. Open the existing item or change the name."
 
 ### REQ-CAT-131 — Operation without permission
 Pattern    : unwanted
@@ -2350,7 +2366,7 @@ Scope      : ENT-CAT-001
 Trigger    : on create · on update · on reactivation · on import row
 Statement  : The system shall prevent saving or reactivating an Item when its nameAr, after Arabic normalisation (tashkeel and tatweel removed; أ إ آ ٱ read as ا, ة as ه, ى as ي; Latin letters lower-cased; leading, trailing and repeated spaces removed — ADR-CAT-062), equals the normalised nameAr of another active Item of the tenant or of an earlier valid row of the same import file.
 Message    : ar: يوجد صنف نشط بالاسم نفسه: {code}. افتح الصنف الموجود أو غيّر الاسم. · en: An active item already has this name: {code}. Open the existing item or change the name.
-Traces     : REQ-CAT-007, REQ-CAT-041
+Traces     : REQ-CAT-007, REQ-CAT-041, REQ-CAT-130
 Data source: ENT-CAT-001.nameAr, ENT-CAT-001.isActiveFl, ENT-CAT-001.code ({code} = the code of the other active Item; for an earlier row of the same import file, the code the import gave to that row's Item)
 Source     : D-13; US-CAT-001; ADR-CAT-062
 Test-Hint  : «شنطة سفر» and «شنطه سفر» are one name; «أحمر» and «احمر» are one name.
@@ -2584,10 +2600,10 @@ Source     : D-14
 ### RULE-CAT-029 — Barcode unique among active barcodes
 Scope      : ENT-CAT-009
 Trigger    : on create · on import row
-Statement  : The system shall prevent saving a barcode whose barcodeValue equals the barcodeValue of an active barcode of the tenant, with SCALE barcodes compared only with SCALE barcodes.
+Statement  : The system shall prevent saving a barcode whose barcodeValue equals the barcodeValue of an active barcode of the tenant or of an earlier valid row of the same import file, with SCALE barcodes compared only with SCALE barcodes.
 Message    : ar: هذا الباركود مستخدم في الصنف {code}. افتح ذلك الصنف أو استخدم باركودًا آخر. · en: This barcode is already used by item {code}. Open that item or use another barcode.
 Traces     : REQ-CAT-087
-Data source: ENT-CAT-009.barcodeValue, ENT-CAT-009.barcodeTypeCode, ENT-CAT-009.isActiveFl
+Data source: ENT-CAT-009.barcodeValue, ENT-CAT-009.barcodeTypeCode, ENT-CAT-009.isActiveFl, ENT-CAT-001.code ({code} = the code of the Item that owns the active barcode; for an earlier row of the same import file, the code the import gave to that row's Item)
 Source     : US-CAT-016
 
 ### RULE-CAT-030 — GTIN format
@@ -2872,7 +2888,10 @@ Only ENT-CAT-001 Item has more than two transitions; it combines isActiveFl and 
 1. at least one active Variant (RULE-CAT-015 while active; RULE-CAT-050 on reactivation);
 2. an empty categoryFk, or one that points to an active Category (RULE-CAT-026);
 3. when its kind is BUNDLE, active component lines whose Variants are active and belong to active STANDARD Items (RULE-CAT-019, RULE-CAT-021);
-4. a normalised nameAr that no other active Item carries (RULE-CAT-003).
+4. a normalised nameAr that no other active Item carries (RULE-CAT-003);
+5. exactly one default Variant (isDefaultFl true), and it is active.
+
+The default Variant moves with the Item's active Variants (REQ-CAT-025, ADR-CAT-072). When the default Variant is deactivated while another Variant of the Item is active, isDefaultFl moves in the same transaction, under the Item lock, to the remaining active Variant with the lowest code. When Variants are generated for an Item with no active Variant, the first Variant created takes isDefaultFl and the inactive former default loses it. An Item therefore holds at most one Variant with isDefaultFl true at any time, and while it has an active Variant, that Variant is active.
 
 Every transition into ACTIVE (create, import row, reactivate) re-establishes these invariants, not only the guard of its own trigger. While the Item is inactive, the records it points to may still change (its Category, its component Variants), and its own children may be deactivated, but no child of it may be created or changed (RULE-CAT-053, ADR-CAT-063). Reactivation is therefore refused (REQ-CAT-130) until the invariants hold again. Each broken invariant has a repair that stays allowed on the inactive Item, so an inactive Item can always return to ACTIVE (ADR-CAT-068):
 - invariant 1 (no active Variant): Variant generation creates an active Variant (REQ-CAT-049; it needs `variants` on — while the flag is off, the next action is to turn it on or to create a new Item, as RULE-CAT-050's message says);
@@ -3235,13 +3254,13 @@ Page code: CAT_SETTINGS
 
 | US | REQ | AC | RULE | ENT | SCR-REQ |
 |---|---|---|---|---|---|
-| US-CAT-001 | REQ-CAT-001 … 007, 130, 131, 132, 135 | AC-CAT-001 … 007, 132 … 134, 137 … 139, 144, 149, 154 … 156 | RULE-CAT-003, 019, 026, 041, 048, 050, 053 | ENT-CAT-001, 002, 005, 006, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
+| US-CAT-001 | REQ-CAT-001 … 007, 130, 131, 132, 135 | AC-CAT-001 … 007, 132 … 134, 137 … 139, 144, 149, 154 … 156, 162 | RULE-CAT-003, 019, 026, 041, 048, 050, 053 | ENT-CAT-001, 002, 005, 006, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
 | US-CAT-002 | REQ-CAT-008 … 010, 133 | AC-CAT-008 … 010, 140 | RULE-CAT-049 | ENT-CAT-001, 002, 005, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
 | US-CAT-003 | REQ-CAT-011 … 013 | AC-CAT-011 … 013 | RULE-CAT-009 | ENT-CAT-001, 002, 003, 005, 007 | SCR-REQ-CAT-001, 003 |
 | US-CAT-004 | REQ-CAT-014 … 016 | AC-CAT-014 … 017, 143 | RULE-CAT-008 | ENT-CAT-001, 002, 003, 004, 005, 007 | SCR-REQ-CAT-001, 003 |
 | US-CAT-005 | REQ-CAT-017 … 020 | AC-CAT-018 … 021 | RULE-CAT-012 | ENT-CAT-001, 002, 005, 007, 009 | SCR-REQ-CAT-001 |
 | US-CAT-006 | REQ-CAT-021 … 023 | AC-CAT-022 … 024 | RULE-CAT-010, 011 | ENT-CAT-001, 002, 005 | SCR-REQ-CAT-006 |
-| US-CAT-007 | REQ-CAT-024 … 027 | AC-CAT-025 … 028 | RULE-CAT-001 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
+| US-CAT-007 | REQ-CAT-024 … 027 | AC-CAT-025 … 028, 163, 164 | RULE-CAT-001 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
 | US-CAT-008 | REQ-CAT-028 … 031 | AC-CAT-029 … 032 | RULE-CAT-001, 002 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
 | US-CAT-009 | REQ-CAT-032 … 035, 134 | AC-CAT-033 … 036, 141 | RULE-CAT-004, 005 | ENT-CAT-001, 002, 012 | SCR-REQ-CAT-001, 006 |
 | US-CAT-010 | REQ-CAT-036 … 041, 139 | AC-CAT-037 … 043, 161 | RULE-CAT-003, 044, 045, 049 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-004 |
@@ -3303,6 +3322,7 @@ Every story maps to ≥ 1 REQ, including ≥ 1 REQ with pattern `unwanted`. Ever
 | ADR-CAT-068 | Three repair operations stay allowed on an inactive Item — Variant generation, a categoryFk-only update and the replacement of the Bundle components (REQ-CAT-135, RULE-CAT-053, A7); amends ADR-CAT-063 | gate-analysis round 3, G1 | ACCEPTED (non-breaking) |
 | ADR-CAT-069 | Categories, Variant attributes and Variant attribute values can be reactivated (REQ-CAT-136 … REQ-CAT-138) | gate-analysis round 3, G10 | ACCEPTED (non-breaking) |
 | ADR-CAT-070 | Variant attributes and their values are CAT tables, not mdl lookup types (erp-core checklist C5 / F3); CORE-GAP-tenant-lookup-types raised | gate-analysis round 3, G11 | ACCEPTED (non-breaking) |
+| ADR-CAT-072 | The default Variant moves: on deactivation of the default to the remaining active Variant with the lowest code, and on generation for an Item with no active Variant to the first Variant created; an active Item always has exactly one active default Variant (REQ-CAT-025, A7, CON-CAT-002) | gate-analysis round 6, G3 | ACCEPTED (non-breaking) |
 
 No ADR is BLOCKED. No question was raised.
 

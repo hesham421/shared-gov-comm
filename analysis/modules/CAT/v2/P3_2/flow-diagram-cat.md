@@ -125,7 +125,7 @@ Priority  : — (US-CAT-013)
 ```
 FLOW — SCR-CAT-002 · Items of a Category   traces=US-CAT-013,REQ-CAT-068,REQ-CAT-072,SCR-CAT-002,SCR-CAT-001
 Screens   : SCR-CAT-002, SCR-CAT-001
-Sequence  : Categories → Category entry drawer → "Items of this category" summary row → second-level drawer (active Items of the Category and its active sub-categories) → row → Items · Entry `/cat/items/:itemPk` · or "Open in Items" → Items · Search `?categoryFk=<categoryPk>`
+Sequence  : Categories → Category entry drawer → "Items of this category" summary row → second-level drawer (active Items of the Category and its active sub-categories) → row → Items · Entry `/cat/items/:itemPk` · or "Items directly in this category / الأصناف المباشرة في هذه الفئة" → Items · Search `?categoryFk=<categoryPk>` (the Category itself, without its sub-categories)
 Trigger   : the owner checks what a Category holds before moving or deactivating it
 Priority  : — (US-CAT-013)
 ```

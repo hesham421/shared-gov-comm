@@ -484,7 +484,7 @@ paths:
       operationId: generateVariants
       summary: generate Variants
       x-api-id: API-CAT-006
-      x-traces: [REQ-CAT-135, REQ-CAT-129, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-033, REQ-CAT-035, REQ-CAT-049, REQ-CAT-051, REQ-CAT-052, REQ-CAT-061, DBF-CAT-005, DBF-CAT-022,
+      x-traces: [REQ-CAT-135, REQ-CAT-129, REQ-CAT-025, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-033, REQ-CAT-035, REQ-CAT-049, REQ-CAT-051, REQ-CAT-052, REQ-CAT-061, DBF-CAT-005, DBF-CAT-022,
         DBF-CAT-023, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-061, DBF-CAT-062, DBF-CAT-063, DBF-CAT-064, DBF-CAT-114]
       parameters:
       - name: id
@@ -707,7 +707,7 @@ paths:
       operationId: deactivateVariant
       summary: deactivate Variant
       x-api-id: API-CAT-009
-      x-traces: [REQ-CAT-050, REQ-CAT-053, REQ-CAT-062, DBF-CAT-022, DBF-CAT-027, DBF-CAT-028, DBF-CAT-014, DBF-CAT-061, DBF-CAT-062, DBF-CAT-089, DBF-CAT-113, DBF-CAT-114]
+      x-traces: [REQ-CAT-025, REQ-CAT-050, REQ-CAT-053, REQ-CAT-062, DBF-CAT-022, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-014, DBF-CAT-061, DBF-CAT-062, DBF-CAT-089, DBF-CAT-113, DBF-CAT-114]
       parameters:
       - name: id
         in: path
@@ -2680,7 +2680,8 @@ paths:
       operationId: updateScaleLabelLayout
       summary: update scale label layout
       x-api-id: API-CAT-033
-      x-traces: [REQ-CAT-093, REQ-CAT-098, DBF-CAT-136, DBF-CAT-138, DBF-CAT-139, DBF-CAT-140, DBF-CAT-141, DBF-CAT-142, DBF-CAT-145]
+      x-traces: [REQ-CAT-093, REQ-CAT-098, DBF-CAT-136, DBF-CAT-138, DBF-CAT-139, DBF-CAT-140, DBF-CAT-141, DBF-CAT-142, DBF-CAT-143, DBF-CAT-145]
+      description: 'the layout must be active (otherwise CAT-400-REQUEST-INVALID); an inactive layout is not reactivated — a new layout is created under the same key (API-CAT-032)'
       parameters:
       - name: id
         in: path

@@ -69,6 +69,12 @@ Gate-analysis round 4 (frontend):
 - The Variant generation picker reads API-CAT-041 with `isActiveFl=true`, which filters the attributes and their values; the Variant attributes list sends no filter by default and the values editor reads API-CAT-026, so inactive values stay visible and can be reactivated (G3).
 - REQ-CAT-139 (an import past its time limit is rolled back whole) is bound to API-CAT-049 and routed by IMPORT-SUBMIT (G4). No ADR was raised; the next free ADR stays ADR-CAT-072.
 
+Gate-analysis round 6 (frontend):
+- The Categories jump to the Items search is relabelled "Items directly in this category / الأصناف المباشرة في هذه الفئة" in the ui-ux-spec, the flow diagram and F2 / F4 / SEC-FE of SCR-CAT-002, because API-CAT-038 filters on the exact Category while the drawer's count covers the active sub-tree (G4). No API change.
+- ITEM-STATE-COMMAND's reactivation refusal under RULE-CAT-003 offers "Open the existing item" with the code the message names (G2, AC-CAT-162, TC-CAT-220).
+- REQ-CAT-025 (the default Variant moves — ADR-CAT-072) is also bound to API-CAT-006 and API-CAT-009.
+- ADR-CAT-051 carries an "Amended" note with the current counts: 55 operations, 53 used, API-CAT-011 and 046 unused (G5). The next free ADR is ADR-CAT-073.
+
 ### Traceability
 - REQ covered by at least one SCR or F-block: 139 / 139. Orphan REQ: none.
 - US covered by at least one flow: 22 / 22.

@@ -4,7 +4,7 @@
 | Kind | Range | Count | Next free |
 |---|---|---|---|
 | API | API-CAT-001 … API-CAT-055 | 55 | API-CAT-056 |
-| QR | QR-CAT-001 … QR-CAT-074 | 74 | QR-CAT-075 |
+| QR | QR-CAT-001 … QR-CAT-075 | 75 | QR-CAT-076 |
 
 Both streams start at 001: the current state held no backend plan for CAT. No ID of another stage is minted here.
 
@@ -70,7 +70,7 @@ Both streams start at 001: the current state held no backend plan for CAT. No ID
 Contract coverage: CON-CAT-001 … CON-CAT-018 — 18 of 18 honoured (entity items also in the PHASE DATA-DOM entity blocks; the in-process interface `com.erp.cat.crossmodule.CatalogueReadApi` carries the eleven operation items).
 
 ### Query catalogue
-QR-CAT-001 … 010 → ENT-CAT-001 · 011 … 017 → ENT-CAT-002 · 018 … 021 → ENT-CAT-005 · 022 … 026 → ENT-CAT-003 · 027 … 031 → ENT-CAT-004 · 032 … 038, 073 → ENT-CAT-006 · 039 … 042 → ENT-CAT-007 · 043 … 046, 071 → ENT-CAT-008 · 047 … 053, 072 → ENT-CAT-009 · 054 … 058 → ENT-CAT-010 · 059 … 064, 074 → ENT-CAT-011 · 065 … 070 → ENT-CAT-012. Every QR is reached by ≥ 1 API and every API with a database operation cites its QRs (API-CAT-048 and API-CAT-052 have none). Native / join / lock deviations: ADR-CAT-047.
+QR-CAT-001 … 010 → ENT-CAT-001 · 011 … 017, 075 → ENT-CAT-002 · 018 … 021 → ENT-CAT-005 · 022 … 026 → ENT-CAT-003 · 027 … 031 → ENT-CAT-004 · 032 … 038, 073 → ENT-CAT-006 · 039 … 042 → ENT-CAT-007 · 043 … 046, 071 → ENT-CAT-008 · 047 … 053, 072 → ENT-CAT-009 · 054 … 058 → ENT-CAT-010 · 059 … 064, 074 → ENT-CAT-011 · 065 … 070 → ENT-CAT-012. Every QR is reached by ≥ 1 API and every API with a database operation cites its QRs (API-CAT-048 and API-CAT-052 have none). Native / join / lock deviations: ADR-CAT-047.
 
 ### Entities / tables bound
 12 of 12 entities bound to their db-script tables (CAT_ITEM, CAT_VARIANT, CAT_VAR_ATTR, CAT_VAR_ATTR_VALUE, CAT_VAR_ATTR_ASSIGN, CAT_CATEGORY, CAT_BUNDLE_COMP, CAT_ITEM_UNIT, CAT_BARCODE, CAT_ITEM_MEDIA, CAT_SCALE_LABEL_LAYOUT, CAT_UNIT_EINVOICE_CODE); 161 of 161 DBF in the DB Alignment Manifest; 0 PENDING DB. Lookups reused: the 10 CAT-owned keys of SRS A6 (CAT_ITEM_KIND, CAT_PUBLISH_STATE, CAT_BRAND, CAT_UOM, CAT_TAX_CLASS, CAT_EINVOICE_ITEM_CODE_TYPE, CAT_EINVOICE_UNIT, CAT_BARCODE_TYPE, CAT_SCALE_VALUE_TYPE, CAT_CHANGE_KIND); new keys: none.
@@ -115,6 +115,7 @@ Verdict as stamped by the orchestrator from `gov.py analyze` (self-check block p
 | decisions/CAT/ADR-CAT-069 | reactivation of Categories, Variant attributes and values (API-CAT-053 … 055) | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-070 | Variant attributes and values stay CAT tables (checklist C5 / F3) | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-071 | item import time budget, batched code allocation, one scale-prefix lock per import | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-072 | the default Variant moves (API-CAT-009 deactivation, API-CAT-006 generation on an Item with 0 active Variants); QR-CAT-075 clears the former default first | ACCEPTED (non-breaking) |
 | decisions/CAT/CORE-GAP-in-process-authorization | how a cross-module read API is authorized for callers without a permission of the owning module | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-tenant-lookup-types | whether a tenant can create lookup types with nested values at runtime | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-number-series-block-allocation | whether NumberSeriesApi can allocate a block of n numbers in one call | OPEN (asked of erp-core) |
@@ -125,8 +126,10 @@ Fourth gate-analysis revise (backend): API-CAT-047's facade carries only `@PreAu
 
 Fifth gate-analysis revise (backend), no ADR raised (ADR-CAT-047 amended): RULE-CAT-038 / API-CAT-018 refuse a FILE document outside the tenant's public image storage, and one fileDocumentRef may back several media records (G1, TC-CAT-218); API-CAT-029 reads its attribute FOR SHARE through QR-CAT-022 (G2); API-CAT-006 answers CAT-400-REQUEST-INVALID to an empty `selections` or an empty value list, and the API document carries `minItems: 1` on both arrays (G3, TC-CAT-184 row 2); the two advisory locks are catalogued as native statements QR-CAT-073 (Category tree, API-CAT-021, 023, 024, 053) and QR-CAT-074 (scale prefix, API-CAT-014, 015, 032, 049), each `pg_advisory_xact_lock(CAST(:tenant AS integer), hashtext(<name>))` with `@TenantUnscoped(reason = "advisory lock keyed by TENANT_ID", adr = "ADR-CAT-047")` — six native queries in all (G4). The next free ADR sequence stays 072.
 
+Sixth gate-analysis revise (backend), ADR-CAT-072 raised: the default Variant moves — API-CAT-009 moves isDefaultFl to the remaining active Variant with the lowest code, and API-CAT-006 gives it to the first Variant created on an Item with 0 active Variants; the new QR-CAT-075 clears the former default before QR-CAT-014 sets the new one, so UQ_CAT_VARIANT_DEFAULT is kept (G3, TC-CAT-221, 222); API-CAT-005 names the RULE-CAT-003 repair on reactivation (G2, TC-CAT-219); API-CAT-049 rejects a GTIN repeated in the file on the later row, {code} composed after the write pass, and API-CAT-015 draws one more number from CAT_INTERNAL_BARCODE before answering CAT-409-BARCODE-DUPLICATE (G7); API-CAT-033 refuses an inactive layout with CAT-400-REQUEST-INVALID, and the ENT-CAT-011 / 012 state machines say an inactive row is replaced by a new record under the same key (G9). The next free ADR sequence is 073.
+
 ### Traceability
 REQ covered by ≥ 1 API: 139 / 139 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
 
 ### Event
-"P3.1 completed: CAT v2 — API 55 · QR 74 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–071, none BLOCKED · CORE-GAP 3"
+"P3.1 completed: CAT v2 — API 55 · QR 75 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–072, none BLOCKED · CORE-GAP 3"
