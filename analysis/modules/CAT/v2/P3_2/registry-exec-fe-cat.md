@@ -32,7 +32,7 @@ All three UXDs trace to REQ and AC and are cited by F2 / F4 blocks of the plan (
 - Unused: API-CAT-011 (read Item unit) and API-CAT-046 (storefront catalogue read). They are consumers' reads, recorded in ADR-CAT-051.
 - Mock: `api-spec-cat.yaml`.
 - `unmapped`: none.
-- Runtime codes bound to a RULE: 49 of 49. The 8 platform-standard codes are routed generically (ADR-CAT-044).
+- Runtime codes bound to a RULE: 52 of 52. The 6 platform-standard codes are routed generically (ADR-CAT-044). A rejection of the given FILE upload is shown in the FILE envelope's language (ADR-CAT-056).
 
 ### ALIGN
 The verdict is stamped by the orchestrator from `gov.py analyze`. The self-check block is a placeholder (findings 0, clean true), and the ALIGN rows carry no author mark.
@@ -48,10 +48,15 @@ Findings fixed during authoring:
 | decisions/CAT/ADR-CAT-050 | Display data served by the given (lookups, capability flags, image files) → UXD-CAT-001 … 003 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-051 | API coverage of the CAT screens and binding notes | ACCEPTED (non-breaking) |
 
-The next free ADR is ADR-CAT-052. No ADR is BLOCKED, and no question was raised.
+The next free ADR after P3.2 was ADR-CAT-052. At the gate-analysis revise, the frontend plan also cites ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants) and ADR-CAT-060 (unit used by barcodes); the next free ADR is ADR-CAT-063. No ADR is BLOCKED, and no question was raised.
+
+Gate-analysis revise (frontend):
+- Category labels come from a read of the whole tree, active and inactive (CATEGORY-LABEL-QUERY); the selection control keeps the active-only read (G9).
+- Image and import files are uploaded through the given FILE client before the CAT call (G2).
+- RULE-CAT-051 and RULE-CAT-052 are mirrored by F3 validators, and their codes are routed with `text:` bindings (G7, G8).
 
 ### Traceability
-- REQ covered by at least one SCR or F-block: 127 / 127. Orphan REQ: none.
+- REQ covered by at least one SCR or F-block: 134 / 134. Orphan REQ: none.
 - US covered by at least one flow: 22 / 22.
 - Every PHASE and SUB carries traces= (6 PHASE, 24 SUB). Every SCR traces to REQ and AC (and UXD where it shows foreign data), and every UXD traces to REQ and AC.
 

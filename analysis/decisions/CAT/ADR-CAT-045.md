@@ -1,6 +1,7 @@
 # ADR-CAT-045 — Endpoint surface beyond SRS B5 and the in-process contract interface
 
 Status : ACCEPTED (non-breaking) · Stage : P3.1 · Module : CAT v2 · Date : 2026-10-28
+Partly superseded : §1 and §4 by ADR-CAT-061 (CatalogueReadApi calls an unsecured read service; the calling module authorizes its own caller; only searchCatalogue checks PERM_CAT_ITEMS_VIEW). §2, §3 and §5 stand.
 
 ## Context
 The contract (P1.5) promises eleven read operations (CON-CAT-007 … CON-CAT-017) and one event (CON-CAT-018) to other modules, as in-process promises (`conventions.module_interface: in_process`). SRS B5 gives HTTP endpoints for most of them, but four have none: read a Variant (CON-CAT-008, REQ-CAT-119), read an Item unit (CON-CAT-009), the storefront catalogue read (CON-CAT-014, REQ-CAT-115) and the catalogue search (CON-CAT-016, REQ-CAT-125). SCR-REQ-CAT-003 also names the operation "read" for Variant attributes, with no B5 endpoint. REQ-CAT-127 asks that a caller without VIEW on CAT_ITEMS gets no catalogue-search result, which the contract states as "forbidden — answered as an empty result".

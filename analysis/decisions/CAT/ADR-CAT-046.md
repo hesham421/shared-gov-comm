@@ -8,7 +8,7 @@ SRS B4 declares six page codes and the actions each preset role holds on them (O
 ## Decision
 1. `CatPermissionContributor` (implements the given `PermissionContributor`) registers the six page codes CAT_ITEMS, CAT_CATEGORIES, CAT_VARIANT_ATTRIBUTES, CAT_ITEM_IMPORT, CAT_BARCODE_LABELS and CAT_SETTINGS, each with the actions SRS B4 uses. The given `sec` module derives the names `PERM_<PAGE_CODE>_<ACTION>` (e.g. `PERM_CAT_ITEMS_VIEW`).
 2. The default grants of the three preset roles are exactly SRS B4. They are produced by the contributor's default-grant declaration where the given `PermissionContributor` offers one; otherwise by a CAT application migration (`V1000+`) that inserts the grant rows for the preset roles into the given's role-permission data. The executor confirms which of the two the given 1.6.0 supports from the `erp-core-usage` skill before coding.
-3. Copies of the CAT seeds for tenants other than PLATFORM follow the db-script statement (given provisioning). If the given requires an explicit module contributor for that, it is a given-usage row the SRS adds in a later delta; this plan adds none.
+3. Copies of the CAT seeds for tenants other than PLATFORM: amended by ADR-CAT-058. The given copies the CAT lookup types and values (`mdl`) and the three number series (`sequence`) at provisioning. `CatTenantProvisioningContributor` (given `TenantProvisioningContributor`, a given-usage row of SRS A9) copies the 8 Unit e-invoice codes.
 
 ## Consequences
 - The `bootstrap` block of the plan names every page permission with its grant and its producer.

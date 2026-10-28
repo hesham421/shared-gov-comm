@@ -1,15 +1,15 @@
 # Backend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : backend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the frontend test plan (this file: TC-CAT-001 … TC-CAT-124; frontend: TC-CAT-125 … TC-CAT-182)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the frontend test plan (this file: TC-CAT-001 … TC-CAT-124 and TC-CAT-183 … TC-CAT-193; frontend: TC-CAT-125 … TC-CAT-182 and TC-CAT-194 … TC-CAT-196)
 
 ## Header
 
 ### Sources (generated current state)
 | Input | File | Version | Use |
 |---|---|---|---|
-| srs | `_state/current-srs.md` | CAT v2 (P1) | derivation source: AC-CAT-001 … 129 (Given / When / Then), RULE-CAT-001 … 049 messages, lookups block |
-| registry-srs | `_state/current-registry-srs.md` | CAT v2 (P1) | ID ranges (REQ 127 · AC 129 · RULE 49) |
+| srs | `_state/current-srs.md` | CAT v2 (P1) | derivation source: AC-CAT-001 … 142 (Given / When / Then), RULE-CAT-001 … 052 messages, lookups block |
+| registry-srs | `_state/current-registry-srs.md` | CAT v2 (P1) | ID ranges (REQ 134 · AC 142 · RULE 52) |
 | registry-db | `_state/current-registry-db.md` | CAT v2 (P2) | XM register `records: []` → no integration TC |
 | backend-execution-plan | `_state/current-backend-execution-plan.md` | CAT v2 (P3.1) | API-CAT-001 … 051, Error Catalog codes, split units (Package) |
 | frontend-execution-plan | `_state/current-frontend-execution-plan.md` | CAT v2 (P3.2) | cross-check of the track split (ADR-CAT-052 §1) |
@@ -25,24 +25,25 @@ The current state holds no earlier test plan, so every TC is ADDED. The TC strea
 ### Open ADRs
 - ADR-CAT-052 (this stage) is ACCEPTED and non-breaking. It covers the track split, the package binding, the host-data creation surface, catalogue isolation, fields the API document does not expose, and fault injection.
 - ADR-CAT-053 (this stage, analyze round 2) is ACCEPTED and non-breaking. It replaces the unseeded AC values BAG and H87 by seeded values in TC-CAT-063, 120, 121, 122, because no named add-value call exists for them, and records the frontend plan's unbound refusal texts.
-- The TCs also cite ADR-CAT-041, 044, 045, 047 and 048 (P1/P3.1). None of them is BLOCKED.
+- The TCs also cite ADR-CAT-041, 044, 045, 047 and 048 (P1/P3.1), and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-058 (tenant provisioning), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-062 (Arabic normalisation). None of them is BLOCKED.
 
 ### Shared precondition S0 (applies to every TC; each TC adds only what it states)
 - The caller is a user of preset role Owner holding every `PERM_CAT_*` permission, with a valid bearer token.
 - The capability flags `variants` and `bundles` are on and readable through the given `SettingsApi` (FeatureFlags).
-- The CAT bootstrap is present: the 10 lookup keys with their seeded values, the series CAT_ITEM / CAT_VARIANT / CAT_INTERNAL_BARCODE, and the 8 seeded Unit e-invoice codes (D-12).
+- The CAT bootstrap is present: the 10 lookup keys with their seeded values, the series CAT_ITEM / CAT_VARIANT / CAT_INTERNAL_BARCODE, and the 8 seeded Unit e-invoice codes (D-12). Every test tenant receives them at its provisioning: the given copies the lookups and series, and `CatTenantProvisioningContributor` copies the Unit e-invoice codes (ADR-CAT-058). TC-CAT-193 proves this for a newly provisioned tenant.
+- An uploaded file (an image for API-CAT-018, an xlsx for API-CAT-049) is first uploaded through the given erp-core FILE endpoint: public image storage for images, private storage for import files. The TC then sends the returned `fileDocumentRef` in the JSON body of the CAT call. "POST the file" below means these two steps (ADR-CAT-056).
 - The TC runs in a tenant of its own, and no data is shared between TCs (ADR-CAT-052 §4).
 - Error bodies are read as `LocalizedException → {code, messageAr, messageEn}`. Success notices are read from `ApiResponse<T>` `code` / `messageAr` / `messageEn` (ADR-CAT-048).
 - "Owner" below is that user. Every message is asserted in ar and en, copied from the SRS.
 
-<!-- PHASE:TEST-PLAN-BE:START traces=AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-025,AC-CAT-026,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-037,AC-CAT-038,AC-CAT-039,AC-CAT-040,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127 -->
+<!-- PHASE:TEST-PLAN-BE:START traces=AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-025,AC-CAT-026,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-037,AC-CAT-038,AC-CAT-039,AC-CAT-040,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127 -->
 ## PHASE TEST-PLAN-BE — module scenarios
 
-The phase holds 124 TCs, which is more than 12, so it is split into two SUBs:
-- `RULE-SCENARIOS` (64): each AC whose Then names a RULE refusal, a RULE notice or a RULE-governed state transition.
-- `API-SCENARIOS` (60): endpoint-driven ACs — happy paths, reads, paging, search, events, permission.
+The phase holds 135 TCs, which is more than 12, so it is split into two SUBs:
+- `RULE-SCENARIOS` (71): each AC whose Then names a RULE refusal, a RULE notice or a RULE-governed state transition.
+- `API-SCENARIOS` (64): endpoint-driven ACs — happy paths, reads, paging, search, events, permission, tenant isolation, optimistic lock, tenant provisioning.
 
-<!-- SUB:RULE-SCENARIOS:START traces=AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-009,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-019,AC-CAT-020,AC-CAT-023,AC-CAT-024,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-035,AC-CAT-036,AC-CAT-038,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-087,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-096,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-110,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-128,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-009,REQ-CAT-013,REQ-CAT-016,REQ-CAT-018,REQ-CAT-019,REQ-CAT-022,REQ-CAT-023,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-034,REQ-CAT-035,REQ-CAT-037,REQ-CAT-040,REQ-CAT-041,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-085,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-094,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-108,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-126 -->
+<!-- SUB:RULE-SCENARIOS:START traces=AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-086,REQ-CAT-101,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-009,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-019,AC-CAT-020,AC-CAT-023,AC-CAT-024,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-035,AC-CAT-036,AC-CAT-038,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-087,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-096,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-110,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-128,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-009,REQ-CAT-013,REQ-CAT-016,REQ-CAT-018,REQ-CAT-019,REQ-CAT-022,REQ-CAT-023,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-034,REQ-CAT-035,REQ-CAT-037,REQ-CAT-040,REQ-CAT-041,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-085,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-094,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-108,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-126 -->
 ### SUB RULE-SCENARIOS
 
 <!-- TC:TC-CAT-001:START traces=AC-CAT-005,REQ-CAT-005,API-CAT-004,API-CAT-002 -->
@@ -66,10 +67,10 @@ Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id}
 Rule / code  : RULE-CAT-041 (reactivation stays UNPUBLISHED — A7 lifecycle) · —
 Package      : SVC-API-CRUD
 Scenario     : STATE · data class VALID · language ALL
-Preconditions: S0 · an inactive Item (deactivated through API-CAT-004), with no other active Item carrying its nameAr
+Preconditions: S0 · an inactive STANDARD Item with 1 active Variant and no Category (deactivated through API-CAT-004), with no other active Item carrying its nameAr
 Host data    : none
 Steps        : 1. PATCH the Item with body {isActiveFl: true}.
-Expected     : 200; data.isActiveFl true and data.publishStateCode UNPUBLISHED.
+Expected     : 200; data.isActiveFl true, data.publishStateCode UNPUBLISHED, and data.variants holds exactly 1 active Variant.
 Test data    : the Item of the precondition
 <!-- TC:TC-CAT-002:END -->
 
@@ -96,7 +97,7 @@ Package      : CORE
 Scenario     : VIOLATION · data class EDGE · language ALL
 Preconditions: S0 · an active Item; the commit of the next catalogue change is made to fail at the persistence / given outbox seam (ADR-CAT-052 §6); the outbox is observed
 Host data    : none
-Steps        : 1. PUT the Item with a changed nameEn and its current version. 2. Count the CatalogueChanged events delivered for its itemPk after step 1.
+Steps        : 1. PUT the Item with a changed nameEn and its current version. 2. Count the cat.CatalogueChanged events delivered for its itemPk after step 1.
 Expected     : 1 → 500, code CAT-500-CHANGE-NOT-SAVED, messageAr «تعذّر حفظ التغيير ولم يُرسل أي إشعار بالتغيير. أعد المحاولة.», messageEn "The change was not saved and no change notice was sent. Try again.". 2 → 0 events; a GET of the Item returns the former nameEn.
 Test data    : any nameEn ≤ 200 characters
 <!-- TC:TC-CAT-004:END -->
@@ -292,7 +293,7 @@ Package      : SVC-API-INT
 Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: S0 · the tenant holds 0 Items
 Host data    : none
-Steps        : 1. POST a .csv file as the multipart `file`. 2. GET /api/v1/cat/items.
+Steps        : 1. Upload a .csv file through the given FILE endpoint (private storage) and POST `{fileDocumentRef}` to API-CAT-049. 2. GET /api/v1/cat/items.
 Expected     : 1 → 422, code CAT-422-IMPORT-FILE-REJECTED, messageAr «الملف غير مقبول: يجب أن يكون بصيغة xlsx بحجم لا يتجاوز 10 ميجابايت وحتى 5000 صف، وبعناوين ورقة الاستيراد نفسها. نزّل ورقة الاستيراد واستخدمها.», messageEn "The file was not accepted: it must be xlsx, at most 10 MB and 5,000 rows, with the import sheet headers. Download the import sheet and use it.". 2 → totalElements 0 (0 Items created).
 Test data    : a .csv file (from the AC)
 <!-- TC:TC-CAT-018:END -->
@@ -810,8 +811,8 @@ Package      : SVC-API-CRUD
 Scenario     : STATE · data class VALID · language ALL
 Preconditions: S0 · an Item with 0 active images
 Host data    : none
-Steps        : 1. POST one image (multipart `file`, a PNG ≤ 5 MB).
-Expected     : 201; data.isPrimaryFl true.
+Steps        : 1. Upload one PNG ≤ 5 MB through the given FILE endpoint (public image storage), then POST `{fileDocumentRef}` to the Item's media. 2. GET the Item.
+Expected     : 1 → 201; data.isPrimaryFl true. 2 → exactly 1 active image of the Item has isPrimaryFl true.
 Test data    : one PNG image (placeholder file ≤ 5 MB)
 <!-- TC:TC-CAT-055:END -->
 
@@ -822,9 +823,9 @@ Exercises    : API-CAT-018 POST /api/v1/cat/items/{id}/media · API-CAT-002 GET 
 Rule / code  : RULE-CAT-038 → CAT-422-IMAGE-NOT-ACCEPTED
 Package      : SVC-API-CRUD
 Scenario     : VIOLATION · data class BOUNDARY · language ALL
-Preconditions: S0 · an Item · the deployment's multipart limit is above 7 MB, so the request reaches the service (otherwise the platform answers CAT-413-PAYLOAD-TOO-LARGE before it — Error Catalog)
+Preconditions: S0 · an Item · the given FILE category of the public image storage accepts a 7 MB JPG at upload, so the file reaches CAT (otherwise the FILE endpoint refuses it in its own envelope before any CAT call — ADR-CAT-056)
 Host data    : none
-Steps        : 1. POST a 7 MB JPG as the image. 2. GET the Item.
+Steps        : 1. Upload a 7 MB JPG through the given FILE endpoint and POST its `fileDocumentRef` as the image. 2. GET the Item.
 Expected     : 1 → 422, code CAT-422-IMAGE-NOT-ACCEPTED, messageAr «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.», messageEn "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item.". 2 → the media count is unchanged: no media record is created.
 Test data    : a 7 MB JPG (from the AC)
 <!-- TC:TC-CAT-056:END -->
@@ -866,7 +867,7 @@ Package      : SVC-API-CRUD
 Scenario     : STATE · data class VALID · language ALL
 Preconditions: S0 · an active UNPUBLISHED Item with exactly 1 active Variant · the outbox is observed
 Host data    : none
-Steps        : 1. PATCH the Item with body {publishStateCode: PUBLISHED}. 2. Count the CatalogueChanged events delivered for its itemPk after step 1.
+Steps        : 1. PATCH the Item with body {publishStateCode: PUBLISHED}. 2. Count the cat.CatalogueChanged events delivered for its itemPk after step 1.
 Expected     : 1 → 200; data.publishStateCode PUBLISHED. 2 → exactly 1 event with changeKind UPDATED.
 Test data    : PUBLISHED, UPDATED (seeded CAT_PUBLISH_STATE / CAT_CHANGE_KIND values)
 <!-- TC:TC-CAT-059:END -->
@@ -940,9 +941,107 @@ Steps        : 1. GET the catalogue search with term «ش».
 Expected     : 400, code CAT-400-SEARCH-TERM-TOO-SHORT, messageAr «اكتب حرفين على الأقل للبحث.», messageEn "Type at least 2 characters to search."; 0 results.
 Test data    : term «ش» (1 character, limit 2 − 1, from the AC)
 <!-- TC:TC-CAT-064:END -->
+
+<!-- TC:TC-CAT-183:START traces=AC-CAT-130,REQ-CAT-128,API-CAT-013,API-CAT-011 -->
+### TC-CAT-183 — An Item unit used by 2 active barcodes stays active
+Derived from : AC-CAT-130  (REQ-CAT-128)
+Exercises    : API-CAT-013 DELETE /api/v1/cat/item-units/{id} · API-CAT-011 GET /api/v1/cat/item-units/{id}
+Rule / code  : RULE-CAT-051 → CAT-409-ITEM-UNIT-HAS-BARCODES ({count} = 2)
+Package      : SVC-API-CRUD
+Scenario     : VIOLATION · data class INVALID · language ALL
+Preconditions: S0 · an Item with base unit PIECE and the active Item unit CARTON (added through API-CAT-010) · 2 active GTIN barcodes bound to unit CARTON on its default Variant (added through API-CAT-014)
+Host data    : none
+Steps        : 1. DELETE the Item unit CARTON. 2. GET it by itemUnitPk.
+Expected     : 1 → 409, code CAT-409-ITEM-UNIT-HAS-BARCODES, messageAr «هذه الوحدة مستخدمة في 2 باركود نشط. أوقف هذه الباركودات أولًا.», messageEn "This unit is used by 2 active barcodes. Deactivate those barcodes first.". 2 → isActiveFl true.
+Test data    : CARTON, 2 barcodes (from the AC); the GTIN values are placeholders `<valid unused GTIN-1..2>`
+<!-- TC:TC-CAT-183:END -->
+
+<!-- TC:TC-CAT-184:START traces=AC-CAT-131,REQ-CAT-129,API-CAT-006,API-CAT-002 -->
+### TC-CAT-184 — A generation that omits a used attribute is refused whole
+Derived from : AC-CAT-131  (REQ-CAT-129)
+Exercises    : API-CAT-006 POST /api/v1/cat/items/{id}/variants · API-CAT-002 GET /api/v1/cat/items/{id}
+Rule / code  : RULE-CAT-052 → CAT-422-VARIANT-ATTRIBUTE-MISSING
+Package      : SVC-API-CRUD
+Scenario     : VIOLATION · data class INVALID · language ALL
+Preconditions: S0 · a STANDARD Item whose 2 active Variants carry SIZE (values S, M) and COLOUR (value «أحمر»), generated through API-CAT-006 · SIZE also has the active value L
+Host data    : none
+Steps        : 1. POST a generation with selections SIZE [L] only. 2. GET the Item.
+Expected     : 1 → 422, code CAT-422-VARIANT-ATTRIBUTE-MISSING, messageAr «اختر قيمة واحدة على الأقل لكل خاصية يستخدمها الصنف بالفعل.», messageEn "Select at least one value for every attribute the item already uses.". 2 → still 2 active Variants: 0 created.
+Test data    : SIZE S, M, L; COLOUR «أحمر» (from the AC)
+<!-- TC:TC-CAT-184:END -->
+
+<!-- TC:TC-CAT-185:START traces=AC-CAT-132,REQ-CAT-130,API-CAT-005,API-CAT-002 -->
+### TC-CAT-185 — An Item with no active Variant cannot be reactivated
+Derived from : AC-CAT-132  (REQ-CAT-130)
+Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id}
+Rule / code  : RULE-CAT-050 → CAT-422-ITEM-NO-ACTIVE-VARIANT
+Package      : SVC-API-CRUD
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: S0 · an Item with exactly 1 active Variant V. The Item is deactivated through API-CAT-004, then V through API-CAT-009, which is allowed because the Item is inactive (RULE-CAT-015 guards only an active Item). The Item now has 0 active Variants
+Host data    : none
+Steps        : 1. PATCH the Item with body {isActiveFl: true}. 2. GET the Item.
+Expected     : 1 → 422, code CAT-422-ITEM-NO-ACTIVE-VARIANT, messageAr «لا يمكن إعادة تفعيل صنف بلا متغيّر نشط. أنشئ متغيّرًا له أو أنشئ صنفًا جديدًا.», messageEn "An item with no active variant cannot be reactivated. Generate a variant for it, or create a new item.". 2 → isActiveFl false.
+Test data    : nameAr placeholder `<valid Arabic name>`
+<!-- TC:TC-CAT-185:END -->
+
+<!-- TC:TC-CAT-186:START traces=AC-CAT-133,REQ-CAT-130,API-CAT-005,API-CAT-002 -->
+### TC-CAT-186 — An Item whose Category went inactive cannot be reactivated
+Derived from : AC-CAT-133  (REQ-CAT-130)
+Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id}
+Rule / code  : RULE-CAT-026 → CAT-422-CATEGORY-INACTIVE
+Package      : SVC-API-CRUD
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: S0 · a Category with code OLD holding exactly 1 Item, active. The Item is deactivated through API-CAT-004, then OLD through API-CAT-024, which is allowed because OLD holds no active Item (RULE-CAT-025)
+Host data    : none
+Steps        : 1. PATCH the Item with body {isActiveFl: true}. 2. GET the Item.
+Expected     : 1 → 422, code CAT-422-CATEGORY-INACTIVE, messageAr «الفئة المختارة غير نشطة. اختر فئة نشطة.», messageEn "The selected category is inactive. Choose an active category.". 2 → isActiveFl false, categoryFk still OLD.
+Test data    : Category OLD (from the AC)
+<!-- TC:TC-CAT-186:END -->
+
+<!-- TC:TC-CAT-187:START traces=AC-CAT-134,REQ-CAT-130,API-CAT-005,API-CAT-002 -->
+### TC-CAT-187 — A Bundle whose component went inactive cannot be reactivated
+Derived from : AC-CAT-134  (REQ-CAT-130)
+Exercises    : API-CAT-005 PATCH /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id}
+Rule / code  : RULE-CAT-019 → CAT-422-BUNDLE-COMPONENT-INVALID
+Package      : SVC-API-CRUD
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: S0 · a Bundle B with 2 component lines on the Variants P and C of active STANDARD Items, where P's Item has a second active Variant. B is deactivated through API-CAT-004, then P through API-CAT-009, which is allowed because B is inactive (RULE-CAT-021)
+Host data    : none
+Steps        : 1. PATCH B with body {isActiveFl: true}. 2. GET B.
+Expected     : 1 → 422, code CAT-422-BUNDLE-COMPONENT-INVALID, messageAr «المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها.», messageEn "A component must be an active variant of an item that is not a bundle, listed once per bundle.". 2 → isActiveFl false.
+Test data    : Bundle B, Variants P and C (placeholders)
+<!-- TC:TC-CAT-187:END -->
+
+<!-- TC:TC-CAT-188:START traces=AC-CAT-135,REQ-CAT-086,API-CAT-004,API-CAT-043 -->
+### TC-CAT-188 — A barcode of a deactivated Item no longer resolves
+Derived from : AC-CAT-135  (REQ-CAT-086)
+Exercises    : API-CAT-004 DELETE /api/v1/cat/items/{id} · API-CAT-043 GET /api/v1/cat/barcodes/lookup
+Rule / code  : RULE-CAT-047 → CAT-404-BARCODE-NOT-FOUND
+Package      : SVC-API-SEARCH
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: S0 · an active Item whose active Variant carries the active GTIN 6223000000021 · no active scale label layout
+Host data    : none
+Steps        : 1. As the Owner, DELETE the Item. 2. As a Seller/cashier, GET the lookup with value 6223000000021.
+Expected     : 1 → 200. 2 → 404, code CAT-404-BARCODE-NOT-FOUND, messageAr «لا يوجد صنف بهذا الباركود. ابحث بالاسم أو أضف الباركود إلى الصنف.», messageEn "No item has this barcode. Search by name or add the barcode to the item."; no Variant is returned.
+Test data    : 6223000000021 (from the AC; check digit 1)
+<!-- TC:TC-CAT-188:END -->
+
+<!-- TC:TC-CAT-189:START traces=AC-CAT-136,REQ-CAT-101,API-CAT-042 -->
+### TC-CAT-189 — The Variant search for labels skips Variants of inactive Items
+Derived from : AC-CAT-136  (REQ-CAT-101)
+Exercises    : API-CAT-042 GET /api/v1/cat/variants
+Rule / code  : — (active-Item filter, ADR-CAT-059)
+Package      : SVC-API-SEARCH
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: S0, with the caller a Warehouse staff user · 2 active Variants of the active Item «حذاء رياضي» · 1 active Variant of the Item «حذاء جلد», which the Owner deactivated through API-CAT-004
+Host data    : none
+Steps        : 1. GET /api/v1/cat/variants?text=حذاء&page=0&size=20.
+Expected     : 200; totalElements 2; both rows carry itemNameAr «حذاء رياضي»; 0 rows of «حذاء جلد».
+Test data    : «حذاء رياضي», «حذاء جلد» (from the AC)
+<!-- TC:TC-CAT-189:END -->
 <!-- SUB:RULE-SCENARIOS:END -->
 
-<!-- SUB:API-SCENARIOS:START traces=AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-008,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-018,AC-CAT-021,AC-CAT-022,AC-CAT-025,AC-CAT-026,AC-CAT-029,AC-CAT-030,AC-CAT-033,AC-CAT-034,AC-CAT-037,AC-CAT-039,AC-CAT-040,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-079,AC-CAT-080,AC-CAT-085,AC-CAT-086,AC-CAT-088,AC-CAT-094,AC-CAT-095,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-103,AC-CAT-104,AC-CAT-107,AC-CAT-109,AC-CAT-111,AC-CAT-117,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-127,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-008,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-017,REQ-CAT-020,REQ-CAT-021,REQ-CAT-024,REQ-CAT-025,REQ-CAT-028,REQ-CAT-029,REQ-CAT-032,REQ-CAT-033,REQ-CAT-036,REQ-CAT-038,REQ-CAT-039,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-077,REQ-CAT-078,REQ-CAT-083,REQ-CAT-084,REQ-CAT-086,REQ-CAT-092,REQ-CAT-093,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-101,REQ-CAT-102,REQ-CAT-105,REQ-CAT-107,REQ-CAT-109,REQ-CAT-115,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-125,REQ-CAT-127 -->
+<!-- SUB:API-SCENARIOS:START traces=AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-008,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-018,AC-CAT-021,AC-CAT-022,AC-CAT-025,AC-CAT-026,AC-CAT-029,AC-CAT-030,AC-CAT-033,AC-CAT-034,AC-CAT-037,AC-CAT-039,AC-CAT-040,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-079,AC-CAT-080,AC-CAT-085,AC-CAT-086,AC-CAT-088,AC-CAT-094,AC-CAT-095,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-103,AC-CAT-104,AC-CAT-107,AC-CAT-109,AC-CAT-111,AC-CAT-117,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-127,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-008,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-017,REQ-CAT-020,REQ-CAT-021,REQ-CAT-024,REQ-CAT-025,REQ-CAT-028,REQ-CAT-029,REQ-CAT-032,REQ-CAT-033,REQ-CAT-036,REQ-CAT-038,REQ-CAT-039,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-077,REQ-CAT-078,REQ-CAT-083,REQ-CAT-084,REQ-CAT-086,REQ-CAT-092,REQ-CAT-093,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-101,REQ-CAT-102,REQ-CAT-105,REQ-CAT-107,REQ-CAT-109,REQ-CAT-115,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-125,REQ-CAT-127 -->
 ### SUB API-SCENARIOS
 
 <!-- TC:TC-CAT-065:START traces=AC-CAT-001,REQ-CAT-001,API-CAT-002,API-CAT-038 -->
@@ -1010,7 +1109,7 @@ Package      : CORE
 Scenario     : HAPPY · data class VALID · language ALL
 Preconditions: S0 · an active Item · the given outbox is observed
 Host data    : none
-Steps        : 1. PUT the Item with its current fields and version and a new nameEn. 2. Collect the CatalogueChanged events delivered after the commit.
+Steps        : 1. PUT the Item with its current fields and version and a new nameEn. 2. Collect the cat.CatalogueChanged events delivered after the commit.
 Expected     : 1 → 200. 2 → exactly 1 event, carrying entity ENT-CAT-001, recordPk = itemPk = the Item's itemPk and changeKind UPDATED.
 Test data    : new nameEn placeholder `<English name ≤ 200>`
 <!-- TC:TC-CAT-069:END -->
@@ -1024,9 +1123,9 @@ Package      : SVC-API-CRUD
 Scenario     : HAPPY · data class VALID · language ALL
 Preconditions: S0 · an Item with nameEn "Charger"
 Host data    : none
-Steps        : 1. PUT nameEn "Fast charger 25W" and wait for the commit (200). 2. Point-of-sale read (Seller/cashier, API-CAT-002) after the commit. 3. Storefront read (`CatalogueReadApi.getItem`) after the commit.
-Expected     : 2 and 3 → nameEn "Fast charger 25W".
-Test data    : "Charger", "Fast charger 25W" (from the AC)
+Steps        : 1. PUT nameEn "Charger 25W" and wait for the commit (200). 2. Point-of-sale read (Seller/cashier, API-CAT-002) after the commit. 3. Storefront read (`CatalogueReadApi.getItem`) after the commit.
+Expected     : 2 and 3 → nameEn "Charger 25W".
+Test data    : "Charger", "Charger 25W" (from the AC)
 <!-- TC:TC-CAT-070:END -->
 
 <!-- TC:TC-CAT-071:START traces=AC-CAT-011,REQ-CAT-011,API-CAT-001 -->
@@ -1400,7 +1499,7 @@ Exercises    : API-CAT-023 PUT /api/v1/cat/categories/{id} · API-CAT-002 GET /a
 Rule / code  : —
 Package      : SVC-API-CRUD
 Scenario     : HAPPY · data class VALID · language ALL
-Preconditions: S0 · the Category PHONES under «إلكترونيات», holding Items
+Preconditions: S0 · the Category PHONES under «إلكترونيات», holding 3 active Items
 Host data    : none
 Steps        : 1. PUT PHONES with its names, sortOrder and version and an empty parentCategoryFk. 2. GET one of its Items.
 Expected     : 1 → 200; parentCategoryFk empty. 2 → categoryFk still PHONES.
@@ -1626,7 +1725,7 @@ Package      : SVC-API-CRUD
 Scenario     : HAPPY · data class VALID · language ALL
 Preconditions: S0 · the Item «كوب زجاج» with 2 active images (sortOrder 1, 2)
 Host data    : none
-Steps        : 1. POST a 1 MB PNG with no nameAr and no nameEn. 2. GET the Item.
+Steps        : 1. Upload a 1 MB PNG through the given FILE endpoint (public image storage) and POST its `fileDocumentRef` with no nameAr and no nameEn. 2. GET the Item.
 Expected     : 1 → 201; nameAr «كوب زجاج», sortOrder 3 and a fileDocumentRef from the public image storage. 2 → 3 active media records.
 Test data    : «كوب زجاج», 1 MB PNG (from the AC)
 <!-- TC:TC-CAT-113:END -->
@@ -1784,6 +1883,62 @@ Steps        : 1. GET the search with term «شاحن».
 Expected     : 200; data is an empty list (0 results); not 403.
 Test data    : «شاحن» (from the AC)
 <!-- TC:TC-CAT-124:END -->
+
+<!-- TC:TC-CAT-190:START traces=AC-CAT-137,REQ-CAT-131,API-CAT-001,API-CAT-003,API-CAT-004,API-CAT-002 -->
+### TC-CAT-190 — A Seller/cashier cannot create, update or deactivate an Item
+Derived from : AC-CAT-137  (REQ-CAT-131)
+Exercises    : API-CAT-001 POST /api/v1/cat/items · API-CAT-003 PUT /api/v1/cat/items/{id} · API-CAT-004 DELETE /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id}
+Rule / code  : — (PLATFORM-STD CAT-403-FORBIDDEN, ADR-CAT-044; SEC-BE)
+Package      : SEC-BE
+Scenario     : PERMISSION · data class VALID · language ALL
+Preconditions: S0, except that the caller is a Seller/cashier holding only PERM_CAT_ITEMS_VIEW · an active Item with nameEn "Charger", created by the Owner, and no other Item in the tenant
+Host data    : none
+Steps        : 1. POST an Item with a valid nameAr. 2. PUT the Item with its current fields and version and nameEn "Charger 25W". 3. DELETE the Item. 4. As the Owner, GET the Item and GET /api/v1/cat/items.
+Expected     : 1, 2 and 3 → 403 each, code CAT-403-FORBIDDEN (the given's standard messageAr / messageEn — ADR-CAT-044). 4 → the Item keeps nameEn "Charger" and isActiveFl true, and totalElements is 1 (0 Items created).
+Test data    : "Charger", "Charger 25W" (from the AC); nameAr placeholder `<valid Arabic name>`
+<!-- TC:TC-CAT-190:END -->
+
+<!-- TC:TC-CAT-191:START traces=AC-CAT-139,REQ-CAT-132,API-CAT-002,API-CAT-003 -->
+### TC-CAT-191 — Another tenant's Item reads and writes as not found
+Derived from : AC-CAT-139  (REQ-CAT-132)
+Exercises    : API-CAT-002 GET /api/v1/cat/items/{id} · API-CAT-003 PUT /api/v1/cat/items/{id}
+Rule / code  : — (PLATFORM-STD CAT-404-NOT-FOUND, ADR-CAT-044; given tenancy)
+Package      : CORE
+Scenario     : VIOLATION · data class INVALID · language ALL
+Preconditions: S0 for two tenants A and B of this case only (the one TC that needs two tenants) · an Item X with nameEn "Charger" in tenant A · the caller of steps 1 and 2 is tenant B's Owner, holding every PERM_CAT_* permission
+Host data    : none
+Steps        : 1. GET /api/v1/cat/items/{itemPk of X}. 2. PUT X by its itemPk with nameEn "Charger 25W" and X's version. 3. As tenant A's Owner, GET X.
+Expected     : 1 and 2 → 404 each, code CAT-404-NOT-FOUND. 3 → nameEn "Charger".
+Test data    : "Charger", "Charger 25W" (from the AC)
+<!-- TC:TC-CAT-191:END -->
+
+<!-- TC:TC-CAT-192:START traces=AC-CAT-140,REQ-CAT-133,API-CAT-003,API-CAT-002 -->
+### TC-CAT-192 — An update with a stale version is refused
+Derived from : AC-CAT-140  (REQ-CAT-133)
+Exercises    : API-CAT-003 PUT /api/v1/cat/items/{id} · API-CAT-002 GET /api/v1/cat/items/{id}
+Rule / code  : — (PLATFORM-STD CAT-409-STALE-VERSION, ADR-CAT-044)
+Package      : SVC-API-CRUD
+Scenario     : VIOLATION · data class EDGE · language ALL
+Preconditions: S0 · an active Item read twice, once by each of two Owner sessions, both returning the same version v
+Host data    : none
+Steps        : 1. Session 1: PUT the Item with nameEn "Charger 25W" and version v. 2. Session 2: PUT the Item with nameEn "Charger 30W" and version v. 3. GET the Item.
+Expected     : 1 → 200. 2 → 409, code CAT-409-STALE-VERSION. 3 → nameEn "Charger 25W".
+Test data    : "Charger 25W", "Charger 30W" (from the AC)
+<!-- TC:TC-CAT-192:END -->
+
+<!-- TC:TC-CAT-193:START traces=AC-CAT-141,REQ-CAT-134,API-CAT-045,API-CAT-001 -->
+### TC-CAT-193 — A newly provisioned tenant has the CAT seeds and creates its first Item
+Derived from : AC-CAT-141  (REQ-CAT-134)
+Exercises    : API-CAT-045 GET /api/v1/cat/settings · API-CAT-001 POST /api/v1/cat/items
+Rule / code  : RULE-CAT-004 (codes from the copied series) · —
+Package      : CORE
+Scenario     : INTEGRATION · data class VALID · language ALL
+Preconditions: CAT is installed · a new tenant T is provisioned from PLATFORM through the given provisioning endpoint (`POST /api/v1/platform/tenants`), which runs the given copies and `CatTenantProvisioningContributor` (ADR-CAT-058) · T holds no catalogue record · the caller is T's Owner (S0 holds for T only through this provisioning, which is what the case proves)
+Host data    : none
+Steps        : 1. GET /api/v1/cat/settings. 2. POST an Item with nameAr «كوب زجاج».
+Expected     : 1 → 200; unitEinvoiceCodes holds 8 rows, all active (PIECE → EA, CARTON → CT, BOX → BX, DOZEN → DZN, KILOGRAM → KGM, GRAM → GRM, METRE → MTR, LITRE → LTR). 2 → 201; code ITM-000001 and variants[0].code VAR-000001.
+Test data    : «كوب زجاج» (from the AC); the 8 seeded rows of D-12
+<!-- TC:TC-CAT-193:END -->
 <!-- SUB:API-SCENARIOS:END -->
 <!-- PHASE:TEST-PLAN-BE:END -->
 
@@ -1794,7 +1949,7 @@ CAT has no `XM-*` edge. The registry-db XM register is `records: []`, SRS A8 has
 ## TC TRACEABILITY INDEX
 
 ### AC → TC (and REQ → TC)
-Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-041 → TC-CAT-019, 020. Every other REQ maps to one TC.
+Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-041 → TC-CAT-019, 020. REQ-CAT-086 → TC-CAT-105, 188. REQ-CAT-101 → TC-CAT-111, 189. REQ-CAT-130 → TC-CAT-185, 186, 187. Every other REQ maps to one TC.
 
 | AC | REQ | TC |
 |---|---|---|
@@ -1927,23 +2082,36 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | AC-CAT-127 | REQ-CAT-125 | TC-CAT-123 |
 | AC-CAT-128 | REQ-CAT-126 | TC-CAT-064 |
 | AC-CAT-129 | REQ-CAT-127 | TC-CAT-124 |
+| AC-CAT-130 | REQ-CAT-128 | TC-CAT-183 (frontend routing: TC-CAT-196) |
+| AC-CAT-131 | REQ-CAT-129 | TC-CAT-184 |
+| AC-CAT-132 | REQ-CAT-130 | TC-CAT-185 |
+| AC-CAT-133 | REQ-CAT-130 | TC-CAT-186 |
+| AC-CAT-134 | REQ-CAT-130 | TC-CAT-187 |
+| AC-CAT-135 | REQ-CAT-086 | TC-CAT-188 |
+| AC-CAT-136 | REQ-CAT-101 | TC-CAT-189 |
+| AC-CAT-137 | REQ-CAT-131 | TC-CAT-190 |
+| AC-CAT-138 | REQ-CAT-131 | frontend only — TC-CAT-194 |
+| AC-CAT-139 | REQ-CAT-132 | TC-CAT-191 |
+| AC-CAT-140 | REQ-CAT-133 | TC-CAT-192 |
+| AC-CAT-141 | REQ-CAT-134 | TC-CAT-193 |
+| AC-CAT-142 | REQ-CAT-066 | frontend only — TC-CAT-195 |
 
 ### API → TC (TC-CAT-…)
 | API | TCs |
 |---|---|
-| API-CAT-001 | 003, 005, 007, 012, 013, 014, 016, 027, 028, 035, 036, 071, 074, 076, 077, 078, 080, 081, 093 |
-| API-CAT-002 | 001, 008, 009, 015, 021, 022, 023, 029, 031, 037, 038, 041, 054, 056, 057, 061, 062, 065, 066, 068, 070, 073, 077, 078, 079, 092, 094, 095, 097, 113, 114, 117 |
-| API-CAT-003 | 004, 015, 031, 041, 062, 068, 069, 070, 117 |
-| API-CAT-004 | 001 |
-| API-CAT-005 | 002, 059, 060, 061 |
-| API-CAT-006 | 008, 009, 022, 023, 029, 092 |
+| API-CAT-001 | 003, 005, 007, 012, 013, 014, 016, 027, 028, 035, 036, 071, 074, 076, 077, 078, 080, 081, 093, 190, 193 |
+| API-CAT-002 | 001, 008, 009, 015, 021, 022, 023, 029, 031, 037, 038, 041, 054, 056, 057, 061, 062, 065, 066, 068, 070, 073, 077, 078, 079, 092, 094, 095, 097, 113, 114, 117, 184, 185, 186, 187, 190, 191, 192 |
+| API-CAT-003 | 004, 015, 031, 041, 062, 068, 069, 070, 117, 190, 191, 192 |
+| API-CAT-004 | 001, 188, 190 |
+| API-CAT-005 | 002, 059, 060, 061, 185, 186, 187 |
+| API-CAT-006 | 008, 009, 022, 023, 029, 092, 184 |
 | API-CAT-007 | 021, 024, 030, 074, 086, 089, 118, 119 |
 | API-CAT-008 | 118 |
 | API-CAT-009 | 021, 024, 030 |
 | API-CAT-010 | 039, 101 |
-| API-CAT-011 | 038, 040, 102, 122 |
+| API-CAT-011 | 038, 040, 102, 122, 183 |
 | API-CAT-012 | 040, 102 |
-| API-CAT-013 | 038 |
+| API-CAT-013 | 038, 183 |
 | API-CAT-014 | 043, 044, 045, 047, 050, 103, 109 |
 | API-CAT-015 | 104 |
 | API-CAT-016 | 042 |
@@ -1972,10 +2140,10 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | API-CAT-039 | 033, 098, 099 |
 | API-CAT-040 | 100 |
 | API-CAT-041 | 026, 087, 090, 091 |
-| API-CAT-042 | 111 |
-| API-CAT-043 | 042, 046, 048, 051, 105, 110 |
+| API-CAT-042 | 111, 189 |
+| API-CAT-043 | 042, 046, 048, 051, 105, 110, 188 |
 | API-CAT-044 | 115 |
-| API-CAT-045 | 049, 063, 107, 108, 121 |
+| API-CAT-045 | 049, 063, 107, 108, 121, 193 |
 | API-CAT-046 | 116 |
 | API-CAT-047 | 060, 064, 123, 124 |
 | API-CAT-048 | 082 |
@@ -2004,14 +2172,14 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | RULE-CAT-016 | CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE | 026 |
 | RULE-CAT-017 | CAT-409-ATTRIBUTE-VALUE-IN-USE | 025 · 087, 090 (0 uses) |
 | RULE-CAT-018 | CAT-422-BUNDLE-COMPONENTS-REQUIRED | 027 · 093 |
-| RULE-CAT-019 | CAT-422-BUNDLE-COMPONENT-INVALID | 028 · 093 |
+| RULE-CAT-019 | CAT-422-BUNDLE-COMPONENT-INVALID | 028, 187 (reactivation) · 093 |
 | RULE-CAT-020 | CAT-422-BUNDLE-SINGLE-VARIANT | 029 |
 | RULE-CAT-021 | CAT-409-VARIANT-IN-ACTIVE-BUNDLE | 030 |
 | RULE-CAT-022 | CAT-422-ITEM-KIND-FIXED | 031 |
 | RULE-CAT-023 | CAT-422-CATEGORY-PARENT-INVALID | 032 |
 | RULE-CAT-024 | CAT-409-CATEGORY-DUPLICATE | 033 |
 | RULE-CAT-025 | CAT-409-CATEGORY-IN-USE | 034 |
-| RULE-CAT-026 | CAT-422-CATEGORY-INACTIVE | 035 |
+| RULE-CAT-026 | CAT-422-CATEGORY-INACTIVE | 035, 186 (reactivation) |
 | RULE-CAT-027 | CAT-422-ITEM-UNIT-INVALID | 039 · 101 |
 | RULE-CAT-028 | CAT-422-CONVERSION-FACTOR-FIXED | 040 |
 | RULE-CAT-029 | CAT-409-BARCODE-DUPLICATE | 043 |
@@ -2032,10 +2200,13 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | RULE-CAT-044 | CAT-422-IMPORT-FILE-REJECTED | 018 |
 | RULE-CAT-045 | CAT-200-IMPORT-ROW-REJECTED | 017, 019, 020, 084 |
 | RULE-CAT-046 | CAT-400-SEARCH-TERM-TOO-SHORT | 064 |
-| RULE-CAT-047 | CAT-404-BARCODE-NOT-FOUND | 046 · 042, 048 |
+| RULE-CAT-047 | CAT-404-BARCODE-NOT-FOUND | 046, 188 (Item deactivated) · 042, 048 |
 | RULE-CAT-048 | CAT-200-DEACTIVATED | 001, 038, 042, 098 · 021 |
 | RULE-CAT-049 | CAT-500-CHANGE-NOT-SAVED | 004 · 059, 069 (event after commit) |
-| PLATFORM-STD | CAT-400-REQUEST-INVALID, 401, 403, 404-NOT-FOUND, 409-STALE-VERSION, 413, 415, 500-SERVER-ERROR | no TC: no AC states them (engine §3 rule 2). TC-CAT-124 asserts that 403 is *not* returned |
+| RULE-CAT-050 | CAT-422-ITEM-NO-ACTIVE-VARIANT | 185 |
+| RULE-CAT-051 | CAT-409-ITEM-UNIT-HAS-BARCODES | 183 |
+| RULE-CAT-052 | CAT-422-VARIANT-ATTRIBUTE-MISSING | 184 |
+| PLATFORM-STD | CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-409-STALE-VERSION | 190 (403 on API-CAT-001, 003, 004 — AC-CAT-137), 191 (404 across tenants — AC-CAT-139), 192 (409 on a stale version — AC-CAT-140). TC-CAT-124 asserts that the catalogue search does *not* answer 403. CAT-400-REQUEST-INVALID, 401 and 500-SERVER-ERROR have no AC of their own and no TC. 413 and 415 left the catalog with the multipart surface (ADR-CAT-056) |
 
 ### XM → TC
 none — no `XM-*` exists (registry-db `records: []`).
@@ -2043,25 +2214,25 @@ none — no `XM-*` exists (registry-db `records: []`).
 ### Package → TC (TC-CAT-…)
 | Package (backend plan unit) | # | TCs |
 |---|---|---|
-| CORE | 9 | 004, 005, 037, 069, 071, 072, 079, 080, 081 |
+| CORE | 11 | 004, 005, 037, 069, 071, 072, 079, 080, 081, 191, 193 |
 | DATA-DOM-MASTER | 1 | 092 |
 | DATA-DOM-LOOKUP | 2 | 048, 122 |
-| SVC-API-CRUD | 84 | 001, 002, 003, 006, 007, 008, 009, 012, 013, 014, 015, 016, 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 033, 034, 035, 036, 038, 039, 040, 041, 042, 043, 044, 045, 047, 049, 050, 054, 055, 056, 057, 058, 059, 060, 061, 062, 063, 065, 066, 068, 070, 073, 074, 076, 077, 078, 085, 086, 087, 088, 089, 090, 093, 094, 095, 096, 097, 098, 101, 102, 103, 104, 106, 107, 109, 113, 114, 117, 118, 119, 120, 121 |
-| SVC-API-SEARCH | 14 | 046, 051, 064, 067, 091, 099, 100, 105, 108, 110, 111, 115, 116, 123 |
+| SVC-API-CRUD | 90 | 001, 002, 003, 006, 007, 008, 009, 012, 013, 014, 015, 016, 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 033, 034, 035, 036, 038, 039, 040, 041, 042, 043, 044, 045, 047, 049, 050, 054, 055, 056, 057, 058, 059, 060, 061, 062, 063, 065, 066, 068, 070, 073, 074, 076, 077, 078, 085, 086, 087, 088, 089, 090, 093, 094, 095, 096, 097, 098, 101, 102, 103, 104, 106, 107, 109, 113, 114, 117, 118, 119, 120, 121, 183, 184, 185, 186, 187, 192 |
+| SVC-API-SEARCH | 16 | 046, 051, 064, 067, 091, 099, 100, 105, 108, 110, 111, 115, 116, 123, 188, 189 |
 | SVC-API-INT | 13 | 010, 011, 017, 018, 019, 020, 052, 053, 075, 082, 083, 084, 112 |
-| SEC-BE | 1 | 124 |
+| SEC-BE | 2 | 124, 190 |
 | DOC · ALIGN-BE · INT-C | 0 | no TC — `INT-C` has no block (no XM); `DOC` and `ALIGN-BE` implement no AC of their own (ADR-CAT-052 §2) |
 
 ## COVERAGE
 
 | Measure | Result |
 |---|---|
-| AC covered (this track) | 124 / 129 ✓. The 5 others are observable on a screen only and are covered on the frontend track: AC-CAT-014 → TC-CAT-128, AC-CAT-015 → TC-CAT-129, AC-CAT-027 → TC-CAT-132, AC-CAT-075 → TC-CAT-137, AC-CAT-076 → TC-CAT-138 (ADR-CAT-052 §1). |
-| AC covered (both plans) | 129 / 129 ✓, no gap |
-| REQ covered (this track) | 122 / 127 ✓. REQ-CAT-014, 015, 026, 073 and 074 are covered on the frontend track (TC-CAT-128, 129, 132, 137, 138). |
-| REQ covered (both plans) | 127 / 127 ✓ |
+| AC covered (this track) | 135 / 142 ✓. The 7 others are observable on a screen only and are covered on the frontend track: AC-CAT-014 → TC-CAT-128, AC-CAT-015 → TC-CAT-129, AC-CAT-027 → TC-CAT-132, AC-CAT-075 → TC-CAT-137, AC-CAT-076 → TC-CAT-138, AC-CAT-138 → TC-CAT-194, AC-CAT-142 → TC-CAT-195 (ADR-CAT-052 §1). |
+| AC covered (both plans) | 142 / 142 ✓, no gap |
+| REQ covered (this track) | 129 / 134 ✓. REQ-CAT-014, 015, 026, 073 and 074 are covered on the frontend track (TC-CAT-128, 129, 132, 137, 138). |
+| REQ covered (both plans) | 134 / 134 ✓ |
 | API covered | 51 / 51 ✓. This includes API-CAT-011 and API-CAT-046, which no CAT screen calls (ADR-CAT-051). |
-| RULE covered | 49 / 49 ✓, each with its catalog code where the rule raises one |
+| RULE covered | 52 / 52 ✓, each with its catalog code where the rule raises one |
 | XM edges covered | 0 / 0 — no edge, so the `INT-XM` phase is absent |
-| Track size | 124 TCs for 124 ACs (ratio 1.0, within the ~2× guard). No boundary twin is added; every BOUNDARY-class TC is the AC's own case. |
+| Track size | 135 TCs for 135 ACs (ratio 1.0, within the ~2× guard). No boundary twin is added; every BOUNDARY-class TC is the AC's own case. |
 | Host data | CAT_BRAND BRAND_068 (TC-CAT-068, active), CAT_BRAND OLDBRAND (TC-CAT-037, active then inactive); CAT_BRAND XYZ absent (TC-CAT-019, 036). The AC values CAT_UOM BAG (AC-CAT-122 … 124) and CAT_EINVOICE_UNIT H87 (AC-CAT-126) are not seeded and have no named add-value call, so TC-CAT-120, 121, 122 use the seeded unit DOZEN and TC-CAT-063 the seeded e-invoice unit BX in their place (ADR-CAT-053 §2). No value is demanded in opposite states, and every TC runs in its own tenant (ADR-CAT-052 §3, §4). |

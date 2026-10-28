@@ -16,9 +16,9 @@
 | CAT_SCALE_LABEL_LAYOUT | ENT-CAT-011 | config | DBF-CAT-136 … DBF-CAT-149 |
 | CAT_UNIT_EINVOICE_CODE | ENT-CAT-012 | config | DBF-CAT-150 … DBF-CAT-161 |
 
-Tenant: every table carries a column-only TENANT_ID (given CORE_TENANT, no FK constraint, ADR-CAT-054) and an index led by TENANT_ID.
+Tenant: every table carries TENANT_ID with `FK_<TABLE>_TENANT → CORE_TENANT(ID)` (12 constraints, db-script BLOCK 5e; erp-core checklist C1) and an index led by TENANT_ID. The FK targets a given table, so it is a permitted given reference, not an XM (ADR-CAT-055, superseding ADR-CAT-054). The factory's explicit exemption of this FK from `gov.py` C6.15 is OPEN platform finding 1 in business-policies-cat.md.
 
-Given tables read, never created: MDL_LOOKUP_TYPE and MDL_LOOKUP_VALUE (`erp-core:modules.mdl`, seeded only), CORE_NUMBER_SERIES (`erp-core:modules.sequence`, seeded only), FILE_DOCUMENT (`erp-core:modules.file`, soft read through `CAT_ITEM_MEDIA.FILE_DOCUMENT_REF`) and CORE_TENANT (`erp-core:modules.tenant`, through `TENANT_ID`).
+Given tables read, never created: MDL_LOOKUP_TYPE and MDL_LOOKUP_VALUE (`erp-core:modules.mdl`, seeded only), CORE_NUMBER_SERIES (`erp-core:modules.sequence`, seeded only), FILE_DOCUMENT (`erp-core:modules.file`, soft read through `CAT_ITEM_MEDIA.FILE_DOCUMENT_REF`) and CORE_TENANT (`erp-core:modules.tenant`, through `TENANT_ID` and its FK). New tenants receive the CAT lookups and number series from the given at provisioning, and the Unit e-invoice codes from `CatTenantProvisioningContributor` (ADR-CAT-058).
 
 ### XM index
 ```yaml name=xm-register
@@ -50,9 +50,11 @@ Other seeds:
 - Last DBF: DBF-CAT-161 (next free sequence 162)
 - Last XM: none (next free sequence 001)
 - No database sequence is created (every PK uses the identity clause)
+- One function (`CAT_NORMALIZE_AR`) and the `pg_trgm` extension are created for RULE-CAT-003 and search (ADR-CAT-062)
+- Migration file: `V1000__cat_catalog.sql`
 
 ### Decisions
-DEFAULTs D-P2-01 … D-P2-18 (db-script §5). No ADR, none BLOCKED. The next free ADR sequence is unchanged (044).
+DEFAULTs D-P2-01 … D-P2-18 (db-script §5). ADR-CAT-055 (tenant FK restored; supersedes ADR-CAT-054), ADR-CAT-058 (tenant provisioning of seeds), ADR-CAT-062 (CAT_NORMALIZE_AR, pg_trgm indexes). None BLOCKED. The next free ADR sequence is 063.
 
 ### Event
 "P2 completed: CAT v2 — 12 tables, 161 DBF, 0 XM"

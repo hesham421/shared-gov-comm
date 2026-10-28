@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P2
 Inputs : srs (P1, CAT v2 — REQ 127 · ENT 12 · RULE 49), registry-srs, contract (P1.5, CON 18)
-Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 0 (column-only, ADR-CAT-054) · lookup keys 10 (34 seeded values)
+Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 12 (given CORE_TENANT — ADR-CAT-055) · lookup keys 10 (34 seeded values)
 Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
 
@@ -19,7 +19,8 @@ Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 | Type declared here (not in the syntax map) | logical `number` → `INTEGER` (sortOrder, scaleCodeLength, valueDecimals). The profile `syntax_map` has no integer entry, so it is declared once here |
 | Date | 2026-10-26 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). 1 ADR (ADR-CAT-054). The next free ADR sequence is 055 |
+| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062. The next free ADR sequence is 063 |
+| Migration file | `V1000__cat_catalog.sql` in the application's `classpath:db/migration` (erp-core conventions § Migrations: `V1000+`, `V<N>__<module>_<snake_case>.sql`). It is the first CAT script; a later change is a new `V1001+` script, never an edit |
 
 ## 2 — DB field traceability matrix
 
@@ -231,7 +232,7 @@ CAT consumes no entity of another business module (SRS A8 `module-dependencies`:
 
 Given references create no XM:
 - `CAT_ITEM_MEDIA.FILE_DOCUMENT_REF` (DBF-CAT-122) holds the given `FILE_DOCUMENT` identifier. It is a given soft read with no constraint (SRS A3 "GIVEN, no XM edge").
-- Every `TENANT_ID` column holds the given tenant identifier.
+- Every `TENANT_ID` column holds the given tenant identifier, with `FK_<TABLE>_TENANT → CORE_TENANT(ID)` (erp-core checklist C1). `CORE_TENANT` is a given table, so the FK is a permitted given reference and not an XM (ADR-CAT-055).
 - Lookup codes are given lookup values read through `MdlLookupApi`.
 
 ## 4 — FULL_DATABASE_SCRIPT
@@ -242,13 +243,26 @@ Given references create no XM:
 -- Migration for CS-CAT-001 (ADDITIVE): the current state holds no earlier CAT script,
 -- so this migration creates every CAT object. No schema prefix. Identifiers are UPPER_SNAKE_CASE, unquoted.
 -- PK generation: GENERATED ALWAYS AS IDENTITY on every PK column (profile stack.db.pk_generation).
+-- File: V1000__cat_catalog.sql (erp-core conventions § Migrations; the given core chain runs first).
 -- ══════════════════════════════════════════════════════════════════
 
 -- ──────────────────────────────────────────────────────────────────
--- BLOCK 1 — SEQUENCES
--- none: every PK uses the identity clause. Item / Variant codes and internal
+-- BLOCK 1 — SEQUENCES, EXTENSION AND FUNCTION used by later blocks
+-- Sequences: none. Every PK uses the identity clause. Item / Variant codes and internal
 -- barcode digits come from the core number series (BLOCK 8c), never from a CAT sequence.
+-- Extension pg_trgm: trigram indexes of BLOCK 7 (ADR-CAT-062); the deployment grants CREATE on the database.
+-- Function CAT_NORMALIZE_AR: Arabic normalisation of RULE-CAT-003 and of search (ADR-CAT-062);
+-- created here because UQ_CAT_ITEM_NAME_AR (BLOCK 5b) and the trigram indexes (BLOCK 7) use it.
 -- ──────────────────────────────────────────────────────────────────
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE OR REPLACE FUNCTION CAT_NORMALIZE_AR(P_TEXT TEXT) RETURNS TEXT
+    LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE AS
+$$ SELECT btrim(regexp_replace(lower(translate(regexp_replace(P_TEXT, '[ً-ٰٟـ]', '', 'g'),
+                                                  'أإآٱةى', 'ااااهي')), '\s+', ' ', 'g')) $$;
+
+COMMENT ON FUNCTION CAT_NORMALIZE_AR(TEXT) IS 'RULE-CAT-003 / search: drops tashkeel and tatweel, folds أ إ آ ٱ to ا, ة to ه, ى to ي, lower-cases Latin, trims and collapses spaces (ADR-CAT-062)';
 
 -- ──────────────────────────────────────────────────────────────────
 -- BLOCK 2 — PARENT TABLES (no FK dependency on another CAT table)
@@ -677,7 +691,7 @@ CREATE UNIQUE INDEX UQ_CAT_CATEGORY_NAME_AR       ON CAT_CATEGORY (TENANT_ID, PA
 CREATE UNIQUE INDEX UQ_CAT_VAR_ATTR_NAME_AR       ON CAT_VAR_ATTR (TENANT_ID, NAME_AR) WHERE IS_ACTIVE_FL;                                      -- RULE-CAT-016
 CREATE UNIQUE INDEX UQ_CAT_SCALE_LABEL_LAYOUT_KEY ON CAT_SCALE_LABEL_LAYOUT (TENANT_ID, KEY) WHERE IS_ACTIVE_FL;                                 -- RULE-CAT-034
 CREATE UNIQUE INDEX UQ_CAT_UNIT_EINVOICE_CODE_KEY ON CAT_UNIT_EINVOICE_CODE (TENANT_ID, KEY) WHERE IS_ACTIVE_FL;                                 -- RULE-CAT-043
-CREATE UNIQUE INDEX UQ_CAT_ITEM_NAME_AR           ON CAT_ITEM (TENANT_ID, regexp_replace(btrim(NAME_AR), '\s+', ' ', 'g')) WHERE IS_ACTIVE_FL;  -- RULE-CAT-003
+CREATE UNIQUE INDEX UQ_CAT_ITEM_NAME_AR           ON CAT_ITEM (TENANT_ID, CAT_NORMALIZE_AR(NAME_AR)) WHERE IS_ACTIVE_FL;                         -- RULE-CAT-003, ADR-CAT-062
 CREATE UNIQUE INDEX UQ_CAT_VAR_ATTR_VALUE_NAME_AR ON CAT_VAR_ATTR_VALUE (TENANT_ID, VARIANT_ATTRIBUTE_FK, NAME_AR) WHERE IS_ACTIVE_FL;          -- RULE-CAT-016
 CREATE UNIQUE INDEX UQ_CAT_VARIANT_DEFAULT        ON CAT_VARIANT (TENANT_ID, ITEM_FK) WHERE IS_DEFAULT_FL;                                      -- REQ-CAT-025
 CREATE UNIQUE INDEX UQ_CAT_VAR_ATTR_ASSIGN_ATTR   ON CAT_VAR_ATTR_ASSIGN (TENANT_ID, VARIANT_FK, VARIANT_ATTRIBUTE_FK) WHERE IS_ACTIVE_FL;     -- RULE-CAT-013
@@ -734,7 +748,32 @@ ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_CAT_ITEM
 ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_CAT_VARIANT
     FOREIGN KEY (TENANT_ID, VARIANT_FK, ITEM_FK) REFERENCES CAT_VARIANT (TENANT_ID, VARIANT_PK, ITEM_FK);
 
--- TENANT_ID is column-only: the tenant table belongs to the given erp-core (ADR-CAT-054)
+-- 5e — TENANT FOREIGN KEYS (given erp-core CORE_TENANT, created by the given migration chain; erp-core checklist C1,
+-- conventions § Migrations rule 5 — a permitted given reference, not an XM: ADR-CAT-055)
+ALTER TABLE CAT_CATEGORY ADD CONSTRAINT FK_CAT_CATEGORY_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_VAR_ATTR ADD CONSTRAINT FK_CAT_VAR_ATTR_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_SCALE_LABEL_LAYOUT ADD CONSTRAINT FK_CAT_SCALE_LABEL_LAYOUT_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_UNIT_EINVOICE_CODE ADD CONSTRAINT FK_CAT_UNIT_EINVOICE_CODE_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_ITEM ADD CONSTRAINT FK_CAT_ITEM_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_VAR_ATTR_VALUE ADD CONSTRAINT FK_CAT_VAR_ATTR_VALUE_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_VARIANT ADD CONSTRAINT FK_CAT_VARIANT_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_VAR_ATTR_ASSIGN ADD CONSTRAINT FK_CAT_VAR_ATTR_ASSIGN_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_BUNDLE_COMP ADD CONSTRAINT FK_CAT_BUNDLE_COMP_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_ITEM_UNIT ADD CONSTRAINT FK_CAT_ITEM_UNIT_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_BARCODE ADD CONSTRAINT FK_CAT_BARCODE_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
 
 
 -- ──────────────────────────────────────────────────────────────────
@@ -785,9 +824,18 @@ CREATE INDEX IDX_CAT_CATEGORY_IS_ACTIVE_FL   ON CAT_CATEGORY (IS_ACTIVE_FL);
 CREATE INDEX IDX_CAT_VAR_ATTR_NAME_AR        ON CAT_VAR_ATTR (NAME_AR);
 CREATE INDEX IDX_CAT_VAR_ATTR_IS_ACTIVE_FL   ON CAT_VAR_ATTR (IS_ACTIVE_FL);
 
+-- substring search (LIKE '%…%' with ESCAPE) on names, codes and barcodes — trigram GIN (ADR-CAT-062)
+CREATE INDEX IDX_CAT_ITEM_NAME_AR_TRGM          ON CAT_ITEM USING gin (CAT_NORMALIZE_AR(NAME_AR) gin_trgm_ops);
+CREATE INDEX IDX_CAT_ITEM_NAME_EN_TRGM          ON CAT_ITEM USING gin (CAT_NORMALIZE_AR(NAME_EN) gin_trgm_ops);
+CREATE INDEX IDX_CAT_ITEM_CODE_TRGM             ON CAT_ITEM USING gin (CODE gin_trgm_ops);
+CREATE INDEX IDX_CAT_VARIANT_CODE_TRGM          ON CAT_VARIANT USING gin (CODE gin_trgm_ops);
+CREATE INDEX IDX_CAT_BARCODE_BARCODE_VALUE_TRGM ON CAT_BARCODE USING gin (BARCODE_VALUE gin_trgm_ops);
+
 -- ──────────────────────────────────────────────────────────────────
--- BLOCK 8 — LOOKUP AND REFERENCE SEED DATA (PLATFORM tenant, TENANT_ID = 1;
--- new tenants receive copies through the given provisioning contributors)
+-- BLOCK 8 — LOOKUP AND REFERENCE SEED DATA (PLATFORM tenant, TENANT_ID = 1).
+-- New tenants (ADR-CAT-058, REQ-CAT-134): the given copies 8a/8b (erp-core mdl) and 8c (sequence,
+-- counter at 1) from PLATFORM at provisioning; CatTenantProvisioningContributor (given TenantProvisioningContributor)
+-- copies 8d with an explicit TENANT_ID.
 -- ──────────────────────────────────────────────────────────────────
 
 -- 8a — lookup types. Table owned by erp-core modules.mdl (MDL_LOOKUP_TYPE); the keys are owned by CAT (SRS A6).
@@ -874,7 +922,7 @@ COMMIT;
 
 -- ──────────────────────────────────────────────────────────────────
 -- BLOCK 10 — FUNCTIONS / PROCEDURES
--- none: no SRS requirement asks for one.
+-- CAT_NORMALIZE_AR is created in BLOCK 1 (it must exist before BLOCK 5b and BLOCK 7). No procedure.
 -- ──────────────────────────────────────────────────────────────────
 ```
 
@@ -882,11 +930,11 @@ COMMIT;
 
 | Check | Result |
 |---|---|
-| SYNTAX S-1 … S-8 | Every statement ends with `;`. No trailing comma. Every CAT object referenced is created above. The given tables of BLOCK 8 (MDL_LOOKUP_TYPE, MDL_LOOKUP_VALUE, CORE_NUMBER_SERIES) are created by the given's own migration chain, which runs before application scripts. Types come only from §4.1, plus INTEGER declared in the header. All constraints are in ALTER TABLE form. No PK trigger, no PK sequence default. INSERTs carry column lists, with COMMIT after the DML. No schema prefix. No placeholders |
+| SYNTAX S-1 … S-8 | Every statement ends with `;`. No trailing comma. Every CAT object referenced is created above. The given tables of BLOCK 8 (MDL_LOOKUP_TYPE, MDL_LOOKUP_VALUE, CORE_NUMBER_SERIES) and the FK target CORE_TENANT of BLOCK 5e are created by the given's own migration chain, which runs before application scripts. Types come only from §4.1, plus INTEGER declared in the header. All constraints are in ALTER TABLE form. No PK trigger, no PK sequence default. INSERTs carry column lists, with COMMIT after the DML. No schema prefix. No placeholders |
 | PK strategy | 12 of 12 PK columns use `GENERATED ALWAYS AS IDENTITY`. No PK sequence |
 | Order | Parent tables come before child tables. Every PK is added before any UNIQUE or FK, and the UNIQUE targets of the composite FKs are added before those FKs. The lookup types are inserted before the lookup values. One COMMIT closes BLOCK 8 |
 | Completeness | 12 of 12 ENT have a table, and every stored SRS field has a DBF. The two derived Variant names are not stored (D-P2-08). All 10 lookup keys are seeded (34 values). The shared lookup tables are not re-created |
-| Cross-module | No XM, so no cross-module column. No constraint references another module's table, live or commented. The given references (TENANT_ID, FILE_DOCUMENT_REF) are column-only |
+| Cross-module | No XM, so no cross-module column. No constraint references another business module's table. The only constraint to a given table is `FK_<TABLE>_TENANT → CORE_TENANT(ID)` on the 12 tables (checklist C1, ADR-CAT-055); FILE_DOCUMENT_REF and the lookup and series codes are soft reads with no constraint |
 | Trace | Every DBF traces to its ENT.field and to at least 1 REQ. No XM exists, so no orphan XM and no dangling id |
 
 ## 5 — Decisions applied
@@ -895,24 +943,24 @@ COMMIT;
 |---|---|---|---|
 | D-P2-01 | Identifier transformation: camelCase → UPPER_SNAKE_CASE, unquoted. PostgreSQL stores the name in lower case, which matches the given's physical naming. Tables are named `CAT_` + entity abbreviation (VAR_ATTR = Variant attribute, COMP = component) | brief §3; given migrations convention | Rename in a later delta (breaking for consumers of physical names) |
 | D-P2-02 | Every table carries the given entity column set: TENANT_ID, VERSION, CREATED_BY, CREATED_AT, UPDATED_BY, UPDATED_AT. This includes the lookup tables (ENT-CAT-003, 004) and config tables (ENT-CAT-011, 012), whose SRS kind lists no audit fields. The source is the given's tenancy rule (every table has `TENANT_ID BIGINT NOT NULL`; every entity extends `AuditableEntity`). SRS A2 says "Tenancy is handled by the given core", and SRS A3 says audit fields are filled by the system. Without these columns the given's base entity cannot map the table | SRS A2, A3; given erp-core 1.6.0 conventions (tenancy, migrations) | Drop the columns from the lookup and config tables only if the given allows an entity that does not extend `AuditableEntity` |
-| D-P2-03 | Every table has a `TENANT_ID` NOT NULL column, an index led by `TENANT_ID` (a non-partial UNIQUE of 5b or an `IDX_<TABLE>_TENANT_ID` of BLOCK 7), and every UNIQUE composite with `TENANT_ID`. The tenant table is the given erp-core `CORE_TENANT`; the column is column-only and no FK constraint to it is created here, live or commented (C6.15; ADR-CAT-054). The given's tenancy layer enforces tenant validity | brief §5.1; ADR-CAT-054 | — |
+| D-P2-03 | Every table has a `TENANT_ID` NOT NULL column, an index led by `TENANT_ID` (a non-partial UNIQUE of 5b or an `IDX_<TABLE>_TENANT_ID` of BLOCK 7), and every UNIQUE composite with `TENANT_ID`. Every table also carries `FK_<TABLE>_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID)` (BLOCK 5e). The tenant table is the given erp-core `CORE_TENANT`, so the FK is a permitted given reference and not an XM. This supersedes ADR-CAT-054. The factory's explicit exemption of this FK from C6.15 is OPEN platform finding 1 in business-policies-cat.md | brief §5.1; erp-core checklist C1; conventions § Migrations rule 5; ADR-CAT-055 | — |
 | D-P2-04 | The PK is `{entity}Pk` with the identity clause. This replaces the given's `ID` + `SEQ_<TABLE>` default, because the profile decision governs and one database carries one PK strategy | profile `stack.db.pk_generation`, `naming.pk_pattern`; brief §4 | Profile change only |
 | D-P2-05 | Lookup-backed columns are `VARCHAR(50)` and hold the code. They carry no CHECK of allowed codes and no DB default. The service applies the SRS defaults (STANDARD, PIECE, STANDARD, UNPUBLISHED — D-09) and validates against the active values in `mdl` (RULE-CAT-006) | profile lookups rule; given lookups convention | — |
 | D-P2-06 | Logical `number` → `INTEGER`, declared once in the header. Decimal precision: `quantity` NUMERIC(18,3) and `conversionFactor` NUMERIC(18,6). The SRS fixes the scale only; 15 and 12 integer digits are enough for any retail quantity | SRS A3 (3 and 6 decimals) | Widen the precision in a later delta (non-breaking) |
 | D-P2-07 | `createdBy` and `updatedBy` are `VARCHAR(100)` principal strings. The created pair is NOT NULL and the updated pair is NULL until the first update | brief §3 audit rule; given migrations convention | — |
 | D-P2-08 | Variant `nameAr` and `nameEn` are derived at read (SRS D-15) and are not stored. A stored copy would go stale when a value is renamed (AC-CAT-048) | SRS ENT-CAT-002, D-15 | Store an owner override name if D-15 changes |
 | D-P2-09 | Unit e-invoice code `valueAr` and `valueEn` are stored (config-kind defaults) and nullable. The service copies them from the CAT_UOM labels at save; they are never entered | SRS ENT-CAT-012; profile entity_defaults.config | Derive at read and drop the columns in a later delta |
-| D-P2-10 | Rules that apply among active records are partial unique indexes named `UQ_…`. The Item Arabic name is compared without leading, trailing or repeated spaces (RULE-CAT-003). Rows from the same import file are checked by the service | SRS RULE-CAT-003, 016, 019, 024, 027, 029, 034, 039, 043 | — |
+| D-P2-10 | Rules that apply among active records are partial unique indexes named `UQ_…`. The Item Arabic name is compared after `CAT_NORMALIZE_AR` (tashkeel and tatweel dropped, alef / taa marbuta / alef maqsura folded, Latin lower-cased, spaces trimmed and collapsed — RULE-CAT-003, ADR-CAT-062). Rows from the same import file are checked by the service | SRS RULE-CAT-003, 016, 019, 024, 027, 029, 034, 039, 043 | — |
 | D-P2-11 | Barcode uniqueness is one partial unique index on the value among active barcodes. A SCALE code has 4–6 digits (RULE-CAT-033, RULE-CAT-034); a GTIN has 8–14 and an INTERNAL code has 13. So a SCALE code can never equal a GTIN or INTERNAL value, and RULE-CAT-029's per-type comparison holds without naming a lookup code in DDL | SRS RULE-CAT-029, 030, 033 | — |
 | D-P2-12 | Same-parent integrity is structural. A composite FK makes an assignment's value belong to its attribute (RULE-CAT-013). Another makes a media record's Variant belong to its Item (RULE-CAT-040; no check when the Variant is empty). Both FKs include TENANT_ID | SRS RULE-CAT-013, RULE-CAT-040 | — |
 | D-P2-13 | Lookup seeds go into the given's `mdl` tables. The given documents `KEY`, `OWNER_MODULE_CODE`, `TENANT_ID = 1` (PLATFORM) and the `SEQ_MDL_LOOKUP_*` id sequences. The value columns (`CODE`, `LABEL_AR`, `LABEL_EN`, `SORT_ORDER`) follow the given's `LookupOptionView`, and the type link is `LOOKUP_TYPE_ID`. Before P3.1 applies BLOCK 8, it must check these value-table column names against the given's `mdl` migration. No CAT table or column depends on them | brief §4.2 (the key owner owns the seed); given lookups convention | Adjust the column names only; keys and values are fixed by SRS A6 |
-| D-P2-14 | The number series CAT_ITEM (ITM-000001), CAT_VARIANT (VAR-000001) and CAT_INTERNAL_BARCODE (10 digits) are seeded in `CORE_NUMBER_SERIES` with RESET_POLICY NEVER, so the first save does not fail with `SEQUENCE_NOT_CONFIGURED` | SRS D-11; given numbering convention | Patterns are configurable per tenant in the core sequence module |
+| D-P2-14 | The number series CAT_ITEM (ITM-000001), CAT_VARIANT (VAR-000001) and CAT_INTERNAL_BARCODE (10 digits) are seeded in `CORE_NUMBER_SERIES` with RESET_POLICY NEVER, so the first save does not fail with `SEQUENCE_NOT_CONFIGURED`. The given copies the series to every new tenant with the counter at 1, and the Unit e-invoice codes are copied by `CatTenantProvisioningContributor` (REQ-CAT-134, ADR-CAT-058) | SRS D-11; given numbering convention; ADR-CAT-058 | Patterns are configurable per tenant in the core sequence module |
 | D-P2-15 | The 8 Unit e-invoice codes of D-12 are seeded for the PLATFORM tenant (AC-CAT-097 lists 8 active ones) | SRS D-12, ENT-CAT-012 | Re-map against the authority's code table |
 | D-P2-16 | These rules stay with the service and are not DDL, because they need other rows, flags, files or sequences: RULE-CAT-004, 005, 006, 007, 008, 009, 010, 011, 012, 013 (unique combination), 014, 015, 017, 018 (at least one line), 019 (active, STANDARD), 020, 021, 022, 023 (active parent, no cycle, depth ≤ 5), 025, 026, 027 (differs from base unit), 028, 030 (check digit), 031, 032, 033 (length), 035, 036, 037, 038, 039 (exactly one), 040 (when the Variant is empty), 041, 042 (GS1 / EGS format), 044, 045, 046, 047, 048, 049 | SRS A5 | — |
 | D-P2-17 | Profile check CM-8: CAT holds no stock quantity, no monetary amount and no price (SRS A2 out of scope: PRC, INV). No warehouse, currency or price-list dimension applies to a CAT row | SRS A2; profile CM-8 | — |
 | D-P2-18 | Delta: the current state holds no earlier CAT db-script, so this v2 migration creates every object. The DBF sequence starts at 001 (next free 162). No XM exists (next free XM sequence 001) | brief delta rule; change-manifest CS-CAT-001 | — |
 
-No ADR was raised and no question was asked. The next free ADR sequence for CAT is unchanged (044). Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
+No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning) and ADR-CAT-062 (Arabic normalisation, trigram indexes) also shape this script. The next free ADR sequence for CAT is 063. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
 
 ## 6 — Registry content
 

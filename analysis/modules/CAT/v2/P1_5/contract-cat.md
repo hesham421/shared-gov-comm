@@ -24,6 +24,8 @@ This contract states what other modules may depend on in CAT before CAT is built
 - **Tenancy.** The given core resolves the tenant. Every operation answers within the caller's tenant, and a record of another tenant reads as *not found*.
 - **Names.** `nameAr` is always present. Where `nameEn` is empty, the English display returns `nameAr` (REQ-CAT-029).
 - **Lookup codes.** Lookup-backed values are returned as codes of the CAT-owned `mdl` keys (SRS A6). Consumers resolve labels through the core lookup module. A code that is deactivated later stays on existing records (REQ-CAT-076).
+- **Authorization of in-process calls (ADR-CAT-061).** The operation items are in-process calls. CAT does not check a CAT permission on them: the **calling module authorizes its own caller** against its own permissions before it calls CAT (for example SFR for a storefront shopper, SLS for a cashier). The one exception is the catalogue search (CON-CAT-016), which answers an empty result to a user without VIEW on CAT_ITEMS. Tenancy still applies to every call.
+- **Obligation of the capability-flag writer (POL-CAT-005).** A write that turns `variants` or `bundles` off must first call CON-CAT-017 and must refuse the write when `allowed` is false, showing the returned message and dependent Items. CAT answers the check and never writes a flag. The writer (owner OPEN, P-02) does not yet honour this, so it is recorded as an OPEN platform finding in `business-policies-cat.md` (PLATFORM FINDINGS, row 2).
 
 ---
 
@@ -99,7 +101,7 @@ Signature : lookupBarcode(value: text) → {variantPk, itemPk, uomCode, embedded
 Entity    : ENT-CAT-009
 Traces    : ENT-CAT-009, REQ-CAT-086, REQ-CAT-090, REQ-CAT-097, REQ-CAT-100
 
-Only active barcodes and active scale label layouts match (REQ-CAT-085, REQ-CAT-094).
+Only active barcodes of active Variants of active Items, and active scale label layouts, match (REQ-CAT-085, REQ-CAT-094, REQ-CAT-086 — ADR-CAT-059).
 
 ### CON-CAT-011 — Read a Category (قراءة فئة / Read a Category)
 Signature : getCategory(categoryPk: BIGINT) → Category {categoryPk, code, nameAr, nameEn, parentCategoryFk, sortOrder, isActiveFl} · errors: not found
@@ -162,15 +164,16 @@ rows:
   - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "load the values of the CAT_* lookup keys (brand, unit of measure, tax class, e-invoice codes, barcode type, scale value type, item kind, publish state) at runtime"}
   - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "read the `variants` and `bundles` capability flags behind the FeatureFlags API (ADR-CAT-041)"}
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "issue Item codes (CAT_ITEM), Variant codes (CAT_VARIANT) and internal barcode digits (CAT_INTERNAL_BARCODE)"}
-  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileImageStoreApi, purpose: "save Item images in the public image storage and return their file reference"}
-  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "read the type and size of an uploaded image file for RULE-CAT-038"}
+  - {given: erp-core, module: modules.file, via: docs/api-docs/file/index.md, purpose: "the client uploads Item images to the public image storage and import files to the private storage through the given FILE upload endpoints, and passes the returned FILE_DOCUMENT.ID to CAT; CAT has no multipart endpoint (ADR-CAT-056)"}
+  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "read the type, size and availability of an uploaded file for RULE-CAT-038 and RULE-CAT-044, the bytes of an import file, and the public URL of an image"}
   - {given: erp-core, module: modules.events, via: com.erp.events.OutboxPublisher, purpose: "record catalogue-change events in the change transaction and deliver them after commit (RULE-CAT-049)"}
-  - {given: erp-core, module: modules.report, via: com.erp.report.crossmodule.PrintApi, purpose: "produce the printable barcode label document (REQ-CAT-102)"}
-  - {given: erp-core, module: modules.report, via: com.erp.report.ReportProvider, purpose: "register the barcode label report of the catalogue"}
+  - {given: erp-core, module: modules.report, via: com.erp.report.crossmodule.PrintApi, purpose: "produce the printable barcode label document (REQ-CAT-102) and the xlsx item import sheet (REQ-CAT-036)"}
+  - {given: erp-core, module: modules.report, via: com.erp.report.ReportProvider, purpose: "register the catalogue reports CAT_BARCODE_LABEL and CAT_ITEM_IMPORT_SHEET (ADR-CAT-057)"}
   - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "register the CAT page codes so the security module derives their VIEW/CREATE/UPDATE/DELETE permissions"}
+  - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "copy the 8 seeded Unit e-invoice codes into each newly provisioned tenant; the given copies the CAT lookup values and number series itself (ADR-CAT-058, REQ-CAT-134)"}
 ```
 
-The contract does not promise any entity that a given provides. Tenant, User, Role, LookupType/LookupValue, FileDocument and NumberSeries stay with `erp-core` [C:C-GIVEN-1].
+The contract does not promise any entity that a given provides. Tenant, User, Role, LookupType/LookupValue, FileDocument and NumberSeries stay with `erp-core` [C:C-GIVEN-1]. A new tenant receives the CAT seeds through the given provisioning (REQ-CAT-134, ADR-CAT-058), so every operation item works in every tenant from its first request.
 
 ---
 

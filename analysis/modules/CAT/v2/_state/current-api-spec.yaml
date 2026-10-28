@@ -16,7 +16,7 @@ paths:
       operationId: createItem
       summary: create Item
       x-api-id: API-CAT-001
-      x-traces: [REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-011, REQ-CAT-013, REQ-CAT-015, REQ-CAT-016, REQ-CAT-024, REQ-CAT-025, REQ-CAT-026, REQ-CAT-027, REQ-CAT-028, REQ-CAT-030, REQ-CAT-031, REQ-CAT-032, REQ-CAT-033,
+      x-traces: [REQ-CAT-131, REQ-CAT-134, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-011, REQ-CAT-013, REQ-CAT-015, REQ-CAT-016, REQ-CAT-024, REQ-CAT-025, REQ-CAT-026, REQ-CAT-027, REQ-CAT-028, REQ-CAT-030, REQ-CAT-031, REQ-CAT-032, REQ-CAT-033,
         REQ-CAT-034, REQ-CAT-035, REQ-CAT-056, REQ-CAT-059, REQ-CAT-060, REQ-CAT-072, REQ-CAT-073, REQ-CAT-074, REQ-CAT-075, REQ-CAT-117, REQ-CAT-123, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007,
         DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012, DBF-CAT-013, DBF-CAT-014, DBF-CAT-015, DBF-CAT-023, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-085, DBF-CAT-086, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
       requestBody:
@@ -46,8 +46,11 @@ paths:
                       componentVariantFk: {type: integer, format: int64}
                       quantity: {type: number}
                       sortOrder: {type: integer, format: int32}
+                    required: [componentVariantFk]
+                  default: []
+                  description: optional; holds ≥ 1 line only when itemKindCode is BUNDLE (RULE-CAT-018)
                   x-dbf: DBF-CAT-089
-              required: [nameAr, bundleComponents]
+              required: [nameAr]
               title: ItemCreateRequest
       responses:
         '201':
@@ -196,7 +199,7 @@ paths:
       operationId: readItem
       summary: read Item
       x-api-id: API-CAT-002
-      x-traces: [REQ-CAT-001, REQ-CAT-002, REQ-CAT-010, REQ-CAT-029, REQ-CAT-058, REQ-CAT-119, DBF-CAT-001, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-014, DBF-CAT-022, DBF-CAT-027, DBF-CAT-062, DBF-CAT-064, DBF-CAT-088,
+      x-traces: [REQ-CAT-132, REQ-CAT-001, REQ-CAT-002, REQ-CAT-010, REQ-CAT-029, REQ-CAT-058, REQ-CAT-119, DBF-CAT-001, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-014, DBF-CAT-022, DBF-CAT-027, DBF-CAT-062, DBF-CAT-064, DBF-CAT-088,
         DBF-CAT-089, DBF-CAT-102, DBF-CAT-114, DBF-CAT-128]
       parameters:
       - name: id
@@ -250,7 +253,7 @@ paths:
       operationId: updateItem
       summary: update Item
       x-api-id: API-CAT-003
-      x-traces: [REQ-CAT-004, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-030, REQ-CAT-031, REQ-CAT-034, REQ-CAT-063, REQ-CAT-072, REQ-CAT-073, REQ-CAT-075, REQ-CAT-076, REQ-CAT-082, REQ-CAT-117, REQ-CAT-123, DBF-CAT-001,
+      x-traces: [REQ-CAT-131, REQ-CAT-132, REQ-CAT-133, REQ-CAT-004, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-030, REQ-CAT-031, REQ-CAT-034, REQ-CAT-063, REQ-CAT-072, REQ-CAT-073, REQ-CAT-075, REQ-CAT-076, REQ-CAT-082, REQ-CAT-117, REQ-CAT-123, DBF-CAT-001,
         DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012, DBF-CAT-015, DBF-CAT-017, DBF-CAT-020]
       parameters:
       - name: id
@@ -339,7 +342,7 @@ paths:
       operationId: deactivateItem
       summary: deactivate Item
       x-api-id: API-CAT-004
-      x-traces: [REQ-CAT-005, REQ-CAT-062, DBF-CAT-001, DBF-CAT-013, DBF-CAT-014, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
+      x-traces: [REQ-CAT-131, REQ-CAT-005, REQ-CAT-062, DBF-CAT-001, DBF-CAT-013, DBF-CAT-014, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
       parameters:
       - name: id
         in: path
@@ -399,7 +402,7 @@ paths:
       operationId: reactivatePublishOrUnpublishItem
       summary: reactivate, publish or unpublish Item
       x-api-id: API-CAT-005
-      x-traces: [REQ-CAT-006, REQ-CAT-113, REQ-CAT-114, REQ-CAT-116, DBF-CAT-001, DBF-CAT-003, DBF-CAT-013, DBF-CAT-014, DBF-CAT-027, DBF-CAT-028]
+      x-traces: [REQ-CAT-130, REQ-CAT-006, REQ-CAT-113, REQ-CAT-114, REQ-CAT-116, DBF-CAT-001, DBF-CAT-003, DBF-CAT-013, DBF-CAT-014, DBF-CAT-027, DBF-CAT-028]
       parameters:
       - name: id
         in: path
@@ -459,8 +462,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-PUBLISH-BLOCKED
-          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-PUBLISH-BLOCKED]
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-PUBLISH-BLOCKED, CAT-422-ITEM-NO-ACTIVE-VARIANT, CAT-422-CATEGORY-INACTIVE, CAT-422-BUNDLE-COMPONENT-INVALID
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-PUBLISH-BLOCKED, CAT-422-ITEM-NO-ACTIVE-VARIANT, CAT-422-CATEGORY-INACTIVE, CAT-422-BUNDLE-COMPONENT-INVALID]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -475,7 +478,7 @@ paths:
       operationId: generateVariants
       summary: generate Variants
       x-api-id: API-CAT-006
-      x-traces: [REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-033, REQ-CAT-035, REQ-CAT-049, REQ-CAT-051, REQ-CAT-052, REQ-CAT-061, DBF-CAT-005, DBF-CAT-022,
+      x-traces: [REQ-CAT-129, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-033, REQ-CAT-035, REQ-CAT-049, REQ-CAT-051, REQ-CAT-052, REQ-CAT-061, DBF-CAT-005, DBF-CAT-022,
         DBF-CAT-023, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-061, DBF-CAT-062, DBF-CAT-063, DBF-CAT-064, DBF-CAT-114]
       parameters:
       - name: id
@@ -546,8 +549,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-LIMIT-EXCEEDED
-          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-LIMIT-EXCEEDED]
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -959,7 +962,7 @@ paths:
       operationId: deactivateItemUnit
       summary: deactivate Item unit
       x-api-id: API-CAT-013
-      x-traces: [REQ-CAT-079, DBF-CAT-096, DBF-CAT-101]
+      x-traces: [REQ-CAT-128, REQ-CAT-079, DBF-CAT-096, DBF-CAT-101]
       parameters:
       - name: id
         in: path
@@ -1000,6 +1003,12 @@ paths:
         '404':
           description: error — CAT-404-NOT-FOUND
           x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ITEM-UNIT-HAS-BARCODES
+          x-error-codes: [CAT-409-ITEM-UNIT-HAS-BARCODES]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1320,16 +1329,17 @@ paths:
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
+              description: the image bytes were uploaded beforehand through the given erp-core FILE endpoint (public image storage), which returned fileDocumentRef (ADR-CAT-056)
               properties:
-                file: {type: string, format: binary}
+                fileDocumentRef: {type: integer, format: int64, x-dbf: DBF-CAT-122}
                 nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-123}
                 nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-124}
                 variantFk: {type: integer, format: int64, x-dbf: DBF-CAT-129}
-              required: [file]
-              title: ItemMediaUpload
+              required: [fileDocumentRef]
+              title: ItemMediaCreateRequest
       responses:
         '201':
           description: success — ApiResponse<T>
@@ -1364,18 +1374,6 @@ paths:
         '404':
           description: error — CAT-404-NOT-FOUND
           x-error-codes: [CAT-404-NOT-FOUND]
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/LocalizedError'}
-        '413':
-          description: error — CAT-413-PAYLOAD-TOO-LARGE
-          x-error-codes: [CAT-413-PAYLOAD-TOO-LARGE]
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/LocalizedError'}
-        '415':
-          description: error — CAT-415-UNSUPPORTED-MEDIA-TYPE
-          x-error-codes: [CAT-415-UNSUPPORTED-MEDIA-TYPE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -3059,7 +3057,7 @@ paths:
       operationId: readCatalogueSettings
       summary: read catalogue settings
       x-api-id: API-CAT-045
-      x-traces: [REQ-CAT-095, DBF-CAT-136, DBF-CAT-137, DBF-CAT-140, DBF-CAT-141, DBF-CAT-142, DBF-CAT-143, DBF-CAT-150, DBF-CAT-151, DBF-CAT-154, DBF-CAT-155]
+      x-traces: [REQ-CAT-134, REQ-CAT-095, DBF-CAT-136, DBF-CAT-137, DBF-CAT-140, DBF-CAT-141, DBF-CAT-142, DBF-CAT-143, DBF-CAT-150, DBF-CAT-151, DBF-CAT-154, DBF-CAT-155]
       responses:
         '200':
           description: success — ApiResponse<T>
@@ -3249,13 +3247,14 @@ paths:
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
+              description: the xlsx file was uploaded beforehand through the given erp-core FILE endpoint (private storage), which returned fileDocumentRef (ADR-CAT-056)
               properties:
-                file: {type: string, format: binary}
-              required: [file]
-              title: ItemImportUpload
+                fileDocumentRef: {type: integer, format: int64}
+              required: [fileDocumentRef]
+              title: ItemImportRequest
       responses:
         '200':
           description: success — ApiResponse<T>
@@ -3288,15 +3287,9 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
-        '413':
-          description: error — CAT-413-PAYLOAD-TOO-LARGE
-          x-error-codes: [CAT-413-PAYLOAD-TOO-LARGE]
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/LocalizedError'}
-        '415':
-          description: error — CAT-415-UNSUPPORTED-MEDIA-TYPE
-          x-error-codes: [CAT-415-UNSUPPORTED-MEDIA-TYPE]
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}

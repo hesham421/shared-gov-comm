@@ -11,6 +11,16 @@ Several catalogue reads cross entities or walk a hierarchy (Category tree and su
 - The catalogue search (QR-CAT-008) and the turn-off check (QR-CAT-009) are native aggregate queries.
 - Variant search (QR-CAT-016), barcode lookup (QR-CAT-052), derived Variant names (QR-CAT-019) and images of a Variant (QR-CAT-058) join CAT tables only. No lookup label is joined: the backend returns codes.
 
+**Tenant scope of native queries** (amended at the gate-analysis revise, G4 — given checklist C3 / F2)
+- The native queries are QR-CAT-006, QR-CAT-008, QR-CAT-009 and QR-CAT-037. Each one bypasses the given tenant filter, so each repository method carries `@TenantUnscoped(reason = "native SQL — TENANT_ID bound explicitly", adr = "ADR-CAT-047")` (`com.erp.tenant.TenantUnscoped`).
+- Each of them writes `TENANT_ID = :tenant` explicitly on every table it reads:
+  - every `FROM` and `JOIN` of the outer query;
+  - every sub-select and every `EXISTS`;
+  - both branches of every recursive CTE (`CAT_CATEGORY` up and down, the anchor and the recursive member);
+  - `CAT_BARCODE` and `CAT_VARIANT` inside the barcode sub-queries.
+- `:tenant` is bound from `TenantContext.require()`, never from the request.
+- The other QRs run through the given tenant filter (JPQL, derived queries, search builders). They need no annotation. Their logical specs still show `TENANT_ID = :tenant` so the reader sees the scope.
+
 **Locks** (all inside the request transaction, released at commit)
 - Item-scoped mutations (generate Variants, deactivate Variant, publish, deactivate Item, Bundle components, media changes, Item unit add) first lock the CAT_ITEM row with `SELECT … FOR UPDATE` (QR-CAT-010). Every guard about "the Variants / images / units / lines of one Item" is decided under that lock.
 - Component Variants of a Bundle, and their Items, are read `FOR SHARE` (QR-CAT-017); deactivating a Variant or an Item takes the Item lock and then counts active Bundles (QR-CAT-042), so a deactivation and a Bundle save never both pass.

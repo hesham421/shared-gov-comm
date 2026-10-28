@@ -19,7 +19,7 @@ The frontend plan binds the six CAT screens to `api-spec-cat.yaml` (51 operation
    - The Items list shows the Category label from the cached Category tree (`categoryFk` → `CategoryNode.nameAr`).
 6. **Request fields never sent by the UI.**
    - `code` (create and updates of Item and Variant), `itemKindCode` / `baseUomCode` on Item update, and `conversionFactor` on Item unit update. These fields are read-only in the UI, and the server rejects them under RULE-CAT-004 / 022 / 007 / 028.
-   - `bundleComponents` is required by `API-CAT-001`. The UI sends `[]` for a STANDARD Item.
+   - `bundleComponents` is optional on `API-CAT-001` (default `[]`; RULE-CAT-018 applies only when `itemKindCode` is BUNDLE). The UI omits it for a STANDARD Item. (Amended at the gate-analysis revise, G16: the earlier "send `[]`" workaround is dropped.)
 7. **Stories with no navigation of their own.** US-CAT-002 (changes reach every channel) and US-CAT-003 (behaviour follows flags) have no screen of their own. Their flows ride on SCR-CAT-001 (Save re-reads the Item: REQ-CAT-010; flags read on entry: REQ-CAT-012). No navigation is invented for them.
 
 ## Consequences

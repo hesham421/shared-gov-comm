@@ -5,7 +5,7 @@
 | Module | CAT |
 | Version | v2 |
 | Stage | P2 — Database (repair round 1) |
-| Status | ACCEPTED (non-breaking) |
+| Status | SUPERSEDED — by ADR-CAT-055 (the 12 `FK_<TABLE>_TENANT → CORE_TENANT(ID)` are restored; the given tenant table is a permitted given reference, not an XM) |
 | Date | 2026-10-28 |
 | Applies to | `analysis/modules/CAT/v2/P2/db-script-cat.md`, `registry-db-cat.md` |
 

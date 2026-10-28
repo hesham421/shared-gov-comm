@@ -350,7 +350,7 @@ not recording one is.
 Verdict rule (`shared/QUALITY-RUBRIC.md §4`): APPROVE only when every score ≥
 2, no CRITICAL finding and no extra check FAIL above
 MINOR; REVISE when a MAJOR finding or a low score has a fix the
-`merge-review-notes` lane can apply — in whichever plan the finding names, backend,
+`analysis` lane can apply — in whichever plan the finding names, backend,
 frontend or test (at most 2 time(s));
 ESCALATE for a CRITICAL finding, a BLOCKED ADR, or a repeated finding. A violated
 given-checklist line (§3.6) is a MAJOR finding and forces at least REVISE.

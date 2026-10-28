@@ -35,7 +35,7 @@ Shared UX copy (not catalogue messages):
 | save-first | احفظ تغييراتك أولًا. | Save your changes first. |
 | flag-unreadable | (RULE-CAT-009 message, SRS) | (RULE-CAT-009 message, SRS) |
 
-## SCR-CAT-001 — Items / الأصناف                 traces=REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-025,AC-CAT-026,AC-CAT-027,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-074,AC-CAT-075,AC-CAT-076,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-098,AC-CAT-099,AC-CAT-101,AC-CAT-102,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-127,AC-CAT-128,AC-CAT-129,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003
+## SCR-CAT-001 — Items / الأصناف                 traces=REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-024,REQ-CAT-025,REQ-CAT-026,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-072,REQ-CAT-073,REQ-CAT-074,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-096,REQ-CAT-097,REQ-CAT-099,REQ-CAT-100,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-025,AC-CAT-026,AC-CAT-027,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-074,AC-CAT-075,AC-CAT-076,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-098,AC-CAT-099,AC-CAT-101,AC-CAT-102,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-127,AC-CAT-128,AC-CAT-129,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-137,AC-CAT-138,AC-CAT-139,AC-CAT-140,AC-CAT-142,UXD-CAT-001,UXD-CAT-002,UXD-CAT-003
 
 Source            : SCR-REQ-CAT-001 · page code CAT_ITEMS · owning ENT-CAT-001 (with ENT-CAT-002, 005, 007, 008, 009, 010; ENT-CAT-006 by reference)
 UI pattern        : Search + Entry (composite). Content shape: header + repeating lines (Variants, Item units, barcodes, Bundle components, images)
@@ -59,7 +59,7 @@ States            : empty — Search with no Item: "No items yet" + "New item" a
 | isActiveFl | flag | نشط | Active | default: active |
 | Find by barcode | barcode or 13-digit scale label (REQ-CAT-086, REQ-CAT-097) | بحث بالباركود | Find by barcode | an action field, not an entity field; a hit opens the Entry |
 
-Result columns (sorted by nameAr, REQ-CAT-003): code الرمز / Code · nameAr الاسم بالعربية / Arabic name · nameEn الاسم بالإنجليزية / English name (the English display falls back to nameAr — REQ-CAT-029) · Category الفئة / Category (nameAr of the node) · brand العلامة التجارية / Brand · Item kind نوع الصنف / Item kind (while `bundles` is on) · publish state حالة النشر / Publish state · active نشط / Active. Paging: page size 20, changeable.
+Result columns (sorted by nameAr, REQ-CAT-003): code الرمز / Code · nameAr الاسم بالعربية / Arabic name · nameEn الاسم بالإنجليزية / English name (the English display falls back to nameAr — REQ-CAT-029) · Category الفئة / Category (nameAr of the node, active or inactive — an inactive Item may point to a Category deactivated after it) · brand العلامة التجارية / Brand · Item kind نوع الصنف / Item kind (while `bundles` is on) · publish state حالة النشر / Publish state · active نشط / Active. Paging: page size 20, changeable.
 
 ### Entry sub-view — header (ENT-CAT-001)
 
@@ -136,7 +136,7 @@ Pane action: "Add component / إضافة مكوّن" opens the **Bundle componen
 
 | Field | Label-ar | Label-en | Read-only |
 |---|---|---|---|
-| fileDocumentRef | ملف الصورة | Image file | thumbnail (UXD-CAT-003); chosen once on add |
+| fileDocumentRef | ملف الصورة | Image file | thumbnail (UXD-CAT-003); chosen once on add and uploaded through the given FILE endpoint when Save runs (ADR-CAT-056) |
 | nameAr | وصف الصورة بالعربية | Arabic image description | no (default the Item's nameAr) |
 | nameEn | وصف الصورة بالإنجليزية | English image description | no |
 | variantFk | المتغيّر | Variant | no (options: this Item's Variants; only while `variants` is on) |
@@ -245,7 +245,7 @@ Screen copy:
 | steps | 1) نزّل ورقة الاستيراد · 2) املأها · 3) استوردها | 1) Download the import sheet · 2) Fill it in · 3) Import it |
 | open-items | افتح الأصناف | Open Items |
 
-## SCR-CAT-005 — Barcode labels / ملصقات الباركود                 traces=REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106
+## SCR-CAT-005 — Barcode labels / ملصقات الباركود                 traces=REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-136
 
 Source            : SCR-REQ-CAT-005 · page code CAT_BARCODE_LABELS · owning ENT-CAT-002 (ENT-CAT-009 read)
 UI pattern        : Search + Entry, composite. Content shape: header + repeating lines (Variant, copies)
@@ -270,7 +270,7 @@ Screen copy:
 | no-barcode | لا يوجد باركود نشط | No active barcode |
 | open-item | افتح الصنف | Open item |
 
-## SCR-CAT-006 — Catalogue settings / إعدادات الكتالوج                 traces=REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-098,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-100,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,UXD-CAT-001
+## SCR-CAT-006 — Catalogue settings / إعدادات الكتالوج                 traces=REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-098,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-134,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-100,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,AC-CAT-141,UXD-CAT-001
 
 Source            : SCR-REQ-CAT-006 · page code CAT_SETTINGS · owning ENT-CAT-011 and ENT-CAT-012 (ENT-CAT-001, 002, 005 read by the turn-off check)
 UI pattern        : Master + Detail per list, composite. Content shape: two flat lists + check panel
