@@ -4,11 +4,11 @@
   "version": 2,
   "scores": {
     "unambiguous": 2,
-    "verifiable": 3,
+    "verifiable": 2,
     "complete": 2,
     "consistent": 2,
-    "singular": 2,
-    "feasible": 2,
+    "singular": 3,
+    "feasible": 1,
     "traceable": 3
   },
   "extra_checks": [
@@ -55,29 +55,24 @@
   ],
   "analyze_confirmed": [
     {
-      "finding": "C5.13 AC-CAT-013 'could' (srs line 454)",
+      "finding": "C5.13 srs:455 AC-CAT-013 'could'",
       "confirmed": false,
-      "note": "False positive. 'could' is inside the quoted RULE-CAT-009 catalogue message, not in the AC's own wording."
+      "note": "False positive. The word is inside the verbatim RULE-CAT-009 English message ('could not be checked'). The measurable Then is '0 records saved'."
     },
     {
-      "finding": "C5.13 AC-CAT-036 'could' (srs line 782)",
+      "finding": "C5.13 srs:773 AC-CAT-036 'could'",
       "confirmed": false,
-      "note": "False positive. It is inside the quoted RULE-CAT-005 message."
+      "note": "False positive. It is the verbatim RULE-CAT-005 message ('could not be issued'). The measure is 0 Items and 0 Variants stored."
     },
     {
-      "finding": "C5.13 AC-CAT-072 'مختلف' (srs line 1302)",
+      "finding": "C5.13 srs:1293 AC-CAT-072 'مختلف'",
       "confirmed": false,
-      "note": "False positive. It is inside the quoted RULE-CAT-024 message, copied verbatim."
+      "note": "False positive. It is the verbatim RULE-CAT-024 Arabic message. The measure is 'nothing is created' plus code CAT-409-CATEGORY-DUPLICATE."
     },
     {
-      "finding": "C5.13 AC-CAT-102 'could' (srs line 1742)",
+      "finding": "C5.13 srs:1733 AC-CAT-102 'could'",
       "confirmed": false,
-      "note": "False positive. It is inside the quoted RULE-CAT-035 message."
-    },
-    {
-      "finding": "10 clauses examined nothing (C6.3, C6.10, C6.12, C6.15, C7.5, C7.5b, C7.24, C7.26, C7.27, C7.28)",
-      "confirmed": true,
-      "note": "All are empty by nature: the XM register is `records: []` and CAT consumes nothing. C6.15 is also tracked as OPEN platform finding 1, owned by the factory."
+      "note": "False positive. It is the verbatim RULE-CAT-035 message ('could not be read'). The measure is 'no Variant returned'."
     }
   ],
   "findings": [
@@ -85,171 +80,105 @@
       "id": "G1",
       "severity": "MAJOR",
       "section": "backend",
-      "artifact": "api-spec",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "P3 read-binding — every foreign id a screen renders resolves to a label (REQ-CAT-076, UXD-CAT-001)",
-      "problem": "API-CAT-052 returns only active values, and its `LookupOption` schema has no activity flag. REQ-CAT-076, UXD-CAT-001 ('Need') and TC-CAT-139 require the label of a value deactivated later to still show on the records that hold it. The frontend plan's F1 `LookupOption` declares an `isActive` field that the API document does not carry. erp-core 1.6.0 publishes only `MdlLookupApi.readActiveValuesByKey`, so CAT has no source for that label. TC-CAT-139 passes only because OLDBRAND's code and label are the same text.",
-      "fix": "Interim (state it now in P3.1, P3.2 and P4): an inactive value renders as its raw code. Drop `isActive` from F1 `LookupOption`. Narrow UXD-CAT-001 'Need' to the active values plus the raw code of an inactive one. Change TC-CAT-139 and TC-CAT-177 to use a host brand whose label differs from its code, and assert the code. Raise `CORE-GAP-lookup-inactive-value-label.md` (read by key and code, active or not). When the core answers, add a `codes` parameter to API-CAT-052 and add `isActiveFl` to `LookupOption`.",
+      "clause": "erp-core checklist C7: \"Every byte goes through FilePrivateStoreApi / FileImageStoreApi / the FILE endpoints; the module keeps FILE_DOCUMENT.ID columns and asks FileDocumentLookupApi for URLs\" · F9 (workaround instead of CORE-GAP) · modules.file 'Do not rebuild: … an image validator'",
+      "problem": "PHASE CORE 'Given usage', API-CAT-018 (RULE-CAT-038) and API-CAT-049 (RULE-CAT-044) all assume CAT can read the type, size and storage (public or private) of a fileDocumentRef through FileDocumentLookupApi, and the bytes of an import file. Both conventions.md §Files and file.md publish only isAvailable, publicUrl and publicUrls on that interface, and no in-process byte read-back exists. CAT's own JPG/PNG/WEBP and 5 MB check is also the 'image validator' that file.md lists under 'Do not rebuild'; FILE_CATEGORY already carries per-tenant limits and allowPublic. As written, RULE-CAT-038, RULE-CAT-044 and the whole import (REQ-CAT-037 … 041, 139) depend on calls that do not exist, and no CORE-GAP records this. This breaks a given-checklist line, which makes it MAJOR and forces REVISE. Re-check in this round: confirmed against .claude/skills/erp-core-usage@1.6.0/reference/conventions.md:77 and modules/file.md.",
+      "fix": "1) Raise decisions/CAT/CORE-GAP-file-document-metadata-read.md. It asks whether FileDocumentLookupApi (or FilePrivateStoreApi) can return a document's content type, size and visibility, and give a bounded read of a private document's bytes, within the caller's tenant. 2) Raise a new ADR amending ADR-CAT-056: image type, size and public-only storage are enforced by the FILE category CAT registers for item images (allowPublic = true, allowed types PNG/JPEG/WEBP, limit 5 MB), at the given FILE upload endpoint. CAT then checks only isAvailable and its own 20-record count (RULE-CAT-038 keeps its message for the count, and the ADR states which part the FILE category holds). The import's byte read and its type/size check are marked as a core dependency until the gap is answered. 3) Correct the FileDocumentLookupApi given-usage rows in SRS A9, contract §4 and the backend plan PHASE CORE so they list only the published methods. Add the gap to 'Core gaps' and to the plan index. 4) Add a PLATFORM FINDINGS row in business-policies (owner erp-core modules.file). 5) Re-word TC-CAT-056, 146, 166 and 218: type, size and storage refusals come from the FILE category upload, and the CAT endpoint is asserted only for what CAT itself decides (isAvailable → CAT-404-NOT-FOUND, the count → RULE-CAT-038).",
       "adr": true
     },
     {
       "id": "G2",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "api-spec",
-      "line": null,
-      "clause": "P2 closure — maximum and edge sizes of requests",
-      "problem": "The plan never says that paged reads go through the given `PageableBuilder`, which caps the page size at 200. Native QR-CAT-006 binds `LIMIT :size` directly. The OpenAPI document declares no `maxItems` on `selections` (3), on values per selection, on Bundle `lines` or on label `lines`. API-CAT-006 does not say that RULE-CAT-014 is checked on the arithmetic product of the selection before any combination is built.",
-      "fix": "PHASE CORE, API conventions: every paged read uses `PageableBuilder` (size ≤ 200, page ≥ 0), and QR-CAT-006 takes its limit from the built Pageable. Add `maxItems` to the OpenAPI arrays: selections 3, values per selection 300, Bundle lines 100, label lines 5000. In API-CAT-006, compute the product size arithmetically and refuse with RULE-CAT-014 before materialising any combination. Add one row to TC-CAT-184: 4 attributes answers 400 or RULE-CAT-014.",
-      "adr": false
-    },
-    {
-      "id": "G3",
       "severity": "MAJOR",
       "section": "backend",
       "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "\"C3 Every native query / JdbcTemplate statement names TENANT_ID and its method carries @TenantUnscoped(reason, adr)\"",
-      "problem": "API-CAT-049 and ADR-CAT-071 insert each import batch of 500 rows 'with JDBC batching'. Every primary key is `GENERATED ALWAYS AS IDENTITY`, and Hibernate does not batch inserts for identity keys. The statement is therefore either not batched, or it is a `JdbcTemplate`/native statement. No QR catalogues such a statement, and none names `TENANT_ID` or carries `@TenantUnscoped`. ADR-CAT-047 says there are exactly six native statements. The 60 s budget and TC-CAT-217's 'first batch inserted' both assume this batching.",
-      "fix": "Recommended: the import saves entities through QR-CAT-003, 011 and 049, keeping the savepoint per batch and the row-by-row replay. Remove the words 'JDBC batching'. Mark the 60 s / 120 s budget as to be measured by TC-CAT-217, and reword TC-CAT-217's fault point as 'after the first 500 rows are saved'. If true batching is required instead: add a seventh catalogued native QR that names `TENANT_ID` explicitly and carries `@TenantUnscoped(reason, adr = \"ADR-CAT-047\")`, and amend ADR-CAT-047 and ADR-CAT-071.",
-      "adr": true
-    },
-    {
-      "id": "G4",
-      "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "\"C16 Entities whose changes a reviewer must see carry @Audited(...)\"; REQ-CAT-008 / RULE-CAT-049 (one event per committed change, with recordPk)",
-      "problem": "Three bulk updates must produce one catalogue-change event per record: QR-CAT-020 (assignments), QR-CAT-072 (barcodes) and QR-CAT-075 (default flag). QR-CAT-020 returns a count only, so API-CAT-009 has no pks for its DEACTIVATED events. QR-CAT-072 and QR-CAT-075 specify `RETURNING` as 'a JPQL bulk update', and JPQL has no RETURNING. Bulk updates also bypass the `@Audited` and `AuditableEntity` hooks the plan relies on, so these changes leave no audit record.",
-      "fix": "The Item lock (QR-CAT-010) is already held, so: load the active rows as entities, set `isActiveFl` or `isDefaultFl` on each, and publish one event per entity. For QR-CAT-075, keep the clear-then-set order with an explicit flush between the two writes, so UQ_CAT_VARIANT_DEFAULT holds after each statement. Rewrite the Logical spec and Result shape of QR-CAT-020, 072 and 075 to match.",
-      "adr": false
-    },
-    {
-      "id": "G5",
-      "severity": "MINOR",
-      "section": "frontend",
-      "artifact": "frontend-execution-plan",
-      "line": null,
-      "clause": "P3 read-binding — every foreign id a screen renders resolves to a label",
-      "problem": "When API-CAT-039 answers 403, ADR-CAT-051 §4 and CATEGORY-LABEL-QUERY say the Category column shows 'the code'. ItemSummary and ItemDetail carry only `categoryFk`, so no code is available to show.",
-      "fix": "Add derived `categoryCode`, `categoryNameAr` and `categoryNameEn` to ItemSummary and ItemDetail, listed under ADR-CAT-048 §5. Otherwise, state that the column shows '—' when the Category tree cannot be read.",
-      "adr": true
-    },
-    {
-      "id": "G6",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "unambiguous — empty value on an import row",
-      "problem": "API-CAT-049 applies 'defaults PIECE / STANDARD' but does not say whether a default applies only to an empty cell, or whether it overrides a value the row supplies.",
-      "fix": "In API-CAT-049, state: an empty baseUomCode or taxClassCode cell takes PIECE / STANDARD (D-09); a non-empty cell is validated under RULE-CAT-006 and never overridden. Add one TC row for empty cells.",
-      "adr": false
-    },
-    {
-      "id": "G7",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "srs",
-      "line": null,
-      "clause": "singular (rubric)",
-      "problem": "REQ-CAT-025 (three triggers), REQ-CAT-130 (four refusals) and REQ-CAT-135 (five triggers plus three exceptions) each bundle several independent behaviours under one REQ id.",
-      "fix": "In a delta, split them into new REQ ids without renumbering existing ones: one REQ per default-Variant move and one REQ per reactivation refusal. Re-point the affected ACs and TCs.",
-      "adr": false
-    },
-    {
-      "id": "G8",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "business-policies",
-      "line": null,
-      "clause": "CM-1",
-      "problem": "The dependent master entities (ENT-CAT-005, 007, 008, and partly 009 and 010) pass CM-1 only through ADR-CAT-039's reading, which no check can apply mechanically. This is already recorded as OPEN platform finding 9.",
-      "fix": "No CAT change while ADR-CAT-039 stands. Keep platform finding 9 OPEN, owned by the factory (profile `conventions.entity_defaults`).",
+      "clause": "rubric: complete (P1 silent path; P4 one rule for a repeated defect)",
+      "problem": "The plan never says what happens when a request body is well-typed but contradicts itself, or names a record outside the addressed parent. The same gap appears in four places: (a) API-CAT-006 with an attribute listed twice in `selections`, a duplicate id in `variantAttributeValueFks`, or a value of another attribute — these reach UQ_CAT_VAR_ATTR_ASSIGN_ATTR or the composite FK FK_CAT_VAR_ATTR_ASSIGN_CAT_VAR_ATTR_VALUE, which have no catalog row and so surface as CAT-500; (b) API-CAT-001 with a non-empty `bundleComponents` on a STANDARD Item; (c) API-CAT-017 with a bundleComponentPk of another Bundle, or a kept line whose componentVariantFk changed (DBF-CAT-089 is read-only after create); (d) API-CAT-014 is covered only for INTERNAL. Each implementer would pick a different outcome (ignore, 500 or save), and no TC exercises any of these cases.",
+      "fix": "Add one rule to PHASE CORE 'API conventions': a request whose fields contradict each other, or that names a record not part of the addressed parent, is refused with CAT-400-REQUEST-INVALID before any RULE runs and writes nothing. This covers a duplicate attribute or value id, a value not of its attribute, bundleComponents on a STANDARD Item, a bundleComponentPk outside the Bundle, and a changed componentVariantFk on a kept line. Also state that every db constraint backing a RULE is translated to that RULE's catalog row, never to CAT-500. Cite the rule in the Validations of API-CAT-001, 006, 014, 015 and 017, and extend the CAT-400-REQUEST-INVALID trigger text in the Error Catalog. Add one parameterised backend TC (package SVC-API-CRUD, one row per case) that asserts 400 and no write.",
       "adr": false
     }
   ],
   "adrs_reviewed": [
     {
-      "id": "ADR-CAT-044",
-      "status_ok": true,
-      "note": "Six PLATFORM-STD rows, each with ar and en text. The 413 and 415 rows are removed consistently across artifacts."
-    },
-    {
-      "id": "ADR-CAT-045",
-      "status_ok": true,
-      "note": "The header correctly marks it as partly superseded by ADR-CAT-061."
-    },
-    {
-      "id": "ADR-CAT-047",
+      "id": "ADR-CAT-056",
       "status_ok": false,
-      "note": "The lock design is sound. Its 'six native statements' claim conflicts with the import batching (G3) and the RETURNING bulk updates (G4)."
-    },
-    {
-      "id": "ADR-CAT-050",
-      "status_ok": true,
-      "note": "Amended by ADR-CAT-065; the remaining label gap is G1."
+      "note": "ACCEPTED, but it rests on FileDocumentLookupApi methods that are not published (type, size, storage, bytes) and on a CAT-side image validator. It must be amended and a CORE-GAP raised (G1)."
     },
     {
       "id": "ADR-CAT-055",
       "status_ok": true,
-      "note": "Consistent with checklist C1; platform finding 1 is correctly owned by the factory."
-    },
-    {
-      "id": "ADR-CAT-056",
-      "status_ok": true,
-      "note": "Satisfies checklist F4 and C7."
+      "note": "Consistent with checklist C1 and conventions Migrations rule 5. Platform finding 1 is correctly owned by the factory."
     },
     {
       "id": "ADR-CAT-061",
       "status_ok": true,
-      "note": "Conditional through ADR-CAT-066 and its CORE-GAP, so F9 is satisfied."
+      "note": "Conditional on ADR-CAT-066 and the OPEN CORE-GAP-in-process-authorization. It is declared as F9 requires, not hidden."
     },
     {
-      "id": "ADR-CAT-065",
+      "id": "ADR-CAT-066",
       "status_ok": true,
-      "note": "Satisfies checklist C6. Its active-only read is the root of G1."
-    },
-    {
-      "id": "ADR-CAT-068",
-      "status_ok": true,
-      "note": "The three repairs remove the dead ends; TC-CAT-185, 186, 187, 210 and 212 exercise them."
-    },
-    {
-      "id": "ADR-CAT-069",
-      "status_ok": true,
-      "note": "Reactivation is consistent with the Category tree lock."
+      "note": "Raises the gap correctly. Platform finding 5 owns it."
     },
     {
       "id": "ADR-CAT-070",
       "status_ok": true,
-      "note": "The C5/F3 deviation is justified and CORE-GAP-tenant-lookup-types is filed."
+      "note": "The C5/F3 deviation is justified and raised as CORE-GAP-tenant-lookup-types."
     },
     {
       "id": "ADR-CAT-071",
-      "status_ok": false,
-      "note": "'JDBC batching' conflicts with IDENTITY keys and with checklist C3 (G3)."
+      "status_ok": true,
+      "note": "Amended by ADR-CAT-074 and coherent. Its feasibility now also depends on G1 (the import byte read)."
+    },
+    {
+      "id": "ADR-CAT-073",
+      "status_ok": true,
+      "note": "Interim raw-code rendering is consistent across API-CAT-052, F1, UXD-CAT-001 and TC-CAT-139/177. CORE-GAP raised."
+    },
+    {
+      "id": "ADR-CAT-068",
+      "status_ok": true,
+      "note": "The three repairs are applied consistently in A7, API-CAT-003/006/017, F3 and the TCs."
     },
     {
       "id": "ADR-CAT-072",
       "status_ok": true,
-      "note": "Consistent across SRS, contract and TCs. Its mechanism (QR-CAT-075) is addressed by G4."
+      "note": "The default-Variant move is consistent in the contract, QR-CAT-075 and TC-CAT-221/222."
     },
     {
-      "id": "CORE-GAP-in-process-authorization",
+      "id": "ADR-CAT-074",
       "status_ok": true,
-      "note": "Genuine core gap, owned by erp-core."
+      "note": "Removes the JDBC-batching claim. Six native statements remain, consistent with ADR-CAT-047."
     },
     {
-      "id": "CORE-GAP-number-series-block-allocation",
+      "id": "ADR-CAT-075",
       "status_ok": true,
-      "note": "Genuine core gap; CAT's interim per-code allocation is stated."
+      "note": "Category labels are carried in the Item reads, consistent with QR-CAT-001/005/006/007 and TC-CAT-195."
     },
     {
-      "id": "CORE-GAP-tenant-lookup-types",
+      "id": "ADR-CAT-054",
       "status_ok": true,
-      "note": "Genuine core gap, not a module gap filed as a platform finding."
+      "note": "SUPERSEDED by ADR-CAT-055; the status is correct."
+    },
+    {
+      "id": "ADR-CAT-025",
+      "status_ok": true,
+      "note": "SUPERSEDED; the status is correct."
+    },
+    {
+      "id": "ADR-CAT-026",
+      "status_ok": true,
+      "note": "SUPERSEDED by ADR-CAT-042; the status is correct."
+    },
+    {
+      "id": "ADR-CAT-028",
+      "status_ok": true,
+      "note": "SUPERSEDED by RULE-CAT-001 / D-07; the status is correct."
+    },
+    {
+      "id": "ADR-CAT-039",
+      "status_ok": true,
+      "note": "CM-1 passes for dependent masters only through this ADR. That is acceptable while platform finding 9 is OPEN with the factory."
     }
   ],
   "verdict": "REVISE"
