@@ -10,7 +10,7 @@
     "P3.2",
     "P4"
   ],
-  "verdict": "ESCALATE",
+  "verdict": "REVISE",
   "scores": {
     "unambiguous": 2,
     "verifiable": 2,
@@ -317,5 +317,5 @@
       "pct": 100.0
     }
   ],
-  "at": "2026-10-28T08:55:57+00:00"
+  "at": "2026-10-28T10:05:30+00:00"
 }
