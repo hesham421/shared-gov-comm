@@ -83,8 +83,8 @@
       "to": [
         "TC"
       ],
-      "total": 164,
-      "covered": 164,
+      "total": 166,
+      "covered": 166,
       "pct": 100.0
     }
   ],
@@ -119,28 +119,28 @@
       "ui-ux-spec"
     ],
     "inputs": {
-      "api-spec": "78598cc27dc03989cf23988d69a774142afe4a74c318d2750d1d845b14ced278",
-      "backend-execution-plan": "bbbc41efd9599c726beeeb1b51e7fa416d2e0bd03f5c1c73232319db795eac42",
-      "backend-test-plan": "ba7606e2763ebdd7c7ea4ba0fda824600374be8ac436e53082baa3fcdea7dbb5",
-      "business-policies": "8f6709f2e79f1ddab0a00528eaa5796b4053596aa5aa4c1a86f422dc364e5de1",
+      "api-spec": "901cf0633e7e07034e3ccf71e1075d6f0722171b68ee29476d5bdbca7759c1bf",
+      "backend-execution-plan": "f268529a210d7ed9360c0b2cea3d3c17c21ee9807ac07a0b8e60d5e249ab6249",
+      "backend-test-plan": "3aefc3070e78e6a22315ea86309bd95615adf9f859fb16e8dca72e4c38f8e4ec",
+      "business-policies": "4a4e5ed132fce45da63b00a2c4017147e403daf6ca9a833bb9d66d5ea85a13d4",
       "change-manifest": "c73904194b81e6c528a8a564463529aef00c68314b69a50756bf31c31cdc9dc9",
-      "contract": "515443747c687acca1cfc8f8021e5231dfd604e406d7d03324ce66f1a933de41",
-      "db-script": "2dde717c54d520f630970e2d38551778a4ec1743ace024c53b0e87a50f48e7d5",
+      "contract": "7458a5287a2e16aa8b2a7632f1cb47c964b44bc2b47a2bcd56ad540901aea2b4",
+      "db-script": "2d500266a4e45d290064120d03683aa6e7827fdd9a29145ff2cbfbf3abce61d6",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
       "flow-diagram": "f75a7d69ab69c113b8d9e6764aa3da1673307ee23bc46b8e89ffb520811d98f2",
-      "frontend-execution-plan": "be28c3a62d55e0ae9906a8ac11a12afa0ee7804c9e98580a676da0630b805803",
-      "frontend-test-plan": "4d7e44f06ee4391e268bcc7b93067353d52b913c45064ebb511f15b087771731",
+      "frontend-execution-plan": "757a141ec39184bd4b4fd1286a8588127bce4ea9b2dcb7b2da1ff865146d3fc6",
+      "frontend-test-plan": "9d1b2f0c0ce52da4962411e2ea0ff6b7aa7c91574a01705193a65b8d14aac3ee",
       "module-registry": "5fc7c7c7a020ebee8280a8519ade559492413ef6f6eeaf7ef6f157d19f9c1a0d",
       "platform-summary": "8869f2caaaa63ad4690042b1ddd12bd37461bc901343d1924927ebb4c7ac9967",
       "prd": "5e6157b1493b752f2ec9686b7621e181123364bb4031c5515b2dbc6e88bac5da",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
-      "registry-db": "5e822dde71cbbfa5bf96eb20b6de2ab2d40364524fcc6745341d58a0fc63c448",
-      "registry-exec-be": "aa62265dbde6f7367620e92fc754d9f9bf708b576f5d41ce722ba0264c1b08fc",
-      "registry-exec-fe": "c98fc2d000f6d9388883e64b6a7983103fb3b6931fbde20c08f016f1e26bd454",
-      "registry-srs": "622cc47e41cd42c87b19b7b6007be2b6b06557368e91d5af8260f7fb71c4d813",
-      "srs": "756c212e3fabba6d79d46a35c1a78251d44e1fbea4f936d9e05eb61ba52c8ef0",
+      "registry-db": "da3c36b9e1689442e9f11be945db60ea20283ba701530cc4531b288069973d08",
+      "registry-exec-be": "51f7cac88aa8cb84b88b433950b049ed7a4e6f2f00d3ff8107d9a0c7614749fa",
+      "registry-exec-fe": "86ec1919162bf08d11d7ac66dbc94dd117da005d90fd40d59104fc38245cc601",
+      "registry-srs": "4b14bce54c067e7cd979be9886bf147101a23d18beb808aa07a9a4c1f4687634",
+      "srs": "ad3d16293e58b1373c313c8753326e52a24138873d57ae356d4470505b9d644c",
       "ui-ux-spec": "e90f06b7ae7328a94893fd1dd4baed8e04d80f705eea91b2b4a543ae9c91dde2"
     },
-    "at": "2026-10-28T15:57:14+00:00"
+    "at": "2026-10-28T16:14:42+00:00"
   }
 }

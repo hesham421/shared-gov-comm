@@ -31,10 +31,10 @@ Both streams start at 001: the current state held no backend plan for CAT. No ID
 | API-CAT-018 | POST | /api/v1/cat/items/{id}/media | ENT-CAT-010 · CREATE | PERM_CAT_ITEMS_CREATE | CON-CAT-018 |
 | API-CAT-019 | PUT | /api/v1/cat/media/{id} | ENT-CAT-010 · UPDATE | PERM_CAT_ITEMS_UPDATE | CON-CAT-018 |
 | API-CAT-020 | DELETE | /api/v1/cat/media/{id} | ENT-CAT-010 · DELETE | PERM_CAT_ITEMS_DELETE | CON-CAT-018 |
-| API-CAT-021 | POST | /api/v1/cat/categories | ENT-CAT-006 · CREATE | PERM_CAT_CATEGORIES_CREATE | CON-CAT-003 |
+| API-CAT-021 | POST | /api/v1/cat/categories | ENT-CAT-006 · CREATE | PERM_CAT_CATEGORIES_CREATE | CON-CAT-003, CON-CAT-018 |
 | API-CAT-022 | GET | /api/v1/cat/categories/{id} | ENT-CAT-006 · VIEW | PERM_CAT_CATEGORIES_VIEW | CON-CAT-011 |
-| API-CAT-023 | PUT | /api/v1/cat/categories/{id} | ENT-CAT-006 · UPDATE | PERM_CAT_CATEGORIES_UPDATE | CON-CAT-003 |
-| API-CAT-024 | DELETE | /api/v1/cat/categories/{id} | ENT-CAT-006 · DELETE | PERM_CAT_CATEGORIES_DELETE | CON-CAT-003 |
+| API-CAT-023 | PUT | /api/v1/cat/categories/{id} | ENT-CAT-006 · UPDATE | PERM_CAT_CATEGORIES_UPDATE | CON-CAT-003, CON-CAT-018 |
+| API-CAT-024 | DELETE | /api/v1/cat/categories/{id} | ENT-CAT-006 · DELETE | PERM_CAT_CATEGORIES_DELETE | CON-CAT-003, CON-CAT-018 |
 | API-CAT-025 | POST | /api/v1/cat/variant-attributes | ENT-CAT-003 · CREATE | PERM_CAT_VARIANT_ATTRIBUTES_CREATE | — |
 | API-CAT-026 | GET | /api/v1/cat/variant-attributes/{id} | ENT-CAT-003 · VIEW | PERM_CAT_VARIANT_ATTRIBUTES_VIEW | — |
 | API-CAT-027 | PUT | /api/v1/cat/variant-attributes/{id} | ENT-CAT-003 · UPDATE | PERM_CAT_VARIANT_ATTRIBUTES_UPDATE | — |
@@ -63,7 +63,7 @@ Both streams start at 001: the current state held no backend plan for CAT. No ID
 | API-CAT-050 | POST | /api/v1/cat/barcode-labels | ENT-CAT-002 · CREATE | PERM_CAT_BARCODE_LABELS_CREATE | — |
 | API-CAT-051 | GET | /api/v1/cat/capability-checks/turn-off | ENT-CAT-001 · VIEW | PERM_CAT_SETTINGS_VIEW | CON-CAT-017 |
 | API-CAT-052 | GET | /api/v1/cat/lookups/{key} | ENT-CAT-001 · VIEW | the VIEW permission of any CAT page (hasAnyAuthority) | — |
-| API-CAT-053 | PATCH | /api/v1/cat/categories/{id} | ENT-CAT-006 · UPDATE (reactivate) | PERM_CAT_CATEGORIES_UPDATE | CON-CAT-003 |
+| API-CAT-053 | PATCH | /api/v1/cat/categories/{id} | ENT-CAT-006 · UPDATE (reactivate) | PERM_CAT_CATEGORIES_UPDATE | CON-CAT-003, CON-CAT-018 |
 | API-CAT-054 | PATCH | /api/v1/cat/variant-attributes/{id} | ENT-CAT-003 · UPDATE (reactivate) | PERM_CAT_VARIANT_ATTRIBUTES_UPDATE | — |
 | API-CAT-055 | PATCH | /api/v1/cat/variant-attribute-values/{id} | ENT-CAT-004 · UPDATE (reactivate) | PERM_CAT_VARIANT_ATTRIBUTES_UPDATE | — |
 
@@ -120,6 +120,7 @@ Verdict as stamped by the orchestrator from `gov.py analyze` (self-check block p
 | decisions/CAT/ADR-CAT-074 | the item import saves entities (QR-CAT-003, 011, 049), no JDBC batching; the 60 s figure is a measured target; amends ADR-CAT-071 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-075 | ItemSummary / ItemDetail carry the derived categoryCode, categoryNameAr, categoryNameEn; amends ADR-CAT-048 §5 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-076 | image type, size and public storage enforced by the FILE category CAT_ITEM_IMAGE at upload; API-CAT-018 checks availability, a public URL and the 20-image count; the import's byte read waits on the core; amends ADR-CAT-056 §2 | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-077 | Category changes publish catalogue-change events (ENT-CAT-006 in RULE-CAT-049 and CON-CAT-018, itemPk empty); API-CAT-021, 023, 024 and 053 record CREATED, UPDATED, DEACTIVATED and REACTIVATED | ACCEPTED (non-breaking) |
 | decisions/CAT/CORE-GAP-in-process-authorization | how a cross-module read API is authorized for callers without a permission of the owning module | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-tenant-lookup-types | whether a tenant can create lookup types with nested values at runtime | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-number-series-block-allocation | whether NumberSeriesApi can allocate a block of n numbers in one call | OPEN (asked of erp-core) |
@@ -147,10 +148,17 @@ The next free ADR sequence was 076.
 Eighth gate-analysis revise (backend), ADR-CAT-076 and CORE-GAP-file-document-metadata-read raised:
 - G1: the FileDocumentLookupApi given-usage row lists only isAvailable, publicUrl and publicUrls; image type, size and public storage are enforced by the FILE category CAT_ITEM_IMAGE (bootstrap row, registered per tenant by CatTenantProvisioningContributor); API-CAT-018 answers CAT-404-NOT-FOUND for a reference that is not available or has no public URL, and RULE-CAT-038 for a 21st image; the byte read and type / size check of API-CAT-049 are a delivery dependency on the new core gap.
 - G2: PHASE CORE API conventions carry one request-consistency rule (CAT-400-REQUEST-INVALID before any RULE runs, nothing written) cited by API-CAT-001, 006, 014, 015 and 017, and a constraint-translation rule (a constraint backing a RULE answers that RULE's row, never CAT-500); the CAT-400-REQUEST-INVALID trigger lists the cases; TC-CAT-223 tests them.
-The next free ADR sequence is 077.
+The next free ADR sequence was 077.
+
+Ninth gate-analysis revise (backend), ADR-CAT-077 raised:
+- G1: ENT-CAT-006 joins the catalogue-change event (PHASE CORE, RULE-CAT-049, CON-CAT-018 — itemPk empty for a Category). API-CAT-021, 023, 024 and 053 record CREATED, UPDATED, DEACTIVATED and REACTIVATED, honour CON-CAT-018, apply RULE-CAT-049 and list CAT-500-CHANGE-NOT-SAVED, also in api-spec-cat.yaml; their traces add REQ-CAT-008. TC-CAT-224 tests it.
+- G2: `CAT_NORMALIZE_AR` (db-script BLOCK 1) removes its set by code point (U+064B–U+065F, U+0670, U+0640), so the Arabic-Indic digits are kept; RULE-CAT-003 names the set and the service normaliser `CatArabicNormalizer` that removes the same set. TC-CAT-225 tests it.
+- G3: RULE-CAT-045 lists RULE-CAT-032, and RULE-CAT-032 triggers on import row; API-CAT-049 cites it. TC-CAT-226 tests it.
+- G4: `LabelRequest.lines.items` of API-CAT-050 carries `required: [variantPk, copies]` in api-spec-cat.yaml, as the plan states.
+The next free ADR sequence is 078.
 
 ### Traceability
 REQ covered by ≥ 1 API: 147 / 147 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
 
 ### Event
-"P3.1 completed: CAT v2 — API 55 · QR 75 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–076, none BLOCKED · CORE-GAP 5"
+"P3.1 completed: CAT v2 — API 55 · QR 75 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–077, none BLOCKED · CORE-GAP 5"

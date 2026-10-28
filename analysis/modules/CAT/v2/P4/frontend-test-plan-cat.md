@@ -1,7 +1,7 @@
 # Frontend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : frontend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207, TC-CAT-211 … TC-CAT-219, TC-CAT-221 … TC-CAT-223; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196, TC-CAT-208 … TC-CAT-210 and TC-CAT-220)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207, TC-CAT-211 … TC-CAT-219, TC-CAT-221 … TC-CAT-226; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196, TC-CAT-208 … TC-CAT-210 and TC-CAT-220)
 
 ## Header
 
@@ -17,7 +17,7 @@ Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared wi
 | dependency-graph | `_state/current-dependency-graph.md` | CAT v2 | CAT tier 1 |
 
 ### Delta
-The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC. Within v2, the third gate-analysis revise ADDED TC-CAT-210 and MODIFIED TC-CAT-126 (the jump goes to the existing Item's code — G12) and TC-CAT-209 (the inactive Entry keeps its three repairs — G2, ADR-CAT-068). The sixth gate-analysis revise ADDED TC-CAT-220 (reactivation refused under RULE-CAT-003, with its next action — G2, AC-CAT-162). The seventh gate-analysis revise MODIFIED TC-CAT-139 and TC-CAT-177 (a host brand whose labels differ from its code is deactivated, and the screen shows its raw code — G1, ADR-CAT-073), TC-CAT-195 (the Category label comes with the Item read, also for a user who cannot read the Category tree — G5, ADR-CAT-075), and re-pointed TC-CAT-210 and TC-CAT-220 to REQ-CAT-145 … 147 and REQ-CAT-144 (G7); it ADDED no TC. The eighth gate-analysis revise MODIFIED TC-CAT-146 (the 7 MB JPG is refused by the FILE category `CAT_ITEM_IMAGE` at upload and shown in the FILE envelope; the screen checks only the 20-image count — G1, ADR-CAT-076; moved from F3-SCR-CAT-001 to F2-SCR-CAT-001, where the upload refusal is routed) and TC-CAT-166 (its client check stays; the server's type / size check waits on the core); it ADDED no TC. No id is renumbered or REMOVED.
+The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC. Within v2, the third gate-analysis revise ADDED TC-CAT-210 and MODIFIED TC-CAT-126 (the jump goes to the existing Item's code — G12) and TC-CAT-209 (the inactive Entry keeps its three repairs — G2, ADR-CAT-068). The sixth gate-analysis revise ADDED TC-CAT-220 (reactivation refused under RULE-CAT-003, with its next action — G2, AC-CAT-162). The seventh gate-analysis revise MODIFIED TC-CAT-139 and TC-CAT-177 (a host brand whose labels differ from its code is deactivated, and the screen shows its raw code — G1, ADR-CAT-073), TC-CAT-195 (the Category label comes with the Item read, also for a user who cannot read the Category tree — G5, ADR-CAT-075), and re-pointed TC-CAT-210 and TC-CAT-220 to REQ-CAT-145 … 147 and REQ-CAT-144 (G7); it ADDED no TC. The eighth gate-analysis revise MODIFIED TC-CAT-146 (the 7 MB JPG is refused by the FILE category `CAT_ITEM_IMAGE` at upload and shown in the FILE envelope; the screen checks only the 20-image count — G1, ADR-CAT-076; moved from F3-SCR-CAT-001 to F2-SCR-CAT-001, where the upload refusal is routed) and TC-CAT-166 (its client check stays; the server's type / size check waits on the core); it ADDED no TC. The ninth gate-analysis revise ADDED and MODIFIED no TC here: its new ACs (AC-CAT-165, Category change events; AC-CAT-166, an import row refused for a scale prefix) are observable at the API only and are covered on the backend track (TC-CAT-224, TC-CAT-226). No id is renumbered or REMOVED.
 
 ### Framework
 `profile.stack.testing` is **agnostic**. Each block is the whole contract. This plan names no framework, runner, selector strategy or file layout.
@@ -1114,7 +1114,7 @@ The other rules are asserted on the backend track. No case here asserts the word
 | Measure | Result |
 |---|---|
 | AC covered (this track) | 60 / 164 by module TCs. Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
-| AC covered (both plans) | 164 / 164 ✓, no gap. The other 104 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
+| AC covered (both plans) | 166 / 166 ✓, no gap. The other 106 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
 | REQ covered (this track) | 61 REQs by module TCs (plus REQ-CAT-012, 105 and 109 through UXD TCs) |
 | REQ covered (both plans) | 147 / 147 ✓ |
 | SCR covered | 6 / 6 ✓ (SCR-CAT-001 … 006) |

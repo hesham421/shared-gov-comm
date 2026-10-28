@@ -85,7 +85,12 @@ Gate-analysis round 8 (frontend):
 - The image type and size are no longer checked by the client: the FILE category CAT_ITEM_IMAGE refuses a wrong file at upload, and GIVEN-FILE-UPLOAD shows that refusal on the image's file input in the FILE envelope's language; the F3 image validator keeps the 20-image count (RULE-CAT-038), and CAT-422-IMAGE-NOT-ACCEPTED is routed as the count (ADR-CAT-076).
 - API-CAT-018 answers CAT-404-NOT-FOUND for an image reference that is not available or has no public URL; ITEM-SAVE drops the line and re-reads the Item, as for any CAT-404-NOT-FOUND.
 - IMPORT-SUBMIT is unchanged; the server's byte read of the import waits on CORE-GAP-file-document-metadata-read.
-The next free ADR is ADR-CAT-077.
+The next free ADR was ADR-CAT-077.
+
+Gate-analysis round 9 (frontend):
+- The Categories mutations (CATEGORY-SAVE, CATEGORY-DEACTIVATE, CATEGORY-REACTIVATE) route CAT-500-CHANGE-NOT-SAVED to a drawer banner with the RULE-CAT-049 text, because API-CAT-021, 023, 024 and 053 now record catalogue-change events (ADR-CAT-077); the REQ-CAT-008 binding lists those four operations.
+- No screen, route or field changes; the label request already sends `variantPk` and `copies` on every line, which api-spec-cat.yaml now requires.
+The next free ADR is ADR-CAT-078.
 
 ### Traceability
 - REQ covered by at least one SCR or F-block: 147 / 147. Orphan REQ: none.

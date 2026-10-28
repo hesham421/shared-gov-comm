@@ -1,7 +1,7 @@
 # CONTRACT — Catalog / الكتالوج (CAT) — outbound promise
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P1.5
-Inputs : srs (P1, CAT v2 — REQ 147 · AC 164 · ENT 12 · RULE 53), registry-srs (re-stamped from the current registries at the eighth gate-analysis revise; CON-CAT-002 wording amended by ADR-CAT-072; §4 given-usage repeated from SRS A9 as amended by ADR-CAT-076)
+Inputs : srs (P1, CAT v2 — REQ 147 · AC 166 · ENT 12 · RULE 53), registry-srs (re-stamped from the current registries at the ninth gate-analysis revise; CON-CAT-002 wording amended by ADR-CAT-072; §4 given-usage repeated from SRS A9 as amended by ADR-CAT-076; CON-CAT-018 entity list extended by ADR-CAT-077)
 Counts : CON 18 (entity items 6 · operation items 11 · event item 1)
 Status : DRAFT — P1.5 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -149,11 +149,13 @@ This check is offered to the capability-flag owner (owner OPEN, P-02 — ADR-CAT
 ## 3 — Event item
 
 ### CON-CAT-018 — Catalogue-change event (إشعار تغيير الكتالوج / Catalogue-change event)
-Signature : catalogueChanged(entity: ENT id of the changed record — ENT-CAT-001, 002, 005, 007, 008, 009 or 010; recordPk: BIGINT; itemPk: BIGINT; changeKind: CAT_CHANGE_KIND — CREATED / UPDATED / DEACTIVATED / REACTIVATED) → one event per committed change, delivered after commit · errors: none — a rolled-back change publishes no event (RULE-CAT-049)
+Signature : catalogueChanged(entity: ENT id of the changed record — ENT-CAT-001, 002, 005, 006, 007, 008, 009 or 010; recordPk: BIGINT; itemPk: BIGINT (empty when entity is ENT-CAT-006); changeKind: CAT_CHANGE_KIND — CREATED / UPDATED / DEACTIVATED / REACTIVATED) → one event per committed change, delivered after commit · errors: none — a rolled-back change publishes no event (RULE-CAT-049)
 Entity    : ENT-CAT-001
-Traces    : ENT-CAT-001, ENT-CAT-002, REQ-CAT-008, REQ-CAT-009
+Traces    : ENT-CAT-001, ENT-CAT-002, ENT-CAT-006, REQ-CAT-008, REQ-CAT-009
 
 The event is recorded in the same transaction as the change through the given `events` outbox, and it is delivered only after commit. Consumers read the current state through CON-CAT-007 … CON-CAT-015; the event carries no field values.
+
+A Category (ENT-CAT-006) is a SHARED record read by SFR and INS, so its creation, change (including a move under another parent), deactivation and reactivation each publish one event with `entity` ENT-CAT-006, `recordPk` = categoryPk and an empty `itemPk`; consumers re-read it through CON-CAT-011 / CON-CAT-012 (ADR-CAT-077). Adding ENT-CAT-006 to the entity list is ADDITIVE: the payload keeps its fields and types, and no consumer edge cites the item yet (§6).
 
 ---
 
@@ -189,6 +191,6 @@ The contract does not promise any entity that a given provides. Tenant, User, Ro
 - [x] Every SHARED ENT of the SRS has an entity item (ENT-CAT-001, 002, 006, 007, 008, 009). No consumer's A8 block exists yet that names any other CAT entity, and no PRIVATE entity is promised.
 - [x] Every operation item has a `Signature` line and names no path or verb.
 - [x] Every item traces to at least one ENT and one REQ (C13.5).
-- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). The contract itself raised no ADR; ADR-CAT-072 (gate-analysis round 6) amends the wording of CON-CAT-002 without changing its key columns or identifier type. Per the current registries the next free ADR is ADR-CAT-077.
+- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). The contract itself raised no ADR; ADR-CAT-072 (gate-analysis round 6) amends the wording of CON-CAT-002 without changing its key columns or identifier type, and ADR-CAT-077 (gate-analysis round 9) adds ENT-CAT-006 to the entity list of CON-CAT-018 without changing its fields. Per the current registries the next free ADR is ADR-CAT-078.
 - [x] §4 carries the SRS `given-usage` rows verbatim, in the same order.
 - [x] Every item title carries ar and en.

@@ -1,7 +1,7 @@
 ﻿# DB SCRIPT — Catalog / الكتالوج (CAT)
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P2
-Inputs : srs (P1, CAT v2 — REQ 147 · AC 164 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the eighth gate-analysis revise
+Inputs : srs (P1, CAT v2 — REQ 147 · AC 166 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the ninth gate-analysis revise
 Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 12 (given CORE_TENANT — ADR-CAT-055) · lookup keys 10 (34 seeded values)
 Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -19,7 +19,7 @@ Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 | Type declared here (not in the syntax map) | logical `number` → `INTEGER` (sortOrder, scaleCodeLength, valueDecimals). The profile `syntax_map` has no integer entry, so it is declared once here |
 | Date | 2026-10-26 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067, ADR-CAT-072 (the default Variant moves; `UQ_CAT_VARIANT_DEFAULT` kept, comments only). The next free ADR sequence, per the current registries, is 077 (ADR-CAT-076, gate-analysis round 8, changes no database object) |
+| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067, ADR-CAT-072 (the default Variant moves; `UQ_CAT_VARIANT_DEFAULT` kept, comments only). The next free ADR sequence, per the current registries, is 078 (ADR-CAT-076 and ADR-CAT-077, gate-analysis rounds 8 and 9, change no database object). At the ninth gate-analysis revise the character class of `CAT_NORMALIZE_AR` was rewritten by code point so that it removes only the marks ADR-CAT-062 names (BLOCK 1) |
 | Migration file | `V1000__cat_catalog.sql` in the application's `classpath:db/migration` (erp-core conventions § Migrations: `V1000+`, `V<N>__<module>_<snake_case>.sql`). It is the first CAT script; a later change is a new `V1001+` script, never an edit |
 
 ## 2 — DB field traceability matrix
@@ -256,16 +256,19 @@ Given references create no XM:
 -- `CREATE EXTENSION pg_trgm;` once before the first deployment and the statement below is a no-op.
 -- Function CAT_NORMALIZE_AR: Arabic normalisation of RULE-CAT-003 and of search (ADR-CAT-062);
 -- created here because UQ_CAT_ITEM_NAME_AR (BLOCK 5b) and the trigram indexes (BLOCK 7) use it.
+-- The removed set is written by code point — U+064B–U+065F (tashkeel), U+0670 (superscript alef) and
+-- U+0640 (tatweel) — so the Arabic-Indic digits U+0660–U+0669 and the signs U+066A–U+066F are kept
+-- («علبة ٢٥» and «علبة ٣٠» stay two names). The Java normaliser of the service removes the same set.
 -- ──────────────────────────────────────────────────────────────────
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE OR REPLACE FUNCTION CAT_NORMALIZE_AR(P_TEXT TEXT) RETURNS TEXT
     LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE AS
-$$ SELECT btrim(regexp_replace(lower(translate(regexp_replace(P_TEXT, '[ً-ٰٟـ]', '', 'g'),
+$$ SELECT btrim(regexp_replace(lower(translate(regexp_replace(P_TEXT, E'[\\u064B-\\u065F\\u0670\\u0640]', '', 'g'),
                                                   'أإآٱةى', 'ااااهي')), '\s+', ' ', 'g')) $$;
 
-COMMENT ON FUNCTION CAT_NORMALIZE_AR(TEXT) IS 'RULE-CAT-003 / search: drops tashkeel and tatweel, folds أ إ آ ٱ to ا, ة to ه, ى to ي, lower-cases Latin, trims and collapses spaces (ADR-CAT-062)';
+COMMENT ON FUNCTION CAT_NORMALIZE_AR(TEXT) IS 'RULE-CAT-003 / search: drops tashkeel U+064B-U+065F and U+0670 and tatweel U+0640 (Arabic-Indic digits kept), folds أ إ آ ٱ to ا, ة to ه, ى to ي, lower-cases Latin, trims and collapses spaces (ADR-CAT-062)';
 
 -- ──────────────────────────────────────────────────────────────────
 -- BLOCK 2 — PARENT TABLES (no FK dependency on another CAT table)
@@ -969,7 +972,7 @@ VALUES
 | D-P2-07 | `createdBy` and `updatedBy` are `VARCHAR(100)` principal strings. The created pair is NOT NULL and the updated pair is NULL until the first update | brief §3 audit rule; given migrations convention | — |
 | D-P2-08 | Variant `nameAr` and `nameEn` are derived at read (SRS D-15) and are not stored. A stored copy would go stale when a value is renamed (AC-CAT-048) | SRS ENT-CAT-002, D-15 | Store an owner override name if D-15 changes |
 | D-P2-09 | Unit e-invoice code `valueAr` and `valueEn` are stored (config-kind defaults) and nullable. The service copies them from the CAT_UOM labels at save; they are never entered | SRS ENT-CAT-012; profile entity_defaults.config | Derive at read and drop the columns in a later delta |
-| D-P2-10 | Rules that apply among active records are partial unique indexes named `UQ_…`. The Item Arabic name is compared after `CAT_NORMALIZE_AR` (tashkeel and tatweel dropped, alef / taa marbuta / alef maqsura folded, Latin lower-cased, spaces trimmed and collapsed — RULE-CAT-003, ADR-CAT-062). Rows from the same import file are checked by the service | SRS RULE-CAT-003, 016, 019, 024, 027, 029, 034, 039, 043 | — |
+| D-P2-10 | Rules that apply among active records are partial unique indexes named `UQ_…`. The Item Arabic name is compared after `CAT_NORMALIZE_AR` (tashkeel U+064B–U+065F and U+0670 and tatweel U+0640 dropped, written by code point so that the Arabic-Indic digits U+0660–U+0669 are kept; alef / taa marbuta / alef maqsura folded, Latin lower-cased, spaces trimmed and collapsed — RULE-CAT-003, ADR-CAT-062). Rows from the same import file are checked by the service | SRS RULE-CAT-003, 016, 019, 024, 027, 029, 034, 039, 043 | — |
 | D-P2-11 | Barcode uniqueness is one partial unique index on the value among active barcodes. A SCALE code has 4–6 digits (RULE-CAT-033, RULE-CAT-034); a GTIN has 8–14 and an INTERNAL code has 13. So a SCALE code can never equal a GTIN or INTERNAL value, and RULE-CAT-029's per-type comparison holds without naming a lookup code in DDL | SRS RULE-CAT-029, 030, 033 | — |
 | D-P2-12 | Same-tenant and same-parent integrity are structural. Every intra-module FK of 5d is composite with `TENANT_ID` and targets a `(TENANT_ID, <PK>)` UNIQUE of its parent (UQ_CAT_CATEGORY_PK, UQ_CAT_VAR_ATTR_PK, UQ_CAT_ITEM_PK, UQ_CAT_VARIANT_PK), so a row can never point to a parent of another tenant, even through a native query or a script that bypasses the given tenant filter (ADR-CAT-067). Two FKs also hold a same-parent rule: an assignment's value belongs to its attribute (RULE-CAT-013), and a media record's Variant belongs to its Item (RULE-CAT-040; no check when the Variant is empty — MATCH SIMPLE) | SRS RULE-CAT-013, RULE-CAT-040; erp-core conventions § Tenancy; ADR-CAT-067 | — |
 | D-P2-13 | Seeds go into the given's tables by the columns of erp-core 1.6.0, checked against its migrations (gate-analysis round 2, G14): `MDL_LOOKUP_TYPE (LOOKUP_TYPE_PK from SEQ_MDL_LOOKUP_TYPE, TENANT_ID, KEY, OWNER_MODULE_CODE VARCHAR(10), NAME_AR, NAME_EN — both NOT NULL —, IS_ACTIVE_FL, CREATED_BY, CREATED_AT, VERSION default 0)` (V3 + V10); `MDL_LOOKUP_VALUE (LOOKUP_VALUE_PK from SEQ_MDL_LOOKUP_VALUE, TENANT_ID, LOOKUP_TYPE_ID → LOOKUP_TYPE_PK, CODE, NAME_AR, NAME_EN, SORT_ORDER, IS_ACTIVE_FL, CREATED_BY, CREATED_AT)` (V3 + V10); `CORE_NUMBER_SERIES (ID from SEQ_CORE_NUMBER_SERIES, TENANT_ID, CODE, PREFIX, PATTERN, RESET_POLICY; PERIOD_KEY, NEXT_VALUE, IS_ACTIVE, CREATED_AT, VERSION by default)` (V14); `CORE_TENANT` row ID 1 = `PLATFORM` (V10). Result: the earlier names `ID`, `LABEL_AR`, `LABEL_EN` of the mdl tables were wrong and are replaced, `NAME_AR` / `NAME_EN` are added to the type rows, and the series columns and the PLATFORM id were right. The rows follow the core's own seed `V8__mdl_seed.sql` (types by KEY, values joined by KEY) | brief §4.2 (the key owner owns the seed); given lookups convention; erp-core 1.6.0 V3, V8, V10, V14 | Adjust the column names only if a later erp-core release renames them; keys and values are fixed by SRS A6 |
@@ -979,7 +982,7 @@ VALUES
 | D-P2-17 | Profile check CM-8: CAT holds no stock quantity, no monetary amount and no price (SRS A2 out of scope: PRC, INV). No warehouse, currency or price-list dimension applies to a CAT row | SRS A2; profile CM-8 | — |
 | D-P2-18 | Delta: the current state holds no earlier CAT db-script, so this v2 migration creates every object. The DBF sequence starts at 001 (next free 162). No XM exists (next free XM sequence 001) | brief delta rule; change-manifest CS-CAT-001 | — |
 
-No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. ADR-CAT-072 (the default Variant moves) changes only the comments of `IS_DEFAULT_FL` and `UQ_CAT_VARIANT_DEFAULT`: the index stays non-partial, because the service clears the former default before it sets the new one. The next free ADR sequence for CAT, per the current registries, is 077. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
+No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. ADR-CAT-072 (the default Variant moves) changes only the comments of `IS_DEFAULT_FL` and `UQ_CAT_VARIANT_DEFAULT`: the index stays non-partial, because the service clears the former default before it sets the new one. The next free ADR sequence for CAT, per the current registries, is 078. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
 
 ## 6 — Registry content
 

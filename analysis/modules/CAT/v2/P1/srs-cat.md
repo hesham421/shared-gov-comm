@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved 2026-10-26 — gate prd-approval)
-Counts : REQ 147 · AC 164 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 19
+Counts : REQ 147 · AC 166 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 20
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -17,12 +17,13 @@ Counts : REQ 147 · AC 164 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 19
 | Date | 2026-10-26 |
 | Status | DRAFT — P1 pass 1 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions applied | 19 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise; ADR-CAT-072 at the sixth gate-analysis revise; ADR-CAT-074 at the seventh gate-analysis revise; ADR-CAT-076 at the eighth gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
+| Decisions applied | 20 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise; ADR-CAT-072 at the sixth gate-analysis revise; ADR-CAT-074 at the seventh gate-analysis revise; ADR-CAT-076 at the eighth gate-analysis revise; ADR-CAT-077 at the ninth gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
 | Revisions (third gate-analysis revise) | ADDED: REQ-CAT-136 … REQ-CAT-138, AC-CAT-153 … AC-CAT-160 · MODIFIED: REQ-CAT-135 and RULE-CAT-053 (three repair operations stay allowed on an inactive Item — ADR-CAT-068), RULE-CAT-003, AC-CAT-007 and AC-CAT-043 (the message names the existing Item's code), RULE-CAT-016, RULE-CAT-023 and RULE-CAT-024 (also checked on reactivation — ADR-CAT-069), A7 |
 | Revisions (fourth gate-analysis revise) | ADDED: REQ-CAT-139, AC-CAT-161 (an import past its time limit is rolled back whole — ADR-CAT-071) · MODIFIED: REQ-CAT-005 and A7 (deactivating an Item leaves its barcodes active; a GTIN is released by deactivating the barcode), RULE-CAT-049 (traces REQ-CAT-139) |
 | Revisions (sixth gate-analysis revise) | ADDED: AC-CAT-162 (reactivation refused when another active Item took the name), AC-CAT-163 and AC-CAT-164 (the default Variant moves — ADR-CAT-072) · MODIFIED: REQ-CAT-025, A7 and ENT-CAT-002.isDefaultFl (an active Item always has exactly one active default Variant), REQ-CAT-130 and RULE-CAT-003 (RULE-CAT-003 named on reactivation), RULE-CAT-029 (a GTIN repeated in one import file), AC-CAT-096 (scans the code of the precondition's SCALE barcode), AC-CAT-145 (the read of an inactive Variant returns no active barcode) |
 | Revisions (seventh gate-analysis revise) | ADDED: REQ-CAT-140 and REQ-CAT-141 (split from REQ-CAT-025: one REQ per default-Variant move), REQ-CAT-142, REQ-CAT-143 and REQ-CAT-144 (split from REQ-CAT-130: one REQ per reactivation refusal), REQ-CAT-145, REQ-CAT-146 and REQ-CAT-147 (split from REQ-CAT-135: one REQ per repair allowed on an inactive Item) · MODIFIED: REQ-CAT-025, REQ-CAT-130 and REQ-CAT-135 (each keeps one behaviour), AC-CAT-163 and AC-CAT-164 re-pointed to REQ-CAT-140 / 141, AC-CAT-133, AC-CAT-134 and AC-CAT-162 to REQ-CAT-142 / 143 / 144, AC-CAT-154, AC-CAT-155 and AC-CAT-156 to REQ-CAT-145 / 146 / 147 (no AC renumbered), RULE-CAT-003, 019, 026 and 053 traces, A7, REQ-CAT-139 rationale (the 60-second figure is a measured target — ADR-CAT-074) |
 | Revisions (eighth gate-analysis revise) | ADDED: none · MODIFIED: RULE-CAT-038 (the file part is enforced at upload by the FILE category CAT_ITEM_IMAGE; CAT refuses the 21st image), REQ-CAT-110 rationale, AC-CAT-112 (the 7 MB JPG refused by the image category, the 21st image by RULE-CAT-038), A9 given-usage (FileDocumentLookupApi lists only its published methods; the tenant row registers the image category) — ADR-CAT-076 |
+| Revisions (ninth gate-analysis revise) | ADDED: AC-CAT-165 (a Category deactivation publishes one catalogue-change event — ADR-CAT-077), AC-CAT-166 (an import row whose GTIN begins with an active scale prefix is rejected) · MODIFIED: REQ-CAT-008 and RULE-CAT-049 (Category changes publish catalogue-change events — ADR-CAT-077), RULE-CAT-003 (the removed marks are named by code point; Arabic-Indic digits are kept), RULE-CAT-032 (also on import row), RULE-CAT-045 (also checks RULE-CAT-032) |
 
 ## A2 — Functional context
 
@@ -376,17 +377,22 @@ Then  : exactly 1 Item named «كوب زجاج» is created, and the other reque
 
 ### REQ-CAT-008 — Publish catalogue-change events
 Pattern    : event
-Statement  : When a change to an Item, Variant, Variant attribute assignment, Bundle component, Item unit, barcode or Item media is committed, the system shall publish one catalogue-change event carrying the record identifier, the itemPk and the change kind.
+Statement  : When a change to an Item, Variant, Variant attribute assignment, Category, Bundle component, Item unit, barcode or Item media is committed, the system shall publish one catalogue-change event carrying the record identifier, the itemPk (empty for a Category) and the change kind.
 Traces     : US-CAT-002
-Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005, ENT-CAT-007, ENT-CAT-008, ENT-CAT-009, ENT-CAT-010
-Rationale  : Downstream modules react to catalogue changes without CAT reading them.
-Source     : US-CAT-002; module-registry AUTO "CAT publishes catalogue-change events"
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005, ENT-CAT-006, ENT-CAT-007, ENT-CAT-008, ENT-CAT-009, ENT-CAT-010
+Rationale  : Downstream modules react to catalogue changes without CAT reading them. The Category is a SHARED entity read by SFR (browse) and INS (reporting), so its creation, change, deactivation and reactivation are signalled too (RULE-CAT-048, ADR-CAT-077).
+Source     : US-CAT-002; module-registry AUTO "CAT publishes catalogue-change events"; ADR-CAT-077
 Priority   : HIGH
 
 #### AC-CAT-008 — [REQ-CAT-008]
 Given : an active Item
 When  : the owner changes its nameEn and the change is committed
 Then  : exactly 1 catalogue-change event is published, carrying the itemPk and change kind UPDATED
+
+#### AC-CAT-165 — [REQ-CAT-008]
+Given : an active Category with 0 active sub-categories and 0 active Items
+When  : the owner deactivates it and the change is committed
+Then  : exactly 1 catalogue-change event is published, carrying entity ENT-CAT-006, the categoryPk as record identifier, an empty itemPk and change kind DEACTIVATED
 
 ### REQ-CAT-009 — No event for a change that was not saved
 Pattern    : unwanted
@@ -864,6 +870,11 @@ Then  : 9 Items are created, row 4 creates nothing, and row 4 is reported for co
 Given : an import file whose rows 2 and 9 both carry nameAr «كوب زجاج», with no such active Item in the tenant
 When  : the owner submits it
 Then  : row 2 creates the Item, row 9 is rejected for column nameAr, and the reason reads ar: «يوجد صنف نشط بالاسم نفسه: {code}. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name: {code}. Open the existing item or change the name.", with {code} the code the import gave to the Item of row 2
+
+#### AC-CAT-166 — [REQ-CAT-041]
+Given : an active scale label layout with prefix 20, and an import file of 3 valid rows whose row 2 carries the GTIN 2000000000008
+When  : the owner submits it
+Then  : 2 Items are created, row 2 creates nothing, and row 2 is reported for column GTIN barcode with the reason ar: «الباركود يبدأ ببادئة ملصق ميزان نشط (20). استخدم باركودًا آخر أو عدّل إعداد الميزان.» · en: "The barcode starts with the prefix of an active scale label layout (20). Use another barcode or change the scale settings."
 
 ### REQ-CAT-042 — Create a Variant attribute
 Pattern    : event
@@ -2438,12 +2449,12 @@ Source     : PRD P-3
 ### RULE-CAT-003 — One active Item per name
 Scope      : ENT-CAT-001
 Trigger    : on create · on update · on reactivation · on import row
-Statement  : The system shall prevent saving or reactivating an Item when its nameAr, after Arabic normalisation (tashkeel and tatweel removed; أ إ آ ٱ read as ا, ة as ه, ى as ي; Latin letters lower-cased; leading, trailing and repeated spaces removed — ADR-CAT-062), equals the normalised nameAr of another active Item of the tenant or of an earlier valid row of the same import file.
+Statement  : The system shall prevent saving or reactivating an Item when its nameAr, after Arabic normalisation (the tashkeel marks U+064B–U+065F and U+0670 and the tatweel U+0640 removed, and nothing else — the Arabic-Indic digits U+0660–U+0669 are kept; أ إ آ ٱ read as ا, ة as ه, ى as ي; Latin letters lower-cased; leading, trailing and repeated spaces removed — ADR-CAT-062), equals the normalised nameAr of another active Item of the tenant or of an earlier valid row of the same import file.
 Message    : ar: يوجد صنف نشط بالاسم نفسه: {code}. افتح الصنف الموجود أو غيّر الاسم. · en: An active item already has this name: {code}. Open the existing item or change the name.
 Traces     : REQ-CAT-007, REQ-CAT-041, REQ-CAT-144
 Data source: ENT-CAT-001.nameAr, ENT-CAT-001.isActiveFl, ENT-CAT-001.code ({code} = the code of the other active Item; for an earlier row of the same import file, the code the import gave to that row's Item)
 Source     : D-13; US-CAT-001; ADR-CAT-062
-Test-Hint  : «شنطة سفر» and «شنطه سفر» are one name; «أحمر» and «احمر» are one name.
+Test-Hint  : «شنطة سفر» and «شنطه سفر» are one name; «أحمر» and «احمر» are one name; «علبة ٢٥» and «علبة ٣٠» are two names.
 
 ### RULE-CAT-004 — Codes are system-assigned
 Scope      : ENT-CAT-001, ENT-CAT-002
@@ -2700,10 +2711,10 @@ Source     : US-CAT-016
 
 ### RULE-CAT-032 — Barcodes avoid scale prefixes
 Scope      : ENT-CAT-009
-Trigger    : on create (GTIN, INTERNAL) · on scale label layout create
+Trigger    : on create (GTIN, INTERNAL) · on import row · on scale label layout create
 Statement  : The system shall prevent a GTIN or INTERNAL barcodeValue that begins with the key of an active scale label layout.
 Message    : ar: الباركود يبدأ ببادئة ملصق ميزان نشط ({prefix}). استخدم باركودًا آخر أو عدّل إعداد الميزان. · en: The barcode starts with the prefix of an active scale label layout ({prefix}). Use another barcode or change the scale settings.
-Traces     : REQ-CAT-091
+Traces     : REQ-CAT-091, REQ-CAT-041
 Data source: ENT-CAT-009.barcodeValue, ENT-CAT-009.barcodeTypeCode, ENT-CAT-011.key, ENT-CAT-011.isActiveFl
 Source     : D-05
 
@@ -2818,7 +2829,7 @@ Source     : US-CAT-010; D-10
 ### RULE-CAT-045 — Import row validation
 Scope      : ENT-CAT-001, ENT-CAT-009
 Trigger    : on import row
-Statement  : The system shall validate each data row against RULE-CAT-001, RULE-CAT-002, RULE-CAT-003, RULE-CAT-006, RULE-CAT-026, RULE-CAT-029, RULE-CAT-030 and RULE-CAT-042, skip every row that fails, and report its row number, column and reason. A category code that matches no active Category is a failure of column category with the RULE-CAT-026 message.
+Statement  : The system shall validate each data row against RULE-CAT-001, RULE-CAT-002, RULE-CAT-003, RULE-CAT-006, RULE-CAT-026, RULE-CAT-029, RULE-CAT-030, RULE-CAT-032 and RULE-CAT-042, skip every row that fails, and report its row number, column and reason. A category code that matches no active Category is a failure of column category with the RULE-CAT-026 message.
 Message    : ar: الصف {row}، العمود {column}: {reason}. صحّح الصف وأعد استيراده. · en: Row {row}, column {column}: {reason}. Correct the row and import it again.
 Traces     : REQ-CAT-037, REQ-CAT-041
 Data source: ENT-CAT-001.nameAr, ENT-CAT-001.nameEn, ENT-CAT-001.baseUomCode, ENT-CAT-001.categoryFk, ENT-CAT-001.brandCode, ENT-CAT-001.taxClassCode, ENT-CAT-001.einvoiceCodeTypeCode, ENT-CAT-001.einvoiceCode, ENT-CAT-009.barcodeValue
@@ -2852,13 +2863,13 @@ Data source: ENT-CAT-001.isActiveFl, ENT-CAT-002.isActiveFl, ENT-CAT-006.isActiv
 Source     : ARCH-5 (effect on SOFT-READ consumers: notify, never cascade)
 
 ### RULE-CAT-049 — Change events only after commit
-Scope      : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005, ENT-CAT-007, ENT-CAT-008, ENT-CAT-009, ENT-CAT-010
+Scope      : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005, ENT-CAT-006, ENT-CAT-007, ENT-CAT-008, ENT-CAT-009, ENT-CAT-010
 Trigger    : on commit or rollback of a catalogue change
 Statement  : The system shall record each catalogue-change event in the same transaction as the change and deliver it only after commit.
 Message    : ar: تعذّر حفظ التغيير ولم يُرسل أي إشعار بالتغيير. أعد المحاولة. · en: The change was not saved and no change notice was sent. Try again.
 Traces     : REQ-CAT-008, REQ-CAT-009, REQ-CAT-139
-Data source: ENT-CAT-001.itemPk, ENT-CAT-002.variantPk
-Source     : US-CAT-002; given `events` outbox
+Data source: ENT-CAT-001.itemPk, ENT-CAT-002.variantPk, ENT-CAT-006.categoryPk
+Source     : US-CAT-002; given `events` outbox; ADR-CAT-077
 
 ### RULE-CAT-050 — A reactivated Item has an active Variant
 Scope      : ENT-CAT-001, ENT-CAT-002
@@ -3127,9 +3138,9 @@ Tree ordered by sortOrder under each parent (REQ-CAT-067).
 
 | Action | Operation | RULEs applied |
 |---|---|---|
-| Save | REQ-CAT-064 / REQ-CAT-065 | RULE-CAT-001, 002, 023, 024 |
-| Deactivate | REQ-CAT-066 | RULE-CAT-025, 048 |
-| Reactivate | REQ-CAT-136 | RULE-CAT-023, 024 |
+| Save | REQ-CAT-064 / REQ-CAT-065, REQ-CAT-008 | RULE-CAT-001, 002, 023, 024, 049 |
+| Deactivate | REQ-CAT-066, REQ-CAT-008 | RULE-CAT-025, 048, 049 |
+| Reactivate | REQ-CAT-136, REQ-CAT-008 | RULE-CAT-023, 024, 049 |
 | Show Items | REQ-CAT-068 | — |
 
 ### B4 — Access
@@ -3144,12 +3155,12 @@ Page code: CAT_CATEGORIES
 ### B5 — API expectations
 | Operation | Verb | Path | Inputs | Outputs | RULEs | Traces (REQ) |
 |---|---|---|---|---|---|---|
-| create Category | POST | /api/v1/cat/categories | code, nameAr, nameEn, parentCategoryFk, sortOrder | Category | RULE-CAT-001, 002, 023, 024 | REQ-CAT-064 |
+| create Category | POST | /api/v1/cat/categories | code, nameAr, nameEn, parentCategoryFk, sortOrder | Category | RULE-CAT-001, 002, 023, 024, 049 | REQ-CAT-064, 008 |
 | list Category tree | GET | /api/v1/cat/categories | text, isActiveFl | tree of Category | — | REQ-CAT-067 |
 | read Category | GET | /api/v1/cat/categories/{id} | id | Category | — | REQ-CAT-067 |
-| update Category | PUT | /api/v1/cat/categories/{id} | names, parentCategoryFk, sortOrder | Category | RULE-CAT-023, 024 (code fixed) | REQ-CAT-065 |
-| deactivate Category | DELETE | /api/v1/cat/categories/{id} | id | confirmation | RULE-CAT-025, 048 | REQ-CAT-066 |
-| reactivate Category | PATCH | /api/v1/cat/categories/{id} | isActiveFl true | Category | RULE-CAT-023, 024 | REQ-CAT-136 |
+| update Category | PUT | /api/v1/cat/categories/{id} | names, parentCategoryFk, sortOrder | Category | RULE-CAT-023, 024, 049 (code fixed) | REQ-CAT-065, 008 |
+| deactivate Category | DELETE | /api/v1/cat/categories/{id} | id | confirmation | RULE-CAT-025, 048, 049 | REQ-CAT-066, 008 |
+| reactivate Category | PATCH | /api/v1/cat/categories/{id} | isActiveFl true | Category | RULE-CAT-023, 024, 049 | REQ-CAT-136, 008 |
 | Items of a Category | GET | /api/v1/cat/categories/{id}/items | id, paging | Page of Item | — | REQ-CAT-068 |
 
 ## SCR-REQ-CAT-003 — Variant attributes / خصائص المتغيّرات
@@ -3330,7 +3341,7 @@ Page code: CAT_SETTINGS
 | US | REQ | AC | RULE | ENT | SCR-REQ |
 |---|---|---|---|---|---|
 | US-CAT-001 | REQ-CAT-001 … 007, 130, 131, 132, 135, 142 … 147 | AC-CAT-001 … 007, 132 … 134, 137 … 139, 144, 149, 154 … 156, 162 | RULE-CAT-003, 019, 026, 041, 048, 050, 053 | ENT-CAT-001, 002, 005, 006, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
-| US-CAT-002 | REQ-CAT-008 … 010, 133 | AC-CAT-008 … 010, 140 | RULE-CAT-049 | ENT-CAT-001, 002, 005, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
+| US-CAT-002 | REQ-CAT-008 … 010, 133 | AC-CAT-008 … 010, 140, 165 | RULE-CAT-049 | ENT-CAT-001, 002, 005, 006, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
 | US-CAT-003 | REQ-CAT-011 … 013 | AC-CAT-011 … 013 | RULE-CAT-009 | ENT-CAT-001, 002, 003, 005, 007 | SCR-REQ-CAT-001, 003 |
 | US-CAT-004 | REQ-CAT-014 … 016 | AC-CAT-014 … 017, 143 | RULE-CAT-008 | ENT-CAT-001, 002, 003, 004, 005, 007 | SCR-REQ-CAT-001, 003 |
 | US-CAT-005 | REQ-CAT-017 … 020 | AC-CAT-018 … 021 | RULE-CAT-012 | ENT-CAT-001, 002, 005, 007, 009 | SCR-REQ-CAT-001 |
@@ -3338,7 +3349,7 @@ Page code: CAT_SETTINGS
 | US-CAT-007 | REQ-CAT-024 … 027, 140, 141 | AC-CAT-025 … 028, 163, 164 | RULE-CAT-001 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
 | US-CAT-008 | REQ-CAT-028 … 031 | AC-CAT-029 … 032 | RULE-CAT-001, 002 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
 | US-CAT-009 | REQ-CAT-032 … 035, 134 | AC-CAT-033 … 036, 141 | RULE-CAT-004, 005 | ENT-CAT-001, 002, 012 | SCR-REQ-CAT-001, 006 |
-| US-CAT-010 | REQ-CAT-036 … 041, 139 | AC-CAT-037 … 043, 161 | RULE-CAT-003, 044, 045, 049 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-004 |
+| US-CAT-010 | REQ-CAT-036 … 041, 139 | AC-CAT-037 … 043, 161, 166 | RULE-CAT-003, 032, 044, 045, 049 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-004 |
 | US-CAT-011 | REQ-CAT-042 … 055, 129, 137, 138, 140, 141, 145 | AC-CAT-044 … 057, 131, 145, 146, 147, 154, 159, 160, 163, 164 | RULE-CAT-001, 013, 014, 015, 016, 017, 048, 052 | ENT-CAT-001, 002, 003, 004, 005 | SCR-REQ-CAT-001, 003 |
 | US-CAT-012 | REQ-CAT-056 … 063, 143, 147 | AC-CAT-058 … 065, 134, 151, 156 | RULE-CAT-018, 019, 020, 021, 022 | ENT-CAT-001, 002, 005, 007 | SCR-REQ-CAT-001 |
 | US-CAT-013 | REQ-CAT-064 … 072, 136, 142, 146 | AC-CAT-066 … 074, 133, 142, 153, 155, 157, 158 | RULE-CAT-001, 023, 024, 025, 026, 048 | ENT-CAT-001, 006 | SCR-REQ-CAT-002 |
@@ -3400,6 +3411,7 @@ Every story maps to ≥ 1 REQ, including ≥ 1 REQ with pattern `unwanted`. Ever
 | ADR-CAT-072 | The default Variant moves: on deactivation of the default to the remaining active Variant with the lowest code, and on generation for an Item with no active Variant to the first Variant created; an active Item always has exactly one active default Variant (REQ-CAT-025, REQ-CAT-140, REQ-CAT-141, A7, CON-CAT-002) | gate-analysis round 6, G3 | ACCEPTED (non-breaking) |
 | ADR-CAT-074 | The item import saves entities (no JDBC batching); the 60-second figure for 5,000 rows is a target measured on the reference deployment, the 120-second limit is the guarantee (REQ-CAT-139); amends ADR-CAT-071 | gate-analysis round 7, G3 | ACCEPTED (non-breaking) |
 | ADR-CAT-076 | Image type, size and public storage are enforced at upload by the FILE category CAT_ITEM_IMAGE; CAT checks a file reference's availability and public URL and the 20-image count (RULE-CAT-038, REQ-CAT-110); the import's byte read and type / size check (RULE-CAT-044) wait on CORE-GAP-file-document-metadata-read; amends ADR-CAT-056 §2 | gate-analysis round 8, G1; erp-core conventions §Files rule 3, modules.file | ACCEPTED (non-breaking) |
+| ADR-CAT-077 | Category changes publish catalogue-change events: ENT-CAT-006 joins REQ-CAT-008, RULE-CAT-049 and CON-CAT-018 (itemPk empty for a Category), so a Category creation, change, deactivation or reactivation is signalled to SFR and INS (RULE-CAT-048) | gate-analysis round 9, G1 | ACCEPTED (non-breaking) |
 
 No ADR is BLOCKED. No question was raised.
 

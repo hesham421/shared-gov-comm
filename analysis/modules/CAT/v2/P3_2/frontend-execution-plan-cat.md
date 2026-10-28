@@ -4,7 +4,7 @@ Module : CAT · Version : v2 · Stage : P3.2 Part B · Track : frontend · Plan 
 Stack  : `react-ts-vite` · routing `react-router` · server state `tanstack-query` · forms `react-hook-form` · validation `zod` · state `zustand` · one lazy chunk per composite screen
 Bound to: `api-spec-cat.yaml` (OpenAPI 3.1.0, 55 operations, base path `/api/v1/cat`, bearer JWT). The frontend executor's mock server serves the same document until the backend is delivered.
 Design : `ui-ux-spec-cat.md` (SCR-CAT-001 … 006, UXD-CAT-001 … 003) · `flow-diagram-cat.md`
-Decisions: ADR-CAT-049 (Items: one Save owning ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage and binding notes); earlier: ADR-CAT-043, ADR-CAT-044, ADR-CAT-048; gate-analysis revise: ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes); second gate-analysis revise: ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length), ADR-CAT-065 (CAT lookup keys served through API-CAT-052); third gate-analysis revise: ADR-CAT-068 (three repairs stay allowed on an inactive Item), ADR-CAT-069 (reactivation of Categories, Variant attributes and values); eighth gate-analysis revise: ADR-CAT-076 (image type and size held by the FILE category CAT_ITEM_IMAGE)
+Decisions: ADR-CAT-049 (Items: one Save owning ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage and binding notes); earlier: ADR-CAT-043, ADR-CAT-044, ADR-CAT-048; gate-analysis revise: ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes); second gate-analysis revise: ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length), ADR-CAT-065 (CAT lookup keys served through API-CAT-052); third gate-analysis revise: ADR-CAT-068 (three repairs stay allowed on an inactive Item), ADR-CAT-069 (reactivation of Categories, Variant attributes and values); eighth gate-analysis revise: ADR-CAT-076 (image type and size held by the FILE category CAT_ITEM_IMAGE); ninth gate-analysis revise: ADR-CAT-077 (Category changes publish catalogue-change events)
 
 This is a delta run, but the current state holds no earlier frontend plan, so every block below is ADDED. The plan says WHAT each screen reads, validates and renders. Method, path, request and response schema, paging and envelope are read in `api-spec-cat.yaml` by `x-api-id`, not copied here.
 
@@ -26,7 +26,7 @@ bindings:
   - {req: REQ-CAT-005, api: [API-CAT-004]}
   - {req: REQ-CAT-006, api: [API-CAT-005]}
   - {req: REQ-CAT-007, api: [API-CAT-001, API-CAT-003]}
-  - {req: REQ-CAT-008, api: [API-CAT-001, API-CAT-003]}
+  - {req: REQ-CAT-008, api: [API-CAT-001, API-CAT-003, API-CAT-021, API-CAT-023, API-CAT-024, API-CAT-053]}
   - {req: REQ-CAT-009, api: [API-CAT-001, API-CAT-003]}
   - {req: REQ-CAT-010, api: [API-CAT-002]}
   - {req: REQ-CAT-011, api: [API-CAT-001, API-CAT-006]}
@@ -467,7 +467,7 @@ It composes the queries above. The state it owns:
 Imperative operations: `save()` (ITEM-SAVE), `deactivate()` / `reactivate()` / `publish()` / `unpublish()` (ITEM-STATE-COMMAND, each after a confirmation), `addLine(kind, value)` / `markDeactivate(kind, id)` (form state only), `applyGeneration(selection)` / `applyComponents(variants)` (from the second levels), `findByBarcode(value)`.
 <!-- SUB:F2-SCR-CAT-001:END -->
 
-<!-- SUB:F2-SCR-CAT-002:START traces=REQ-CAT-136,API-CAT-053,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
+<!-- SUB:F2-SCR-CAT-002:START traces=REQ-CAT-008,REQ-CAT-136,API-CAT-053,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,API-CAT-021,API-CAT-022,API-CAT-023,API-CAT-024,API-CAT-039,API-CAT-040,SCR-CAT-002 -->
 ### F2 · SCR-CAT-002 — Categories
 
 ```yaml name=screen-hooks
@@ -479,7 +479,7 @@ hooks:
   - {hook: CATEGORY-ITEMS-QUERY, kind: read, api: [API-CAT-040], cache_key: "[cat, categories, items, {categoryPk, page, size}]", errors: "CAT-404-NOT-FOUND → empty list · other → generic", loading: LOCAL, invalidation: "—"}
   - {hook: CATEGORY-SCREEN-INIT, kind: init, cache_key: "—", errors: "no VIEW → unauthorized", loading: NONE}
   - {hook: CATEGORY-SAVE, kind: mutation, api: [API-CAT-021, API-CAT-023], errors: "see CATEGORY-SAVE below", loading: LOCAL, invalidation: "[cat, categories, tree] · [cat, categories, detail, categoryPk] · [cat, categories, items]"}
-  - {hook: CATEGORY-DEACTIVATE, kind: mutation, api: [API-CAT-024], errors: "CAT-409-CATEGORY-IN-USE → drawer banner, text RULE-CAT-025 message, action opens Items of this category", loading: LOCAL, invalidation: "[cat, categories, tree] · [cat, categories, detail, categoryPk]"}
+  - {hook: CATEGORY-DEACTIVATE, kind: mutation, api: [API-CAT-024], errors: "CAT-409-CATEGORY-IN-USE → drawer banner, text RULE-CAT-025 message, action opens Items of this category · CAT-500-CHANGE-NOT-SAVED → drawer banner with Try again, text RULE-CAT-049 message", loading: LOCAL, invalidation: "[cat, categories, tree] · [cat, categories, detail, categoryPk]"}
   - {hook: CATEGORY-REACTIVATE, kind: mutation, api: [API-CAT-053], errors: "see CATEGORY-REACTIVATE below", loading: LOCAL, invalidation: "[cat, categories, tree] · [cat, categories, detail, categoryPk] · [cat, categories, items]"}
   - {hook: CATEGORY-FACADE, kind: facade}
 ```
@@ -493,22 +493,24 @@ Entity by id for the entry drawer (`?node=<categoryPk>`): it supplies the `versi
 #### CATEGORY-ITEMS-QUERY — API-CAT-040            traces=API-CAT-040,REQ-CAT-068
 Feeds the "Items of this category" summary row (total count + 3 names from page 0) and the second-level list (paged). A row jump seeds `/cat/items/:itemPk`, which identifies one Item.
 
-#### CATEGORY-SAVE — API-CAT-021, API-CAT-023            traces=API-CAT-021,API-CAT-023,REQ-CAT-064,REQ-CAT-065,REQ-CAT-069,REQ-CAT-070
+#### CATEGORY-SAVE — API-CAT-021, API-CAT-023            traces=API-CAT-021,API-CAT-023,REQ-CAT-008,REQ-CAT-064,REQ-CAT-065,REQ-CAT-069,REQ-CAT-070
 Mutation, the drawer's one Save: create (`API-CAT-021`) or update (`API-CAT-023`, with `version`, without `code`). Errors:
 - `CAT-422-NAME-AR-INVALID` → inline on nameAr; text: RULE-CAT-001 message
 - `CAT-422-NAME-EN-TOO-LONG` → inline on nameEn; text: RULE-CAT-002 message
 - `CAT-422-CATEGORY-PARENT-INVALID` → inline on parentCategoryFk; text: RULE-CAT-023 message
 - `CAT-409-CATEGORY-DUPLICATE` → inline on code (create) and nameAr; text: RULE-CAT-024 message
 - `CAT-409-STALE-VERSION` → drawer banner + Reload; text: catalogue CAT-409-STALE-VERSION
+- `CAT-500-CHANGE-NOT-SAVED` → drawer banner with Try again (the drawer keeps its values); text: RULE-CAT-049 message (ADR-CAT-077)
 - other → as §3.0
 
-#### CATEGORY-DEACTIVATE — API-CAT-024            traces=API-CAT-024,REQ-CAT-066,REQ-CAT-071
-Record command in the drawer, after a confirmation. The success code `CAT-200-DEACTIVATED` → notice, text: RULE-CAT-048 message.
+#### CATEGORY-DEACTIVATE — API-CAT-024            traces=API-CAT-024,REQ-CAT-008,REQ-CAT-066,REQ-CAT-071
+Record command in the drawer, after a confirmation. The success code `CAT-200-DEACTIVATED` → notice, text: RULE-CAT-048 message. `CAT-500-CHANGE-NOT-SAVED` → drawer banner with Try again, text: RULE-CAT-049 message (ADR-CAT-077).
 
-#### CATEGORY-REACTIVATE — API-CAT-053            traces=API-CAT-053,REQ-CAT-136
+#### CATEGORY-REACTIVATE — API-CAT-053            traces=API-CAT-053,REQ-CAT-008,REQ-CAT-136
 Record command in the drawer of an inactive Category, after a confirmation, only while the drawer has no pending change; it sends `{isActiveFl: true}` (ADR-CAT-069). Errors:
 - `CAT-422-CATEGORY-PARENT-INVALID` → drawer banner; text: RULE-CAT-023 message; action "Open the parent" → `?node=<parentCategoryFk>`, where the parent can be reactivated first
 - `CAT-409-CATEGORY-DUPLICATE` → drawer banner and inline on nameAr; text: RULE-CAT-024 message (rename it first, then reactivate)
+- `CAT-500-CHANGE-NOT-SAVED` → drawer banner with Try again; text: RULE-CAT-049 message (ADR-CAT-077)
 - other → as §3.0
 
 #### CATEGORY-SCREEN-INIT — SCR-CAT-002

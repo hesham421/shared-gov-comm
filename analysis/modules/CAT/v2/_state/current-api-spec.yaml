@@ -1545,7 +1545,7 @@ paths:
       operationId: createCategory
       summary: create Category
       x-api-id: API-CAT-021
-      x-traces: [REQ-CAT-064, REQ-CAT-069, REQ-CAT-070, DBF-CAT-072, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-076, DBF-CAT-077]
+      x-traces: [REQ-CAT-008, REQ-CAT-064, REQ-CAT-069, REQ-CAT-070, DBF-CAT-072, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-076, DBF-CAT-077]
       requestBody:
         required: true
         content:
@@ -1610,8 +1610,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '500':
-          description: error — CAT-500-SERVER-ERROR
-          x-error-codes: [CAT-500-SERVER-ERROR]
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1726,7 +1726,7 @@ paths:
       operationId: updateCategory
       summary: update Category
       x-api-id: API-CAT-023
-      x-traces: [REQ-CAT-065, REQ-CAT-069, REQ-CAT-070, DBF-CAT-071, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-077, DBF-CAT-079]
+      x-traces: [REQ-CAT-008, REQ-CAT-065, REQ-CAT-069, REQ-CAT-070, DBF-CAT-071, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-077, DBF-CAT-079]
       parameters:
       - name: id
         in: path
@@ -1796,8 +1796,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '500':
-          description: error — CAT-500-SERVER-ERROR
-          x-error-codes: [CAT-500-SERVER-ERROR]
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1805,7 +1805,7 @@ paths:
       operationId: deactivateCategory
       summary: deactivate Category
       x-api-id: API-CAT-024
-      x-traces: [REQ-CAT-066, REQ-CAT-071, DBF-CAT-071, DBF-CAT-076, DBF-CAT-077, DBF-CAT-014, DBF-CAT-015]
+      x-traces: [REQ-CAT-008, REQ-CAT-066, REQ-CAT-071, DBF-CAT-071, DBF-CAT-076, DBF-CAT-077, DBF-CAT-014, DBF-CAT-015]
       parameters:
       - name: id
         in: path
@@ -1856,8 +1856,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '500':
-          description: error — CAT-500-SERVER-ERROR
-          x-error-codes: [CAT-500-SERVER-ERROR]
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1865,7 +1865,7 @@ paths:
       operationId: reactivateCategory
       summary: reactivate Category
       x-api-id: API-CAT-053
-      x-traces: [REQ-CAT-136, DBF-CAT-071, DBF-CAT-073, DBF-CAT-076, DBF-CAT-077, DBF-CAT-079]
+      x-traces: [REQ-CAT-008, REQ-CAT-136, DBF-CAT-071, DBF-CAT-073, DBF-CAT-076, DBF-CAT-077, DBF-CAT-079]
       parameters:
       - name: id
         in: path
@@ -1933,8 +1933,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '500':
-          description: error — CAT-500-SERVER-ERROR
-          x-error-codes: [CAT-500-SERVER-ERROR]
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -3540,6 +3540,7 @@ paths:
                     properties:
                       variantPk: {type: integer, format: int64}
                       copies: {type: integer, format: int32}
+                    required: [variantPk, copies]
                   x-dbf: DBF-CAT-022
               required: [lines]
               title: LabelRequest
