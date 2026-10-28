@@ -3,8 +3,8 @@
   "version": 2,
   "scope": "all",
   "counts": {
-    "CRITICAL": 7,
-    "MAJOR": 164,
+    "CRITICAL": 3,
+    "MAJOR": 134,
     "MINOR": 8
   },
   "clean": false,
@@ -32,7 +32,7 @@
   ],
   "skipped": [],
   "coverage": {
-    "C0.1": 11,
+    "C0.1": 16,
     "C1.4": 9,
     "C2.2": 10,
     "C3.7": 9,
@@ -60,26 +60,26 @@
     "C6.13": 1,
     "C6.14": 1,
     "C6.15": 0,
-    "C7.2": 0,
-    "C7.3": 0,
-    "C7.4": 0,
+    "C7.2": 63,
+    "C7.3": 51,
+    "C7.4": 121,
     "C7.5": 0,
     "C7.5b": 0,
     "C7.6": 127,
-    "C7.22": 0,
-    "C7.21": 0,
-    "C7.23": 0,
-    "C7.20": 0,
-    "C7.19": 0,
-    "C7.18": 0,
+    "C7.22": 70,
+    "C7.21": 30,
+    "C7.23": 41,
+    "C7.20": 66,
+    "C7.19": 58,
+    "C7.18": 4,
     "C7.24": 0,
-    "C7.25": 0,
+    "C7.25": 1,
     "C7.26": 0,
     "C7.27": 0,
     "C7.28": 0,
-    "C7.29": 0,
-    "C7.30": 0,
-    "C7.31": 0,
+    "C7.29": 102,
+    "C7.30": 57,
+    "C7.31": 51,
     "C9.2": 0,
     "C9.3": 0,
     "C9.4": 0,
@@ -99,7 +99,7 @@
     "C10.8": 0,
     "C10.9": 0,
     "C10.10": 0,
-    "C10.11": 0,
+    "C10.11": 9,
     "C13.5": 18,
     "C-GIVEN-1": 24,
     "C-GIVEN-2": 9,
@@ -108,7 +108,6 @@
   "vacuous": [
     "C10.1",
     "C10.10",
-    "C10.11",
     "C10.7",
     "C10.8",
     "C10.9",
@@ -116,23 +115,10 @@
     "C6.12",
     "C6.15",
     "C6.3",
-    "C7.18",
-    "C7.19",
-    "C7.2",
-    "C7.20",
-    "C7.21",
-    "C7.22",
-    "C7.23",
     "C7.24",
-    "C7.25",
     "C7.26",
     "C7.27",
     "C7.28",
-    "C7.29",
-    "C7.3",
-    "C7.30",
-    "C7.31",
-    "C7.4",
     "C7.5",
     "C7.5b",
     "C9.15",
@@ -176,8 +162,8 @@
         "API"
       ],
       "total": 127,
-      "covered": 0,
-      "pct": 0.0
+      "covered": 127,
+      "pct": 100.0
     },
     {
       "id": "req-ux",
@@ -220,42 +206,34 @@
     },
     {
       "severity": "CRITICAL",
-      "clause": "C7.1",
-      "check": "markers",
-      "message": "`backend-execution-plan` missing",
-      "artifact": "backend-execution-plan",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C7.13",
-      "check": "refs-exist",
-      "message": "`ADR-CAT-044` is cited in `contract` but governance-shared\\analysis\\decisions\\CAT\\ADR-CAT-044.md does not exist",
-      "artifact": "contract",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C7.31",
-      "check": "api-spec-valid",
-      "message": "`api-spec` is missing",
-      "artifact": "api-spec",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C8.1",
-      "check": "exists",
-      "message": "`api-spec` is missing or empty",
-      "artifact": "api-spec",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
       "clause": "C9.1",
       "check": "markers",
       "message": "`frontend-execution-plan` missing",
       "artifact": "frontend-execution-plan",
+      "line": 0
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.11",
+      "check": "package-has-tests",
+      "message": "`SVC-API-CRUD` (SUB) of `backend-execution-plan` leaves the factory with no test case naming it on its `Package` line \u2014 a package with no acceptance; derive one in `backend-test-plan`, or flag its phase `no_tests` in the profile",
+      "artifact": "backend-test-plan",
+      "line": 0
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.11",
+      "check": "package-has-tests",
+      "message": "`SVC-API-INT` (SUB) of `backend-execution-plan` leaves the factory with no test case naming it on its `Package` line \u2014 a package with no acceptance; derive one in `backend-test-plan`, or flag its phase `no_tests` in the profile",
+      "artifact": "backend-test-plan",
+      "line": 0
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.11",
+      "check": "package-has-tests",
+      "message": "`SVC-API-SEARCH` (SUB) of `backend-execution-plan` leaves the factory with no test case naming it on its `Package` line \u2014 a package with no acceptance; derive one in `backend-test-plan`, or flag its phase `no_tests` in the profile",
+      "artifact": "backend-test-plan",
       "line": 0
     },
     {
@@ -1292,270 +1270,6 @@
     },
     {
       "severity": "MAJOR",
-      "clause": "C7.2",
-      "check": "traces",
-      "message": "`backend-execution-plan` missing",
-      "artifact": "backend-execution-plan",
-      "line": 0
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.4",
-      "check": "registry-agree",
-      "message": "registry `registry-exec-be` missing",
-      "artifact": "registry-exec-be",
-      "line": 0
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.5",
-      "check": "registry-agree",
-      "message": "artifact `backend-execution-plan` missing",
-      "artifact": "backend-execution-plan",
-      "line": 0
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-003` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 297
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-008` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 367
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-009` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 381
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-011` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 409
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-012` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 423
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-013` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 437
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-014` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 451
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-016` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 479
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-021` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 557
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-023` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 585
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-026` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 627
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-035` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 753
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-036` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 767
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-037` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 781
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-038` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 795
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-039` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 809
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-040` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 823
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-041` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 837
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-061` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 1125
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-075` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 1321
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-090` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 1531
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-091` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 1545
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-100` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 1671
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-102` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 1699
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-103` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 1713
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-104` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 1727
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-116` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 1895
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-125` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 2021
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-126` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 2035
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C7.6",
-      "check": "orphans",
-      "message": "`REQ-CAT-127` is referenced by 0 of ['API', 'DBF'], needs \u22651",
-      "artifact": "",
-      "line": 2049
-    },
-    {
-      "severity": "MAJOR",
       "clause": "C9.2",
       "check": "traces",
       "message": "`frontend-execution-plan` missing",
@@ -1638,10 +1352,12 @@
   "provenance": {
     "rules": {
       "contracts": "1e9a4cbe6e0e656cd905e87ef41fdd715519f455a4d19dba41e3592b43b3a281",
-      "checker": "22088c70be3d5eb4f1ea551e1df5253e1ff7fbf003ae1bb336cfece81e3be64d",
+      "checker": "660eb6323b298e0bcc37748bc8ec55f19be52c00f5cc045ec64a0db9680af5ec",
       "policy": "f0051863173859c50eaa1091adddc83f9c46e4a33a735325d37acc31ffd51c3d"
     },
     "resolvable": [
+      "api-spec",
+      "backend-execution-plan",
       "business-policies",
       "change-manifest",
       "contract",
@@ -1652,12 +1368,15 @@
       "prd",
       "project-registry",
       "registry-db",
+      "registry-exec-be",
       "registry-srs",
       "srs"
     ],
     "inputs": {
+      "api-spec": "2b0a4ca1d4934b904eec58ae85266f5218e914677d5c6b50e391bab5cc9702ba",
+      "backend-execution-plan": "249a173741180b61e18a8564957f919449b5ff2328dfcbef9b1b858ac8241aeb",
       "business-policies": "c152874252d238fa48c628a658d2386be20140b4ba19b8b936bc22c217bc51e5",
-      "change-manifest": "bbac8b91fe71b3e6bccbde8bb4b5cf73f23f1d7f57c1cd5cc79a62f829b493eb",
+      "change-manifest": "c23358f413e334943d4c58c4c1c8839d0756757daf0155c821254c3e56cdd714",
       "contract": "7a78dff411001fb66979c0087d499a806382c9c017549132880086f774803a03",
       "db-script": "9d3059123650df9b01c69887251cf9aec0852e265ba1eff0f3b30a49a27bfa78",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
@@ -1666,9 +1385,10 @@
       "prd": "5e6157b1493b752f2ec9686b7621e181123364bb4031c5515b2dbc6e88bac5da",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
       "registry-db": "abb0aacc3a047b415f49ba57d7a4fdeeee91e2670975ad10ff8a9cc02bd1673e",
+      "registry-exec-be": "4fe529fdf38a0af814ecbfa80d3266d299a7086bd745c57cf0b5fa2e682e0f9f",
       "registry-srs": "3ca9da3db1d58736b2aa403b1d9b7f7d05da01610692247ad765d800eeb69970",
       "srs": "c6b734716872e557231d2c4ba25882ec1385155b2e0742559aa8aeeb49b3bd78"
     },
-    "at": "2026-10-27T04:31:36+00:00"
+    "at": "2026-10-28T06:46:52+00:00"
   }
 }

@@ -78,6 +78,33 @@ artifacts:
     MODIFIED: []
     REMOVED: []
     UNCHANGED: []
+  backend-execution-plan:    # file P3_1/backend-execution-plan-cat.md; written in full (no prior backend plan in the current state); API and QR streams start at 001 — next free API 052, QR 071; no XM placed or minted (register empty)
+    ADDED: [API-CAT-001, API-CAT-002, API-CAT-003, API-CAT-004, API-CAT-005, API-CAT-006, API-CAT-007, API-CAT-008, API-CAT-009, API-CAT-010,
+      API-CAT-011, API-CAT-012, API-CAT-013, API-CAT-014, API-CAT-015, API-CAT-016, API-CAT-017, API-CAT-018, API-CAT-019, API-CAT-020,
+      API-CAT-021, API-CAT-022, API-CAT-023, API-CAT-024, API-CAT-025, API-CAT-026, API-CAT-027, API-CAT-028, API-CAT-029, API-CAT-030,
+      API-CAT-031, API-CAT-032, API-CAT-033, API-CAT-034, API-CAT-035, API-CAT-036, API-CAT-037, API-CAT-038, API-CAT-039, API-CAT-040,
+      API-CAT-041, API-CAT-042, API-CAT-043, API-CAT-044, API-CAT-045, API-CAT-046, API-CAT-047, API-CAT-048, API-CAT-049, API-CAT-050,
+      API-CAT-051,
+      QR-CAT-001, QR-CAT-002, QR-CAT-003, QR-CAT-004, QR-CAT-005, QR-CAT-006, QR-CAT-007, QR-CAT-008, QR-CAT-009, QR-CAT-010,
+      QR-CAT-011, QR-CAT-012, QR-CAT-013, QR-CAT-014, QR-CAT-015, QR-CAT-016, QR-CAT-017, QR-CAT-018, QR-CAT-019, QR-CAT-020,
+      QR-CAT-021, QR-CAT-022, QR-CAT-023, QR-CAT-024, QR-CAT-025, QR-CAT-026, QR-CAT-027, QR-CAT-028, QR-CAT-029, QR-CAT-030,
+      QR-CAT-031, QR-CAT-032, QR-CAT-033, QR-CAT-034, QR-CAT-035, QR-CAT-036, QR-CAT-037, QR-CAT-038, QR-CAT-039, QR-CAT-040,
+      QR-CAT-041, QR-CAT-042, QR-CAT-043, QR-CAT-044, QR-CAT-045, QR-CAT-046, QR-CAT-047, QR-CAT-048, QR-CAT-049, QR-CAT-050,
+      QR-CAT-051, QR-CAT-052, QR-CAT-053, QR-CAT-054, QR-CAT-055, QR-CAT-056, QR-CAT-057, QR-CAT-058, QR-CAT-059, QR-CAT-060,
+      QR-CAT-061, QR-CAT-062, QR-CAT-063, QR-CAT-064, QR-CAT-065, QR-CAT-066, QR-CAT-067, QR-CAT-068, QR-CAT-069, QR-CAT-070]
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
+  registry-exec-be:          # file P3_1/registry-exec-be-cat.md; owns no IDs (indexes the API / QR ranges of the backend plan); written in full (no prior registry in the current state)
+    ADDED: []
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
+  api-spec:                  # file P3_1/api-spec-cat.yaml; owns no IDs (generated from the backend plan — fold: replace, re-emitted whole); 51 operations = 51 API blocks
+    ADDED: []
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
 ```
 
 P0 delta note: the given's module set changed (1.6.0 adds `gl`), so the domain-profile hand re-run named in the summary applies (OI-02).
@@ -99,3 +126,5 @@ P2 delta note: the db-script is written as a create-all migration, because the c
 - every UNIQUE is composite with TENANT_ID.
 
 The XM register is empty (`consumes: []`), so `gov.py graph` gets no edge from CAT. The given tables (mdl lookup tables, CORE_NUMBER_SERIES, FILE_DOCUMENT, CORE_TENANT) are never re-created. The 10 CAT lookup keys (34 values), the 3 number series and the 8 Unit e-invoice codes are seeded for the PLATFORM tenant. Decisions are recorded as DEFAULTs D-P2-01 … D-P2-18. No question was raised and no ADR was needed; the next free ADR is unchanged.
+
+P3.1 delta note: the backend execution plan is written in full, because the current state holds no earlier plan. It adds API 51 (001 … 051) and QR 70 (001 … 070) in the profile's seven phases; INT-C, the last phase, carries no block because the XM register is empty and no edge was minted. Every CON-CAT item (001 … 018) is honoured. The Error Catalog has 57 codes (49 RULE rows, 8 PLATFORM-STD). The API document `api-spec-cat.yaml` (OpenAPI 3.1.0) is derived from the plan with one operation per API block. ADR-CAT-044 … ADR-CAT-048 are recorded (all ACCEPTED, non-breaking, none BLOCKED); the next free ADR is ADR-CAT-049. No question was raised.

@@ -1,0 +1,3733 @@
+# api-spec-cat.yaml — CAT v2 — OpenAPI 3.1.0 — generated from the P3.1 backend execution plan (fold: replace)
+openapi: 3.1.0
+info:
+  title: CAT — Catalog / الكتالوج — backend API
+  version: 2.0.0
+  description: 'Derived from backend-execution-plan-cat.md (P3.1, CAT v2): one operation per API-CAT block; errors from its Error Catalog (code format {MOD}-{http}[-{SLUG}]). Do not edit by hand — regenerate from the plan.'
+  x-module: CAT
+  x-source: analysis/modules/CAT/v2/P3_1/backend-execution-plan-cat.md
+servers:
+- {url: /}
+security:
+- bearerAuth: []
+paths:
+  /api/v1/cat/items:
+    post:
+      operationId: createItem
+      summary: create Item
+      x-api-id: API-CAT-001
+      x-traces: [REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-011, REQ-CAT-013, REQ-CAT-015, REQ-CAT-016, REQ-CAT-024, REQ-CAT-025, REQ-CAT-026, REQ-CAT-027, REQ-CAT-028, REQ-CAT-030, REQ-CAT-031, REQ-CAT-032, REQ-CAT-033,
+        REQ-CAT-034, REQ-CAT-035, REQ-CAT-056, REQ-CAT-059, REQ-CAT-060, REQ-CAT-072, REQ-CAT-073, REQ-CAT-074, REQ-CAT-075, REQ-CAT-117, REQ-CAT-123, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007,
+        DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012, DBF-CAT-013, DBF-CAT-014, DBF-CAT-015, DBF-CAT-023, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-085, DBF-CAT-086, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-003}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-004}
+                itemKindCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-005}
+                baseUomCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-006}
+                taxClassCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-008}
+                categoryFk: {type: integer, format: int64, x-dbf: DBF-CAT-015}
+                brandCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-007}
+                einvoiceCodeTypeCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-009}
+                einvoiceCode: {type: string, maxLength: 100, x-dbf: DBF-CAT-010}
+                descriptionAr: {type: string, maxLength: 2000, x-dbf: DBF-CAT-011}
+                descriptionEn: {type: string, maxLength: 2000, x-dbf: DBF-CAT-012}
+                code: {type: string, maxLength: 20}
+                bundleComponents:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      componentVariantFk: {type: integer, format: int64}
+                      quantity: {type: number}
+                      sortOrder: {type: integer, format: int32}
+                  x-dbf: DBF-CAT-089
+              required: [nameAr, bundleComponents]
+              title: ItemCreateRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ItemDetail'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ITEM-NAME-DUPLICATE
+          x-error-codes: [CAT-409-ITEM-NAME-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID,
+            CAT-422-CATEGORY-INACTIVE, CAT-422-EINVOICE-CODE-INVALID
+          x-error-codes: [CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID,
+            CAT-422-CATEGORY-INACTIVE, CAT-422-EINVOICE-CODE-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CODE-NOT-ISSUED, CAT-500-CAPABILITY-UNREADABLE, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CODE-NOT-ISSUED, CAT-500-CAPABILITY-UNREADABLE, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    get:
+      operationId: searchItems
+      summary: search Items
+      x-api-id: API-CAT-038
+      x-traces: [REQ-CAT-003, REQ-CAT-014, REQ-CAT-015, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-007, DBF-CAT-013, DBF-CAT-014, DBF-CAT-015, DBF-CAT-110, DBF-CAT-113]
+      parameters:
+      - name: text
+        in: query
+        required: false
+        schema: {type: string, maxLength: 200}
+      - name: categoryFk
+        in: query
+        required: false
+        schema: {type: integer, format: int64}
+      - name: brandCode
+        in: query
+        required: false
+        schema: {type: string, maxLength: 50}
+      - name: itemKindCode
+        in: query
+        required: false
+        schema: {type: string, maxLength: 50}
+      - name: publishStateCode
+        in: query
+        required: false
+        schema: {type: string, maxLength: 50}
+      - name: isActiveFl
+        in: query
+        required: false
+        schema: {type: boolean}
+      - name: page
+        in: query
+        required: false
+        schema: {type: integer, format: int32}
+      - name: size
+        in: query
+        required: false
+        schema: {type: integer, format: int32}
+      x-paginated: true
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items: {$ref: '#/components/schemas/ItemSummary'}
+                      page: {type: integer, format: int32}
+                      size: {type: integer, format: int32}
+                      totalElements: {type: integer, format: int64}
+                      totalPages: {type: integer, format: int32}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/items/{id}:
+    get:
+      operationId: readItem
+      summary: read Item
+      x-api-id: API-CAT-002
+      x-traces: [REQ-CAT-001, REQ-CAT-002, REQ-CAT-010, REQ-CAT-029, REQ-CAT-058, REQ-CAT-119, DBF-CAT-001, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-014, DBF-CAT-022, DBF-CAT-027, DBF-CAT-062, DBF-CAT-064, DBF-CAT-088,
+        DBF-CAT-089, DBF-CAT-102, DBF-CAT-114, DBF-CAT-128]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ItemDetail'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    put:
+      operationId: updateItem
+      summary: update Item
+      x-api-id: API-CAT-003
+      x-traces: [REQ-CAT-004, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-030, REQ-CAT-031, REQ-CAT-034, REQ-CAT-063, REQ-CAT-072, REQ-CAT-073, REQ-CAT-075, REQ-CAT-076, REQ-CAT-082, REQ-CAT-117, REQ-CAT-123, DBF-CAT-001,
+        DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012, DBF-CAT-015, DBF-CAT-017, DBF-CAT-020]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-003}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-004}
+                categoryFk: {type: integer, format: int64, x-dbf: DBF-CAT-015}
+                brandCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-007}
+                taxClassCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-008}
+                einvoiceCodeTypeCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-009}
+                einvoiceCode: {type: string, maxLength: 100, x-dbf: DBF-CAT-010}
+                descriptionAr: {type: string, maxLength: 2000, x-dbf: DBF-CAT-011}
+                descriptionEn: {type: string, maxLength: 2000, x-dbf: DBF-CAT-012}
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-017}
+                code: {type: string, maxLength: 20}
+                itemKindCode: {type: string, maxLength: 50}
+                baseUomCode: {type: string, maxLength: 50}
+              required: [nameAr, taxClassCode, version]
+              title: ItemUpdateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ItemDetail'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION, CAT-409-ITEM-NAME-DUPLICATE
+          x-error-codes: [CAT-409-STALE-VERSION, CAT-409-ITEM-NAME-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-ITEM-KIND-FIXED, CAT-422-BASE-UOM-FIXED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID,
+            CAT-422-CATEGORY-INACTIVE
+          x-error-codes: [CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-ITEM-KIND-FIXED, CAT-422-BASE-UOM-FIXED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID, CAT-422-CATEGORY-INACTIVE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    delete:
+      operationId: deactivateItem
+      summary: deactivate Item
+      x-api-id: API-CAT-004
+      x-traces: [REQ-CAT-005, REQ-CAT-062, DBF-CAT-001, DBF-CAT-013, DBF-CAT-014, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ItemSummary'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+          x-error-codes: [CAT-200-DEACTIVATED]
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-VARIANT-IN-ACTIVE-BUNDLE
+          x-error-codes: [CAT-409-VARIANT-IN-ACTIVE-BUNDLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    patch:
+      operationId: reactivatePublishOrUnpublishItem
+      summary: reactivate, publish or unpublish Item
+      x-api-id: API-CAT-005
+      x-traces: [REQ-CAT-006, REQ-CAT-113, REQ-CAT-114, REQ-CAT-116, DBF-CAT-001, DBF-CAT-003, DBF-CAT-013, DBF-CAT-014, DBF-CAT-027, DBF-CAT-028]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isActiveFl: {type: boolean, x-dbf: DBF-CAT-014}
+                publishStateCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-013}
+              title: ItemStateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ItemDetail'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ITEM-NAME-DUPLICATE
+          x-error-codes: [CAT-409-ITEM-NAME-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-PUBLISH-BLOCKED
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-PUBLISH-BLOCKED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/items/{id}/variants:
+    post:
+      operationId: generateVariants
+      summary: generate Variants
+      x-api-id: API-CAT-006
+      x-traces: [REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-033, REQ-CAT-035, REQ-CAT-049, REQ-CAT-051, REQ-CAT-052, REQ-CAT-061, DBF-CAT-005, DBF-CAT-022,
+        DBF-CAT-023, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-061, DBF-CAT-062, DBF-CAT-063, DBF-CAT-064, DBF-CAT-114]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                selections:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      variantAttributeFk: {type: integer, format: int64}
+                      variantAttributeValueFks:
+                        type: array
+                        items: {type: integer, format: int64}
+                  x-dbf: DBF-CAT-063
+              required: [selections]
+              title: VariantGenerationRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantGenerationResult'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+          x-error-codes: [CAT-201-EXISTING-VARIANTS-KEPT]
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-VARIANT-COMBINATION-DUPLICATE
+          x-error-codes: [CAT-409-VARIANT-COMBINATION-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-LIMIT-EXCEEDED
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-LIMIT-EXCEEDED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/variants/{id}:
+    get:
+      operationId: readVariant
+      summary: read Variant
+      x-api-id: API-CAT-007
+      x-traces: [REQ-CAT-001, REQ-CAT-029, REQ-CAT-050, REQ-CAT-119, REQ-CAT-122, DBF-CAT-006, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-022, DBF-CAT-023, DBF-CAT-024, DBF-CAT-025, DBF-CAT-026, DBF-CAT-027, DBF-CAT-028,
+        DBF-CAT-154]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantDetail'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    put:
+      operationId: updateVariantEInvoiceOverride
+      summary: update Variant e-invoice override
+      x-api-id: API-CAT-008
+      x-traces: [REQ-CAT-034, REQ-CAT-118, REQ-CAT-123, DBF-CAT-022, DBF-CAT-023, DBF-CAT-025, DBF-CAT-026, DBF-CAT-030, DBF-CAT-033]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                einvoiceCodeTypeCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-025}
+                einvoiceCode: {type: string, maxLength: 100, x-dbf: DBF-CAT-026}
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-030}
+                code: {type: string, maxLength: 20}
+              required: [version]
+              title: VariantOverrideRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantDetail'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION
+          x-error-codes: [CAT-409-STALE-VERSION]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID
+          x-error-codes: [CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    delete:
+      operationId: deactivateVariant
+      summary: deactivate Variant
+      x-api-id: API-CAT-009
+      x-traces: [REQ-CAT-050, REQ-CAT-053, REQ-CAT-062, DBF-CAT-022, DBF-CAT-027, DBF-CAT-028, DBF-CAT-014, DBF-CAT-061, DBF-CAT-062, DBF-CAT-089]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantDetail'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+          x-error-codes: [CAT-200-DEACTIVATED]
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-LAST-ACTIVE-VARIANT, CAT-409-VARIANT-IN-ACTIVE-BUNDLE
+          x-error-codes: [CAT-409-LAST-ACTIVE-VARIANT, CAT-409-VARIANT-IN-ACTIVE-BUNDLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/items/{id}/units:
+    post:
+      operationId: addItemUnit
+      summary: add Item unit
+      x-api-id: API-CAT-010
+      x-traces: [REQ-CAT-074, REQ-CAT-075, REQ-CAT-077, REQ-CAT-080, DBF-CAT-006, DBF-CAT-097, DBF-CAT-098, DBF-CAT-099, DBF-CAT-100, DBF-CAT-101, DBF-CAT-102]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uomCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-097}
+                conversionFactor: {type: number, x-dbf: DBF-CAT-098}
+                isPurchaseFl: {type: boolean, x-dbf: DBF-CAT-099}
+                isSalesFl: {type: boolean, x-dbf: DBF-CAT-100}
+              required: [uomCode, conversionFactor]
+              title: ItemUnitCreateRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ItemUnitView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-ITEM-UNIT-INVALID
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-ITEM-UNIT-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/item-units/{id}:
+    get:
+      operationId: readItemUnit
+      summary: read Item unit
+      x-api-id: API-CAT-011
+      x-traces: [REQ-CAT-079, REQ-CAT-122, DBF-CAT-096, DBF-CAT-097, DBF-CAT-098, DBF-CAT-099, DBF-CAT-100, DBF-CAT-101, DBF-CAT-102, DBF-CAT-154]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ItemUnitView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    put:
+      operationId: updateItemUnit
+      summary: update Item unit
+      x-api-id: API-CAT-012
+      x-traces: [REQ-CAT-078, REQ-CAT-081, DBF-CAT-096, DBF-CAT-098, DBF-CAT-099, DBF-CAT-100, DBF-CAT-104]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isPurchaseFl: {type: boolean, x-dbf: DBF-CAT-099}
+                isSalesFl: {type: boolean, x-dbf: DBF-CAT-100}
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-104}
+                conversionFactor: {type: number}
+              required: [isPurchaseFl, isSalesFl, version]
+              title: ItemUnitUpdateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ItemUnitView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION
+          x-error-codes: [CAT-409-STALE-VERSION]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CONVERSION-FACTOR-FIXED
+          x-error-codes: [CAT-422-CONVERSION-FACTOR-FIXED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    delete:
+      operationId: deactivateItemUnit
+      summary: deactivate Item unit
+      x-api-id: API-CAT-013
+      x-traces: [REQ-CAT-079, DBF-CAT-096, DBF-CAT-101]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ItemUnitView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+          x-error-codes: [CAT-200-DEACTIVATED]
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/variants/{id}/barcodes:
+    post:
+      operationId: addBarcodeGTINOrScaleCode
+      summary: add barcode (GTIN or scale code)
+      x-api-id: API-CAT-014
+      x-traces: [REQ-CAT-074, REQ-CAT-075, REQ-CAT-083, REQ-CAT-087, REQ-CAT-088, REQ-CAT-089, REQ-CAT-091, REQ-CAT-096, REQ-CAT-099, DBF-CAT-006, DBF-CAT-022, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114,
+        DBF-CAT-137, DBF-CAT-140]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                barcodeValue: {type: string, maxLength: 48, x-dbf: DBF-CAT-110}
+                barcodeTypeCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-111}
+                uomCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-112}
+              required: [barcodeValue, barcodeTypeCode]
+              title: BarcodeCreateRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/BarcodeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-BARCODE-SCALE-PREFIX, CAT-409-BARCODE-DUPLICATE
+          x-error-codes: [CAT-409-BARCODE-SCALE-PREFIX, CAT-409-BARCODE-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-GTIN-INVALID, CAT-422-SCALE-CODE-LENGTH
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-GTIN-INVALID, CAT-422-SCALE-CODE-LENGTH]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/variants/{id}/barcodes/internal:
+    post:
+      operationId: generateInternalBarcode
+      summary: generate internal barcode
+      x-api-id: API-CAT-015
+      x-traces: [REQ-CAT-035, REQ-CAT-084, REQ-CAT-089, REQ-CAT-091, DBF-CAT-006, DBF-CAT-022, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uomCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-112}
+              title: InternalBarcodeRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/BarcodeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-BARCODE-SCALE-PREFIX, CAT-409-BARCODE-DUPLICATE
+          x-error-codes: [CAT-409-BARCODE-SCALE-PREFIX, CAT-409-BARCODE-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/barcodes/{id}:
+    delete:
+      operationId: deactivateBarcode
+      summary: deactivate barcode
+      x-api-id: API-CAT-016
+      x-traces: [REQ-CAT-085, DBF-CAT-109, DBF-CAT-113]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/BarcodeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+          x-error-codes: [CAT-200-DEACTIVATED]
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/items/{id}/bundle-components:
+    put:
+      operationId: saveBundleComponents
+      summary: save Bundle components
+      x-api-id: API-CAT-017
+      x-traces: [REQ-CAT-013, REQ-CAT-015, REQ-CAT-016, REQ-CAT-020, REQ-CAT-056, REQ-CAT-057, REQ-CAT-059, REQ-CAT-060, DBF-CAT-005, DBF-CAT-017, DBF-CAT-084, DBF-CAT-085, DBF-CAT-086, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      bundleComponentPk: {type: integer, format: int64}
+                      componentVariantFk: {type: integer, format: int64}
+                      quantity: {type: number}
+                      sortOrder: {type: integer, format: int32}
+                  x-dbf: DBF-CAT-084
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-017}
+              required: [lines, version]
+              title: BundleComponentsRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: {$ref: '#/components/schemas/BundleComponentView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION
+          x-error-codes: [CAT-409-STALE-VERSION]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/items/{id}/media:
+    post:
+      operationId: uploadImage
+      summary: upload image
+      x-api-id: API-CAT-018
+      x-traces: [REQ-CAT-105, REQ-CAT-108, REQ-CAT-110, REQ-CAT-112, DBF-CAT-003, DBF-CAT-122, DBF-CAT-123, DBF-CAT-124, DBF-CAT-125, DBF-CAT-126, DBF-CAT-127, DBF-CAT-128, DBF-CAT-129]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: {type: string, format: binary}
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-123}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-124}
+                variantFk: {type: integer, format: int64, x-dbf: DBF-CAT-129}
+              required: [file]
+              title: ItemMediaUpload
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/MediaView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '413':
+          description: error — CAT-413-PAYLOAD-TOO-LARGE
+          x-error-codes: [CAT-413-PAYLOAD-TOO-LARGE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '415':
+          description: error — CAT-415-UNSUPPORTED-MEDIA-TYPE
+          x-error-codes: [CAT-415-UNSUPPORTED-MEDIA-TYPE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-IMAGE-NOT-ACCEPTED, CAT-422-MEDIA-VARIANT-MISMATCH, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG
+          x-error-codes: [CAT-422-IMAGE-NOT-ACCEPTED, CAT-422-MEDIA-VARIANT-MISMATCH, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/media/{id}:
+    put:
+      operationId: updateImage
+      summary: update image
+      x-api-id: API-CAT-019
+      x-traces: [REQ-CAT-106, REQ-CAT-112, DBF-CAT-121, DBF-CAT-123, DBF-CAT-124, DBF-CAT-125, DBF-CAT-126, DBF-CAT-128, DBF-CAT-129, DBF-CAT-131]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-123}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-124}
+                sortOrder: {type: integer, format: int32, x-dbf: DBF-CAT-125}
+                isPrimaryFl: {type: boolean, x-dbf: DBF-CAT-126}
+                variantFk: {type: integer, format: int64, x-dbf: DBF-CAT-129}
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-131}
+              required: [nameAr, sortOrder, isPrimaryFl, version]
+              title: ItemMediaUpdateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/MediaView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+          x-error-codes: [CAT-200-PRIMARY-IMAGE-REPLACED]
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION
+          x-error-codes: [CAT-409-STALE-VERSION]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-MEDIA-VARIANT-MISMATCH
+          x-error-codes: [CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-MEDIA-VARIANT-MISMATCH]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    delete:
+      operationId: removeImage
+      summary: remove image
+      x-api-id: API-CAT-020
+      x-traces: [REQ-CAT-107, REQ-CAT-111, DBF-CAT-121, DBF-CAT-125, DBF-CAT-126, DBF-CAT-127, DBF-CAT-128]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/MediaView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/categories:
+    post:
+      operationId: createCategory
+      summary: create Category
+      x-api-id: API-CAT-021
+      x-traces: [REQ-CAT-064, REQ-CAT-069, REQ-CAT-070, DBF-CAT-072, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-076, DBF-CAT-077]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: {type: string, maxLength: 30, x-dbf: DBF-CAT-072}
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-073}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-074}
+                parentCategoryFk: {type: integer, format: int64, x-dbf: DBF-CAT-077}
+                sortOrder: {type: integer, format: int32, x-dbf: DBF-CAT-075}
+              required: [code, nameAr]
+              title: CategoryCreateRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/CategoryView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-CATEGORY-DUPLICATE
+          x-error-codes: [CAT-409-CATEGORY-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CATEGORY-PARENT-INVALID
+          x-error-codes: [CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CATEGORY-PARENT-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    get:
+      operationId: listCategoryTree
+      summary: list Category tree
+      x-api-id: API-CAT-039
+      x-traces: [REQ-CAT-067, DBF-CAT-071, DBF-CAT-072, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-076, DBF-CAT-077]
+      parameters:
+      - name: text
+        in: query
+        required: false
+        schema: {type: string, maxLength: 200}
+      - name: isActiveFl
+        in: query
+        required: false
+        schema: {type: boolean}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: {$ref: '#/components/schemas/CategoryNode'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/categories/{id}:
+    get:
+      operationId: readCategory
+      summary: read Category
+      x-api-id: API-CAT-022
+      x-traces: [REQ-CAT-066, REQ-CAT-067, DBF-CAT-071, DBF-CAT-072, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-076, DBF-CAT-077]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/CategoryView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    put:
+      operationId: updateCategory
+      summary: update Category
+      x-api-id: API-CAT-023
+      x-traces: [REQ-CAT-065, REQ-CAT-069, REQ-CAT-070, DBF-CAT-071, DBF-CAT-073, DBF-CAT-074, DBF-CAT-075, DBF-CAT-077, DBF-CAT-079]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-073}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-074}
+                parentCategoryFk: {type: integer, format: int64, x-dbf: DBF-CAT-077}
+                sortOrder: {type: integer, format: int32, x-dbf: DBF-CAT-075}
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-079}
+              required: [nameAr, sortOrder, version]
+              title: CategoryUpdateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/CategoryView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION, CAT-409-CATEGORY-DUPLICATE
+          x-error-codes: [CAT-409-STALE-VERSION, CAT-409-CATEGORY-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CATEGORY-PARENT-INVALID
+          x-error-codes: [CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CATEGORY-PARENT-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    delete:
+      operationId: deactivateCategory
+      summary: deactivate Category
+      x-api-id: API-CAT-024
+      x-traces: [REQ-CAT-066, REQ-CAT-071, DBF-CAT-071, DBF-CAT-076, DBF-CAT-077, DBF-CAT-014, DBF-CAT-015]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/CategoryView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+          x-error-codes: [CAT-200-DEACTIVATED]
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-CATEGORY-IN-USE
+          x-error-codes: [CAT-409-CATEGORY-IN-USE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/variant-attributes:
+    post:
+      operationId: createVariantAttribute
+      summary: create Variant attribute
+      x-api-id: API-CAT-025
+      x-traces: [REQ-CAT-012, REQ-CAT-014, REQ-CAT-016, REQ-CAT-042, REQ-CAT-055, DBF-CAT-036, DBF-CAT-037, DBF-CAT-038, DBF-CAT-039, DBF-CAT-040]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: {type: string, maxLength: 30, x-dbf: DBF-CAT-036}
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-037}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-038}
+                sortOrder: {type: integer, format: int32, x-dbf: DBF-CAT-039}
+              required: [code, nameAr]
+              title: VariantAttributeCreateRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+          x-error-codes: [CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    get:
+      operationId: listVariantAttributesWithValues
+      summary: list Variant attributes with values
+      x-api-id: API-CAT-041
+      x-traces: [REQ-CAT-014, REQ-CAT-048, DBF-CAT-035, DBF-CAT-036, DBF-CAT-037, DBF-CAT-039, DBF-CAT-040, DBF-CAT-047, DBF-CAT-051, DBF-CAT-053]
+      parameters:
+      - name: text
+        in: query
+        required: false
+        schema: {type: string, maxLength: 200}
+      - name: isActiveFl
+        in: query
+        required: false
+        schema: {type: boolean}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: {$ref: '#/components/schemas/VariantAttributeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF
+          x-error-codes: [CAT-422-CAPABILITY-OFF]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/variant-attributes/{id}:
+    get:
+      operationId: readVariantAttribute
+      summary: read Variant attribute
+      x-api-id: API-CAT-026
+      x-traces: [REQ-CAT-048, DBF-CAT-035, DBF-CAT-036, DBF-CAT-037, DBF-CAT-039, DBF-CAT-040, DBF-CAT-047, DBF-CAT-053]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF
+          x-error-codes: [CAT-422-CAPABILITY-OFF]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    put:
+      operationId: updateVariantAttribute
+      summary: update Variant attribute
+      x-api-id: API-CAT-027
+      x-traces: [REQ-CAT-043, REQ-CAT-055, DBF-CAT-035, DBF-CAT-037, DBF-CAT-038, DBF-CAT-039, DBF-CAT-042]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-037}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-038}
+                sortOrder: {type: integer, format: int32, x-dbf: DBF-CAT-039}
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-042}
+              required: [nameAr, sortOrder, version]
+              title: VariantAttributeUpdateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION, CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+          x-error-codes: [CAT-409-STALE-VERSION, CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    delete:
+      operationId: deactivateVariantAttribute
+      summary: deactivate Variant attribute
+      x-api-id: API-CAT-028
+      x-traces: [REQ-CAT-044, REQ-CAT-054, DBF-CAT-035, DBF-CAT-040, DBF-CAT-061, DBF-CAT-063]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ATTRIBUTE-VALUE-IN-USE
+          x-error-codes: [CAT-409-ATTRIBUTE-VALUE-IN-USE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF
+          x-error-codes: [CAT-422-CAPABILITY-OFF]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/variant-attributes/{id}/values:
+    post:
+      operationId: createVariantAttributeValue
+      summary: create Variant attribute value
+      x-api-id: API-CAT-029
+      x-traces: [REQ-CAT-016, REQ-CAT-045, REQ-CAT-055, DBF-CAT-035, DBF-CAT-048, DBF-CAT-049, DBF-CAT-050, DBF-CAT-051, DBF-CAT-052, DBF-CAT-053]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: {type: string, maxLength: 30, x-dbf: DBF-CAT-048}
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-049}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-050}
+                sortOrder: {type: integer, format: int32, x-dbf: DBF-CAT-051}
+              required: [code, nameAr]
+              title: VariantAttributeValueCreateRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeValueView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+          x-error-codes: [CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/variant-attribute-values/{id}:
+    put:
+      operationId: updateVariantAttributeValue
+      summary: update Variant attribute value
+      x-api-id: API-CAT-030
+      x-traces: [REQ-CAT-046, REQ-CAT-055, DBF-CAT-047, DBF-CAT-049, DBF-CAT-050, DBF-CAT-051, DBF-CAT-055]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-049}
+                nameEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-050}
+                sortOrder: {type: integer, format: int32, x-dbf: DBF-CAT-051}
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-055}
+              required: [nameAr, sortOrder, version]
+              title: VariantAttributeValueUpdateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeValueView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION, CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE
+          x-error-codes: [CAT-409-STALE-VERSION, CAT-409-ATTRIBUTE-CODE-NAME-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    delete:
+      operationId: deactivateVariantAttributeValue
+      summary: deactivate Variant attribute value
+      x-api-id: API-CAT-031
+      x-traces: [REQ-CAT-047, REQ-CAT-054, DBF-CAT-047, DBF-CAT-052, DBF-CAT-061, DBF-CAT-064]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/VariantAttributeValueView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-ATTRIBUTE-VALUE-IN-USE
+          x-error-codes: [CAT-409-ATTRIBUTE-VALUE-IN-USE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-CAPABILITY-OFF
+          x-error-codes: [CAT-422-CAPABILITY-OFF]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/scale-label-layouts:
+    post:
+      operationId: createScaleLabelLayout
+      summary: create scale label layout
+      x-api-id: API-CAT-032
+      x-traces: [REQ-CAT-075, REQ-CAT-091, REQ-CAT-092, REQ-CAT-098, DBF-CAT-110, DBF-CAT-137, DBF-CAT-138, DBF-CAT-139, DBF-CAT-140, DBF-CAT-141, DBF-CAT-142, DBF-CAT-143]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key: {type: string, maxLength: 2, x-dbf: DBF-CAT-137}
+                scaleCodeLength: {type: integer, format: int32, x-dbf: DBF-CAT-140}
+                embeddedValueTypeCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-141}
+                valueDecimals: {type: integer, format: int32, x-dbf: DBF-CAT-142}
+                valueAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-138}
+                valueEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-139}
+              required: [key]
+              title: ScaleLabelLayoutCreateRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ScaleLabelLayoutView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-BARCODE-SCALE-PREFIX
+          x-error-codes: [CAT-409-BARCODE-SCALE-PREFIX]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-SCALE-LAYOUT-INVALID
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-SCALE-LAYOUT-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/scale-label-layouts/{id}:
+    put:
+      operationId: updateScaleLabelLayout
+      summary: update scale label layout
+      x-api-id: API-CAT-033
+      x-traces: [REQ-CAT-093, REQ-CAT-098, DBF-CAT-136, DBF-CAT-138, DBF-CAT-139, DBF-CAT-140, DBF-CAT-141, DBF-CAT-142, DBF-CAT-145]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scaleCodeLength: {type: integer, format: int32, x-dbf: DBF-CAT-140}
+                embeddedValueTypeCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-141}
+                valueDecimals: {type: integer, format: int32, x-dbf: DBF-CAT-142}
+                valueAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-138}
+                valueEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-139}
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-145}
+              required: [scaleCodeLength, embeddedValueTypeCode, valueDecimals, version]
+              title: ScaleLabelLayoutUpdateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ScaleLabelLayoutView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION
+          x-error-codes: [CAT-409-STALE-VERSION]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-SCALE-LAYOUT-INVALID
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-SCALE-LAYOUT-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    delete:
+      operationId: deactivateScaleLabelLayout
+      summary: deactivate scale label layout
+      x-api-id: API-CAT-034
+      x-traces: [REQ-CAT-094, DBF-CAT-136, DBF-CAT-143]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ScaleLabelLayoutView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/unit-einvoice-codes:
+    post:
+      operationId: createUnitEInvoiceCode
+      summary: create Unit e-invoice code
+      x-api-id: API-CAT-035
+      x-traces: [REQ-CAT-075, REQ-CAT-120, REQ-CAT-124, DBF-CAT-151, DBF-CAT-152, DBF-CAT-153, DBF-CAT-154, DBF-CAT-155]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key: {type: string, maxLength: 50, x-dbf: DBF-CAT-151}
+                einvoiceUnitCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-154}
+              required: [key, einvoiceUnitCode]
+              title: UnitEinvoiceCodeCreateRequest
+      responses:
+        '201':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/UnitEinvoiceCodeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-UNIT-EINVOICE-DUPLICATE
+          x-error-codes: [CAT-409-UNIT-EINVOICE-DUPLICATE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/unit-einvoice-codes/{id}:
+    put:
+      operationId: updateUnitEInvoiceCode
+      summary: update Unit e-invoice code
+      x-api-id: API-CAT-036
+      x-traces: [REQ-CAT-075, REQ-CAT-121, DBF-CAT-150, DBF-CAT-154, DBF-CAT-157]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                einvoiceUnitCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-154}
+                version: {type: integer, format: int64, x-dbf: DBF-CAT-157}
+              required: [einvoiceUnitCode, version]
+              title: UnitEinvoiceCodeUpdateRequest
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/UnitEinvoiceCodeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '409':
+          description: error — CAT-409-STALE-VERSION
+          x-error-codes: [CAT-409-STALE-VERSION]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+    delete:
+      operationId: deactivateUnitEInvoiceCode
+      summary: deactivate Unit e-invoice code
+      x-api-id: API-CAT-037
+      x-traces: [REQ-CAT-122, DBF-CAT-150, DBF-CAT-155]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/UnitEinvoiceCodeView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/categories/{id}/items:
+    get:
+      operationId: itemsOfACategory
+      summary: Items of a Category
+      x-api-id: API-CAT-040
+      x-traces: [REQ-CAT-068, DBF-CAT-071, DBF-CAT-076, DBF-CAT-077, DBF-CAT-014, DBF-CAT-015]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      - name: page
+        in: query
+        required: false
+        schema: {type: integer, format: int32}
+      - name: size
+        in: query
+        required: false
+        schema: {type: integer, format: int32}
+      x-paginated: true
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items: {$ref: '#/components/schemas/ItemSummary'}
+                      page: {type: integer, format: int32}
+                      size: {type: integer, format: int32}
+                      totalElements: {type: integer, format: int64}
+                      totalPages: {type: integer, format: int32}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/variants:
+    get:
+      operationId: searchVariants
+      summary: search Variants
+      x-api-id: API-CAT-042
+      x-traces: [REQ-CAT-101, DBF-CAT-003, DBF-CAT-022, DBF-CAT-023, DBF-CAT-027, DBF-CAT-028, DBF-CAT-110, DBF-CAT-113, DBF-CAT-118]
+      parameters:
+      - name: text
+        in: query
+        required: false
+        schema: {type: string, maxLength: 200}
+      - name: page
+        in: query
+        required: false
+        schema: {type: integer, format: int32}
+      - name: size
+        in: query
+        required: false
+        schema: {type: integer, format: int32}
+      x-paginated: true
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items: {$ref: '#/components/schemas/VariantSearchRow'}
+                      page: {type: integer, format: int32}
+                      size: {type: integer, format: int32}
+                      totalElements: {type: integer, format: int64}
+                      totalPages: {type: integer, format: int32}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/barcodes/lookup:
+    get:
+      operationId: barcodeAndScaleLabelLookup
+      summary: barcode and scale label lookup
+      x-api-id: API-CAT-043
+      x-traces: [REQ-CAT-086, REQ-CAT-090, REQ-CAT-094, REQ-CAT-097, REQ-CAT-100, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114, DBF-CAT-137, DBF-CAT-140, DBF-CAT-141, DBF-CAT-142, DBF-CAT-143]
+      parameters:
+      - name: value
+        in: query
+        required: true
+        schema: {type: string, maxLength: 48}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/BarcodeLookupResult'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-BARCODE-NOT-FOUND
+          x-error-codes: [CAT-404-BARCODE-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-SCALE-LABEL-UNREADABLE
+          x-error-codes: [CAT-422-SCALE-LABEL-UNREADABLE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/variants/{id}/media:
+    get:
+      operationId: imagesOfAVariant
+      summary: images of a Variant
+      x-api-id: API-CAT-044
+      x-traces: [REQ-CAT-109, DBF-CAT-022, DBF-CAT-028, DBF-CAT-122, DBF-CAT-123, DBF-CAT-124, DBF-CAT-125, DBF-CAT-126, DBF-CAT-127, DBF-CAT-128, DBF-CAT-129]
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema: {type: integer, format: int64}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: {$ref: '#/components/schemas/MediaView'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/settings:
+    get:
+      operationId: readCatalogueSettings
+      summary: read catalogue settings
+      x-api-id: API-CAT-045
+      x-traces: [REQ-CAT-095, DBF-CAT-136, DBF-CAT-137, DBF-CAT-140, DBF-CAT-141, DBF-CAT-142, DBF-CAT-143, DBF-CAT-150, DBF-CAT-151, DBF-CAT-154, DBF-CAT-155]
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/CatalogueSettings'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/storefront-items:
+    get:
+      operationId: storefrontCatalogueRead
+      summary: storefront catalogue read
+      x-api-id: API-CAT-046
+      x-traces: [REQ-CAT-115, DBF-CAT-001, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-013, DBF-CAT-014]
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema: {type: integer, format: int32}
+      - name: size
+        in: query
+        required: false
+        schema: {type: integer, format: int32}
+      x-paginated: true
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      content:
+                        type: array
+                        items: {$ref: '#/components/schemas/ItemSummary'}
+                      page: {type: integer, format: int32}
+                      size: {type: integer, format: int32}
+                      totalElements: {type: integer, format: int64}
+                      totalPages: {type: integer, format: int32}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/catalogue-search:
+    get:
+      operationId: catalogueSearchGlobalSearch
+      summary: catalogue search (global search)
+      x-api-id: API-CAT-047
+      x-traces: [REQ-CAT-125, REQ-CAT-126, REQ-CAT-127, DBF-CAT-001, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-014, DBF-CAT-110, DBF-CAT-113]
+      parameters:
+      - name: term
+        in: query
+        required: true
+        schema: {type: string, maxLength: 200}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: {$ref: '#/components/schemas/CatalogueSearchHit'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID, CAT-400-SEARCH-TERM-TOO-SHORT
+          x-error-codes: [CAT-400-REQUEST-INVALID, CAT-400-SEARCH-TERM-TOO-SHORT]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/item-imports/sheet:
+    get:
+      operationId: downloadImportSheet
+      summary: download import sheet
+      x-api-id: API-CAT-048
+      x-traces: [REQ-CAT-036, DBF-CAT-003, DBF-CAT-004, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012, DBF-CAT-015, DBF-CAT-110]
+      responses:
+        '200':
+          description: binary document
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: {type: string, format: binary}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/item-imports:
+    post:
+      operationId: importItems
+      summary: import items
+      x-api-id: API-CAT-049
+      x-traces: [REQ-CAT-037, REQ-CAT-038, REQ-CAT-039, REQ-CAT-040, REQ-CAT-041, DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012,
+        DBF-CAT-013, DBF-CAT-014, DBF-CAT-015, DBF-CAT-023, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: {type: string, format: binary}
+              required: [file]
+              title: ItemImportUpload
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/ImportResult'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+          x-error-codes: [CAT-200-IMPORT-ROW-REJECTED]
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '413':
+          description: error — CAT-413-PAYLOAD-TOO-LARGE
+          x-error-codes: [CAT-413-PAYLOAD-TOO-LARGE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '415':
+          description: error — CAT-415-UNSUPPORTED-MEDIA-TYPE
+          x-error-codes: [CAT-415-UNSUPPORTED-MEDIA-TYPE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-IMPORT-FILE-REJECTED
+          x-error-codes: [CAT-422-IMPORT-FILE-REJECTED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED
+          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CODE-NOT-ISSUED, CAT-500-CHANGE-NOT-SAVED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/barcode-labels:
+    post:
+      operationId: printBarcodeLabels
+      summary: print barcode labels
+      x-api-id: API-CAT-050
+      x-traces: [REQ-CAT-102, REQ-CAT-103, REQ-CAT-104, DBF-CAT-022, DBF-CAT-023, DBF-CAT-027, DBF-CAT-110, DBF-CAT-113, DBF-CAT-114, DBF-CAT-118]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      variantPk: {type: integer, format: int64}
+                      copies: {type: integer, format: int32}
+                  x-dbf: DBF-CAT-022
+              required: [lines]
+              title: LabelRequest
+      responses:
+        '200':
+          description: binary document
+          content:
+            application/pdf:
+              schema: {type: string, format: binary}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-NOT-FOUND
+          x-error-codes: [CAT-404-NOT-FOUND]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '422':
+          description: error — CAT-422-LABEL-COPIES-OUT-OF-RANGE, CAT-422-LABEL-VARIANT-NO-BARCODE
+          x-error-codes: [CAT-422-LABEL-COPIES-OUT-OF-RANGE, CAT-422-LABEL-VARIANT-NO-BARCODE]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/capability-checks/turn-off:
+    get:
+      operationId: capabilityTurnOffCheck
+      summary: capability turn-off check
+      x-api-id: API-CAT-051
+      x-traces: [REQ-CAT-021, REQ-CAT-022, REQ-CAT-023, DBF-CAT-002, DBF-CAT-003, DBF-CAT-005, DBF-CAT-014, DBF-CAT-027, DBF-CAT-028, DBF-CAT-061, DBF-CAT-062]
+      parameters:
+      - name: flag
+        in: query
+        required: true
+        schema: {type: string, maxLength: 20}
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: {$ref: '#/components/schemas/TurnOffCheckResult'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+          x-error-codes: [CAT-200-VARIANTS-IN-USE, CAT-200-BUNDLES-IN-USE]
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  schemas:
+    ItemSummary:
+      type: object
+      properties:
+        itemPk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        displayNameEn: {type: string}
+        categoryFk: {type: integer, format: int64}
+        brandCode: {type: string}
+        itemKindCode: {type: string}
+        publishStateCode: {type: string}
+        isActiveFl: {type: boolean}
+    ItemDetail:
+      type: object
+      properties:
+        itemPk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        displayNameEn: {type: string}
+        itemKindCode: {type: string}
+        baseUomCode: {type: string}
+        categoryFk: {type: integer, format: int64}
+        brandCode: {type: string}
+        taxClassCode: {type: string}
+        einvoiceCodeTypeCode: {type: string}
+        einvoiceCode: {type: string}
+        descriptionAr: {type: string}
+        descriptionEn: {type: string}
+        publishStateCode: {type: string}
+        isActiveFl: {type: boolean}
+        version: {type: integer, format: int64}
+        createdBy: {type: string}
+        createdAt: {type: string, format: date-time}
+        updatedBy: {type: string}
+        updatedAt: {type: string, format: date-time}
+        variants:
+          type: array
+          items: {$ref: '#/components/schemas/VariantSummary'}
+        itemUnits:
+          type: array
+          items: {$ref: '#/components/schemas/ItemUnitView'}
+        bundleComponents:
+          type: array
+          items: {$ref: '#/components/schemas/BundleComponentView'}
+        media:
+          type: array
+          items: {$ref: '#/components/schemas/MediaView'}
+    VariantSummary:
+      type: object
+      properties:
+        variantPk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        isDefaultFl: {type: boolean}
+        isActiveFl: {type: boolean}
+        einvoiceCodeTypeCode: {type: string}
+        einvoiceCode: {type: string}
+        effectiveEinvoiceCodeTypeCode: {type: string}
+        effectiveEinvoiceCode: {type: string}
+        version: {type: integer, format: int64}
+        attributeValues:
+          type: array
+          items: {$ref: '#/components/schemas/AttributeValueView'}
+        barcodes:
+          type: array
+          items: {$ref: '#/components/schemas/BarcodeView'}
+    VariantDetail:
+      type: object
+      properties:
+        variantPk: {type: integer, format: int64}
+        itemFk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        isDefaultFl: {type: boolean}
+        isActiveFl: {type: boolean}
+        baseUomCode: {type: string}
+        taxClassCode: {type: string}
+        einvoiceCodeTypeCode: {type: string}
+        einvoiceCode: {type: string}
+        effectiveEinvoiceCodeTypeCode: {type: string}
+        effectiveEinvoiceCode: {type: string}
+        einvoiceUnitCode: {type: string}
+        version: {type: integer, format: int64}
+        attributeValues:
+          type: array
+          items: {$ref: '#/components/schemas/AttributeValueView'}
+        barcodes:
+          type: array
+          items: {$ref: '#/components/schemas/BarcodeView'}
+    VariantGenerationResult:
+      type: object
+      properties:
+        itemPk: {type: integer, format: int64}
+        variants:
+          type: array
+          items: {$ref: '#/components/schemas/VariantSummary'}
+    AttributeValueView:
+      type: object
+      properties:
+        variantAttributeFk: {type: integer, format: int64}
+        variantAttributeCode: {type: string}
+        variantAttributeValueFk: {type: integer, format: int64}
+        valueCode: {type: string}
+        valueNameAr: {type: string}
+        valueNameEn: {type: string}
+    BarcodeView:
+      type: object
+      properties:
+        barcodePk: {type: integer, format: int64}
+        variantFk: {type: integer, format: int64}
+        barcodeValue: {type: string}
+        barcodeTypeCode: {type: string}
+        uomCode: {type: string}
+        isActiveFl: {type: boolean}
+        createdAt: {type: string, format: date-time}
+    ItemUnitView:
+      type: object
+      properties:
+        itemUnitPk: {type: integer, format: int64}
+        itemFk: {type: integer, format: int64}
+        uomCode: {type: string}
+        conversionFactor: {type: number}
+        isPurchaseFl: {type: boolean}
+        isSalesFl: {type: boolean}
+        isActiveFl: {type: boolean}
+        einvoiceUnitCode: {type: string}
+        version: {type: integer, format: int64}
+    BundleComponentView:
+      type: object
+      properties:
+        bundleComponentPk: {type: integer, format: int64}
+        bundleItemFk: {type: integer, format: int64}
+        componentVariantFk: {type: integer, format: int64}
+        componentVariantCode: {type: string}
+        quantity: {type: number}
+        sortOrder: {type: integer, format: int32}
+        isActiveFl: {type: boolean}
+    MediaView:
+      type: object
+      properties:
+        itemMediaPk: {type: integer, format: int64}
+        itemFk: {type: integer, format: int64}
+        variantFk: {type: integer, format: int64}
+        fileDocumentRef: {type: integer, format: int64}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        sortOrder: {type: integer, format: int32}
+        isPrimaryFl: {type: boolean}
+        isActiveFl: {type: boolean}
+        version: {type: integer, format: int64}
+    CategoryView:
+      type: object
+      properties:
+        categoryPk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        parentCategoryFk: {type: integer, format: int64}
+        sortOrder: {type: integer, format: int32}
+        isActiveFl: {type: boolean}
+        version: {type: integer, format: int64}
+    CategoryNode:
+      type: object
+      properties:
+        categoryPk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        parentCategoryFk: {type: integer, format: int64}
+        sortOrder: {type: integer, format: int32}
+        isActiveFl: {type: boolean}
+        children:
+          type: array
+          items: {$ref: '#/components/schemas/CategoryNode'}
+    VariantAttributeView:
+      type: object
+      properties:
+        variantAttributePk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        sortOrder: {type: integer, format: int32}
+        isActiveFl: {type: boolean}
+        version: {type: integer, format: int64}
+        values:
+          type: array
+          items: {$ref: '#/components/schemas/VariantAttributeValueView'}
+    VariantAttributeValueView:
+      type: object
+      properties:
+        variantAttributeValuePk: {type: integer, format: int64}
+        variantAttributeFk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        sortOrder: {type: integer, format: int32}
+        isActiveFl: {type: boolean}
+        version: {type: integer, format: int64}
+    VariantSearchRow:
+      type: object
+      properties:
+        variantPk: {type: integer, format: int64}
+        code: {type: string}
+        itemPk: {type: integer, format: int64}
+        itemNameAr: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+        firstBarcodeValue: {type: string}
+    BarcodeLookupResult:
+      type: object
+      properties:
+        variantPk: {type: integer, format: int64}
+        variantCode: {type: string}
+        itemPk: {type: integer, format: int64}
+        itemCode: {type: string}
+        itemNameAr: {type: string}
+        uomCode: {type: string}
+        embeddedValue: {type: number}
+        embeddedValueTypeCode: {type: string}
+    CatalogueSettings:
+      type: object
+      properties:
+        scaleLabelLayouts:
+          type: array
+          items: {$ref: '#/components/schemas/ScaleLabelLayoutView'}
+        unitEinvoiceCodes:
+          type: array
+          items: {$ref: '#/components/schemas/UnitEinvoiceCodeView'}
+    ScaleLabelLayoutView:
+      type: object
+      properties:
+        scaleLabelLayoutPk: {type: integer, format: int64}
+        key: {type: string}
+        valueAr: {type: string}
+        valueEn: {type: string}
+        scaleCodeLength: {type: integer, format: int32}
+        embeddedValueTypeCode: {type: string}
+        valueDecimals: {type: integer, format: int32}
+        isActiveFl: {type: boolean}
+        version: {type: integer, format: int64}
+    UnitEinvoiceCodeView:
+      type: object
+      properties:
+        unitEinvoiceCodePk: {type: integer, format: int64}
+        key: {type: string}
+        valueAr: {type: string}
+        valueEn: {type: string}
+        einvoiceUnitCode: {type: string}
+        isActiveFl: {type: boolean}
+        version: {type: integer, format: int64}
+    CatalogueSearchHit:
+      type: object
+      properties:
+        itemPk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+        nameEn: {type: string}
+    TurnOffCheckResult:
+      type: object
+      properties:
+        flag: {type: string}
+        allowed: {type: boolean}
+        dependentCount: {type: integer, format: int32}
+        dependentItems:
+          type: array
+          items: {$ref: '#/components/schemas/DependentItem'}
+    DependentItem:
+      type: object
+      properties:
+        itemPk: {type: integer, format: int64}
+        code: {type: string}
+        nameAr: {type: string}
+    ImportResult:
+      type: object
+      properties:
+        rowsRead: {type: integer, format: int32}
+        itemsCreated: {type: integer, format: int32}
+        rowsRejected: {type: integer, format: int32}
+        rejectedRows:
+          type: array
+          items: {$ref: '#/components/schemas/ImportRowRejection'}
+    ImportRowRejection:
+      type: object
+      properties:
+        rowNumber: {type: integer, format: int32}
+        column: {type: string}
+        code: {type: string}
+        messageAr: {type: string}
+        messageEn: {type: string}
+    LocalizedError:
+      type: object
+      description: LocalizedException → {code, messageAr, messageEn}
+      required: [code, messageAr, messageEn]
+      properties:
+        code: {type: string, pattern: '^CAT-\d{3}(-[A-Z0-9-]+)?$'}
+        messageAr: {type: string}
+        messageEn: {type: string}
