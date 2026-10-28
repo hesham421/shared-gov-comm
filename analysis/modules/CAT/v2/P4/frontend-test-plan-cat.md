@@ -1,7 +1,7 @@
 # Frontend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : frontend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124 and TC-CAT-183 … TC-CAT-193; this file: TC-CAT-125 … TC-CAT-182 and TC-CAT-194 … TC-CAT-196)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193 and TC-CAT-197 … TC-CAT-207; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196 and TC-CAT-208 … TC-CAT-209)
 
 ## Header
 
@@ -25,25 +25,26 @@ The current state holds no earlier test plan, so every TC is ADDED. The frontend
 ### Open ADRs
 - ADR-CAT-052 (this stage) is ACCEPTED and non-breaking. It covers the track split, frontend package binding, host data, option-set isolation, fields the API document does not expose, and UXD integration.
 - ADR-CAT-053 (this stage, analyze round 2) is ACCEPTED and non-breaking. It records the eight server codes the frontend plan routes to a control without binding their words (`text:`): TC-CAT-130, 143, 144, 145, 150, 157, 165 and 171 assert the routing and the verbatim display of the envelope's messageAr / messageEn, not the words, which the backend TCs assert. It also replaces the unseeded AC value H87 by a seeded value in TC-CAT-175.
-- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). None of them is BLOCKED.
+- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). None of them is BLOCKED.
+- Host values of CAT_BRAND are created by the given mdl call `POST /api/v1/mdl/lookup-types/{id}/values` and deactivated by `DELETE /api/v1/mdl/lookup-values/{id}`, where `{id}` is the CAT_BRAND type found by `POST /api/v1/mdl/lookup-types/search` (SRS A6). Each Host data line names the call it uses.
 
 ### Shared precondition F0 (applies to every TC; each TC adds only what it states)
 - The CAT frontend build is served in the platform shell, with the bound reads answered by the mock server of `api-spec-cat.yaml`, or by the delivered backend.
 - The user is a preset Owner holding every `PERM_CAT_*` permission.
 - The platform app-config reports `variants` and `bundles` on.
-- The given erp-core lookup client serves the seeded CAT_* values with their SRS A6 labels.
+- CAT's lookup read `API-CAT-052` (`GET /api/v1/cat/lookups/{key}`, over the given mdl values through `OwnedLookups`) serves the seeded CAT_* values with their SRS A6 labels.
 - The TC runs in a tenant of its own (ADR-CAT-052 §4).
 - Every asserted message is the RULE message of the SRS in ar and en, as the plan routes it (`text: RULE-CAT-0nn message`). It is checked once with the UI language in ar and once in en (language ALL). Where the plan routes a code to a control without binding its words, the TC asserts only the routing and the unchanged display of the envelope's messageAr / messageEn; the wording is asserted on the backend track (ADR-CAT-053 §1).
 - "No request" means the mock server records no call to the named operation.
 
-<!-- PHASE:TEST-PLAN-FE:START traces=AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-005,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127 -->
+<!-- PHASE:TEST-PLAN-FE:START traces=AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-005,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
 ## PHASE TEST-PLAN-FE — module scenarios
 
-The phase holds 55 TCs, which is more than 8, so it is split into two SUBs:
-- `UI-FLOWS` (54): per-screen flows — search, create/edit, a violation shown on screen, a permission-hidden affordance.
+The phase holds 57 TCs, which is more than 8, so it is split into two SUBs:
+- `UI-FLOWS` (56): per-screen flows — search, create/edit, a violation shown on screen, a permission-hidden affordance.
 - `INT-FLOW` (1): the single module lifecycle flow.
 
-<!-- SUB:UI-FLOWS:START traces=AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127 -->
+<!-- SUB:UI-FLOWS:START traces=AC-CAT-130,AC-CAT-138,AC-CAT-142,REQ-CAT-128,REQ-CAT-131,REQ-CAT-066,AC-CAT-003,AC-CAT-007,AC-CAT-013,AC-CAT-014,AC-CAT-015,AC-CAT-016,AC-CAT-020,AC-CAT-023,AC-CAT-025,AC-CAT-027,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-037,AC-CAT-040,AC-CAT-041,AC-CAT-044,AC-CAT-047,AC-CAT-050,AC-CAT-054,AC-CAT-056,AC-CAT-057,AC-CAT-066,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-075,AC-CAT-076,AC-CAT-078,AC-CAT-082,AC-CAT-088,AC-CAT-090,AC-CAT-092,AC-CAT-094,AC-CAT-097,AC-CAT-100,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-112,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-003,REQ-CAT-007,REQ-CAT-013,REQ-CAT-014,REQ-CAT-015,REQ-CAT-016,REQ-CAT-019,REQ-CAT-022,REQ-CAT-024,REQ-CAT-026,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-036,REQ-CAT-039,REQ-CAT-040,REQ-CAT-042,REQ-CAT-045,REQ-CAT-048,REQ-CAT-052,REQ-CAT-054,REQ-CAT-055,REQ-CAT-064,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,REQ-CAT-080,REQ-CAT-086,REQ-CAT-088,REQ-CAT-090,REQ-CAT-092,REQ-CAT-095,REQ-CAT-098,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-110,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-144,REQ-CAT-135 -->
 ### SUB UI-FLOWS
 
 #### SCR-CAT-001 — Items
@@ -216,24 +217,24 @@ Expected     : The picker shows ar «الحد الأقصى 3 خصائص و300 م
 Test data    : 290 + 20 (from the AC)
 <!-- TC:TC-CAT-136:END -->
 
-<!-- TC:TC-CAT-137:START traces=AC-CAT-075,REQ-CAT-073,SCR-CAT-001,UXD-CAT-001 -->
+<!-- TC:TC-CAT-137:START traces=AC-CAT-075,REQ-CAT-073,SCR-CAT-001,UXD-CAT-001,API-CAT-052 -->
 ### TC-CAT-137 — The brand field offers only the active CAT_BRAND values
 Derived from : AC-CAT-075  (REQ-CAT-073)
-Exercises    : SCR-CAT-001 `/cat/items/new` (CAT_BRAND-LOOKUP, the given lookup client — UXD-CAT-001)
+Exercises    : SCR-CAT-001 `/cat/items/new` (CAT_BRAND-LOOKUP → API-CAT-052 GET /api/v1/cat/lookups/{key} — UXD-CAT-001)
 Rule / code  : —
 Package      : F2-SCR-CAT-001
 Scenario     : HAPPY · data class VALID · language ALL
 Preconditions: F0 · the tenant's CAT_BRAND holds only this case's 6 host values: 5 active and 1 inactive (ADR-CAT-052 §4)
-Host data    : CAT_BRAND BRAND1_137, BRAND2_137, BRAND3_137, BRAND4_137, BRAND5_137 — active; CAT_BRAND BRAND6_137 — inactive — each created by the given erp-core mdl lookup-value maintenance (com.erp.mdl.crossmodule.MdlLookupApi; CAT publishes no add-value verb/path — ADR-CAT-052 §3)
+Host data    : CAT_BRAND BRAND1_137, BRAND2_137, BRAND3_137, BRAND4_137, BRAND5_137, BRAND6_137 — each created active by the given mdl call POST /api/v1/mdl/lookup-types/{id}/values ({id} = the CAT_BRAND type found by POST /api/v1/mdl/lookup-types/search); then BRAND6_137 made inactive by DELETE /api/v1/mdl/lookup-values/{id} ({id} = the BRAND6_137 value)
 Steps        : 1. Open `/cat/items/new` and Advanced. 2. Open the brand field.
 Expected     : Exactly the 5 active values are offered: BRAND1_137 … BRAND5_137. BRAND6_137 is not offered.
 Test data    : the AC names no brand: 5 + 1 own host values (`<VALUE>_<TC seq>`)
 <!-- TC:TC-CAT-137:END -->
 
-<!-- TC:TC-CAT-138:START traces=AC-CAT-076,REQ-CAT-074,SCR-CAT-001,UXD-CAT-001 -->
+<!-- TC:TC-CAT-138:START traces=AC-CAT-076,REQ-CAT-074,SCR-CAT-001,UXD-CAT-001,API-CAT-052 -->
 ### TC-CAT-138 — The base unit field offers the 8 seeded units with PIECE pre-selected
 Derived from : AC-CAT-076  (REQ-CAT-074)
-Exercises    : SCR-CAT-001 `/cat/items/new` (CAT_UOM-LOOKUP — UXD-CAT-001)
+Exercises    : SCR-CAT-001 `/cat/items/new` (CAT_UOM-LOOKUP → API-CAT-052 GET /api/v1/cat/lookups/{key} — UXD-CAT-001)
 Rule / code  : —
 Package      : F2-SCR-CAT-001
 Scenario     : HAPPY · data class VALID · language ALL
@@ -244,15 +245,15 @@ Expected     : 8 values are offered — PIECE, CARTON, BOX, DOZEN, KILOGRAM, GRA
 Test data    : the 8 seeded CAT_UOM values (from the AC and SRS A6)
 <!-- TC:TC-CAT-138:END -->
 
-<!-- TC:TC-CAT-139:START traces=AC-CAT-078,REQ-CAT-076,SCR-CAT-001,UXD-CAT-001 -->
+<!-- TC:TC-CAT-139:START traces=AC-CAT-078,REQ-CAT-076,SCR-CAT-001,UXD-CAT-001,API-CAT-052 -->
 ### TC-CAT-139 — A deactivated brand stays on its Items and is no longer offered
 Derived from : AC-CAT-078  (REQ-CAT-076)
-Exercises    : SCR-CAT-001 `/cat/items/:itemPk`, `/cat/items/new` (ITEM-QUERY → API-CAT-002; CAT_BRAND-LOOKUP — UXD-CAT-001)
+Exercises    : SCR-CAT-001 `/cat/items/:itemPk`, `/cat/items/new` (ITEM-QUERY → API-CAT-002; CAT_BRAND-LOOKUP → API-CAT-052 GET /api/v1/cat/lookups/{key} — UXD-CAT-001)
 Rule / code  : —
 Package      : F2-SCR-CAT-001
 Scenario     : STATE · data class EDGE · language ALL
 Preconditions: F0 · 6 Items with brandCode OLDBRAND, then OLDBRAND deactivated in the core lookup module
-Host data    : CAT_BRAND OLDBRAND — active when the 6 Items are created, then inactive — created and deactivated by the given erp-core mdl lookup-value maintenance (com.erp.mdl.crossmodule.MdlLookupApi — ADR-CAT-052 §3)
+Host data    : CAT_BRAND OLDBRAND — created active by the given mdl call POST /api/v1/mdl/lookup-types/{id}/values ({id} = the CAT_BRAND type found by POST /api/v1/mdl/lookup-types/search) before the 6 Items are created, then made inactive by DELETE /api/v1/mdl/lookup-values/{id} ({id} = the OLDBRAND value)
 Steps        : 1. Open one of the 6 Items. 2. Open `/cat/items/new` and its brand field.
 Expected     : 1 → the brand field shows OLDBRAND (its label kept although inactive). 2 → the brand field offers 0 entries named OLDBRAND.
 Test data    : OLDBRAND, 6 Items (from the AC)
@@ -769,7 +770,7 @@ Preconditions: F0 · the active Unit e-invoice code PIECE → EA (seeded)
 Host data    : none
 Steps        : 1. Choose "New unit code". 2. Choose key PIECE and einvoiceUnitCode BX. 3. Save.
 Expected     : Inline on key: ar «لهذه الوحدة رمز فاتورة إلكترونية نشط بالفعل. عدّله بدلًا من إضافة رمز جديد.» · en "This unit already has an active e-invoice unit. Change it instead of adding a new one.", with "Open the existing code" → `?unitCode=<pk of PIECE → EA>`; no request to API-CAT-035, so nothing is created.
-Test data    : PIECE → EA (from the AC). The AC's second e-invoice unit is not a seeded value and no named add-value call exists for it, so the case uses the seeded active CAT_EINVOICE_UNIT value BX in its place (ADR-CAT-053 §2)
+Test data    : PIECE → EA (from the AC). The AC's second e-invoice unit is not a seeded value; the case stays on seeded data and uses the seeded active CAT_EINVOICE_UNIT value BX in its place (ADR-CAT-053 §2)
 <!-- TC:TC-CAT-175:END -->
 
 #### SCR-CAT-001 — Items (gate-analysis revise)
@@ -815,6 +816,36 @@ Steps        : 1. Open the Item. 2. Mark the unit CARTON for deactivation. 3. Sa
 Expected     : The CARTON line shows ar «هذه الوحدة مستخدمة في 2 باركود نشط. أوقف هذه الباركودات أولًا.» · en "This unit is used by 2 active barcodes. Deactivate those barcodes first."; no request goes to API-CAT-013; CARTON stays active.
 Test data    : CARTON, 2 barcodes (from the AC)
 <!-- TC:TC-CAT-196:END -->
+
+#### SCR-CAT-001 — Items (gate-analysis round 2)
+
+<!-- TC:TC-CAT-208:START traces=AC-CAT-138,REQ-CAT-131,SCR-CAT-001 -->
+### TC-CAT-208 — The Items screen hides jumps to pages the user cannot open
+Derived from : AC-CAT-138  (REQ-CAT-131)
+Exercises    : SCR-CAT-001 `/cat/items`, `/cat/items/:itemPk` (SEC-FE "Jumps to other pages" rule)
+Rule / code  : — (PERM_CAT_ITEM_IMPORT_VIEW, PERM_CAT_BARCODE_LABELS_VIEW, PERM_CAT_VARIANT_ATTRIBUTES_VIEW absent; `variants` flag)
+Package      : SEC-FE
+Scenario     : PERMISSION · data class VALID · language ALL
+Preconditions: F0, except that the user is a Seller/cashier holding only PERM_CAT_ITEMS_VIEW · an existing active Item with a Variant that carries an active barcode
+Host data    : none
+Steps        : 1. Open `/cat/items`. 2. Open the Item. 3. As the Owner, with app-config reporting `variants` off, open the Item.
+Expected     : 1 → no "Import" jump. 2 → no "Print labels" and no "Open Variant attributes" jump; the user cannot reach the unauthorized view from the Items screen. 3 → "Print labels" and "Import" are shown; "Open Variant attributes" is absent.
+Test data    : —
+<!-- TC:TC-CAT-208:END -->
+
+<!-- TC:TC-CAT-209:START traces=AC-CAT-144,REQ-CAT-135,SCR-CAT-001 -->
+### TC-CAT-209 — A save on an Item deactivated meanwhile shows the inactive-parent banner and turns the entry read-only
+Derived from : AC-CAT-144  (REQ-CAT-135)
+Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (ITEM-SAVE routes CAT-422-PARENT-INACTIVE with `text: RULE-CAT-053 message`; F3 inactive-Item read-only)
+Rule / code  : RULE-CAT-053 → CAT-422-PARENT-INACTIVE
+Package      : F3-SCR-CAT-001
+Scenario     : STATE · data class INVALID · language ALL
+Preconditions: F0 · an active Item with base unit PIECE and no Item unit CARTON, open in session 1
+Host data    : none
+Steps        : 1. In session 1, add the Item unit CARTON with conversionFactor 12 (pending). 2. In session 2, deactivate the Item. 3. In session 1, Save.
+Expected     : 3 → form banner ar «هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.» · en "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."; the Item is re-read and the entry is read-only: every header field is read-only, 0 "Add unit", "Add barcode", "Generate variants" or "Add image" triggers, and "Reactivate" is shown. The Item has no Item unit CARTON.
+Test data    : PIECE, CARTON, 12 (from the AC)
+<!-- TC:TC-CAT-209:END -->
 <!-- SUB:UI-FLOWS:END -->
 
 <!-- SUB:INT-FLOW:START traces=AC-CAT-005,REQ-CAT-005,REQ-CAT-024,REQ-CAT-004,REQ-CAT-003 -->
@@ -839,12 +870,12 @@ Test data    : nameAr / nameEn placeholders `<valid Arabic name>`, `<English nam
 <!-- PHASE:INT-UXD:START traces=UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,AC-CAT-075,AC-CAT-076,AC-CAT-078,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,AC-CAT-013,AC-CAT-014,REQ-CAT-105,REQ-CAT-109,AC-CAT-107,AC-CAT-111 -->
 ## PHASE INT-UXD — foreign-owned fields (owner: erp-core, the given)
 
-SCR-CAT-001 renders three foreign-owned fields that the frontend plan cites: UXD-CAT-001 (lookup values), UXD-CAT-002 (capability flags) and UXD-CAT-003 (image files). Their owner is the given erp-core, not a business module (ADR-CAT-050, ADR-CAT-052 §7). Engine §5 gives two cases per UXD — the field rendered, and the field empty or the owner failing — so the phase holds 6 TCs. That is no more than 8, so the phase has no SUB. All 6 are grouped under the owner erp-core.
+SCR-CAT-001 renders three foreign-owned fields that the frontend plan cites: UXD-CAT-001 (lookup values, stored by the given mdl and read through CAT's `API-CAT-052` — ADR-CAT-065), UXD-CAT-002 (capability flags) and UXD-CAT-003 (image files). Their owner is the given erp-core, not a business module (ADR-CAT-050, ADR-CAT-052 §7). Engine §5 gives two cases per UXD — the field rendered, and the field empty or the owner failing — so the phase holds 6 TCs. That is no more than 8, so the phase has no SUB. All 6 are grouped under the owner erp-core.
 
-<!-- TC:TC-CAT-177:START traces=UXD-CAT-001,REQ-CAT-073,REQ-CAT-074,AC-CAT-075,AC-CAT-076,SCR-CAT-001 -->
+<!-- TC:TC-CAT-177:START traces=UXD-CAT-001,REQ-CAT-073,REQ-CAT-074,AC-CAT-075,AC-CAT-076,SCR-CAT-001,API-CAT-052 -->
 ### TC-CAT-177 — Lookup-backed fields render the owner's labels
 Derived from : UXD-CAT-001  (REQ-CAT-073, REQ-CAT-074, AC-CAT-075, AC-CAT-076)
-Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (CAT_UOM-LOOKUP, CAT_TAX_CLASS-LOOKUP via the given lookup client)
+Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (CAT_UOM-LOOKUP, CAT_TAX_CLASS-LOOKUP → API-CAT-052 GET /api/v1/cat/lookups/{key})
 Rule / code  : —
 Package      : F4-SCR-CAT-001
 Scenario     : INTEGRATION · data class VALID · language ALL
@@ -855,14 +886,14 @@ Expected     : The base unit shows ar «كرتونة» / en "Carton", and the ta
 Test data    : CARTON, ZERO_RATED (seeded)
 <!-- TC:TC-CAT-177:END -->
 
-<!-- TC:TC-CAT-178:START traces=UXD-CAT-001,REQ-CAT-073,REQ-CAT-076,AC-CAT-078,SCR-CAT-001 -->
+<!-- TC:TC-CAT-178:START traces=UXD-CAT-001,REQ-CAT-073,REQ-CAT-076,AC-CAT-078,SCR-CAT-001,API-CAT-052 -->
 ### TC-CAT-178 — A failed lookup read shows the raw code and disables the select
 Derived from : UXD-CAT-001  (REQ-CAT-073, REQ-CAT-076, AC-CAT-078)
-Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (CAT_TAX_CLASS-LOOKUP)
+Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (CAT_TAX_CLASS-LOOKUP → API-CAT-052 GET /api/v1/cat/lookups/{key})
 Rule / code  : — (platform generic message, §3.0 of the frontend plan)
 Package      : F4-SCR-CAT-001
 Scenario     : INTEGRATION · data class EDGE · language ALL
-Preconditions: F0 · the owner's CAT_TAX_CLASS lookup read fails · an Item with taxClassCode ZERO_RATED
+Preconditions: F0 · the read of API-CAT-052 for CAT_TAX_CLASS fails (the mock server answers 500 CAT-500-SERVER-ERROR) · an Item with taxClassCode ZERO_RATED
 Host data    : none
 Steps        : 1. Open the Item.
 Expected     : The tax class field shows the raw code ZERO_RATED, its select is disabled, and the platform's generic message is shown. The rest of the entry renders, with no blank screen or crash.
@@ -959,15 +990,15 @@ Test data    : 1 image (placeholder file)
 | AC-CAT-070 | REQ-CAT-068 | TC-CAT-154 | | AC-CAT-127 | REQ-CAT-125 | TC-CAT-149 |
 | | | | | AC-CAT-128 | REQ-CAT-126 | TC-CAT-150 |
 | | | | | AC-CAT-129 | REQ-CAT-127 | TC-CAT-151 |
-| AC-CAT-130 | REQ-CAT-128 | TC-CAT-196 (backend: TC-CAT-183) | | AC-CAT-138 | REQ-CAT-131 | TC-CAT-194 |
-| AC-CAT-142 | REQ-CAT-066 | TC-CAT-195 | | | | |
+| AC-CAT-130 | REQ-CAT-128 | TC-CAT-196 (backend: TC-CAT-183) | | AC-CAT-138 | REQ-CAT-131 | TC-CAT-194, 208 |
+| AC-CAT-142 | REQ-CAT-066 | TC-CAT-195 | | AC-CAT-144 | REQ-CAT-135 | TC-CAT-209 (backend: TC-CAT-198) |
 
 TC-CAT-176 (lifecycle flow) also passes through REQ-CAT-024, REQ-CAT-003 and REQ-CAT-004. Every other AC-CAT-* is covered on the backend track: see the AC → TC table of `backend-test-plan-cat.md`.
 
 ### SCR → TC (TC-CAT-…)
 | SCR | TCs |
 |---|---|
-| SCR-CAT-001 Items | 125 – 151, 176, 177 – 182, 194 – 196 |
+| SCR-CAT-001 Items | 125 – 151, 176, 177 – 182, 194 – 196, 208, 209 |
 | SCR-CAT-002 Categories | 152 – 157 |
 | SCR-CAT-003 Variant attributes | 128 (menu entry), 158 – 163 |
 | SCR-CAT-004 Item import | 164 – 166 |
@@ -982,7 +1013,7 @@ A row marked "routed, words unbound" is a code the frontend plan routes to a con
 | RULE-CAT-001 | CAT-422-NAME-AR-INVALID | 133, 134 | F3 `ItemForm` nameAr · F2 ITEM-SAVE |
 | RULE-CAT-002 | CAT-422-NAME-EN-TOO-LONG | 135 | F3 `ItemForm` nameEn · F2 ITEM-SAVE |
 | RULE-CAT-003 | CAT-409-ITEM-NAME-DUPLICATE | 126 | F2 ITEM-SAVE (inline nameAr + action) |
-| RULE-CAT-008 | CAT-422-CAPABILITY-OFF | 158 | F2 ATTRIBUTE-LIST-QUERY / F4 route state |
+| RULE-CAT-008 | CAT-422-CAPABILITY-OFF | 158 | F2 ATTRIBUTE-SCREEN-INIT / F4 route state (the attribute reads are not flag-bound) |
 | RULE-CAT-009 | CAT-500-CAPABILITY-UNREADABLE | 127, 180 | F2 ITEM-SAVE banner · F2 CAPABILITY-FLAGS-INIT |
 | RULE-CAT-010 | CAT-200-VARIANTS-IN-USE | 171 | F2 TURN-OFF-CHECK-QUERY — routed, words unbound (wording: TC-CAT-010) |
 | RULE-CAT-012 | CAT-201-EXISTING-VARIANTS-KEPT | 130 | F2 ITEM-SAVE step 5 — routed, words unbound (wording: TC-CAT-009) |
@@ -1009,13 +1040,14 @@ A row marked "routed, words unbound" is a code the frontend plan routes to a con
 | RULE-CAT-047 | CAT-404-BARCODE-NOT-FOUND | 143 | F2 BARCODE-LOOKUP-QUERY — routed, words unbound (wording: TC-CAT-046) |
 | RULE-CAT-048 | CAT-200-DEACTIVATED | 176 | F2 ITEM-STATE-COMMAND |
 | RULE-CAT-051 | CAT-409-ITEM-UNIT-HAS-BARCODES | 196 | F3 Item unit (deactivate) · F2 ITEM-SAVE (`text: RULE-CAT-051 message`) |
+| RULE-CAT-053 | CAT-422-PARENT-INACTIVE | 209 | F2 ITEM-SAVE (form banner, `text: RULE-CAT-053 message`) · F3 inactive-Item read-only |
 
 The other rules are asserted on the backend track. No case here asserts the words of a refusal or notice that the frontend plan leaves unbound; those eight codes are recorded as a plan gap in ADR-CAT-053 §1, for a later P3.2 delta that adds their `text:` bindings.
 
 ### UXD → TC
 | UXD | owner (source module) | rendered | empty / owner failure |
 |---|---|---|---|
-| UXD-CAT-001 lookup values | erp-core (given mdl) | TC-CAT-177 | TC-CAT-178 |
+| UXD-CAT-001 lookup values | erp-core (given mdl), read through API-CAT-052 | TC-CAT-177 | TC-CAT-178 |
 | UXD-CAT-002 capability flags | erp-core (given cu / app-config) | TC-CAT-179 | TC-CAT-180 |
 | UXD-CAT-003 image files | erp-core (given file) | TC-CAT-181 | TC-CAT-182 |
 
@@ -1023,7 +1055,7 @@ The other rules are asserted on the backend track. No case here asserts the word
 | Package (frontend plan unit) | # | TCs |
 |---|---|---|
 | F2-SCR-CAT-001 | 16 | 125, 126, 127, 130, 131, 137, 138, 139, 141, 143, 144, 145, 147, 149, 150, 195 |
-| F3-SCR-CAT-001 | 10 | 132, 133, 134, 135, 136, 140, 142, 146, 148, 196 |
+| F3-SCR-CAT-001 | 11 | 132, 133, 134, 135, 136, 140, 142, 146, 148, 196, 209 |
 | F4-SCR-CAT-001 | 9 | 128, 129, 176, 177, 178, 179, 180, 181, 182 |
 | F2-SCR-CAT-002 | 4 | 152, 154, 156, 157 |
 | F3-SCR-CAT-002 | 1 | 155 |
@@ -1040,19 +1072,19 @@ The other rules are asserted on the backend track. No case here asserts the word
 | F2-SCR-CAT-006 | 2 | 171, 172 |
 | F3-SCR-CAT-006 | 2 | 174, 175 |
 | F4-SCR-CAT-006 | 1 | 173 |
-| SEC-FE | 2 | 151, 194 |
+| SEC-FE | 3 | 151, 194, 208 |
 | F1-SCR-CAT-001 … 006 · ALIGN-FE | 0 | no TC — F1 is generated types with no observable behaviour; ALIGN-FE is the alignment self-check (ADR-CAT-052 §2) |
 
 ## COVERAGE
 
 | Measure | Result |
 |---|---|
-| AC covered (this track) | 55 / 142 by module TCs. Of those, AC-CAT-014, 015, 027, 075, 076, 138 and 142 are covered on this track only. |
-| AC covered (both plans) | 142 / 142 ✓, no gap. The other 87 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
-| REQ covered (this track) | 56 REQs by module TCs (plus REQ-CAT-012, 105 and 109 through UXD TCs) |
-| REQ covered (both plans) | 134 / 134 ✓ |
+| AC covered (this track) | 56 / 152 by module TCs. Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
+| AC covered (both plans) | 152 / 152 ✓, no gap. The other 96 ACs are covered by the backend track; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
+| REQ covered (this track) | 57 REQs by module TCs (plus REQ-CAT-012, 105 and 109 through UXD TCs) |
+| REQ covered (both plans) | 135 / 135 ✓ |
 | SCR covered | 6 / 6 ✓ (SCR-CAT-001 … 006) |
 | UXD covered | 3 / 3 ✓. Each UXD has its rendered and its failure case (6 TCs in `INT-UXD`). |
 | Refusal texts | every wording asserted here is bound by a `text:` row of the frontend plan (msg-bound) ✓. Eight routed codes have no binding (RULE-CAT-010, 012, 025, 035, 039, 045, 046, 047): their TCs assert routing and unchanged display only, and the gap is recorded in ADR-CAT-053 §1. |
-| Track size | 61 TCs for 55 ACs and 3 UXDs (ratio < 2, within the guard) |
-| Host data | CAT_BRAND BRAND1_137 … BRAND5_137 (active) and BRAND6_137 (inactive) for TC-CAT-137; CAT_BRAND OLDBRAND (active, then inactive) for TC-CAT-139. The AC value CAT_EINVOICE_UNIT H87 (AC-CAT-126) is not seeded and has no named add-value call, so TC-CAT-175 uses the seeded value BX in its place (ADR-CAT-053 §2). TC-CAT-137 and TC-CAT-138 assert closed option sets, so they run in a tenant that holds only their own values (ADR-CAT-052 §4). No value is demanded in opposite states. |
+| Track size | 63 TCs for 56 ACs and 3 UXDs (ratio < 2, within the guard) |
+| Host data | CAT_BRAND BRAND1_137 … BRAND5_137 (active) and BRAND6_137 (inactive) for TC-CAT-137; CAT_BRAND OLDBRAND (active, then inactive) for TC-CAT-139 — each created by `POST /api/v1/mdl/lookup-types/{id}/values` and, where inactive, deactivated by `DELETE /api/v1/mdl/lookup-values/{id}`. The AC value CAT_EINVOICE_UNIT H87 (AC-CAT-126) is not seeded; TC-CAT-175 stays on seeded data with the value BX in its place (ADR-CAT-053 §2). TC-CAT-137 and TC-CAT-138 assert closed option sets, so they run in a tenant that holds only their own values (ADR-CAT-052 §4). No value is demanded in opposite states. |

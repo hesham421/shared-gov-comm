@@ -10,6 +10,7 @@
 | Raised by | claude:opus (test-gen lane) |
 | Applies to | `analysis/modules/CAT/v2/P4/backend-test-plan-cat.md`, `analysis/modules/CAT/v2/P4/frontend-test-plan-cat.md` |
 | Relates to | ADR-CAT-052 (§1 track split, §3 host data) — not rewritten; this ADR narrows two of its points |
+| Note (gate-analysis round 2, G9) | §2's premise no longer holds: the given mdl add-value call `POST /api/v1/mdl/lookup-types/{id}/values` is now named in SRS A6. The seeded substitutes stay, because they keep those TCs on seeded data and the Given of each AC still holds. Restoring `BAG` / `H87` would be a MODIFIED change to TC-CAT-063, 120, 121, 122 and 175, with a Host data line naming that call. |
 
 ## Context
 

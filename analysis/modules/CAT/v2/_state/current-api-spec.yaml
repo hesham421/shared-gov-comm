@@ -253,7 +253,7 @@ paths:
       operationId: updateItem
       summary: update Item
       x-api-id: API-CAT-003
-      x-traces: [REQ-CAT-131, REQ-CAT-132, REQ-CAT-133, REQ-CAT-004, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-030, REQ-CAT-031, REQ-CAT-034, REQ-CAT-063, REQ-CAT-072, REQ-CAT-073, REQ-CAT-075, REQ-CAT-076, REQ-CAT-082, REQ-CAT-117, REQ-CAT-123, DBF-CAT-001,
+      x-traces: [REQ-CAT-135, REQ-CAT-131, REQ-CAT-132, REQ-CAT-133, REQ-CAT-004, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-030, REQ-CAT-031, REQ-CAT-034, REQ-CAT-063, REQ-CAT-072, REQ-CAT-073, REQ-CAT-075, REQ-CAT-076, REQ-CAT-082, REQ-CAT-117, REQ-CAT-123, DBF-CAT-001,
         DBF-CAT-002, DBF-CAT-003, DBF-CAT-004, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-010, DBF-CAT-011, DBF-CAT-012, DBF-CAT-015, DBF-CAT-017, DBF-CAT-020]
       parameters:
       - name: id
@@ -326,9 +326,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-ITEM-KIND-FIXED, CAT-422-BASE-UOM-FIXED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID,
-            CAT-422-CATEGORY-INACTIVE
-          x-error-codes: [CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-ITEM-KIND-FIXED, CAT-422-BASE-UOM-FIXED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID, CAT-422-CATEGORY-INACTIVE]
+          description: error — CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-ITEM-KIND-FIXED, CAT-422-BASE-UOM-FIXED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID, CAT-422-CATEGORY-INACTIVE, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-ITEM-KIND-FIXED, CAT-422-BASE-UOM-FIXED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID, CAT-422-CATEGORY-INACTIVE, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -478,7 +477,7 @@ paths:
       operationId: generateVariants
       summary: generate Variants
       x-api-id: API-CAT-006
-      x-traces: [REQ-CAT-129, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-033, REQ-CAT-035, REQ-CAT-049, REQ-CAT-051, REQ-CAT-052, REQ-CAT-061, DBF-CAT-005, DBF-CAT-022,
+      x-traces: [REQ-CAT-135, REQ-CAT-129, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-033, REQ-CAT-035, REQ-CAT-049, REQ-CAT-051, REQ-CAT-052, REQ-CAT-061, DBF-CAT-005, DBF-CAT-022,
         DBF-CAT-023, DBF-CAT-024, DBF-CAT-027, DBF-CAT-028, DBF-CAT-061, DBF-CAT-062, DBF-CAT-063, DBF-CAT-064, DBF-CAT-114]
       parameters:
       - name: id
@@ -549,8 +548,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED
-          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED]
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-SINGLE-VARIANT, CAT-422-VARIANT-ATTRIBUTE-MISSING, CAT-422-VARIANT-LIMIT-EXCEEDED, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -619,7 +618,7 @@ paths:
       operationId: updateVariantEInvoiceOverride
       summary: update Variant e-invoice override
       x-api-id: API-CAT-008
-      x-traces: [REQ-CAT-034, REQ-CAT-118, REQ-CAT-123, DBF-CAT-022, DBF-CAT-023, DBF-CAT-025, DBF-CAT-026, DBF-CAT-030, DBF-CAT-033]
+      x-traces: [REQ-CAT-135, REQ-CAT-034, REQ-CAT-118, REQ-CAT-123, DBF-CAT-022, DBF-CAT-023, DBF-CAT-025, DBF-CAT-026, DBF-CAT-030, DBF-CAT-033]
       parameters:
       - name: id
         in: path
@@ -682,8 +681,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID
-          x-error-codes: [CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID]
+          description: error — CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-CODE-SYSTEM-ASSIGNED, CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-EINVOICE-CODE-INVALID, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -697,7 +696,7 @@ paths:
       operationId: deactivateVariant
       summary: deactivate Variant
       x-api-id: API-CAT-009
-      x-traces: [REQ-CAT-050, REQ-CAT-053, REQ-CAT-062, DBF-CAT-022, DBF-CAT-027, DBF-CAT-028, DBF-CAT-014, DBF-CAT-061, DBF-CAT-062, DBF-CAT-089]
+      x-traces: [REQ-CAT-050, REQ-CAT-053, REQ-CAT-062, DBF-CAT-022, DBF-CAT-027, DBF-CAT-028, DBF-CAT-014, DBF-CAT-061, DBF-CAT-062, DBF-CAT-089, DBF-CAT-113, DBF-CAT-114]
       parameters:
       - name: id
         in: path
@@ -758,7 +757,7 @@ paths:
       operationId: addItemUnit
       summary: add Item unit
       x-api-id: API-CAT-010
-      x-traces: [REQ-CAT-074, REQ-CAT-075, REQ-CAT-077, REQ-CAT-080, DBF-CAT-006, DBF-CAT-097, DBF-CAT-098, DBF-CAT-099, DBF-CAT-100, DBF-CAT-101, DBF-CAT-102]
+      x-traces: [REQ-CAT-135, REQ-CAT-074, REQ-CAT-075, REQ-CAT-077, REQ-CAT-080, DBF-CAT-006, DBF-CAT-097, DBF-CAT-098, DBF-CAT-099, DBF-CAT-100, DBF-CAT-101, DBF-CAT-102]
       parameters:
       - name: id
         in: path
@@ -815,8 +814,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-ITEM-UNIT-INVALID
-          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-ITEM-UNIT-INVALID]
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-ITEM-UNIT-INVALID, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-ITEM-UNIT-INVALID, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -884,7 +883,7 @@ paths:
       operationId: updateItemUnit
       summary: update Item unit
       x-api-id: API-CAT-012
-      x-traces: [REQ-CAT-078, REQ-CAT-081, DBF-CAT-096, DBF-CAT-098, DBF-CAT-099, DBF-CAT-100, DBF-CAT-104]
+      x-traces: [REQ-CAT-135, REQ-CAT-078, REQ-CAT-081, DBF-CAT-096, DBF-CAT-098, DBF-CAT-099, DBF-CAT-100, DBF-CAT-104]
       parameters:
       - name: id
         in: path
@@ -947,8 +946,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-CONVERSION-FACTOR-FIXED
-          x-error-codes: [CAT-422-CONVERSION-FACTOR-FIXED]
+          description: error — CAT-422-CONVERSION-FACTOR-FIXED, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-CONVERSION-FACTOR-FIXED, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1023,7 +1022,7 @@ paths:
       operationId: addBarcodeGTINOrScaleCode
       summary: add barcode (GTIN or scale code)
       x-api-id: API-CAT-014
-      x-traces: [REQ-CAT-074, REQ-CAT-075, REQ-CAT-083, REQ-CAT-087, REQ-CAT-088, REQ-CAT-089, REQ-CAT-091, REQ-CAT-096, REQ-CAT-099, DBF-CAT-006, DBF-CAT-022, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114,
+      x-traces: [REQ-CAT-135, REQ-CAT-074, REQ-CAT-075, REQ-CAT-083, REQ-CAT-087, REQ-CAT-088, REQ-CAT-089, REQ-CAT-091, REQ-CAT-096, REQ-CAT-099, DBF-CAT-006, DBF-CAT-022, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114,
         DBF-CAT-137, DBF-CAT-140]
       parameters:
       - name: id
@@ -1086,8 +1085,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-GTIN-INVALID, CAT-422-SCALE-CODE-LENGTH
-          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-GTIN-INVALID, CAT-422-SCALE-CODE-LENGTH]
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-GTIN-INVALID, CAT-422-SCALE-CODE-LENGTH, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-GTIN-INVALID, CAT-422-SCALE-CODE-LENGTH, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1102,7 +1101,7 @@ paths:
       operationId: generateInternalBarcode
       summary: generate internal barcode
       x-api-id: API-CAT-015
-      x-traces: [REQ-CAT-035, REQ-CAT-084, REQ-CAT-089, REQ-CAT-091, DBF-CAT-006, DBF-CAT-022, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114]
+      x-traces: [REQ-CAT-135, REQ-CAT-035, REQ-CAT-084, REQ-CAT-089, REQ-CAT-091, DBF-CAT-006, DBF-CAT-022, DBF-CAT-110, DBF-CAT-111, DBF-CAT-112, DBF-CAT-113, DBF-CAT-114]
       parameters:
       - name: id
         in: path
@@ -1161,8 +1160,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID
-          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID]
+          description: error — CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-LOOKUP-VALUE-INACTIVE, CAT-422-BARCODE-UNIT-INVALID, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1232,7 +1231,7 @@ paths:
       operationId: saveBundleComponents
       summary: save Bundle components
       x-api-id: API-CAT-017
-      x-traces: [REQ-CAT-013, REQ-CAT-015, REQ-CAT-016, REQ-CAT-020, REQ-CAT-056, REQ-CAT-057, REQ-CAT-059, REQ-CAT-060, DBF-CAT-005, DBF-CAT-017, DBF-CAT-084, DBF-CAT-085, DBF-CAT-086, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
+      x-traces: [REQ-CAT-135, REQ-CAT-013, REQ-CAT-015, REQ-CAT-016, REQ-CAT-020, REQ-CAT-056, REQ-CAT-057, REQ-CAT-059, REQ-CAT-060, DBF-CAT-005, DBF-CAT-017, DBF-CAT-084, DBF-CAT-085, DBF-CAT-086, DBF-CAT-087, DBF-CAT-088, DBF-CAT-089]
       parameters:
       - name: id
         in: path
@@ -1254,6 +1253,7 @@ paths:
                       componentVariantFk: {type: integer, format: int64}
                       quantity: {type: number}
                       sortOrder: {type: integer, format: int32}
+                    required: [componentVariantFk, quantity]
                   x-dbf: DBF-CAT-084
                 version: {type: integer, format: int64, x-dbf: DBF-CAT-017}
               required: [lines, version]
@@ -1304,8 +1304,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID
-          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID]
+          description: error — CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-CAPABILITY-OFF, CAT-422-BUNDLE-COMPONENTS-REQUIRED, CAT-422-BUNDLE-COMPONENT-INVALID, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1320,7 +1320,7 @@ paths:
       operationId: uploadImage
       summary: upload image
       x-api-id: API-CAT-018
-      x-traces: [REQ-CAT-105, REQ-CAT-108, REQ-CAT-110, REQ-CAT-112, DBF-CAT-003, DBF-CAT-122, DBF-CAT-123, DBF-CAT-124, DBF-CAT-125, DBF-CAT-126, DBF-CAT-127, DBF-CAT-128, DBF-CAT-129]
+      x-traces: [REQ-CAT-135, REQ-CAT-105, REQ-CAT-108, REQ-CAT-110, REQ-CAT-112, DBF-CAT-003, DBF-CAT-122, DBF-CAT-123, DBF-CAT-124, DBF-CAT-125, DBF-CAT-126, DBF-CAT-127, DBF-CAT-128, DBF-CAT-129]
       parameters:
       - name: id
         in: path
@@ -1378,8 +1378,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-IMAGE-NOT-ACCEPTED, CAT-422-MEDIA-VARIANT-MISMATCH, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG
-          x-error-codes: [CAT-422-IMAGE-NOT-ACCEPTED, CAT-422-MEDIA-VARIANT-MISMATCH, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG]
+          description: error — CAT-422-IMAGE-NOT-ACCEPTED, CAT-422-MEDIA-VARIANT-MISMATCH, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-IMAGE-NOT-ACCEPTED, CAT-422-MEDIA-VARIANT-MISMATCH, CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1394,7 +1394,7 @@ paths:
       operationId: updateImage
       summary: update image
       x-api-id: API-CAT-019
-      x-traces: [REQ-CAT-106, REQ-CAT-112, DBF-CAT-121, DBF-CAT-123, DBF-CAT-124, DBF-CAT-125, DBF-CAT-126, DBF-CAT-128, DBF-CAT-129, DBF-CAT-131]
+      x-traces: [REQ-CAT-135, REQ-CAT-106, REQ-CAT-112, DBF-CAT-121, DBF-CAT-123, DBF-CAT-124, DBF-CAT-125, DBF-CAT-126, DBF-CAT-128, DBF-CAT-129, DBF-CAT-131]
       parameters:
       - name: id
         in: path
@@ -1460,8 +1460,8 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
         '422':
-          description: error — CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-MEDIA-VARIANT-MISMATCH
-          x-error-codes: [CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-MEDIA-VARIANT-MISMATCH]
+          description: error — CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-MEDIA-VARIANT-MISMATCH, CAT-422-PARENT-INACTIVE
+          x-error-codes: [CAT-422-NAME-AR-INVALID, CAT-422-NAME-EN-TOO-LONG, CAT-422-MEDIA-VARIANT-MISMATCH, CAT-422-PARENT-INACTIVE]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -1960,15 +1960,9 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
-        '422':
-          description: error — CAT-422-CAPABILITY-OFF
-          x-error-codes: [CAT-422-CAPABILITY-OFF]
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/LocalizedError'}
         '500':
-          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
-          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -2020,15 +2014,9 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
-        '422':
-          description: error — CAT-422-CAPABILITY-OFF
-          x-error-codes: [CAT-422-CAPABILITY-OFF]
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/LocalizedError'}
         '500':
-          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
-          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -2163,15 +2151,9 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
-        '422':
-          description: error — CAT-422-CAPABILITY-OFF
-          x-error-codes: [CAT-422-CAPABILITY-OFF]
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/LocalizedError'}
         '500':
-          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
-          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -2386,15 +2368,9 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
-        '422':
-          description: error — CAT-422-CAPABILITY-OFF
-          x-error-codes: [CAT-422-CAPABILITY-OFF]
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/LocalizedError'}
         '500':
-          description: error — CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE
-          x-error-codes: [CAT-500-SERVER-ERROR, CAT-500-CAPABILITY-UNREADABLE]
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
@@ -2486,13 +2462,12 @@ paths:
             schema:
               type: object
               properties:
-                scaleCodeLength: {type: integer, format: int32, x-dbf: DBF-CAT-140}
                 embeddedValueTypeCode: {type: string, maxLength: 50, x-dbf: DBF-CAT-141}
                 valueDecimals: {type: integer, format: int32, x-dbf: DBF-CAT-142}
                 valueAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-138}
                 valueEn: {type: string, maxLength: 200, x-dbf: DBF-CAT-139}
                 version: {type: integer, format: int64, x-dbf: DBF-CAT-145}
-              required: [scaleCodeLength, embeddedValueTypeCode, valueDecimals, version]
+              required: [embeddedValueTypeCode, valueDecimals, version]
               title: ScaleLabelLayoutUpdateRequest
       responses:
         '200':
@@ -3419,6 +3394,66 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/LocalizedError'}
+  /api/v1/cat/lookups/{key}:
+    get:
+      operationId: readCatLookupValues
+      summary: active values of a CAT lookup key
+      x-api-id: API-CAT-052
+      x-traces: [REQ-CAT-073, REQ-CAT-074, REQ-CAT-076, DBF-CAT-005, DBF-CAT-006, DBF-CAT-007, DBF-CAT-008, DBF-CAT-009, DBF-CAT-013, DBF-CAT-025, DBF-CAT-097, DBF-CAT-111, DBF-CAT-112, DBF-CAT-141, DBF-CAT-151, DBF-CAT-154]
+      description: 'OwnedLookups.read over MdlLookupApi for one of the 10 CAT keys of SRS A6 only; never a pass-through for other keys (ADR-CAT-065). Any CAT page VIEW permission.'
+      parameters:
+      - name: key
+        in: path
+        required: true
+        description: 'one of CAT_ITEM_KIND, CAT_PUBLISH_STATE, CAT_BRAND, CAT_UOM, CAT_TAX_CLASS, CAT_EINVOICE_ITEM_CODE_TYPE, CAT_EINVOICE_UNIT, CAT_BARCODE_TYPE, CAT_SCALE_VALUE_TYPE, CAT_CHANGE_KIND; any other key answers 404 CAT-404-LOOKUP-KEY-UNKNOWN (no enum, so the refusal stays the service''s)'
+        schema:
+          type: string
+          maxLength: 50
+      responses:
+        '200':
+          description: success — ApiResponse<T>
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: {$ref: '#/components/schemas/LookupOption'}
+                  code: {type: string}
+                  messageAr: {type: string}
+                  messageEn: {type: string}
+        '400':
+          description: error — CAT-400-REQUEST-INVALID
+          x-error-codes: [CAT-400-REQUEST-INVALID]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '401':
+          description: error — CAT-401-UNAUTHENTICATED
+          x-error-codes: [CAT-401-UNAUTHENTICATED]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '403':
+          description: error — CAT-403-FORBIDDEN
+          x-error-codes: [CAT-403-FORBIDDEN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '404':
+          description: error — CAT-404-LOOKUP-KEY-UNKNOWN
+          x-error-codes: [CAT-404-LOOKUP-KEY-UNKNOWN]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
+        '500':
+          description: error — CAT-500-SERVER-ERROR
+          x-error-codes: [CAT-500-SERVER-ERROR]
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LocalizedError'}
 components:
   securitySchemes:
     bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
@@ -3693,12 +3728,21 @@ components:
         dependentItems:
           type: array
           items: {$ref: '#/components/schemas/DependentItem'}
+        messageAr: {type: string, description: 'RULE-CAT-010 or RULE-CAT-011 message with {count} filled when allowed is false; empty when allowed'}
+        messageEn: {type: string, description: 'RULE-CAT-010 or RULE-CAT-011 message with {count} filled when allowed is false; empty when allowed'}
     DependentItem:
       type: object
       properties:
         itemPk: {type: integer, format: int64}
         code: {type: string}
         nameAr: {type: string}
+    LookupOption:
+      type: object
+      properties:
+        code: {type: string}
+        labelAr: {type: string}
+        labelEn: {type: string}
+        sortOrder: {type: integer, format: int32}
     ImportResult:
       type: object
       properties:

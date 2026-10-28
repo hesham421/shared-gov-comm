@@ -1,6 +1,7 @@
 # ADR-CAT-050 — Display data served by the given: lookup values, capability flags, image files
 
 Status : ACCEPTED (non-breaking) · Stage : P3.2 · Module : CAT v2 · Date : 2026-10-28
+Amended by : ADR-CAT-065 — §1 and §2 no longer hold for UXD-CAT-001. The lookup values reach the screens through CAT's own read `GET /api/v1/cat/lookups/{key}` (API-CAT-052, `OwnedLookups`), not the shell's lookup client. UXD-CAT-002 and UXD-CAT-003 are unchanged.
 
 ## Context
 CAT screens show three kinds of data that no operation of `api-spec-cat.yaml` serves:

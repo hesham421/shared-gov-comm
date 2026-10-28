@@ -24,7 +24,7 @@ This contract states what other modules may depend on in CAT before CAT is built
 - **Tenancy.** The given core resolves the tenant. Every operation answers within the caller's tenant, and a record of another tenant reads as *not found*.
 - **Names.** `nameAr` is always present. Where `nameEn` is empty, the English display returns `nameAr` (REQ-CAT-029).
 - **Lookup codes.** Lookup-backed values are returned as codes of the CAT-owned `mdl` keys (SRS A6). Consumers resolve labels through the core lookup module. A code that is deactivated later stays on existing records (REQ-CAT-076).
-- **Authorization of in-process calls (ADR-CAT-061).** The operation items are in-process calls. CAT does not check a CAT permission on them: the **calling module authorizes its own caller** against its own permissions before it calls CAT (for example SFR for a storefront shopper, SLS for a cashier). The one exception is the catalogue search (CON-CAT-016), which answers an empty result to a user without VIEW on CAT_ITEMS. Tenancy still applies to every call.
+- **Authorization of in-process calls (ADR-CAT-061).** The operation items are in-process calls. CAT does not check a CAT permission on them: the **calling module authorizes its own caller** against its own permissions before it calls CAT (for example SFR for a storefront shopper, SLS for a cashier). The one exception is the catalogue search (CON-CAT-016), which answers an empty result to a user without VIEW on CAT_ITEMS. Tenancy still applies to every call. Checklist C13 states no exception for an in-process read, so this rule stands on condition: CAT has raised `CORE-GAP-in-process-authorization.md`, and ADR-CAT-066 follows the core's answer (for example a core-provided caller authority for in-process reads) without changing these signatures.
 - **Obligation of the capability-flag writer (POL-CAT-005).** A write that turns `variants` or `bundles` off must first call CON-CAT-017 and must refuse the write when `allowed` is false, showing the returned message and dependent Items. CAT answers the check and never writes a flag. The writer (owner OPEN, P-02) does not yet honour this, so it is recorded as an OPEN platform finding in `business-policies-cat.md` (PLATFORM FINDINGS, row 2).
 
 ---
@@ -85,14 +85,14 @@ Traces    : ENT-CAT-001, REQ-CAT-001, REQ-CAT-002, REQ-CAT-010, REQ-CAT-058
 An inactive Item is still returned, with `isActiveFl` false. Every read that starts after a commit returns that commit's state (REQ-CAT-010).
 
 ### CON-CAT-008 — Read a Variant (قراءة متغيّر / Read a Variant)
-Signature : getVariant(variantPk: BIGINT) → Variant {variantPk, itemPk, code, nameAr, nameEn (derived, D-15), isDefaultFl, isActiveFl, Item baseUomCode, Item taxClassCode, effective einvoiceCodeTypeCode and einvoiceCode (Variant override, else Item), einvoiceUnitCode of the base unit (empty when the unit has no active Unit e-invoice code)} · errors: not found
+Signature : getVariant(variantPk: BIGINT) → Variant {variantPk, itemFk, code, nameAr, nameEn (derived, D-15), isDefaultFl, isActiveFl, Item baseUomCode, Item taxClassCode, effective einvoiceCodeTypeCode and einvoiceCode (Variant override, else Item), einvoiceUnitCode of the base unit (empty when the unit has no active Unit e-invoice code)} · errors: not found
 Entity    : ENT-CAT-002
 Traces    : ENT-CAT-002, REQ-CAT-050, REQ-CAT-119, REQ-CAT-122, REQ-CAT-029
 
 An inactive Variant is still returned, with `isActiveFl` false (REQ-CAT-050).
 
 ### CON-CAT-009 — Read an Item unit (قراءة وحدة صنف / Read an Item unit)
-Signature : getItemUnit(itemUnitPk: BIGINT) → Item unit {itemUnitPk, itemPk, uomCode, conversionFactor, isPurchaseFl, isSalesFl, isActiveFl, einvoiceUnitCode (empty when none is active)} · errors: not found
+Signature : getItemUnit(itemUnitPk: BIGINT) → Item unit {itemUnitPk, itemFk, uomCode, conversionFactor, isPurchaseFl, isSalesFl, isActiveFl, einvoiceUnitCode (empty when none is active)} · errors: not found
 Entity    : ENT-CAT-008
 Traces    : ENT-CAT-008, REQ-CAT-079, REQ-CAT-122
 
@@ -138,7 +138,7 @@ Traces    : ENT-CAT-001, REQ-CAT-125, REQ-CAT-126, REQ-CAT-127
 The global search box sits outside CAT (ADR-CAT-043).
 
 ### CON-CAT-017 — Capability turn-off check (فحص إيقاف القدرة / Capability turn-off check)
-Signature : checkCapabilityTurnOff(flag: `variants` | `bundles`) → {allowed: flag, dependentCount: number, dependentItems: at most 20 {itemPk, code, nameAr}, message ar/en (RULE-CAT-010 or RULE-CAT-011 when not allowed)} · errors: invalid input — flag other than `variants` or `bundles`
+Signature : checkCapabilityTurnOff(flag: `variants` | `bundles`) → {allowed: flag, dependentCount: number, dependentItems: at most 20 {itemPk, code, nameAr}, messageAr and messageEn (the RULE-CAT-010 or RULE-CAT-011 message with {count} filled when not allowed; empty when allowed)} · errors: invalid input — flag other than `variants` or `bundles`
 Entity    : ENT-CAT-001
 Traces    : ENT-CAT-001, REQ-CAT-021, REQ-CAT-022, REQ-CAT-023
 
@@ -162,6 +162,7 @@ The event is recorded in the same transaction as the change through the given `e
 ```yaml name=given-usage
 rows:
   - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "load the values of the CAT_* lookup keys (brand, unit of measure, tax class, e-invoice codes, barcode type, scale value type, item kind, publish state) at runtime"}
+  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "serve CAT's own lookup keys to the screens (API-CAT-052) through the common owned-lookups capability, com.erp.common.lookup.OwnedLookups.read(key, the 10 CAT keys, CAT-404-LOOKUP-KEY-UNKNOWN, MdlLookupApi::readActiveValuesByKey) — never a pass-through for other keys (ADR-CAT-065); erp-core's manifest lists owned-lookups under common but publishes no interface for it, so the row names the mdl interface the call goes through"}
   - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "read the `variants` and `bundles` capability flags behind the FeatureFlags API (ADR-CAT-041)"}
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "issue Item codes (CAT_ITEM), Variant codes (CAT_VARIANT) and internal barcode digits (CAT_INTERNAL_BARCODE)"}
   - {given: erp-core, module: modules.file, via: docs/api-docs/file/index.md, purpose: "the client uploads Item images to the public image storage and import files to the private storage through the given FILE upload endpoints, and passes the returned FILE_DOCUMENT.ID to CAT; CAT has no multipart endpoint (ADR-CAT-056)"}

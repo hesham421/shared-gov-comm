@@ -16,7 +16,7 @@
 | CAT_SCALE_LABEL_LAYOUT | ENT-CAT-011 | config | DBF-CAT-136 … DBF-CAT-149 |
 | CAT_UNIT_EINVOICE_CODE | ENT-CAT-012 | config | DBF-CAT-150 … DBF-CAT-161 |
 
-Tenant: every table carries TENANT_ID with `FK_<TABLE>_TENANT → CORE_TENANT(ID)` (12 constraints, db-script BLOCK 5e; erp-core checklist C1) and an index led by TENANT_ID. The FK targets a given table, so it is a permitted given reference, not an XM (ADR-CAT-055, superseding ADR-CAT-054). The factory's explicit exemption of this FK from `gov.py` C6.15 is OPEN platform finding 1 in business-policies-cat.md.
+Tenant: every table carries TENANT_ID with `FK_<TABLE>_TENANT → CORE_TENANT(ID)` (12 constraints, db-script BLOCK 5e; erp-core checklist C1) and an index led by TENANT_ID. The FK targets a given table, so it is a permitted given reference, not an XM (ADR-CAT-055, superseding ADR-CAT-054). The factory's explicit exemption of this FK from `gov.py` C6.15 is OPEN platform finding 1 in business-policies-cat.md. Every intra-module FK is composite with TENANT_ID and targets a `(TENANT_ID, <PK>)` UNIQUE of its parent, so same-tenant integrity is structural (D-P2-12, ADR-CAT-067).
 
 Given tables read, never created: MDL_LOOKUP_TYPE and MDL_LOOKUP_VALUE (`erp-core:modules.mdl`, seeded only), CORE_NUMBER_SERIES (`erp-core:modules.sequence`, seeded only), FILE_DOCUMENT (`erp-core:modules.file`, soft read through `CAT_ITEM_MEDIA.FILE_DOCUMENT_REF`) and CORE_TENANT (`erp-core:modules.tenant`, through `TENANT_ID` and its FK). New tenants receive the CAT lookups and number series from the given at provisioning, and the Unit e-invoice codes from `CatTenantProvisioningContributor` (ADR-CAT-058).
 
@@ -45,6 +45,7 @@ Total: 10 keys, 34 seeded values.
 Other seeds:
 - Number series CAT_ITEM, CAT_VARIANT and CAT_INTERNAL_BARCODE go into CORE_NUMBER_SERIES (owner: erp-core sequence).
 - 8 Unit e-invoice codes go into CAT_UNIT_EINVOICE_CODE (owner: CAT).
+- The columns of the given seed tables were checked against the erp-core 1.6.0 migrations (V3, V8, V10, V14 — D-P2-13). BLOCK 8 ends without a COMMIT; Flyway owns the transaction. Deployment precondition: the Flyway role may CREATE on the database for `pg_trgm`, or a DBA installs it beforehand.
 
 ### Sequences
 - Last DBF: DBF-CAT-161 (next free sequence 162)
@@ -54,7 +55,7 @@ Other seeds:
 - Migration file: `V1000__cat_catalog.sql`
 
 ### Decisions
-DEFAULTs D-P2-01 … D-P2-18 (db-script §5). ADR-CAT-055 (tenant FK restored; supersedes ADR-CAT-054), ADR-CAT-058 (tenant provisioning of seeds), ADR-CAT-062 (CAT_NORMALIZE_AR, pg_trgm indexes). None BLOCKED. The next free ADR sequence is 063.
+DEFAULTs D-P2-01 … D-P2-18 (db-script §5). ADR-CAT-055 (tenant FK restored; supersedes ADR-CAT-054), ADR-CAT-058 (tenant provisioning of seeds), ADR-CAT-062 (CAT_NORMALIZE_AR, pg_trgm indexes), ADR-CAT-067 (tenant-composite intra-module FKs). None BLOCKED. The next free ADR sequence is 068.
 
 ### Event
 "P2 completed: CAT v2 — 12 tables, 161 DBF, 0 XM"

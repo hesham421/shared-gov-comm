@@ -1,24 +1,39 @@
-All 20 findings are applied. Analyze still reports `BLOCKED`, though: 0 critical, 2 major, 4 minor. The 2 major are stale publications that the orchestrator's `gov.py publish` step clears. As with the last round, I edited the files in the repo directly rather than returning `<<<FILE>>>` blocks. Nothing is committed.
+I applied all 15 findings to the CAT v2 artifacts. Analyze now reports C10.8 = 11 and C10.9 = 9 subjects examined, with no findings from either, so G9 is met. Nothing is committed and I did not run `publish`.
 
-**What analyze shows now** (I ran `gov.py state` and `analyze --scope all`; both only rewrite `_state/`):
-- **2 major, both C9.23 (publication-fresh):** the published copies of `api-spec-cat.yaml` and `contract-cat.md` are stale. They clear when `gov.py publish` runs. I didn't run it because it writes into `backend/` and `platform/`.
-- **4 minor:** the 'could' / 'مختلف' hits on AC-CAT-013, 036, 072 and 102. The reviewer already confirmed these as false positives. AC-CAT-010 ('fast') and AC-CAT-110 are fixed.
-- **Coverage is 100%** on every ratio: 134 REQs, 142 ACs, every AC has a TC.
-- **C10.8 and C10.9 still examine 0 subjects.** This is the `gov.py` parser defect (G15), filed as platform finding 3. Per the finding, the gate shouldn't APPROVE until those clauses report a non-zero count.
+**Analyze result:** it still reports BLOCKED, with 0 critical, 2 major and 4 minor findings. None of them is a defect in the artifacts:
+- **2 major, C9.23 (publication-fresh):** the published copies of `api-spec-cat.yaml` and `contract-cat.md` are out of date because the sources changed. Running `gov.py publish` fixes this; the gate step normally runs it.
+- **4 minor, C5.13:** the words "could" and «مختلف» in AC-013, 036, 072 and 102. They sit inside the quoted rule messages, and your brief already lists them as false positives.
+- **10 clauses that examined nothing (C6.x, C7.x):** these were already confirmed as empty by nature.
 
-**New decisions** (ADR-CAT-055 … 062, all ACCEPTED; the next free number is 063):
-- **G1 (055):** the 12 tenant FKs to `CORE_TENANT` are back, and ADR-054 is marked superseded. With the FKs restored, C6.15 examines nothing, so it doesn't flag them today. It did refuse them in repair round 1, so platform finding 1 asks the factory to make the exemption explicit.
-- **G2 / G17 (056):** images and import files are uploaded through the given FILE endpoints first. API-CAT-018 and 049 now take JSON with `fileDocumentRef`. The 413/415 error codes are removed, and the ADR states the file retention rules.
-- **G3 (057):** the import sheet is report `CAT_ITEM_IMPORT_SHEET`, rendered as xlsx through `PrintApi`. The given report module already supports xlsx, so I raised no `CORE-GAP`.
-- **G5 (058):** the given copies the lookups and number series to each new tenant itself. A new `CatTenantProvisioningContributor` copies the 8 Unit e-invoice codes. The hook exists in erp-core, so no `CORE-GAP` was needed.
-- **G6 (059):** reactivation now re-checks the Item's state. A new rule (RULE-CAT-050) refuses an Item with no active Variant, and the existing Category and Bundle-component rules now also run on reactivation. Barcode lookup, Variant search and labels only match active Items.
-- **G7 (060):** an Item unit that active barcodes use cannot be deactivated (RULE-CAT-051, new QR-CAT-071). I chose to refuse rather than deactivate the barcodes along with it, so printed labels never stop scanning silently.
-- **G13 (061):** `CatalogueReadApi` calls a read service with no permission check, and the calling module authorizes its own user. The HTTP endpoints keep their permission checks.
-- **G18 (062):** a `CAT_NORMALIZE_AR` function folds Arabic letter variants for name uniqueness and search. Search gets trigram indexes, and `%` and `_` are escaped in search terms.
+**New IDs**
 
-**Other changes:**
-- **G8:** I added a new rule, RULE-CAT-052, instead of giving RULE-013 a second code, because an SRS rule has one message.
-- **New IDs:** REQ-CAT-128 … 134, AC-CAT-130 … 142, TC-CAT-183 … 196. The error catalog goes from 57 to 58 codes (3 new, 413/415 removed).
-- **G4:** the four native queries name `TENANT_ID` in every branch and carry `@TenantUnscoped`. ADR-047 is amended.
-- **Platform findings (G1, G14, G15):** recorded as OPEN rows in a new PLATFORM FINDINGS section of `business-policies-cat.md`. The project registry, where they belong, isn't in this pass's writable set.
-- **Smaller fixes:** the G19 traces in ADR-015 and ADR-028, and G20, where the two "reserved" AC placeholders are deleted.
+| Kind | IDs |
+|---|---|
+| Requirement | REQ-CAT-135 |
+| Acceptance criteria | AC-CAT-143 … 152 |
+| Rule | RULE-CAT-053, code CAT-422-PARENT-INACTIVE |
+| API | API-CAT-052 `GET /api/v1/cat/lookups/{key}` |
+| Query | QR-CAT-072 |
+| Test cases | backend TC-CAT-197 … 207; frontend TC-CAT-208, 209 |
+| Decisions | ADR-CAT-063 … 067 (all ACCEPTED), plus `CORE-GAP-in-process-authorization.md` |
+
+**How each finding was applied**
+- **G1 (capability flags):** RULE-CAT-008 now lists exactly the refused operations. API-CAT-026, 028, 031 and 041 no longer check the flag, and the frontend no longer handles that refusal on the attribute reads. AC-143 / TC-197 cover reading and deactivating a Bundle while `bundles` is off.
+- **G2 (inactive parents):** a new rule refuses child writes under an inactive Item or Variant, in the 10 endpoints named. ADR-063 records the choice that deactivating a Variant also deactivates its barcodes, which frees the barcode value for reuse. Covered by AC-144/145 and TC-198/199, and on screen by TC-209.
+- **G3 (scale layouts):** ADR-064 makes the scale code length fixed after creation. TC-107 no longer sends it, TC-048 checks that barcodes stay stored after a layout is deactivated, and TC-206 covers a decimals change.
+- **G4:** the turn-off check result now carries messageAr and messageEn.
+- **G5 (lookups):** API-CAT-052 serves CAT's 10 lookup keys through `OwnedLookups`. All 10 lookup hooks and UXD-CAT-001 are rebound to it, and ADR-050 is amended by ADR-065. I also removed the 10-key enum from the `{key}` path parameter. With it, an unknown key would fail as a 400, so CAT-404-LOOKUP-KEY-UNKNOWN could never be returned. The keys are now listed in the parameter's description instead.
+- **G6:** the 6 platform-standard error rows have ar/en text, and ADR-044 no longer has the 413/415 rows.
+- **G7:** the core gap is written up, ADR-061 is now conditional on the core's answer (ADR-066), and PHASE CORE names the gap.
+- **G8:** six ACs and TCs for parallel requests (TC-200 … 205), each naming the guard and the unit that owns it.
+- **G9:** the brand host values are listed in the SRS lookups block. The Host data lines of TC-019, 036, 037, 068, 137 and 139 now name the mdl calls: `POST /api/v1/mdl/lookup-types/search`, `POST …/{id}/values` and `DELETE /api/v1/mdl/lookup-values/{id}`.
+- **G10–G12:** `itemFk` in CON-008 and CON-009; the `required` list on API-CAT-017 lines; and a frontend rule that a jump to another page shows only with that page's VIEW permission and its flag on (Print labels, Import, Open Variant attributes), tested by TC-208.
+- **G13:** the four counter-cases were added as steps of TC-006, 007, 015 and 051.
+- **G14:** the COMMIT is removed and the seed columns are checked against erp-core 1.6.0. The database privilege that pg_trgm needs is stated as a deployment precondition.
+- **G15:** every intra-module foreign key is now composite with TENANT_ID (ADR-067).
+
+**Other changes beyond the brief**
+- **Platform findings:** finding 3 is marked resolved. Its cause was in CAT's own SRS and test plans, not in the parser. I added finding 4, OPEN: the erp-core manifest publishes no interface for `OwnedLookups`, so the API-CAT-052 usage row has to name `MdlLookupApi` instead.
+- **ADR-CAT-053:** I added a note saying its premise ("no named add-value call exists") no longer holds. Its seeded substitutes stay as they are.
+
+The next free ADR number is ADR-CAT-068.

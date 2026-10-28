@@ -2,6 +2,7 @@
 
 Status : ACCEPTED (non-breaking) · Stage : P3.1 (gate-analysis revise, G13) · Module : CAT v2 · Date : 2026-10-28
 Supersedes : ADR-CAT-045 §1 and §4 (the rest of ADR-CAT-045 stands)
+Condition  : held conditional by ADR-CAT-066. The unsecured read service is an exception to checklist C13 that the core does not grant, so it is raised as `CORE-GAP-in-process-authorization.md`, and CAT adopts the core's answer when it comes.
 
 ## Context
 ADR-CAT-045 §1 made every `CatalogueReadApi` method delegate to "the same service method as the HTTP endpoint". Checklist C13 requires every service method to carry `@PreAuthorize(… PERM_…)` that references its own module only. So the in-process methods would check `PERM_CAT_ITEMS_VIEW` and similar.

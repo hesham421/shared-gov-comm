@@ -3,8 +3,8 @@
 ### ID ranges
 | Kind | Range | Count | Next free |
 |---|---|---|---|
-| API | API-CAT-001 … API-CAT-051 | 51 | API-CAT-052 |
-| QR | QR-CAT-001 … QR-CAT-071 | 71 | QR-CAT-072 |
+| API | API-CAT-001 … API-CAT-052 | 52 | API-CAT-053 |
+| QR | QR-CAT-001 … QR-CAT-072 | 72 | QR-CAT-073 |
 
 Both streams start at 001: the current state held no backend plan for CAT. No ID of another stage is minted here.
 
@@ -62,11 +62,12 @@ Both streams start at 001: the current state held no backend plan for CAT. No ID
 | API-CAT-049 | POST | /api/v1/cat/item-imports | ENT-CAT-001 · CREATE | PERM_CAT_ITEM_IMPORT_CREATE | CON-CAT-001, CON-CAT-002, CON-CAT-005, CON-CAT-018 |
 | API-CAT-050 | POST | /api/v1/cat/barcode-labels | ENT-CAT-002 · CREATE | PERM_CAT_BARCODE_LABELS_CREATE | — |
 | API-CAT-051 | GET | /api/v1/cat/capability-checks/turn-off | ENT-CAT-001 · VIEW | PERM_CAT_SETTINGS_VIEW | CON-CAT-017 |
+| API-CAT-052 | GET | /api/v1/cat/lookups/{key} | ENT-CAT-001 · VIEW | the VIEW permission of any CAT page (hasAnyAuthority) | — |
 
 Contract coverage: CON-CAT-001 … CON-CAT-018 — 18 of 18 honoured (entity items also in the PHASE DATA-DOM entity blocks; the in-process interface `com.erp.cat.crossmodule.CatalogueReadApi` carries the eleven operation items).
 
 ### Query catalogue
-QR-CAT-001 … 010 → ENT-CAT-001 · 011 … 017 → ENT-CAT-002 · 018 … 021 → ENT-CAT-005 · 022 … 026 → ENT-CAT-003 · 027 … 031 → ENT-CAT-004 · 032 … 038 → ENT-CAT-006 · 039 … 042 → ENT-CAT-007 · 043 … 046, 071 → ENT-CAT-008 · 047 … 053 → ENT-CAT-009 · 054 … 058 → ENT-CAT-010 · 059 … 064 → ENT-CAT-011 · 065 … 070 → ENT-CAT-012. Every QR is reached by ≥ 1 API and every API with a database operation cites its QRs (API-CAT-048 has none). Native / join / lock deviations: ADR-CAT-047.
+QR-CAT-001 … 010 → ENT-CAT-001 · 011 … 017 → ENT-CAT-002 · 018 … 021 → ENT-CAT-005 · 022 … 026 → ENT-CAT-003 · 027 … 031 → ENT-CAT-004 · 032 … 038 → ENT-CAT-006 · 039 … 042 → ENT-CAT-007 · 043 … 046, 071 → ENT-CAT-008 · 047 … 053, 072 → ENT-CAT-009 · 054 … 058 → ENT-CAT-010 · 059 … 064 → ENT-CAT-011 · 065 … 070 → ENT-CAT-012. Every QR is reached by ≥ 1 API and every API with a database operation cites its QRs (API-CAT-048 and API-CAT-052 have none). Native / join / lock deviations: ADR-CAT-047.
 
 ### Entities / tables bound
 12 of 12 entities bound to their db-script tables (CAT_ITEM, CAT_VARIANT, CAT_VAR_ATTR, CAT_VAR_ATTR_VALUE, CAT_VAR_ATTR_ASSIGN, CAT_CATEGORY, CAT_BUNDLE_COMP, CAT_ITEM_UNIT, CAT_BARCODE, CAT_ITEM_MEDIA, CAT_SCALE_LABEL_LAYOUT, CAT_UNIT_EINVOICE_CODE); 161 of 161 DBF in the DB Alignment Manifest; 0 PENDING DB. Lookups reused: the 10 CAT-owned keys of SRS A6 (CAT_ITEM_KIND, CAT_PUBLISH_STATE, CAT_BRAND, CAT_UOM, CAT_TAX_CLASS, CAT_EINVOICE_ITEM_CODE_TYPE, CAT_EINVOICE_UNIT, CAT_BARCODE_TYPE, CAT_SCALE_VALUE_TYPE, CAT_CHANGE_KIND); new keys: none.
@@ -75,10 +76,10 @@ QR-CAT-001 … 010 → ENT-CAT-001 · 011 … 017 → ENT-CAT-002 · 018 … 021
 XM: none — the register is `records: []`; no edge minted; `INT-C` (the last phase) carries no block; no integration package.
 
 ### Catalog
-58 codes: 52 RULE rows (one per RULE-CAT-001 … 052; 6 of them are 2xx success notices — RULE-CAT-010, 011, 012, 039, 045, 048) + 6 PLATFORM-STD rows (ADR-CAT-044; the 413 and 415 rows left with the multipart surface — ADR-CAT-056). Rules without a message: none. No RULE is DEFERRED.
+60 codes: 53 RULE rows (one per RULE-CAT-001 … 053; 6 of them are 2xx success notices — RULE-CAT-010, 011, 012, 039, 045, 048) + 7 PLATFORM-STD rows (6 of ADR-CAT-044 — the 413 and 415 rows left with the multipart surface, ADR-CAT-056 — and CAT-404-LOOKUP-KEY-UNKNOWN of ADR-CAT-065). Every row carries its ar and en message, PLATFORM-STD rows included (checklist C11). Rules without a message: none. No RULE is DEFERRED.
 
 ### API document
-api-spec-cat.yaml — OpenAPI 3.1.0, validated · operations 51 = API blocks 51 · paths 33 · catalog rows answered 58 = catalog rows 58 · no multipart request body (ADR-CAT-056) · bearer JWT security on every operation · paged operations (API-CAT-038, 040, 042, 046) carry page / size.
+api-spec-cat.yaml — OpenAPI 3.1.0, validated · operations 52 = API blocks 52 · paths 34 · catalog rows answered 60 = catalog rows 60 · no multipart request body (ADR-CAT-056) · bearer JWT security on every operation · paged operations (API-CAT-038, 040, 042, 046) carry page / size.
 
 ### Security
 6 pages (CAT_ITEMS, CAT_CATEGORIES, CAT_VARIANT_ATTRIBUTES, CAT_ITEM_IMPORT, CAT_BARCODE_LABELS, CAT_SETTINGS) · 20 permission names `PERM_<PAGE_CODE>_<ACTION>` derived by the given `sec` module · preset-role grants per SRS B4 (ADR-CAT-046).
@@ -102,11 +103,17 @@ Verdict as stamped by the orchestrator from `gov.py analyze` (self-check block p
 | decisions/CAT/ADR-CAT-060 | Item unit used by active barcodes stays active | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-061 | CatalogueReadApi → unsecured read service; facades carry @PreAuthorize | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-062 | Arabic normalisation, trigram indexes, escaped LIKE | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-063 | inactive parent refuses child writes (RULE-CAT-053); Variant deactivation deactivates its barcodes (QR-CAT-072) | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-064 | scale code length fixed after creation; type and decimals only change how the embedded value is read | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-065 | CAT lookup keys served through OwnedLookups (API-CAT-052); amends ADR-CAT-050 | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-066 | in-process authorization raised as CORE-GAP; ADR-CAT-061 conditional | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-067 | every intra-module FK composite with TENANT_ID | ACCEPTED (non-breaking) |
+| decisions/CAT/CORE-GAP-in-process-authorization | how a cross-module read API is authorized for callers without a permission of the owning module | OPEN (asked of erp-core) |
 
-Next free ADR after the gate-analysis revise: ADR-CAT-063. None BLOCKED.
+Next free ADR after the second gate-analysis revise: ADR-CAT-068. None BLOCKED.
 
 ### Traceability
-REQ covered by ≥ 1 API: 134 / 134 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
+REQ covered by ≥ 1 API: 135 / 135 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
 
 ### Event
-"P3.1 completed: CAT v2 — API 51 · QR 71 · error codes 58 · XM 0 · ADR 5 (044–048) + gate-analysis revise 055–062, none BLOCKED"
+"P3.1 completed: CAT v2 — API 52 · QR 72 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–067, none BLOCKED · CORE-GAP 1"
