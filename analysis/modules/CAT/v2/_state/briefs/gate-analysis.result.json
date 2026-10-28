@@ -55,29 +55,24 @@
   ],
   "analyze_confirmed": [
     {
-      "finding": "C5.13 AC-CAT-013 'could'",
+      "finding": "C5.13@srs:462 AC-CAT-013 'could'",
       "confirmed": false,
-      "note": "False positive. The word is inside the quoted RULE-CAT-009 message («could not be checked»), copied verbatim from the SRS. The criterion's own Given/When/Then is measurable."
+      "note": "False positive. The word sits inside the verbatim RULE-CAT-009 message («could not be checked») that the Then quotes."
     },
     {
-      "finding": "C5.13 AC-CAT-036 'could'",
+      "finding": "C5.13@srs:780 AC-CAT-036 'could'",
       "confirmed": false,
-      "note": "False positive. The word is inside the quoted RULE-CAT-005 message."
+      "note": "False positive. The word sits inside the verbatim RULE-CAT-005 message."
     },
     {
-      "finding": "C5.13 AC-CAT-072 'مختلف'",
+      "finding": "C5.13@srs:1305 AC-CAT-072 'مختلف'",
       "confirmed": false,
-      "note": "False positive. The word is inside the quoted RULE-CAT-024 message («اسمًا مختلفًا»)."
+      "note": "False positive. The word sits inside the verbatim RULE-CAT-024 message."
     },
     {
-      "finding": "C5.13 AC-CAT-102 'could'",
+      "finding": "C5.13@srs:1745 AC-CAT-102 'could'",
       "confirmed": false,
-      "note": "False positive. The word is inside the quoted RULE-CAT-035 message."
-    },
-    {
-      "finding": "coverage: 10 clauses examined nothing",
-      "confirmed": true,
-      "note": "Empty by nature. CAT has no XM (registry-db records: []; SRS A8 consumes: []), so C6.3, C6.10, C6.12, C7.5, C7.5b, C7.24, C7.26, C7.27 and C7.28 have no subject. C6.15 has no cross-module column; the CORE_TENANT FK is a given reference (ADR-CAT-055, platform finding 1, OPEN)."
+      "note": "False positive. The word sits inside the verbatim RULE-CAT-035 message. Every clause that examined nothing is empty by nature: there is no XM and no cross-module id."
     }
   ],
   "findings": [
@@ -87,85 +82,107 @@
       "section": "backend",
       "artifact": "srs",
       "line": null,
-      "clause": "consistent",
-      "problem": "RULE-CAT-048 includes ENT-CAT-006 Category, a SHARED entity, in its scope and says every deactivation publishes a catalogue-change event with kind DEACTIVATED. REQ-CAT-008, RULE-CAT-049, CON-CAT-018 and the PHASE CORE event list cover only ENT-CAT-001, 002, 005, 007, 008, 009 and 010. API-CAT-021, 023, 024 and 053 do not honour CON-CAT-018 and record no event. SFR (browse) and INS (reporting) read Category and get no signal when a Category is deactivated, moved or reactivated.",
-      "fix": "Recommended: add ENT-CAT-006 to REQ-CAT-008, RULE-CAT-049, CON-CAT-018 (the entity list of the signature) and the PHASE CORE event list. Record CREATED, UPDATED, DEACTIVATED and REACTIVATED events in API-CAT-021, 023, 024 and 053, mark them `Honours: CON-CAT-018`, and add RULE-CAT-049 / CAT-500-CHANGE-NOT-SAVED to their Errors and to the api-spec. Add an AC and a TC asserting one DEACTIVATED event on Category deactivation. The alternative, which stays non-breaking for the contract, is to remove ENT-CAT-006 from RULE-CAT-048's event clause.",
+      "clause": "complete",
+      "problem": "The next action of RULE-CAT-037 («Generate an internal barcode for them, then print») cannot be taken by the role that prints labels. Warehouse staff hold PERM_CAT_BARCODE_LABELS_CREATE, but API-CAT-015 requires PERM_CAT_ITEMS_CREATE, which only the Owner holds (SRS B4). The «Open item» jump on SCR-CAT-005 opens a read-only Item, so the role reaches a dead end (KB §6.5).",
+      "fix": "Add a «generate internal barcode» action for flagged lines on SCR-CAT-005. Guard it with PERM_CAT_BARCODE_LABELS_CREATE and reuse the API-CAT-015 service logic and its locks. Add the REQ, AC, API block, api-spec operation and TC for it. Record the choice in an ADR. The alternative is to make the RULE-CAT-037 next action depend on the role («ask the owner»), but that is weaker.",
       "adr": true
     },
     {
       "id": "G2",
       "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "db-script",
+      "section": "tests",
+      "artifact": "backend-test-plan",
       "line": null,
-      "clause": "feasible",
-      "problem": "CAT_NORMALIZE_AR (BLOCK 1) removes characters with the class `[ً-ٰٟـ]`. That class is the range U+064B–U+0670 plus U+065F and U+0640, so it also deletes the Arabic-Indic digits U+0660–U+0669 and the marks U+066A–U+066F. ADR-CAT-062 and RULE-CAT-003 name only U+064B–U+065F, U+0670 and U+0640. As a result, «علبة ٢٥» and «علبة ٣٠» both normalise to «علبة». UQ_CAT_ITEM_NAME_AR then refuses the second Item with RULE-CAT-003, and the trigram search returns wrong rows. The Java mirror that ADR-CAT-062 requires would also disagree with the DB index.",
-      "fix": "Write the class with explicit code points: `regexp_replace(P_TEXT, '[\\u064B-\\u065F\\u0670\\u0640]', '', 'g')`, using an E'' string or chr() ranges. Have the Java normaliser use the same set. Add TCs: «علبة ٢٥» and «علبة ٣٠» must both be created, and «أحمر» vs «احمر» must still collide (CAT-409-ITEM-NAME-DUPLICATE).",
+      "clause": "verifiable",
+      "problem": "Four concurrency guards stated in the backend plan have no parallel-request test case: (a) a barcode add racing a scale-layout create, under QR-CAT-074; (b) an Item unit deactivation racing a barcode add, under the Item lock of ADR-CAT-060; (c) a Variant generation racing a value deactivation, under the QR-CAT-031 FOR SHARE read; (d) an Item save into a Category racing that Category's deactivation, under the QR-CAT-032 FOR SHARE read.",
+      "fix": "Add AC-CAT-167 … 170 in the style of AC-CAT-149 … 153, with one parallel TC each. Each TC shows exactly one request succeeding, names the refusal code, and names the guard and the unit that owns it. Update the «Concurrency guards» coverage row.",
       "adr": false
     },
     {
       "id": "G3",
       "severity": "MINOR",
-      "section": "tests",
-      "artifact": "srs",
+      "section": "backend",
+      "artifact": "api-spec",
       "line": null,
-      "clause": "GOVERNANCE-CORE §1 (upstream wins)",
-      "problem": "API-CAT-049 rejects an import row whose GTIN begins with an active scale-label prefix (RULE-CAT-032). RULE-CAT-045, the SRS source of the import row checks, does not list RULE-CAT-032, and no AC or TC covers that row.",
-      "fix": "Add RULE-CAT-032 to RULE-CAT-045's statement and to RULE-CAT-032's trigger ('on import row'). Add an AC: an import row with GTIN 2000000000008, while an active layout with prefix 20 exists, is rejected on column GTIN barcode with the RULE-CAT-032 message as {reason}. Add the matching TC on API-CAT-049.",
+      "clause": "complete",
+      "problem": "Bundle `quantity` (NUMERIC(18,3)) and `conversionFactor` (NUMERIC(18,6)) have no upper bound or scale limit in the document. An oversized value overflows the column and comes back as CAT-500-SERVER-ERROR.",
+      "fix": "In API-CAT-001, 010 and 017, add `exclusiveMinimum: 0`, a `maximum` that fits the column precision, and `multipleOf` for the scale. Restate RULE-CAT-018 and RULE-CAT-027 with the bound. Answer CAT-400-REQUEST-INVALID above the bound. Add boundary rows to TC-CAT-027 and TC-CAT-039.",
       "adr": false
     },
     {
       "id": "G4",
       "severity": "MINOR",
       "section": "backend",
-      "artifact": "api-spec",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "C7.29",
-      "problem": "The plan marks `variantPk` and `copies` of each LabelRequest line (API-CAT-050) as required, but the `lines.items` schema in api-spec-cat.yaml has no `required` array. The mock server would accept a line without them, and the document disagrees with the plan.",
-      "fix": "Add `required: [variantPk, copies]` to `LabelRequest.lines.items`, and regenerate api-spec-cat.yaml from the plan.",
+      "clause": "unambiguous",
+      "problem": "API-CAT-003 does not say whether RULE-CAT-003 runs on the categoryFk-only repair path of an inactive Item. If it does, a name already taken by another Item blocks the repair of invariant 2.",
+      "fix": "In API-CAT-003 Validations, state that on this path only RULE-CAT-026 and the version check run, and that RULE-CAT-003 is checked again at reactivation.",
+      "adr": false
+    },
+    {
+      "id": "G6",
+      "severity": "MAJOR",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
+      "line": null,
+      "clause": "consistent",
+      "problem": "Pattern (P4): an update of an inactive record has no one rule. API-CAT-033 and 036 refuse it with CAT-400-REQUEST-INVALID. API-CAT-012 (Item unit), 019 (media), 023 (Category), 027 (attribute) and 030 (value) do not say. The harmful case is API-CAT-019: QR-CAT-055 loads a removed image, and PUT with isPrimaryFl true clears the active primary first, leaving the Item's active images without a primary. UQ_CAT_ITEM_MEDIA_PRIMARY covers active rows only, so the database does not catch it, and RULE-CAT-039 is broken. This replaces the earlier G5.",
+      "fix": "Add one rule to the PHASE CORE API conventions: a PUT on a record whose own isActiveFl is false answers CAT-400-REQUEST-INVALID and writes nothing. The repair path is reactivation (API-CAT-005, 053 … 055) or, for a removed image, a new upload. Cite the rule in API-CAT-012, 019, 023, 027 and 030, and add it to the CAT-400-REQUEST-INVALID trigger list. Add rows to TC-CAT-223 for each endpoint, including the removed-image case with an assertion that the active primary is unchanged.",
+      "adr": false
+    },
+    {
+      "id": "G7",
+      "severity": "MINOR",
+      "section": "tests",
+      "artifact": "frontend-test-plan",
+      "line": null,
+      "clause": "consistent",
+      "problem": "The COVERAGE section says «60 / 164 by module TCs», but the SRS and the backend plan count 166 ACs (AC-CAT-165 and 166 were added at the ninth revise). The header Delta says no TC changed, but the count was not re-stamped. This is the same issue as platform finding 8.",
+      "fix": "Re-stamp the COVERAGE rows of the frontend test plan from registry-srs (AC 166; this track 60, the other 106 on the backend).",
       "adr": false
     }
   ],
   "adrs_reviewed": [
     {
-      "id": "ADR-CAT-039",
+      "id": "ADR-CAT-045",
       "status_ok": true,
-      "note": "This ADR is what lets CM-1 pass for the dependent masters. Platform finding 9 stays OPEN with the factory."
+      "note": "Status reads ACCEPTED while §1 and §4 are superseded by ADR-CAT-061. The header note records this, which is acceptable."
     },
     {
-      "id": "ADR-CAT-055",
+      "id": "ADR-CAT-054",
       "status_ok": true,
-      "note": "Correctly supersedes ADR-CAT-054, which is marked SUPERSEDED. Checklist C1 is met."
+      "note": "SUPERSEDED by ADR-CAT-055. No downstream artifact follows it."
     },
     {
       "id": "ADR-CAT-061",
       "status_ok": true,
-      "note": "Conditional on CORE-GAP-in-process-authorization (ADR-CAT-066). Raising the core gap satisfies F9, so this is not a C13 violation."
-    },
-    {
-      "id": "ADR-CAT-062",
-      "status_ok": true,
-      "note": "The decision is sound, but the db-script does not implement it as stated (G2)."
-    },
-    {
-      "id": "ADR-CAT-068",
-      "status_ok": true,
-      "note": "Consistent with RULE-CAT-053, the error rows of API-CAT-003/006/017, frontend F3 and TC-CAT-212."
+      "note": "Conditional on CORE-GAP-in-process-authorization (ADR-CAT-066). It is not BLOCKED, and the contract §0 and the plan state the condition."
     },
     {
       "id": "ADR-CAT-070",
       "status_ok": true,
-      "note": "Justifies the C5/F3 deviation and raises CORE-GAP-tenant-lookup-types as F9 requires."
+      "note": "It justifies the C5/F3 deviation and raises a CORE-GAP, as F9 requires."
     },
     {
-      "id": "ADR-CAT-072",
+      "id": "ADR-CAT-074",
       "status_ok": true,
-      "note": "Matches the API-CAT-006 and 009 orchestration, QR-CAT-075 and TC-CAT-221/222."
+      "note": "It amends ADR-CAT-071. The plan and TC-CAT-217 follow it."
     },
     {
       "id": "ADR-CAT-076",
       "status_ok": true,
-      "note": "Matches the plans, the api-spec and the tests. The import's byte read is a declared core dependency under CORE-GAP-file-document-metadata-read."
+      "note": "It follows the published FileDocumentLookupApi. The import's delivery dependency is recorded as OPEN platform finding 11."
+    },
+    {
+      "id": "ADR-CAT-077",
+      "status_ok": true,
+      "note": "Reflected in the SRS, the contract, the plan, the api-spec, the frontend plan and TC-CAT-224."
+    },
+    {
+      "id": "ADR-CAT-052",
+      "status_ok": true,
+      "note": "Its counts are superseded, and its own «Notes added later» says so. The 11 OPEN platform findings are genuinely outside CAT, and each names an owner and evidence."
     }
   ],
   "verdict": "REVISE"

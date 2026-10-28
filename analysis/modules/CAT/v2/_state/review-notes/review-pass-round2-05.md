@@ -1,7 +1,7 @@
-# §3.6 checklist now read, lines C1–C22 and F1–F12. No uncovered violation. The C5/F3, C13 and C7/F9 deviations are each raised as a CORE-GAP, as F9 requires. The sortOrder `MAX+1` is not a document number, so F6 does not apply.
+# New G7 (MINOR). The frontend-test-plan COVERAGE counts are stale ("60 / 164"), but the SRS has 166 ACs. Because of this, consistent drops from 3 to 2.
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: CAT        Version: v2
-Written: 2026-10-28T16:01:32+00:00
+Written: 2026-10-28T16:19:59+00:00
 
 
