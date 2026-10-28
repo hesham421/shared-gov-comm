@@ -38,14 +38,14 @@
     "C3.8": 9,
     "C4.4": 22,
     "C4.7": 1,
-    "C5.2": 134,
-    "C5.3": 134,
-    "C5.4": 134,
-    "C5.5": 142,
-    "C5.6": 52,
-    "C5.8": 340,
-    "C5.13": 328,
-    "C5.14": 142,
+    "C5.2": 135,
+    "C5.3": 135,
+    "C5.4": 135,
+    "C5.5": 152,
+    "C5.6": 53,
+    "C5.8": 352,
+    "C5.13": 340,
+    "C5.14": 152,
     "C5.15": 12,
     "C5.16": 22,
     "C5.17": 1,
@@ -59,13 +59,13 @@
     "C6.13": 1,
     "C6.14": 1,
     "C6.15": 0,
-    "C7.2": 63,
-    "C7.3": 51,
-    "C7.4": 122,
+    "C7.2": 64,
+    "C7.3": 52,
+    "C7.4": 124,
     "C7.5": 0,
     "C7.5b": 0,
-    "C7.6": 134,
-    "C7.22": 71,
+    "C7.6": 135,
+    "C7.22": 72,
     "C7.21": 30,
     "C7.23": 41,
     "C7.20": 66,
@@ -76,13 +76,13 @@
     "C7.26": 0,
     "C7.27": 0,
     "C7.28": 0,
-    "C7.29": 102,
-    "C7.30": 58,
-    "C7.31": 51,
+    "C7.29": 104,
+    "C7.30": 60,
+    "C7.31": 52,
     "C9.2": 30,
     "C9.3": 3,
     "C9.4": 6,
-    "C9.5": 51,
+    "C9.5": 52,
     "C9.6": 3,
     "C9.7": 6,
     "C9.8": 9,
@@ -92,21 +92,19 @@
     "C9.24": 23,
     "C9.22": 6,
     "C9.23": 6,
-    "C10.1": 196,
-    "C10.2": 142,
-    "C10.7": 46,
-    "C10.8": 0,
-    "C10.9": 0,
-    "C10.10": 196,
+    "C10.1": 209,
+    "C10.2": 152,
+    "C10.7": 48,
+    "C10.8": 11,
+    "C10.9": 9,
+    "C10.10": 209,
     "C10.11": 35,
     "C13.5": 18,
     "C-GIVEN-1": 24,
-    "C-GIVEN-2": 10,
+    "C-GIVEN-2": 11,
     "C-GIVEN-3": 27
   },
   "vacuous": [
-    "C10.8",
-    "C10.9",
     "C6.10",
     "C6.12",
     "C6.15",
@@ -135,8 +133,8 @@
       "to": [
         "AC"
       ],
-      "total": 134,
-      "covered": 134,
+      "total": 135,
+      "covered": 135,
       "pct": 100.0
     },
     {
@@ -145,8 +143,8 @@
       "to": [
         "API"
       ],
-      "total": 134,
-      "covered": 134,
+      "total": 135,
+      "covered": 135,
       "pct": 100.0
     },
     {
@@ -156,8 +154,8 @@
         "SCR",
         "UXD"
       ],
-      "total": 134,
-      "covered": 134,
+      "total": 135,
+      "covered": 135,
       "pct": 100.0
     },
     {
@@ -166,8 +164,8 @@
       "to": [
         "TC"
       ],
-      "total": 142,
-      "covered": 142,
+      "total": 152,
+      "covered": 152,
       "pct": 100.0
     }
   ],
@@ -178,7 +176,7 @@
       "check": "ambiguity",
       "message": "`AC-CAT-013` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
       "artifact": "srs",
-      "line": 446
+      "line": 451
     },
     {
       "severity": "MINOR",
@@ -186,7 +184,7 @@
       "check": "ambiguity",
       "message": "`AC-CAT-036` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
       "artifact": "srs",
-      "line": 759
+      "line": 769
     },
     {
       "severity": "MINOR",
@@ -194,7 +192,7 @@
       "check": "ambiguity",
       "message": "`AC-CAT-072` uses '\u0645\u062e\u062a\u0644\u0641' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
       "artifact": "srs",
-      "line": 1259
+      "line": 1289
     },
     {
       "severity": "MINOR",
@@ -202,7 +200,7 @@
       "check": "ambiguity",
       "message": "`AC-CAT-102` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
       "artifact": "srs",
-      "line": 1684
+      "line": 1724
     }
   ],
   "provenance": {
@@ -235,28 +233,28 @@
       "ui-ux-spec"
     ],
     "inputs": {
-      "api-spec": "5650f8858b4ebe4b89ce0cf275180de0a5e5a5fc0569db70caef684270ee140e",
-      "backend-execution-plan": "2f6caf36aec773aeede9641e71389088fb7a31c51f4403435f464ed3b3058930",
-      "backend-test-plan": "12d0a7fb1aec30c8f535a326f5412c1aa6f64c6a75907b152995f3ca8c0ea5f4",
-      "business-policies": "e58a3dd461e40aaed8b01bf9aa948c7ecfaadb26d914bf6eba480ae02978c26f",
+      "api-spec": "63b7be87dc8dc6d5d327275b0d8a87b2d907c785dcee0930911a771f00759fe4",
+      "backend-execution-plan": "52a16a212eb43695bc51f16898dc2814961b319a3b24d96da78cd67a26435903",
+      "backend-test-plan": "b58378bc60df63618dbd8f53d459856177166eb336d5031f8698d5b252d8e1da",
+      "business-policies": "e5faaa87aa070182bd5c1b7b93945de8631018578ef16d475e3e7f109d44dbb8",
       "change-manifest": "c73904194b81e6c528a8a564463529aef00c68314b69a50756bf31c31cdc9dc9",
-      "contract": "16c0a303a315f63d2f170b26dd0311986bad54b0bd4db9ba90a3c23423d89d70",
-      "db-script": "433766813996da447a6f24b1b0a3ac1163d4b6ad63a3dcfd4986b65e1dca2187",
+      "contract": "739f437c030a821de215dfd2a75d4c1de9167b3edfd2f3f3af4d565c6cb61100",
+      "db-script": "3292f4d60ee5dd3371b063f4319e79568ad13ea10a35d2f58432a099481c1ca1",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
       "flow-diagram": "a5c75497a9bdacf15cd7ee56c1e9d4aadbefe6430e9c833ebccaad86b5aea145",
-      "frontend-execution-plan": "5c665c5661698491329717deb9cf54c57c763727a889e7865ac452f78cb989d9",
-      "frontend-test-plan": "45b7a344dca58ef73563a59f3d0fc5317844e981773774530c2b78c78056c7b1",
+      "frontend-execution-plan": "edaa560aad6821fa038ddeab25c0c0b8700dcaf7c07d87c485c1a0990bdd72d9",
+      "frontend-test-plan": "02b2003ff0026d8f11685f8928f4fd88453211c14e3489d0843b317ac3a5700e",
       "module-registry": "5fc7c7c7a020ebee8280a8519ade559492413ef6f6eeaf7ef6f157d19f9c1a0d",
       "platform-summary": "8869f2caaaa63ad4690042b1ddd12bd37461bc901343d1924927ebb4c7ac9967",
       "prd": "5e6157b1493b752f2ec9686b7621e181123364bb4031c5515b2dbc6e88bac5da",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
-      "registry-db": "da2416fb08f186689efd00b2f324478b253a6dcb9ed45cdded6a63e051b448d4",
-      "registry-exec-be": "11ea96b5fbdd629e434e09a1230ea213a9bbbe27bfa7fd0aa15ef63cc18ec755",
-      "registry-exec-fe": "f972e9992283bcc74d896afd7550dfd79e280e08d3ce9b3535f3183404043c58",
-      "registry-srs": "ba6d623bce095ad795da626767e3dab0c831cebc1c99a2bdf9564ef0e0b18d9c",
-      "srs": "a1f5dfbd50947a4d022006e17291ab8bb6c2cd2792e5c4b2bc5b365085be45f3",
-      "ui-ux-spec": "82574c50d26d0e88fb9ad4302fc79a659278f817f14ab02a3b1750bc7a2a5393"
+      "registry-db": "d808dcfacad43cd45d7cce2f02f62ee00f27bad4187f0edaf0f3e5b77a6e0e9d",
+      "registry-exec-be": "4da39628722d39fb3eb73f959896b51f6a78077c235286b2f12d8deb5d83d4e2",
+      "registry-exec-fe": "30ba84b60fa384d0fa75398dda011957e82ac651602923f41faf838f54921ab0",
+      "registry-srs": "c54b2c14a48892b5e421bde35198ee0e66b2291cdda4447d2b51033b58fd258d",
+      "srs": "7a1d0625cf3784a740b5c000ecaca5faaddcdec730dc249938de02099c217e6c",
+      "ui-ux-spec": "d3d33983bb52a139c83995d42b56bb76609fda6d2fa4098cd98b8b3392df0615"
     },
-    "at": "2026-10-28T11:51:06+00:00"
+    "at": "2026-10-28T12:39:13+00:00"
   }
 }
