@@ -1,7 +1,7 @@
-# G1 is confirmed and stays MAJOR. The three reactivation dead ends are one defect, and the rule that allows it is RULE-CAT-053. G2 and G3 are its frontend and test consequences.
+# G1 stays MAJOR
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: CAT        Version: v2
-Written: 2026-10-28T12:44:59+00:00
+Written: 2026-10-28T13:17:56+00:00
 
-
+API-CAT-047 Layers does carry the VIEW `@PreAuthorize` on its facade. That contradicts REQ-CAT-127 and the api-spec, which has no 403 response.

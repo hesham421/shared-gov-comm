@@ -3,10 +3,10 @@
   "module": "CAT",
   "version": 2,
   "scores": {
-    "unambiguous": 3,
+    "unambiguous": 1,
     "verifiable": 2,
-    "complete": 1,
-    "consistent": 2,
+    "complete": 2,
+    "consistent": 1,
     "singular": 3,
     "feasible": 2,
     "traceable": 3
@@ -55,24 +55,24 @@
   ],
   "analyze_confirmed": [
     {
-      "finding": "C5.13@srs:451 AC-CAT-013",
+      "finding": "C5.13 srs:452 AC-CAT-013 'could'",
       "confirmed": false,
-      "note": "False positive. 'could' is inside the quoted RULE-CAT-009 message. The C5.13 checker should exclude quoted message text."
+      "note": "False positive. 'could' is inside the quoted English message of RULE-CAT-009 (\"could not be checked\"), not in the criterion itself."
     },
     {
-      "finding": "C5.13@srs:769 AC-CAT-036",
+      "finding": "C5.13 srs:770 AC-CAT-036 'could'",
       "confirmed": false,
-      "note": "False positive. The word is in the quoted RULE-CAT-005 message."
+      "note": "False positive. 'could' is inside the quoted RULE-CAT-005 message (\"could not be issued\")."
     },
     {
-      "finding": "C5.13@srs:1289 AC-CAT-072",
+      "finding": "C5.13 srs:1290 AC-CAT-072 'مختلف'",
       "confirmed": false,
-      "note": "False positive. The word is in the quoted RULE-CAT-024 message."
+      "note": "False positive. The word is part of the quoted RULE-CAT-024 message text («رمزًا أو اسمًا مختلفًا»); the AC's Then is exact."
     },
     {
-      "finding": "C5.13@srs:1724 AC-CAT-102",
+      "finding": "C5.13 srs:1730 AC-CAT-102 'could'",
       "confirmed": false,
-      "note": "False positive. The word is in the quoted RULE-CAT-035 message. The 10 'examined nothing' clauses (C6.3, C6.10, C6.12, C6.15, C7.5, C7.5b, C7.24, C7.26–C7.28) are empty by nature, because the XM register is empty."
+      "note": "False positive. 'could' is inside the quoted RULE-CAT-035 message (\"could not be read\")."
     }
   ],
   "findings": [
@@ -80,237 +80,125 @@
       "id": "G1",
       "severity": "MAJOR",
       "section": "backend",
-      "artifact": "srs",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "complete (RULE-CAT-053 vs RULE-CAT-050/026/019, SRS A7)",
-      "problem": "RULE-CAT-053 refuses every write under an inactive Item, and REQ-CAT-130 refuses reactivation until the ACTIVE-state invariants hold. The two together leave three states the user can never leave. (1) 0 active Variants: generation is refused and Variants have no reactivation. (2) An inactive Category: PUT categoryFk is refused and Categories have no reactivation. (3) A BUNDLE with an invalid component: API-CAT-017 is refused. The RULE-CAT-050 and RULE-CAT-026 messages offer next actions that cannot be taken. This is the same pattern in three places.",
-      "fix": "In a new ADR, amend RULE-CAT-053 and REQ-CAT-135 so three repair operations stay allowed on an inactive Item: Variant generation (API-CAT-006), a categoryFk-only change (API-CAT-003) and replacing the Bundle components (API-CAT-017). Each is still subject to its own rules. Update SRS A7, the API-CAT-003/006/017 Validations and Orchestration lines, and the CAT-422-PARENT-INACTIVE trigger.",
-      "adr": true
+      "clause": "consistent",
+      "problem": "API-CAT-047 contradicts itself. Its Layers line puts `CatSearchQueryFacade.searchCatalogue` behind `@PreAuthorize` on the screen VIEW permission. Its Validations and Security lines, REQ-CAT-127, AC-CAT-129, TC-CAT-124, ADR-CAT-061 §3 and the api-spec (which has no 403 response) all require a caller without PERM_CAT_ITEMS_VIEW to get 200 with an empty list. With the annotation in place, Spring Security answers 403 before the empty-result logic runs. The HTTP path and the in-process `CatalogueReadApi.searchCatalogue` path would then behave differently.",
+      "fix": "In API-CAT-047 Layers and in the CatalogueReadApi table, state that `CatSearchQueryFacade.searchCatalogue` carries only `@PreAuthorize(\"isAuthenticated()\")`. `CatCatalogueReadService.searchCatalogue` checks PERM_CAT_ITEMS_VIEW in code and returns an empty list when the caller lacks it. Add this exception to the PHASE SEC-BE paragraph that already names API-CAT-047.",
+      "adr": false
     },
     {
       "id": "G2",
       "severity": "MAJOR",
-      "section": "frontend",
-      "artifact": "frontend-execution-plan",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "consistent (F3 SCR-CAT-001 inactive Item read-only; ui-ux-spec)",
-      "problem": "On an inactive Item, F3 and the UX spec hide exactly the affordances that the REQ-CAT-130 refusals direct the user to use.",
-      "fix": "On an inactive Item's Entry, keep 'Generate variants' (while `variants` is on), the Category field and the Bundle components pane available. Everything else stays read-only. Link the ITEM-STATE-COMMAND refusal banners to these affordances.",
+      "clause": "concurrency (backend row)",
+      "problem": "API-CAT-024's Concurrency line credits API-CAT-049 with reading the Category FOR SHARE, but API-CAT-049 does not. It resolves category codes in the lock-free validation pass (QR-CAT-032, no lock). Its write pass re-reads only the scale layouts under the scale-prefix lock. A Category deactivated between the two passes can still receive imported active Items. Each such Item then points to an inactive Category, which breaks RULE-CAT-026 and invariant 2 of SRS A7 (ADR-CAT-059).",
+      "fix": "Add a step at the start of the API-CAT-049 write pass: re-read every Category referenced by a valid row with QR-CAT-032 FOR SHARE, and reject each row whose Category is now inactive with RULE-CAT-026 (column category, inside CAT-200-IMPORT-ROW-REJECTED) before its batch is inserted. Add QR-CAT-032 (FOR SHARE) to the Repository line and the lock order (scale-prefix lock, then Category rows) to the Concurrency line. Add API-CAT-049 to QR-CAT-032's FOR SHARE locking note.",
       "adr": false
     },
     {
       "id": "G3",
       "severity": "MAJOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
+      "section": "backend",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "verifiable (TC-CAT-185/186/187)",
-      "problem": "These TCs assert the refusal but never prove that the Item can recover.",
-      "fix": "Extend each TC with its repair step, then a reactivation that succeeds. Add a frontend TC showing that the three affordances remain on an inactive Item.",
+      "clause": "unambiguous",
+      "problem": "API-CAT-041 and QR-CAT-026 apply `isActiveFl` to attributes only (DBF-CAT-040); the second read of QR-CAT-026 returns every value. TC-CAT-090 nevertheless asserts that `GET /variant-attributes?isActiveFl=true` omits the inactive value XS. The frontend ATTRIBUTE-OPTIONS-QUERY also promises 'active values'. SCR-CAT-003 needs inactive values to stay visible, or Reactivate of a value (API-CAT-055) cannot be reached. As written, TC-CAT-090 fails against the plan, and two implementers would build the filter differently.",
+      "fix": "In API-CAT-041, QR-CAT-026 and the api-spec parameter description, state that `isActiveFl` filters both the attributes and their values, and that omitting it returns all of both. In F2, state that the generation picker sends isActiveFl=true and that the SCR-CAT-003 list and values editor send no filter.",
       "adr": false
     },
     {
       "id": "G4",
-      "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "concurrency (API-CAT-021/023/024; ADR-CAT-047)",
-      "problem": "API-CAT-024 locks only the Category row before counting its children. API-CAT-021 and API-CAT-023 read the parent unlocked, under the tree lock, and API-CAT-024 never takes the tree lock. A parallel sub-category create or move can therefore commit an active child under an inactive parent, which RULE-CAT-023 forbids.",
-      "fix": "Have API-CAT-024 take pg_advisory_xact_lock (TENANT_ID, 'CAT_CATEGORY_TREE') before QR-CAT-038. Amend ADR-CAT-047. Add an AC and a parallel-request TC (create a child and deactivate its parent at the same time): exactly one succeeds.",
-      "adr": false
-    },
-    {
-      "id": "G10",
-      "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "srs",
-      "line": null,
-      "clause": "complete (P2 closure: withdrawn record; ENT-CAT-003/004/006)",
-      "problem": "Category, Variant attribute and attribute value can be deactivated but never reactivated. Their codes are unique across active and inactive rows (UQ_CAT_CATEGORY_CODE, UQ_CAT_VAR_ATTR_CODE and UQ_CAT_VAR_ATTR_VALUE_CODE are not partial). A mistaken deactivation therefore loses the record and its code permanently, and a deactivated tree node cannot come back.",
-      "fix": "Add a reactivation for each: PATCH {isActiveFl:true}, guarded by RULE-CAT-023/024 for Categories (parent active, sibling name free) and RULE-CAT-016 for attributes and values. Add a REQ, AC, API block, catalog codes and TCs for each. This also gives G1 case (2) a second way out.",
-      "adr": true
-    },
-    {
-      "id": "G11",
       "severity": "MINOR",
-      "section": "backend",
-      "artifact": "srs",
+      "section": "tests",
+      "artifact": "backend-test-plan",
       "line": null,
-      "clause": "\"C5 Every user-maintained code list is an MDL lookup type …\" / \"F3 … a module 'types' table\"",
-      "problem": "CAT_VAR_ATTR and CAT_VAR_ATTR_VALUE are user-maintained code lists (code, nameAr, nameEn, sortOrder, isActiveFl) stored in module tables. ADR-CAT-003/018 justify them against C-GIVEN-1 only, and no ADR answers C5/F3 the way ADR-CAT-042 answers F5.",
-      "fix": "Add an ADR showing why mdl cannot hold them: tenant-defined types, values nested per attribute, and FK integrity from assignments (FK_CAT_VAR_ATTR_ASSIGN_CAT_VAR_ATTR_VALUE). If mdl lacks tenant-created types, raise CORE-GAP-tenant-lookup-types.md.",
-      "adr": true
-    },
-    {
-      "id": "G12",
-      "severity": "MINOR",
-      "section": "frontend",
-      "artifact": "frontend-execution-plan",
-      "line": null,
-      "clause": "P3 read-binding (cross-screen jump identifies one record)",
-      "problem": "The RULE-CAT-003 next action jumps to /cat/items?text=<nameAr>. That search is a substring LIKE, while the duplicate check compares normalised names, so the jump can list several Items or miss the duplicate. The backend promises 'the existing Item's code' as the next action, but neither LocalizedError nor the message carries it (ADR-CAT-052 §5).",
-      "fix": "Add {code} to the RULE-CAT-003 message, as RULE-CAT-029 already does, filled from QR-CAT-002. Make the frontend jump to /cat/items?text=<code>. Mark AC-CAT-007, TC-CAT-003 and TC-CAT-126 MODIFIED.",
-      "adr": false
-    },
-    {
-      "id": "G13",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "\"C13 One PermissionContributor (<Module>Permissions)…\"; \"F2 A native query without TENANT_ID\"",
-      "problem": "PHASE CORE names the contributor CatPermissions, while Given usage, SEC-BE and bootstrap name it CatPermissionContributor. The default-sortOrder sub-selects in QR-CAT-024, 029 and 034 (MAX(SORT_ORDER)+1 inside an INSERT) carry no TENANT_ID, and an INSERT…SELECT has to be native.",
-      "fix": "Use one name, CatPermissions, implementing PermissionContributor. Compute the default sortOrder in a tenant-filtered JPQL read before the save, or add TENANT_ID = :tenant and @TenantUnscoped.",
+      "clause": "verifiable",
+      "problem": "ADR-CAT-071 and API-CAT-049 commit to a 120 s timeout with a whole-import rollback: nothing stored, no events, code gaps left, lock released, CAT-500-CHANGE-NOT-SAVED. They also set a 60 s budget for 5,000 rows. No REQ, AC or TC covers this behaviour.",
+      "fix": "Add one REQ with the unwanted pattern and one AC: an import that exceeds its timeout is rolled back whole, stores 0 Items, Variants, barcodes and events, and answers CAT-500-CHANGE-NOT-SAVED. Add one backend TC in SVC-API-INT that injects a delayed write pass, in the style of TC-CAT-004.",
       "adr": false
     },
     {
       "id": "G5",
       "severity": "MINOR",
       "section": "backend",
-      "artifact": "business-policies",
+      "artifact": "contract",
       "line": null,
-      "clause": "platform findings (§7)",
-      "problem": "CORE-GAP-in-process-authorization exists only in the ADR folder. No OPEN platform-finding row records it with an owner.",
-      "fix": "Add an OPEN row. Owner: erp-core. Evidence: C13, F9, ADR-CAT-061, ADR-CAT-066 and the CORE-GAP file, with its three options.",
+      "clause": "traceable (stale upstream headers)",
+      "problem": "Several header lines were not refreshed after the gate-analysis revises. The contract says 'REQ 127'. The db-script says 'REQ 127 · RULE 49' and 'next free ADR sequence is 068', and so does registry-db. The current registries give REQ 138, RULE 53 and next free ADR 072. The rule that allowed this: a revise re-renders only the artifacts it edits.",
+      "fix": "Refresh the Inputs, Counts and next-id lines of the contract, db-script and registry-db from the current registries. Add a step to the revise checklist: re-stamp the header counts of every downstream artifact from the registries.",
       "adr": false
     },
     {
       "id": "G6",
       "severity": "MINOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
-      "line": null,
-      "clause": "consistent",
-      "problem": "The backend plan's header omits frontend TC-CAT-208 and 209. ADR-CAT-052 still quotes '124 of 129' and '52' ACs.",
-      "fix": "Add 208–209 to the header's frontend range. Add a note to ADR-CAT-052 that its counts are superseded: 146 backend ACs, 152 combined.",
-      "adr": false
-    },
-    {
-      "id": "G7",
-      "severity": "MINOR",
       "section": "backend",
-      "artifact": "backend-execution-plan",
+      "artifact": "srs",
       "line": null,
-      "clause": "feasible (API-CAT-049)",
-      "problem": "A synchronous import of up to 5,000 rows runs in one transaction, allocates codes row by row and holds the tenant scale-prefix lock throughout. No time budget or timeout is stated.",
-      "fix": "State a target duration and the request timeout. Allocate codes in batches. Take the prefix lock once per import. Name what happens when the timeout is exceeded.",
-      "adr": false
-    },
-    {
-      "id": "G8",
-      "severity": "MINOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
-      "line": null,
-      "clause": "verifiable (RULE-CAT-053 on 10 endpoints)",
-      "problem": "Only TC-CAT-198 (backend) and TC-CAT-209 (frontend) exercise RULE-CAT-053.",
-      "fix": "Add one parameterised TC over API-CAT-003, 006, 008, 010, 012, 014, 015, 017, 018 and 019 under an inactive parent. It also asserts that child deactivations still succeed and, after G1, that the three repair operations succeed.",
-      "adr": false
-    },
-    {
-      "id": "G9",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "api-spec",
-      "line": null,
-      "clause": "C7.29–C7.31 (API-CAT-005)",
-      "problem": "The ItemStateRequest schema allows both fields, an empty body or isActiveFl false.",
-      "fix": "Set isActiveFl enum [true] and add oneOf (or minProperties/maxProperties 1) in the plan, then regenerate the spec.",
+      "clause": "complete",
+      "problem": "The analysis never says what happens to an Item's barcodes when the Item is deactivated. ADR-CAT-063 cascades barcodes only on Variant deactivation. After an Item is deactivated, its Variants' barcodes stop resolving (ADR-CAT-059) but stay active, so they keep blocking their values under RULE-CAT-029. Keeping them is probably intended, since the Item can be reactivated, but no artifact says so.",
+      "fix": "State in REQ-CAT-005 and SRS A7 that deactivating an Item leaves its barcodes active, so it can be reactivated with them, and that the owner releases a GTIN with API-CAT-016, which stays allowed on an inactive Item. Extend the TC-CAT-188 expected result: the same GTIN added to another Variant is refused with CAT-409-BARCODE-DUPLICATE.",
       "adr": false
     }
   ],
   "adrs_reviewed": [
     {
-      "id": "ADR-CAT-025",
-      "status_ok": true,
-      "note": "SUPERSEDED by ADR-CAT-039 and D-04."
-    },
-    {
-      "id": "ADR-CAT-026",
-      "status_ok": true,
-      "note": "SUPERSEDED by ADR-CAT-042."
-    },
-    {
-      "id": "ADR-CAT-028",
-      "status_ok": true,
-      "note": "SUPERSEDED by RULE-CAT-001."
-    },
-    {
-      "id": "ADR-CAT-042",
-      "status_ok": true,
-      "note": "The F5 justification is sound. ADR-CAT-003 and 018 need the same treatment for C5/F3 (G11)."
-    },
-    {
       "id": "ADR-CAT-044",
       "status_ok": true,
-      "note": "C11-compliant after the round-2 amendment."
-    },
-    {
-      "id": "ADR-CAT-045",
-      "status_ok": true,
-      "note": "Partly superseded by ADR-CAT-061, as its header states."
+      "note": "Six PLATFORM-STD rows, each with ar and en text; the 413 and 415 rows were removed with the multipart surface."
     },
     {
       "id": "ADR-CAT-047",
-      "status_ok": false,
-      "note": "Missing the tree lock on Category deactivation (G4)."
-    },
-    {
-      "id": "ADR-CAT-052",
       "status_ok": true,
-      "note": "Counts are stale (G6). The §5 next-action gap is still open (G12)."
+      "note": "The tree lock covers every Category operation. API-CAT-049 does not take the Category FOR SHARE that API-CAT-024 credits it with (G2)."
     },
     {
       "id": "ADR-CAT-053",
       "status_ok": true,
-      "note": "Its premise is noted as obsolete. The seeded substitutes are acceptable."
-    },
-    {
-      "id": "ADR-CAT-054",
-      "status_ok": true,
-      "note": "SUPERSEDED by ADR-CAT-055."
+      "note": "Unbound texts are recorded as a P3.2 plan gap. The note on the add-value call is now historical."
     },
     {
       "id": "ADR-CAT-055",
       "status_ok": true,
-      "note": "Matches checklist C1."
+      "note": "The FK to the given CORE_TENANT matches checklist C1. The C6.15 exemption is an OPEN platform finding."
     },
     {
-      "id": "ADR-CAT-059",
+      "id": "ADR-CAT-056",
       "status_ok": true,
-      "note": "The invariants are correct. Re-establishing them is blocked by ADR-CAT-063 (G1)."
+      "note": "No multipart endpoint, as checklist F4 and C7 require."
     },
     {
       "id": "ADR-CAT-061",
       "status_ok": true,
-      "note": "Conditional on the CORE-GAP, which is the checklist's own route. The platform-finding row is missing (G5)."
+      "note": "Conditional on the core via ADR-CAT-066 and the CORE-GAP. Its searchCatalogue exception conflicts with the facade annotation in API-CAT-047 (G1)."
     },
     {
       "id": "ADR-CAT-063",
-      "status_ok": false,
-      "note": "Creates the dead ends of G1. Needs the repair-operation exemption."
+      "status_ok": true,
+      "note": "Narrowed correctly by ADR-CAT-068. Barcode handling on Item deactivation is unstated (G6)."
     },
     {
-      "id": "ADR-CAT-064",
+      "id": "ADR-CAT-068",
       "status_ok": true,
-      "note": "Consistent across SRS, plan, spec and TC-CAT-206."
+      "note": "Removes the three reactivation dead ends; the SRS, both plans and both test plans follow it."
     },
     {
-      "id": "ADR-CAT-065",
+      "id": "ADR-CAT-069",
       "status_ok": true,
-      "note": "Follows C6."
+      "note": "Reactivation endpoints, guards and locks agree across the SRS, plan, api-spec and tests."
     },
     {
-      "id": "ADR-CAT-066",
+      "id": "ADR-CAT-070",
       "status_ok": true,
-      "note": "The gap is OPEN, not BLOCKED."
+      "note": "The checklist C5/F3 deviation is justified and raised as a CORE-GAP, as F9 requires."
     },
     {
-      "id": "ADR-CAT-067",
+      "id": "ADR-CAT-071",
       "status_ok": true,
-      "note": "All 13 intra-module FKs are tenant-composite."
+      "note": "The time budget and timeout behaviour have no AC or TC (G4)."
     }
   ],
-  "verdict": "ESCALATE"
+  "verdict": "REVISE"
 }
