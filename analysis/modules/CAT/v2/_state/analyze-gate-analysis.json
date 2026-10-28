@@ -206,7 +206,7 @@
   "provenance": {
     "rules": {
       "contracts": "1e9a4cbe6e0e656cd905e87ef41fdd715519f455a4d19dba41e3592b43b3a281",
-      "checker": "30a3126ba7b457385d39af6b51fd2f10600e85b94a5fc0eec44e993dc668262c",
+      "checker": "8025e2b6657415dad65398e6f8d1a4dc2f4fe946781406a8271ccc55e4b3fa6e",
       "policy": "112e8c4fa0a38302452c7bdcb67071fb9d5aba0f2ad9e40514ebbdde34c06cbb"
     },
     "resolvable": [
@@ -255,6 +255,6 @@
       "srs": "307aebb7116dc67f0474cccd31132e7d16ee8312b73d6789b87baad8965a259a",
       "ui-ux-spec": "8f0995e0f4d137ca2ede5ad4f8209176c3a38ac681dfde8b0147a1d99849a3c0"
     },
-    "at": "2026-10-28T14:36:30+00:00"
+    "at": "2026-10-28T15:41:43+00:00"
   }
 }
