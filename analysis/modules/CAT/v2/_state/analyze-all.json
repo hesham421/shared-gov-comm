@@ -3,8 +3,8 @@
   "version": 2,
   "scope": "all",
   "counts": {
-    "CRITICAL": 3,
-    "MAJOR": 134,
+    "CRITICAL": 0,
+    "MAJOR": 22,
     "MINOR": 8
   },
   "clean": false,
@@ -32,7 +32,7 @@
   ],
   "skipped": [],
   "coverage": {
-    "C0.1": 16,
+    "C0.1": 19,
     "C1.4": 9,
     "C2.2": 10,
     "C3.7": 9,
@@ -80,37 +80,32 @@
     "C7.29": 102,
     "C7.30": 57,
     "C7.31": 51,
-    "C9.2": 0,
-    "C9.3": 0,
-    "C9.4": 0,
-    "C9.5": 0,
-    "C9.6": 0,
-    "C9.7": 0,
-    "C9.8": 0,
-    "C9.15": 0,
-    "C9.17": 0,
-    "C9.16": 0,
-    "C9.24": 0,
-    "C9.22": 0,
+    "C9.2": 30,
+    "C9.3": 3,
+    "C9.4": 6,
+    "C9.5": 51,
+    "C9.6": 3,
+    "C9.7": 6,
+    "C9.8": 9,
+    "C9.15": 6,
+    "C9.17": 6,
+    "C9.16": 2,
+    "C9.24": 22,
+    "C9.22": 6,
     "C9.23": 6,
-    "C10.1": 0,
+    "C10.1": 182,
     "C10.2": 129,
-    "C10.7": 0,
-    "C10.8": 0,
-    "C10.9": 0,
-    "C10.10": 0,
-    "C10.11": 9,
+    "C10.7": 60,
+    "C10.8": 6,
+    "C10.9": 2,
+    "C10.10": 182,
+    "C10.11": 35,
     "C13.5": 18,
     "C-GIVEN-1": 24,
     "C-GIVEN-2": 9,
     "C-GIVEN-3": 27
   },
   "vacuous": [
-    "C10.1",
-    "C10.10",
-    "C10.7",
-    "C10.8",
-    "C10.9",
     "C6.10",
     "C6.12",
     "C6.15",
@@ -120,19 +115,7 @@
     "C7.27",
     "C7.28",
     "C7.5",
-    "C7.5b",
-    "C9.15",
-    "C9.16",
-    "C9.17",
-    "C9.2",
-    "C9.22",
-    "C9.24",
-    "C9.3",
-    "C9.4",
-    "C9.5",
-    "C9.6",
-    "C9.7",
-    "C9.8"
+    "C7.5b"
   ],
   "metrics": [
     {
@@ -173,8 +156,8 @@
         "UXD"
       ],
       "total": 127,
-      "covered": 0,
-      "pct": 0.0
+      "covered": 127,
+      "pct": 100.0
     },
     {
       "id": "ac-tc",
@@ -183,1106 +166,186 @@
         "TC"
       ],
       "total": 129,
-      "covered": 0,
-      "pct": 0.0
+      "covered": 129,
+      "pct": 100.0
     }
   ],
   "findings": [
     {
-      "severity": "CRITICAL",
-      "clause": "C10.3",
-      "check": "markers",
-      "message": "`backend-test-plan` missing",
-      "artifact": "backend-test-plan",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C10.4",
-      "check": "markers",
-      "message": "`frontend-test-plan` missing",
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-130` asserts the text of `CAT-201-EXISTING-VARIANTS-KEPT`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
       "artifact": "frontend-test-plan",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C9.1",
-      "check": "markers",
-      "message": "`frontend-execution-plan` missing",
-      "artifact": "frontend-execution-plan",
-      "line": 0
+      "line": 120
     },
     {
       "severity": "MAJOR",
-      "clause": "C10.11",
-      "check": "package-has-tests",
-      "message": "`SVC-API-CRUD` (SUB) of `backend-execution-plan` leaves the factory with no test case naming it on its `Package` line \u2014 a package with no acceptance; derive one in `backend-test-plan`, or flag its phase `no_tests` in the profile",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-130` asserts the text of `RULE-CAT-012`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 120
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-143` asserts the text of `CAT-404-BARCODE-NOT-FOUND`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 302
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-143` asserts the text of `RULE-CAT-047`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 302
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-144` asserts the text of `CAT-422-SCALE-LABEL-UNREADABLE`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 316
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-144` asserts the text of `RULE-CAT-035`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 316
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-145` asserts the text of `CAT-200-PRIMARY-IMAGE-REPLACED`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 330
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-145` asserts the text of `RULE-CAT-039`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 330
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-150` asserts the text of `CAT-400-SEARCH-TERM-TOO-SHORT`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 400
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-150` asserts the text of `RULE-CAT-046`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 400
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-157` asserts the text of `CAT-409-CATEGORY-IN-USE`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 500
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-157` asserts the text of `RULE-CAT-025`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 500
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-165` asserts the text of `CAT-200-IMPORT-ROW-REJECTED`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 616
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-165` asserts the text of `RULE-CAT-045`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 616
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-171` asserts the text of `CAT-200-VARIANTS-IN-USE`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 704
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.7",
+      "check": "msg-bound",
+      "message": "`TC-CAT-171` asserts the text of `RULE-CAT-010`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
+      "artifact": "frontend-test-plan",
+      "line": 704
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.8",
+      "check": "tc-data",
+      "message": "`TC-CAT-063` uses CAT_EINVOICE_UNIT `H87`, which the lookup catalogue does not seed \u2014 CAT_EINVOICE_UNIT is host data (seeded: BX, CT, DZN, EA, GRM, KGM, LTR, MTR), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
       "artifact": "backend-test-plan",
-      "line": 0
+      "line": 915
     },
     {
       "severity": "MAJOR",
-      "clause": "C10.11",
-      "check": "package-has-tests",
-      "message": "`SVC-API-INT` (SUB) of `backend-execution-plan` leaves the factory with no test case naming it on its `Package` line \u2014 a package with no acceptance; derive one in `backend-test-plan`, or flag its phase `no_tests` in the profile",
+      "clause": "C10.8",
+      "check": "tc-data",
+      "message": "`TC-CAT-120` uses CAT_UOM `BAG`, which the lookup catalogue does not seed \u2014 CAT_UOM is host data (seeded: BOX, CARTON, DOZEN, GRAM, KILOGRAM, LITRE, METRE, PIECE), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
       "artifact": "backend-test-plan",
-      "line": 0
+      "line": 1717
     },
     {
       "severity": "MAJOR",
-      "clause": "C10.11",
-      "check": "package-has-tests",
-      "message": "`SVC-API-SEARCH` (SUB) of `backend-execution-plan` leaves the factory with no test case naming it on its `Package` line \u2014 a package with no acceptance; derive one in `backend-test-plan`, or flag its phase `no_tests` in the profile",
+      "clause": "C10.8",
+      "check": "tc-data",
+      "message": "`TC-CAT-121` uses CAT_UOM `BAG`, which the lookup catalogue does not seed \u2014 CAT_UOM is host data (seeded: BOX, CARTON, DOZEN, GRAM, KILOGRAM, LITRE, METRE, PIECE), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
       "artifact": "backend-test-plan",
-      "line": 0
+      "line": 1731
     },
     {
       "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-001` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 278
+      "clause": "C10.8",
+      "check": "tc-data",
+      "message": "`TC-CAT-122` uses CAT_UOM `BAG`, which the lookup catalogue does not seed \u2014 CAT_UOM is host data (seeded: BOX, CARTON, DOZEN, GRAM, KILOGRAM, LITRE, METRE, PIECE), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
+      "artifact": "backend-test-plan",
+      "line": 1745
     },
     {
       "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-002` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 292
+      "clause": "C10.8",
+      "check": "tc-data",
+      "message": "`TC-CAT-138` uses CAT_UOM `BAG`, which the lookup catalogue does not seed \u2014 CAT_UOM is host data (seeded: BOX, CARTON, DOZEN, GRAM, KILOGRAM, LITRE, METRE, PIECE), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
+      "artifact": "frontend-test-plan",
+      "line": 232
     },
     {
       "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-003` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 306
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-004` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 320
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-005` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 334
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-006` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 348
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-007` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 362
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-008` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 376
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-009` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 390
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-010` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 404
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-011` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 418
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-012` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 432
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-013` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 446
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-014` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 460
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-015` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 474
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-016` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 488
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-017` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 493
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-018` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 510
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-019` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 524
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-020` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 538
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-021` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 552
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-022` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 566
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-023` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 580
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-024` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 594
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-025` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 608
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-026` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 622
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-027` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 636
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-028` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 650
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-029` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 664
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-030` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 678
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-031` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 692
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-032` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 706
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-033` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 720
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-034` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 734
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-035` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 748
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-036` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 762
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-037` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 776
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-038` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 790
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-039` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 804
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-040` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 818
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-041` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 832
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-042` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 846
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-043` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 851
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-044` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 865
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-045` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 879
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-046` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 893
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-047` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 907
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-048` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 921
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-049` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 935
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-050` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 949
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-051` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 963
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-052` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 977
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-053` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 991
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-054` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1008
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-055` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1022
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-056` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1036
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-057` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1050
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-058` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1064
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-059` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1078
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-060` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1092
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-061` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1106
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-062` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1120
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-063` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1134
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-064` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1148
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-065` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1162
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-066` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1176
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-067` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1190
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-068` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1204
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-069` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1218
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-070` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1232
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-071` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1246
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-072` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1260
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-073` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1274
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-074` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1288
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-075` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1302
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-076` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1316
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-077` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1330
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-078` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1344
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-079` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1358
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-080` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1372
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-081` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1386
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-082` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1400
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-083` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1414
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-084` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1428
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-085` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1442
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-086` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1456
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-087` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1470
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-088` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1484
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-089` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1498
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-090` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1512
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-091` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1526
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-092` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1540
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-093` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1554
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-094` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1568
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-095` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1582
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-096` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1596
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-097` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1610
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-098` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1624
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-099` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1638
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-100` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1652
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-101` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1666
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-102` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1680
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-103` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1694
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-104` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1708
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-105` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1722
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-106` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1736
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-107` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1750
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-108` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1764
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-109` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1778
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-110` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1792
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-111` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1806
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-112` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1820
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-113` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1834
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-114` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1848
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-115` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1862
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-116` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1876
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-117` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1890
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-118` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1904
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-119` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1918
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-120` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1932
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-121` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1946
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-122` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1960
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-123` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1974
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-124` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 1988
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-125` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 2002
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-126` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 2016
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-127` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 2030
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-128` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 2044
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.2",
-      "check": "orphans",
-      "message": "`AC-CAT-129` is referenced by 0 of ['TC'], needs \u22651",
-      "artifact": "",
-      "line": 2058
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C9.2",
-      "check": "traces",
-      "message": "`frontend-execution-plan` missing",
-      "artifact": "frontend-execution-plan",
-      "line": 0
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C9.8",
-      "check": "registry-agree",
-      "message": "registry `registry-exec-fe` missing",
-      "artifact": "registry-exec-fe",
-      "line": 0
+      "clause": "C10.8",
+      "check": "tc-data",
+      "message": "`TC-CAT-175` uses CAT_EINVOICE_UNIT `H87`, which the lookup catalogue does not seed \u2014 CAT_EINVOICE_UNIT is host data (seeded: BX, CT, DZN, EA, GRM, KGM, LTR, MTR), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
+      "artifact": "frontend-test-plan",
+      "line": 760
     },
     {
       "severity": "MINOR",
@@ -1353,42 +416,54 @@
     "rules": {
       "contracts": "1e9a4cbe6e0e656cd905e87ef41fdd715519f455a4d19dba41e3592b43b3a281",
       "checker": "660eb6323b298e0bcc37748bc8ec55f19be52c00f5cc045ec64a0db9680af5ec",
-      "policy": "f0051863173859c50eaa1091adddc83f9c46e4a33a735325d37acc31ffd51c3d"
+      "policy": "112e8c4fa0a38302452c7bdcb67071fb9d5aba0f2ad9e40514ebbdde34c06cbb"
     },
     "resolvable": [
       "api-spec",
       "backend-execution-plan",
+      "backend-test-plan",
       "business-policies",
       "change-manifest",
       "contract",
       "db-script",
       "domain-profile",
+      "flow-diagram",
+      "frontend-execution-plan",
+      "frontend-test-plan",
       "module-registry",
       "platform-summary",
       "prd",
       "project-registry",
       "registry-db",
       "registry-exec-be",
+      "registry-exec-fe",
       "registry-srs",
-      "srs"
+      "srs",
+      "ui-ux-spec"
     ],
     "inputs": {
       "api-spec": "2b0a4ca1d4934b904eec58ae85266f5218e914677d5c6b50e391bab5cc9702ba",
-      "backend-execution-plan": "249a173741180b61e18a8564957f919449b5ff2328dfcbef9b1b858ac8241aeb",
+      "backend-execution-plan": "c2e16a6d34cb46feaadf5ea764df7b63c0cf207f8ae469a3a8aa98dc94d7d8dd",
+      "backend-test-plan": "0019ed992da63ad01b7b1a45bb15c3c9d245bdd0e98e8858c1ba318e3277509e",
       "business-policies": "c152874252d238fa48c628a658d2386be20140b4ba19b8b936bc22c217bc51e5",
-      "change-manifest": "c23358f413e334943d4c58c4c1c8839d0756757daf0155c821254c3e56cdd714",
+      "change-manifest": "d31f7f1c95ceab23856263047ff5e1de942cfb9bf59ca5b76c55d8436767dad3",
       "contract": "7a78dff411001fb66979c0087d499a806382c9c017549132880086f774803a03",
       "db-script": "9d3059123650df9b01c69887251cf9aec0852e265ba1eff0f3b30a49a27bfa78",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
+      "flow-diagram": "a5c75497a9bdacf15cd7ee56c1e9d4aadbefe6430e9c833ebccaad86b5aea145",
+      "frontend-execution-plan": "ca394ccaacd0ad5c1114ce3c53df6ecfc26c4dfc4b599d374423d0a148258b87",
+      "frontend-test-plan": "7280b213774a9ebad84bde9c151e0eb8f39164973793766c268acc1e55d86d5c",
       "module-registry": "5fc7c7c7a020ebee8280a8519ade559492413ef6f6eeaf7ef6f157d19f9c1a0d",
       "platform-summary": "8869f2caaaa63ad4690042b1ddd12bd37461bc901343d1924927ebb4c7ac9967",
       "prd": "5e6157b1493b752f2ec9686b7621e181123364bb4031c5515b2dbc6e88bac5da",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
       "registry-db": "abb0aacc3a047b415f49ba57d7a4fdeeee91e2670975ad10ff8a9cc02bd1673e",
       "registry-exec-be": "4fe529fdf38a0af814ecbfa80d3266d299a7086bd745c57cf0b5fa2e682e0f9f",
+      "registry-exec-fe": "9db55f3a77af300aa7da7d2c2cd3b71d4a8314313372e7d1db00b3df1a0f3978",
       "registry-srs": "3ca9da3db1d58736b2aa403b1d9b7f7d05da01610692247ad765d800eeb69970",
-      "srs": "c6b734716872e557231d2c4ba25882ec1385155b2e0742559aa8aeeb49b3bd78"
+      "srs": "c6b734716872e557231d2c4ba25882ec1385155b2e0742559aa8aeeb49b3bd78",
+      "ui-ux-spec": "96b99a0e230484d7a82236d309740dafe1e1fcbf627b9d2a95c2ddbaa5f17806"
     },
-    "at": "2026-10-28T06:46:52+00:00"
+    "at": "2026-10-28T08:01:02+00:00"
   }
 }

@@ -19,7 +19,10 @@
     "api-verify": "api_verify"
   },
   "plans": {
-    "backend/exec": "P3_1/backend-execution-plan-cat.md"
+    "backend/exec": "P3_1/backend-execution-plan-cat.md",
+    "backend/test": "P4/backend-test-plan-cat.md",
+    "frontend/exec": "P3_2/frontend-execution-plan-cat.md",
+    "frontend/test": "P4/frontend-test-plan-cat.md"
   },
   "packages": {
     "backend/exec": "../../../../backend/modules/CAT/packages/v2/backend-execution",
@@ -43,7 +46,7 @@
       "req-ac": 100.0,
       "req-api": 100.0,
       "req-ux": 100.0,
-      "ac-tc": 0.0
+      "ac-tc": 100.0
     }
   },
   "created_at": "2026-10-26T07:33:10+00:00"

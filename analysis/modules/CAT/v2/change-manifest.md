@@ -126,6 +126,34 @@ artifacts:
     MODIFIED: []
     REMOVED: []
     UNCHANGED: []
+  backend-test-plan:         # file P4/backend-test-plan-cat.md; written in full (no prior test plan in the current state); TC stream starts at 001 (shared with the frontend test plan) — 124 TCs, no INT-XM (no XM)
+    ADDED: [TC-CAT-001, TC-CAT-002, TC-CAT-003, TC-CAT-004, TC-CAT-005, TC-CAT-006, TC-CAT-007, TC-CAT-008, TC-CAT-009, TC-CAT-010,
+      TC-CAT-011, TC-CAT-012, TC-CAT-013, TC-CAT-014, TC-CAT-015, TC-CAT-016, TC-CAT-017, TC-CAT-018, TC-CAT-019, TC-CAT-020,
+      TC-CAT-021, TC-CAT-022, TC-CAT-023, TC-CAT-024, TC-CAT-025, TC-CAT-026, TC-CAT-027, TC-CAT-028, TC-CAT-029, TC-CAT-030,
+      TC-CAT-031, TC-CAT-032, TC-CAT-033, TC-CAT-034, TC-CAT-035, TC-CAT-036, TC-CAT-037, TC-CAT-038, TC-CAT-039, TC-CAT-040,
+      TC-CAT-041, TC-CAT-042, TC-CAT-043, TC-CAT-044, TC-CAT-045, TC-CAT-046, TC-CAT-047, TC-CAT-048, TC-CAT-049, TC-CAT-050,
+      TC-CAT-051, TC-CAT-052, TC-CAT-053, TC-CAT-054, TC-CAT-055, TC-CAT-056, TC-CAT-057, TC-CAT-058, TC-CAT-059, TC-CAT-060,
+      TC-CAT-061, TC-CAT-062, TC-CAT-063, TC-CAT-064, TC-CAT-065, TC-CAT-066, TC-CAT-067, TC-CAT-068, TC-CAT-069, TC-CAT-070,
+      TC-CAT-071, TC-CAT-072, TC-CAT-073, TC-CAT-074, TC-CAT-075, TC-CAT-076, TC-CAT-077, TC-CAT-078, TC-CAT-079, TC-CAT-080,
+      TC-CAT-081, TC-CAT-082, TC-CAT-083, TC-CAT-084, TC-CAT-085, TC-CAT-086, TC-CAT-087, TC-CAT-088, TC-CAT-089, TC-CAT-090,
+      TC-CAT-091, TC-CAT-092, TC-CAT-093, TC-CAT-094, TC-CAT-095, TC-CAT-096, TC-CAT-097, TC-CAT-098, TC-CAT-099, TC-CAT-100,
+      TC-CAT-101, TC-CAT-102, TC-CAT-103, TC-CAT-104, TC-CAT-105, TC-CAT-106, TC-CAT-107, TC-CAT-108, TC-CAT-109, TC-CAT-110,
+      TC-CAT-111, TC-CAT-112, TC-CAT-113, TC-CAT-114, TC-CAT-115, TC-CAT-116, TC-CAT-117, TC-CAT-118, TC-CAT-119, TC-CAT-120,
+      TC-CAT-121, TC-CAT-122, TC-CAT-123, TC-CAT-124]
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
+  frontend-test-plan:        # file P4/frontend-test-plan-cat.md; written in full (no prior test plan in the current state); continues the shared TC stream — 58 TCs (52 module, 6 INT-UXD); next free TC 183
+    ADDED: [TC-CAT-125, TC-CAT-126, TC-CAT-127, TC-CAT-128, TC-CAT-129, TC-CAT-130,
+      TC-CAT-131, TC-CAT-132, TC-CAT-133, TC-CAT-134, TC-CAT-135, TC-CAT-136, TC-CAT-137, TC-CAT-138, TC-CAT-139, TC-CAT-140,
+      TC-CAT-141, TC-CAT-142, TC-CAT-143, TC-CAT-144, TC-CAT-145, TC-CAT-146, TC-CAT-147, TC-CAT-148, TC-CAT-149, TC-CAT-150,
+      TC-CAT-151, TC-CAT-152, TC-CAT-153, TC-CAT-154, TC-CAT-155, TC-CAT-156, TC-CAT-157, TC-CAT-158, TC-CAT-159, TC-CAT-160,
+      TC-CAT-161, TC-CAT-162, TC-CAT-163, TC-CAT-164, TC-CAT-165, TC-CAT-166, TC-CAT-167, TC-CAT-168, TC-CAT-169, TC-CAT-170,
+      TC-CAT-171, TC-CAT-172, TC-CAT-173, TC-CAT-174, TC-CAT-175, TC-CAT-176, TC-CAT-177, TC-CAT-178, TC-CAT-179, TC-CAT-180,
+      TC-CAT-181, TC-CAT-182]
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
 ```
 
 P0 delta note: the given's module set changed (1.6.0 adds `gl`), so the domain-profile hand re-run named in the summary applies (OI-02).
@@ -151,3 +179,10 @@ The XM register is empty (`consumes: []`), so `gov.py graph` gets no edge from C
 P3.1 delta note: the backend execution plan is written in full, because the current state holds no earlier plan. It adds API 51 (001 … 051) and QR 70 (001 … 070) in the profile's seven phases; INT-C, the last phase, carries no block because the XM register is empty and no edge was minted. Every CON-CAT item (001 … 018) is honoured. The Error Catalog has 57 codes (49 RULE rows, 8 PLATFORM-STD). The API document `api-spec-cat.yaml` (OpenAPI 3.1.0) is derived from the plan with one operation per API block. ADR-CAT-044 … ADR-CAT-048 are recorded (all ACCEPTED, non-breaking, none BLOCKED); the next free ADR is ADR-CAT-049. No question was raised.
 
 P3.2 delta note: the frontend design and the frontend execution plan are written in full, because the current state holds no earlier frontend artifact. The ui-ux-spec adds SCR 6 (001 … 006, one per SCR-REQ) and UXD 3 (001 … 003). The three UXDs are lookup values, capability flags and image files; all three are served by the given erp-core, and none of them is an XM. The flow diagram holds 18 flows covering 22 of 22 stories. The plan binds to `api-spec-cat.yaml` (the mock): 126 REQ → API bindings, 49 runtime codes → RULE, and 49 of 51 operations used. In the profile's six frontend phases it has 24 per-screen SUBs and one `screen-hooks` block per screen. ADR-CAT-049 … ADR-CAT-051 are recorded (all ACCEPTED, non-breaking, none BLOCKED); the next free ADR is ADR-CAT-052. No question was raised.
+
+P4 delta note: both test plans are written in full, because the current state holds no earlier test plan. The TC stream starts at 001 and is shared by the two plans: TC-CAT-001 … 124 are backend and TC-CAT-125 … 182 are frontend.
+- Coverage over the union of the two plans is AC 129 / 129, REQ 127 / 127, API 51 / 51, RULE 49 / 49, SCR 6 / 6 and UXD 3 / 3.
+- The backend `INT-XM` phase is absent, because there is no XM. The frontend `INT-UXD` phase holds 6 TCs, for the three UXDs owned by the given erp-core.
+- ADR-CAT-052 is recorded (ACCEPTED, non-breaking). It covers the track split, the package binding, the host-data creation surface, catalogue isolation, the fields `api-spec-cat.yaml` does not expose (next-action code, listed Variants, Variant `updatedAt`) and fault injection.
+- Round 2 (after `gov.py analyze` refused C10.7 and C10.8): ADR-CAT-053 is recorded (ACCEPTED, non-breaking). Eight frontend TCs (TC-CAT-130, 143, 144, 145, 150, 157, 165, 171) now assert the routing and unchanged display of codes whose words the frontend plan does not bind; their wording stays asserted on the backend track. The unseeded AC values CAT_UOM `BAG` and CAT_EINVOICE_UNIT `H87`, for which no named add-value call exists, are replaced by seeded values in TC-CAT-063, 120, 121, 122 and 175 (TC-CAT-138 drops its `BAG` mention). Every TC id keeps its number and stays ADDED in this version. Coverage is unchanged.
+- The next free ADR is ADR-CAT-054. No question was raised.
