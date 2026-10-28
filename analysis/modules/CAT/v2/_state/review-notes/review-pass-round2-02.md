@@ -1,11 +1,7 @@
-# Five findings added this round
+# Checklist lines confirmed word for word
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: CAT        Version: v2
-Written: 2026-10-28T08:11:42+00:00
+Written: 2026-10-28T08:55:57+00:00
 
-- **G15 (MAJOR, pattern):** deactivating an Item does not exclude its active Variants from the reads that choose a Variant (QR-CAT-052, QR-CAT-016, QR-CAT-017/RULE-CAT-019).
-- **G16 (MAJOR):** the plan breaks checklist line C12 (rules on the Domain companion).
-- **G17 (MAJOR):** Category deactivation can race with creating or moving a child Category.
-- **G18 (MINOR):** ADR-CAT-025, 026 and 028 are contradicted by later decisions but not marked SUPERSEDED.
-- **G19 (MINOR):** the two config tables need a stated F5 justification.
+I read `.claude/skills/erp-core-usage@1.6.0/templates/checklist.md`. Lines C1, C3, C7, C10, C12, C13, C15–C20, F2, F4, F5, F7 and F9 exist as quoted. G1–G5 and G13 stay MAJOR, as §3.6 requires.

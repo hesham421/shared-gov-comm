@@ -4,10 +4,10 @@
   "scope": "all",
   "counts": {
     "CRITICAL": 0,
-    "MAJOR": 22,
+    "MAJOR": 0,
     "MINOR": 8
   },
-  "clean": false,
+  "clean": true,
   "blocking": [
     "CRITICAL",
     "MAJOR"
@@ -95,9 +95,9 @@
     "C9.23": 6,
     "C10.1": 182,
     "C10.2": 129,
-    "C10.7": 60,
-    "C10.8": 6,
-    "C10.9": 2,
+    "C10.7": 44,
+    "C10.8": 0,
+    "C10.9": 0,
     "C10.10": 182,
     "C10.11": 35,
     "C13.5": 18,
@@ -106,6 +106,8 @@
     "C-GIVEN-3": 27
   },
   "vacuous": [
+    "C10.8",
+    "C10.9",
     "C6.10",
     "C6.12",
     "C6.15",
@@ -171,182 +173,6 @@
     }
   ],
   "findings": [
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-130` asserts the text of `CAT-201-EXISTING-VARIANTS-KEPT`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 120
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-130` asserts the text of `RULE-CAT-012`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 120
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-143` asserts the text of `CAT-404-BARCODE-NOT-FOUND`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 302
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-143` asserts the text of `RULE-CAT-047`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 302
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-144` asserts the text of `CAT-422-SCALE-LABEL-UNREADABLE`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 316
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-144` asserts the text of `RULE-CAT-035`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 316
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-145` asserts the text of `CAT-200-PRIMARY-IMAGE-REPLACED`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 330
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-145` asserts the text of `RULE-CAT-039`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 330
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-150` asserts the text of `CAT-400-SEARCH-TERM-TOO-SHORT`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 400
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-150` asserts the text of `RULE-CAT-046`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 400
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-157` asserts the text of `CAT-409-CATEGORY-IN-USE`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 500
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-157` asserts the text of `RULE-CAT-025`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 500
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-165` asserts the text of `CAT-200-IMPORT-ROW-REJECTED`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 616
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-165` asserts the text of `RULE-CAT-045`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 616
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-171` asserts the text of `CAT-200-VARIANTS-IN-USE`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 704
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.7",
-      "check": "msg-bound",
-      "message": "`TC-CAT-171` asserts the text of `RULE-CAT-010`, and no line of the plan binds that text (`text: <source row>`) \u2014 the plan routes the refusal to a control and leaves its words to the implementer, so the test and the screen disagree by construction",
-      "artifact": "frontend-test-plan",
-      "line": 704
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.8",
-      "check": "tc-data",
-      "message": "`TC-CAT-063` uses CAT_EINVOICE_UNIT `H87`, which the lookup catalogue does not seed \u2014 CAT_EINVOICE_UNIT is host data (seeded: BX, CT, DZN, EA, GRM, KGM, LTR, MTR), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
-      "artifact": "backend-test-plan",
-      "line": 915
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.8",
-      "check": "tc-data",
-      "message": "`TC-CAT-120` uses CAT_UOM `BAG`, which the lookup catalogue does not seed \u2014 CAT_UOM is host data (seeded: BOX, CARTON, DOZEN, GRAM, KILOGRAM, LITRE, METRE, PIECE), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
-      "artifact": "backend-test-plan",
-      "line": 1717
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.8",
-      "check": "tc-data",
-      "message": "`TC-CAT-121` uses CAT_UOM `BAG`, which the lookup catalogue does not seed \u2014 CAT_UOM is host data (seeded: BOX, CARTON, DOZEN, GRAM, KILOGRAM, LITRE, METRE, PIECE), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
-      "artifact": "backend-test-plan",
-      "line": 1731
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.8",
-      "check": "tc-data",
-      "message": "`TC-CAT-122` uses CAT_UOM `BAG`, which the lookup catalogue does not seed \u2014 CAT_UOM is host data (seeded: BOX, CARTON, DOZEN, GRAM, KILOGRAM, LITRE, METRE, PIECE), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
-      "artifact": "backend-test-plan",
-      "line": 1745
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.8",
-      "check": "tc-data",
-      "message": "`TC-CAT-138` uses CAT_UOM `BAG`, which the lookup catalogue does not seed \u2014 CAT_UOM is host data (seeded: BOX, CARTON, DOZEN, GRAM, KILOGRAM, LITRE, METRE, PIECE), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
-      "artifact": "frontend-test-plan",
-      "line": 232
-    },
-    {
-      "severity": "MAJOR",
-      "clause": "C10.8",
-      "check": "tc-data",
-      "message": "`TC-CAT-175` uses CAT_EINVOICE_UNIT `H87`, which the lookup catalogue does not seed \u2014 CAT_EINVOICE_UNIT is host data (seeded: BX, CT, DZN, EA, GRM, KGM, LTR, MTR), and no `Host data` precondition of this TC creates it through a named call. Add one, or use a seeded value; never move host data into a product seed",
-      "artifact": "frontend-test-plan",
-      "line": 760
-    },
     {
       "severity": "MINOR",
       "clause": "C5.13",
@@ -444,15 +270,15 @@
     "inputs": {
       "api-spec": "2b0a4ca1d4934b904eec58ae85266f5218e914677d5c6b50e391bab5cc9702ba",
       "backend-execution-plan": "c2e16a6d34cb46feaadf5ea764df7b63c0cf207f8ae469a3a8aa98dc94d7d8dd",
-      "backend-test-plan": "0019ed992da63ad01b7b1a45bb15c3c9d245bdd0e98e8858c1ba318e3277509e",
+      "backend-test-plan": "cd397cb5d142a3a6e6b49e72cfd3816caefee4b85603fb31c334e2117499a375",
       "business-policies": "c152874252d238fa48c628a658d2386be20140b4ba19b8b936bc22c217bc51e5",
-      "change-manifest": "d31f7f1c95ceab23856263047ff5e1de942cfb9bf59ca5b76c55d8436767dad3",
+      "change-manifest": "c73904194b81e6c528a8a564463529aef00c68314b69a50756bf31c31cdc9dc9",
       "contract": "7a78dff411001fb66979c0087d499a806382c9c017549132880086f774803a03",
       "db-script": "9d3059123650df9b01c69887251cf9aec0852e265ba1eff0f3b30a49a27bfa78",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
       "flow-diagram": "a5c75497a9bdacf15cd7ee56c1e9d4aadbefe6430e9c833ebccaad86b5aea145",
       "frontend-execution-plan": "ca394ccaacd0ad5c1114ce3c53df6ecfc26c4dfc4b599d374423d0a148258b87",
-      "frontend-test-plan": "7280b213774a9ebad84bde9c151e0eb8f39164973793766c268acc1e55d86d5c",
+      "frontend-test-plan": "0bbdb827c8372ce1dfeccdef46de14cbf79ee0d974a3f3d29ba316c91ba14e66",
       "module-registry": "5fc7c7c7a020ebee8280a8519ade559492413ef6f6eeaf7ef6f157d19f9c1a0d",
       "platform-summary": "8869f2caaaa63ad4690042b1ddd12bd37461bc901343d1924927ebb4c7ac9967",
       "prd": "5e6157b1493b752f2ec9686b7621e181123364bb4031c5515b2dbc6e88bac5da",
@@ -464,6 +290,6 @@
       "srs": "c6b734716872e557231d2c4ba25882ec1385155b2e0742559aa8aeeb49b3bd78",
       "ui-ux-spec": "96b99a0e230484d7a82236d309740dafe1e1fcbf627b9d2a95c2ddbaa5f17806"
     },
-    "at": "2026-10-28T08:01:02+00:00"
+    "at": "2026-10-28T08:48:46+00:00"
   }
 }
