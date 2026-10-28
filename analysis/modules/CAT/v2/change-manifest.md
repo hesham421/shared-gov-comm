@@ -105,6 +105,27 @@ artifacts:
     MODIFIED: []
     REMOVED: []
     UNCHANGED: []
+  flow-diagram:              # file P3_2/flow-diagram-cat.md; owns no IDs (flows carry no atom); written in full (no prior flow diagram in the current state)
+    ADDED: []
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
+  ui-ux-spec:                # file P3_2/ui-ux-spec-cat.md; written in full (no prior ui-ux-spec in the current state); SCR and UXD streams start at 001 — next free SCR 007, UXD 004
+    ADDED: [SCR-CAT-001, SCR-CAT-002, SCR-CAT-003, SCR-CAT-004, SCR-CAT-005, SCR-CAT-006,
+      UXD-CAT-001, UXD-CAT-002, UXD-CAT-003]
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
+  frontend-execution-plan:   # file P3_2/frontend-execution-plan-cat.md; owns no IDs (cites SCR/UXD of the spec and API of api-spec-cat.yaml); written in full (no prior frontend plan in the current state)
+    ADDED: []
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
+  registry-exec-fe:          # file P3_2/registry-exec-fe-cat.md; owns no IDs (indexes the SCR / UXD ranges); written in full (no prior registry in the current state)
+    ADDED: []
+    MODIFIED: []
+    REMOVED: []
+    UNCHANGED: []
 ```
 
 P0 delta note: the given's module set changed (1.6.0 adds `gl`), so the domain-profile hand re-run named in the summary applies (OI-02).
@@ -128,3 +149,5 @@ P2 delta note: the db-script is written as a create-all migration, because the c
 The XM register is empty (`consumes: []`), so `gov.py graph` gets no edge from CAT. The given tables (mdl lookup tables, CORE_NUMBER_SERIES, FILE_DOCUMENT, CORE_TENANT) are never re-created. The 10 CAT lookup keys (34 values), the 3 number series and the 8 Unit e-invoice codes are seeded for the PLATFORM tenant. Decisions are recorded as DEFAULTs D-P2-01 … D-P2-18. No question was raised and no ADR was needed; the next free ADR is unchanged.
 
 P3.1 delta note: the backend execution plan is written in full, because the current state holds no earlier plan. It adds API 51 (001 … 051) and QR 70 (001 … 070) in the profile's seven phases; INT-C, the last phase, carries no block because the XM register is empty and no edge was minted. Every CON-CAT item (001 … 018) is honoured. The Error Catalog has 57 codes (49 RULE rows, 8 PLATFORM-STD). The API document `api-spec-cat.yaml` (OpenAPI 3.1.0) is derived from the plan with one operation per API block. ADR-CAT-044 … ADR-CAT-048 are recorded (all ACCEPTED, non-breaking, none BLOCKED); the next free ADR is ADR-CAT-049. No question was raised.
+
+P3.2 delta note: the frontend design and the frontend execution plan are written in full, because the current state holds no earlier frontend artifact. The ui-ux-spec adds SCR 6 (001 … 006, one per SCR-REQ) and UXD 3 (001 … 003). The three UXDs are lookup values, capability flags and image files; all three are served by the given erp-core, and none of them is an XM. The flow diagram holds 18 flows covering 22 of 22 stories. The plan binds to `api-spec-cat.yaml` (the mock): 126 REQ → API bindings, 49 runtime codes → RULE, and 49 of 51 operations used. In the profile's six frontend phases it has 24 per-screen SUBs and one `screen-hooks` block per screen. ADR-CAT-049 … ADR-CAT-051 are recorded (all ACCEPTED, non-breaking, none BLOCKED); the next free ADR is ADR-CAT-052. No question was raised.
