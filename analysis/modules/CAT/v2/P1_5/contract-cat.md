@@ -1,7 +1,7 @@
 # CONTRACT — Catalog / الكتالوج (CAT) — outbound promise
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P1.5
-Inputs : srs (P1, CAT v2 — REQ 147 · AC 164 · ENT 12 · RULE 53), registry-srs (re-stamped from the current registries at the seventh gate-analysis revise; CON-CAT-002 wording amended by ADR-CAT-072)
+Inputs : srs (P1, CAT v2 — REQ 147 · AC 164 · ENT 12 · RULE 53), registry-srs (re-stamped from the current registries at the eighth gate-analysis revise; CON-CAT-002 wording amended by ADR-CAT-072; §4 given-usage repeated from SRS A9 as amended by ADR-CAT-076)
 Counts : CON 18 (entity items 6 · operation items 11 · event item 1)
 Status : DRAFT — P1.5 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -165,13 +165,14 @@ rows:
   - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "serve CAT's own lookup keys to the screens (API-CAT-052) through the common owned-lookups capability, com.erp.common.lookup.OwnedLookups.read(key, the 10 CAT keys, CAT-404-LOOKUP-KEY-UNKNOWN, MdlLookupApi::readActiveValuesByKey) — never a pass-through for other keys (ADR-CAT-065); erp-core's manifest lists owned-lookups under common but publishes no interface for it, so the row names the mdl interface the call goes through"}
   - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "read the `variants` and `bundles` capability flags behind the FeatureFlags API (ADR-CAT-041)"}
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "issue Item codes (CAT_ITEM), Variant codes (CAT_VARIANT) and internal barcode digits (CAT_INTERNAL_BARCODE)"}
-  - {given: erp-core, module: modules.file, via: docs/api-docs/file/index.md, purpose: "the client uploads Item images to the public image storage and import files to the private storage through the given FILE upload endpoints, and passes the returned FILE_DOCUMENT.ID to CAT; CAT has no multipart endpoint (ADR-CAT-056)"}
-  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "read the type, size and availability of an uploaded file for RULE-CAT-038 and RULE-CAT-044, the bytes of an import file, and the public URL of an image"}
+  - {given: erp-core, module: modules.file, via: docs/api-docs/file/index.md, purpose: "the client uploads Item images to the FILE category CAT_ITEM_IMAGE (allowPublic = true, PNG / JPEG / WEBP, at most 5 MB — the FILE endpoint refuses any other file, ADR-CAT-076) and import files to the private storage through the given FILE upload endpoints, and passes the returned FILE_DOCUMENT.ID to CAT; CAT has no multipart endpoint (ADR-CAT-056)"}
+  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "the published methods only: isAvailable (a referenced file exists and is available in the caller's tenant — API-CAT-018, API-CAT-049), publicUrl and publicUrls (an image has a public URL, and image URLs for reads); the type, size and bytes of an import file are not published and wait on CORE-GAP-file-document-metadata-read (ADR-CAT-076)"}
+  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FilePrivateStoreApi, purpose: "the private store that holds the uploaded xlsx import file (SCR-REQ-CAT-004, ADR-CAT-056), named in CORE-GAP-file-document-metadata-read as the candidate in-process read of that file's type, size and bytes for the import (RULE-CAT-044, API-CAT-049); CAT stores no file through it (the client uploads through the FILE endpoints) and wires the read when the core publishes it (ADR-CAT-076)"}
   - {given: erp-core, module: modules.events, via: com.erp.events.OutboxPublisher, purpose: "record catalogue-change events in the change transaction and deliver them after commit (RULE-CAT-049)"}
   - {given: erp-core, module: modules.report, via: com.erp.report.crossmodule.PrintApi, purpose: "produce the printable barcode label document (REQ-CAT-102) and the xlsx item import sheet (REQ-CAT-036)"}
   - {given: erp-core, module: modules.report, via: com.erp.report.ReportProvider, purpose: "register the catalogue reports CAT_BARCODE_LABEL and CAT_ITEM_IMPORT_SHEET (ADR-CAT-057)"}
   - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "register the CAT page codes so the security module derives their VIEW/CREATE/UPDATE/DELETE permissions"}
-  - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "copy the 8 seeded Unit e-invoice codes into each newly provisioned tenant; the given copies the CAT lookup values and number series itself (ADR-CAT-058, REQ-CAT-134)"}
+  - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "copy the 8 seeded Unit e-invoice codes into each newly provisioned tenant and register the FILE category CAT_ITEM_IMAGE there (ADR-CAT-076); the given copies the CAT lookup values and number series itself (ADR-CAT-058, REQ-CAT-134)"}
 ```
 
 The contract does not promise any entity that a given provides. Tenant, User, Role, LookupType/LookupValue, FileDocument and NumberSeries stay with `erp-core` [C:C-GIVEN-1]. A new tenant receives the CAT seeds through the given provisioning (REQ-CAT-134, ADR-CAT-058), so every operation item works in every tenant from its first request.
@@ -188,6 +189,6 @@ The contract does not promise any entity that a given provides. Tenant, User, Ro
 - [x] Every SHARED ENT of the SRS has an entity item (ENT-CAT-001, 002, 006, 007, 008, 009). No consumer's A8 block exists yet that names any other CAT entity, and no PRIVATE entity is promised.
 - [x] Every operation item has a `Signature` line and names no path or verb.
 - [x] Every item traces to at least one ENT and one REQ (C13.5).
-- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). The contract itself raised no ADR; ADR-CAT-072 (gate-analysis round 6) amends the wording of CON-CAT-002 without changing its key columns or identifier type. Per the current registries the next free ADR is ADR-CAT-076.
+- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). The contract itself raised no ADR; ADR-CAT-072 (gate-analysis round 6) amends the wording of CON-CAT-002 without changing its key columns or identifier type. Per the current registries the next free ADR is ADR-CAT-077.
 - [x] §4 carries the SRS `given-usage` rows verbatim, in the same order.
 - [x] Every item title carries ar and en.

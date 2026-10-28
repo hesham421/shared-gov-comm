@@ -49,7 +49,7 @@ paths:
                       sortOrder: {type: integer, format: int32}
                     required: [componentVariantFk]
                   default: []
-                  description: optional; holds ≥ 1 line only when itemKindCode is BUNDLE (RULE-CAT-018)
+                  description: optional; holds ≥ 1 line only when itemKindCode is BUNDLE (RULE-CAT-018); a non-empty list on a STANDARD Item, or a componentVariantFk listed twice, answers CAT-400-REQUEST-INVALID before any rule runs
                   x-dbf: DBF-CAT-089
               required: [nameAr]
               title: ItemCreateRequest
@@ -513,7 +513,7 @@ paths:
                         maxItems: 300
                         items: {type: integer, format: int64}
                     required: [variantAttributeFk, variantAttributeValueFks]
-                  description: 1 to 3 attributes, each with 1 to 300 values; an empty or larger array answers CAT-400-REQUEST-INVALID; RULE-CAT-014 is then decided arithmetically on the product of the value counts, before any combination is built
+                  description: 1 to 3 attributes, each with 1 to 300 values; an empty or larger array, an attribute selected twice, a value id listed twice, or a value that is not of its selection's attribute answers CAT-400-REQUEST-INVALID before any rule runs; RULE-CAT-014 is then decided arithmetically on the product of the value counts, before any combination is built
                   x-dbf: DBF-CAT-063
               required: [selections]
               title: VariantGenerationRequest
@@ -1269,6 +1269,7 @@ paths:
                       quantity: {type: number}
                       sortOrder: {type: integer, format: int32}
                     required: [componentVariantFk, quantity]
+                  description: the complete new set of active lines; a bundleComponentPk that is not an active line of this Bundle, a kept line whose componentVariantFk differs from the stored one, or a line or component listed twice answers CAT-400-REQUEST-INVALID before any rule runs
                   x-dbf: DBF-CAT-084
                 version: {type: integer, format: int64, x-dbf: DBF-CAT-017}
               required: [lines, version]
@@ -1347,7 +1348,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: the image bytes were uploaded beforehand through the given erp-core FILE endpoint (public image storage), which returned fileDocumentRef (ADR-CAT-056); a document held in any other storage of the tenant (for example the private storage) is refused with CAT-422-IMAGE-NOT-ACCEPTED (RULE-CAT-038); one fileDocumentRef may be attached to several media records
+              description: the image bytes were uploaded beforehand through the given erp-core FILE endpoint to the FILE category CAT_ITEM_IMAGE (allowPublic, PNG / JPEG / WEBP, at most 5 MB), which refuses any other file in its own envelope and returned fileDocumentRef (ADR-CAT-056, ADR-CAT-076); a fileDocumentRef that is not available in the caller's tenant or has no public URL (for example a document of the private storage) answers CAT-404-NOT-FOUND; a 21st active image of the Item answers CAT-422-IMAGE-NOT-ACCEPTED (RULE-CAT-038); one fileDocumentRef may be attached to several media records
               properties:
                 fileDocumentRef: {type: integer, format: int64, x-dbf: DBF-CAT-122}
                 nameAr: {type: string, maxLength: 200, x-dbf: DBF-CAT-123}
@@ -3462,7 +3463,7 @@ paths:
           application/json:
             schema:
               type: object
-              description: the xlsx file was uploaded beforehand through the given erp-core FILE endpoint (private storage), which returned fileDocumentRef (ADR-CAT-056)
+              description: the xlsx file was uploaded beforehand through the given erp-core FILE endpoint (private storage), which returned fileDocumentRef (ADR-CAT-056); reading its type, size and bytes depends on CORE-GAP-file-document-metadata-read (ADR-CAT-076) — the operation is delivered when the core publishes that read, with no change to this contract
               properties:
                 fileDocumentRef: {type: integer, format: int64}
               required: [fileDocumentRef]

@@ -4,7 +4,7 @@ Module : CAT · Version : v2 · Stage : P3.2 Part B · Track : frontend · Plan 
 Stack  : `react-ts-vite` · routing `react-router` · server state `tanstack-query` · forms `react-hook-form` · validation `zod` · state `zustand` · one lazy chunk per composite screen
 Bound to: `api-spec-cat.yaml` (OpenAPI 3.1.0, 55 operations, base path `/api/v1/cat`, bearer JWT). The frontend executor's mock server serves the same document until the backend is delivered.
 Design : `ui-ux-spec-cat.md` (SCR-CAT-001 … 006, UXD-CAT-001 … 003) · `flow-diagram-cat.md`
-Decisions: ADR-CAT-049 (Items: one Save owning ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage and binding notes); earlier: ADR-CAT-043, ADR-CAT-044, ADR-CAT-048; gate-analysis revise: ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes); second gate-analysis revise: ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length), ADR-CAT-065 (CAT lookup keys served through API-CAT-052); third gate-analysis revise: ADR-CAT-068 (three repairs stay allowed on an inactive Item), ADR-CAT-069 (reactivation of Categories, Variant attributes and values)
+Decisions: ADR-CAT-049 (Items: one Save owning ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage and binding notes); earlier: ADR-CAT-043, ADR-CAT-044, ADR-CAT-048; gate-analysis revise: ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes); second gate-analysis revise: ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length), ADR-CAT-065 (CAT lookup keys served through API-CAT-052); third gate-analysis revise: ADR-CAT-068 (three repairs stay allowed on an inactive Item), ADR-CAT-069 (reactivation of Categories, Variant attributes and values); eighth gate-analysis revise: ADR-CAT-076 (image type and size held by the FILE category CAT_ITEM_IMAGE)
 
 This is a delta run, but the current state holds no earlier frontend plan, so every block below is ADDED. The plan says WHAT each screen reads, validates and renders. Method, path, request and response schema, paging and envelope are read in `api-spec-cat.yaml` by `x-api-id`, not copied here.
 
@@ -394,7 +394,7 @@ Mutation, the screen's ONE Save (ADR-CAT-049). On an inactive Item only three pa
 5. Variant generation `API-CAT-006` (when `generation` is set). The success envelope's `CAT-201-EXISTING-VARIANTS-KEPT` shows RULE-CAT-012's text.
 6. Variant e-invoice overrides `API-CAT-008` (with each Variant's `version`).
 7. Barcodes on saved Variants: `API-CAT-014` (GTIN / SCALE), `API-CAT-015` (internal).
-8. Images: for each new image, the file is first uploaded through the given FILE client (GIVEN-FILE-UPLOAD, public image storage — ADR-CAT-056), then `API-CAT-018` is sent with the returned `fileDocumentRef`; then changes `API-CAT-019` (with `version`). A FILE upload rejection stops the sequence like a CAT rejection. The success code `CAT-200-PRIMARY-IMAGE-REPLACED` shows RULE-CAT-039's text.
+8. Images: for each new image, the file is first uploaded through the given FILE client (GIVEN-FILE-UPLOAD, to the FILE category `CAT_ITEM_IMAGE` — public, PNG / JPEG / WEBP, ≤ 5 MB — ADR-CAT-056, ADR-CAT-076), then `API-CAT-018` is sent with the returned `fileDocumentRef`; then changes `API-CAT-019` (with `version`). A FILE upload rejection stops the sequence like a CAT rejection. The success code `CAT-200-PRIMARY-IMAGE-REPLACED` shows RULE-CAT-039's text.
 
 After the last call, or at the first rejection, the Item is re-read and the pending lines that were not sent stay pending. The rejected line is marked `failed` with its routed text, and the "partial-save" copy is shown when any call before it succeeded. A new Item that is rejected after step 1 is replaced by `/cat/items/:itemPk`.
 
@@ -426,7 +426,7 @@ Errors (text = the RULE message in ar/en as the envelope carries it):
 - `CAT-422-BARCODE-UNIT-INVALID` → inline on the barcode uomCode; text: RULE-CAT-031 message
 - `CAT-409-BARCODE-SCALE-PREFIX` → inline on barcodeValue; text: RULE-CAT-032 message
 - `CAT-422-SCALE-CODE-LENGTH` → inline on barcodeValue; text: RULE-CAT-033 message
-- `CAT-422-IMAGE-NOT-ACCEPTED` → inline on the image file; text: RULE-CAT-038 message · a rejection of the given FILE upload → the same place, showing the FILE envelope's messageAr / messageEn
+- `CAT-422-IMAGE-NOT-ACCEPTED` (a 21st active image) → inline on the image file; text: RULE-CAT-038 message · a rejection of the given FILE upload to the category `CAT_ITEM_IMAGE` (wrong type, above 5 MB — the file part of RULE-CAT-038, ADR-CAT-076) → the same place, showing the FILE envelope's messageAr / messageEn; the line is marked `failed` and no request goes to `API-CAT-018` for it
 - `CAT-422-MEDIA-VARIANT-MISMATCH` → inline on the image variantFk; text: RULE-CAT-040 message
 - `CAT-409-STALE-VERSION` → form banner "stale-version" + Reload (pending lines kept); text: catalogue CAT-409-STALE-VERSION
 - `CAT-500-CHANGE-NOT-SAVED` → form banner with Try again; text: RULE-CAT-049 message
@@ -721,7 +721,7 @@ Line validators (each one-line drawer has its own schema; confirming returns the
 | Variant generation | 1–3 attributes, each with ≥ 1 value · active Variants after generation (current active + new combinations, computed from the selection) ≤ 300 | RULE-CAT-014 |
 | Variant generation (used attributes) | every attribute the Item's active Variants already carry (from ITEM-QUERY `variants[].attributeValues`) is selected with ≥ 1 value; checked before the limits | RULE-CAT-052 |
 | Item unit (deactivate) | no active barcode of the Item, saved and not marked for deactivation, is bound to the unit's uomCode | RULE-CAT-051 ({count} filled) |
-| Image (add) | file JPG, PNG or WEBP · ≤ 5 MB · active + pending images ≤ 20 | RULE-CAT-038 |
+| Image (add) | active + pending images ≤ 20 (the file's type and size are not checked by the client: the FILE category `CAT_ITEM_IMAGE` refuses a wrong file at upload, and the refusal is shown on the file input — ADR-CAT-076) | RULE-CAT-038 |
 | Image nameAr / nameEn | nameAr as the header rule (default the Item's nameAr) · nameEn ≤ 200 | RULE-CAT-001 · RULE-CAT-002 |
 
 Form behaviour:

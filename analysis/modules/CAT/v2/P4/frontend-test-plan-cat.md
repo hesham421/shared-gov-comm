@@ -1,7 +1,7 @@
 # Frontend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : frontend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207, TC-CAT-211 … TC-CAT-219, TC-CAT-221 and TC-CAT-222; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196, TC-CAT-208 … TC-CAT-210 and TC-CAT-220)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207, TC-CAT-211 … TC-CAT-219, TC-CAT-221 … TC-CAT-223; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196, TC-CAT-208 … TC-CAT-210 and TC-CAT-220)
 
 ## Header
 
@@ -17,7 +17,7 @@ Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared wi
 | dependency-graph | `_state/current-dependency-graph.md` | CAT v2 | CAT tier 1 |
 
 ### Delta
-The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC. Within v2, the third gate-analysis revise ADDED TC-CAT-210 and MODIFIED TC-CAT-126 (the jump goes to the existing Item's code — G12) and TC-CAT-209 (the inactive Entry keeps its three repairs — G2, ADR-CAT-068). The sixth gate-analysis revise ADDED TC-CAT-220 (reactivation refused under RULE-CAT-003, with its next action — G2, AC-CAT-162). The seventh gate-analysis revise MODIFIED TC-CAT-139 and TC-CAT-177 (a host brand whose labels differ from its code is deactivated, and the screen shows its raw code — G1, ADR-CAT-073), TC-CAT-195 (the Category label comes with the Item read, also for a user who cannot read the Category tree — G5, ADR-CAT-075), and re-pointed TC-CAT-210 and TC-CAT-220 to REQ-CAT-145 … 147 and REQ-CAT-144 (G7); it ADDED no TC. No id is renumbered or REMOVED.
+The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC. Within v2, the third gate-analysis revise ADDED TC-CAT-210 and MODIFIED TC-CAT-126 (the jump goes to the existing Item's code — G12) and TC-CAT-209 (the inactive Entry keeps its three repairs — G2, ADR-CAT-068). The sixth gate-analysis revise ADDED TC-CAT-220 (reactivation refused under RULE-CAT-003, with its next action — G2, AC-CAT-162). The seventh gate-analysis revise MODIFIED TC-CAT-139 and TC-CAT-177 (a host brand whose labels differ from its code is deactivated, and the screen shows its raw code — G1, ADR-CAT-073), TC-CAT-195 (the Category label comes with the Item read, also for a user who cannot read the Category tree — G5, ADR-CAT-075), and re-pointed TC-CAT-210 and TC-CAT-220 to REQ-CAT-145 … 147 and REQ-CAT-144 (G7); it ADDED no TC. The eighth gate-analysis revise MODIFIED TC-CAT-146 (the 7 MB JPG is refused by the FILE category `CAT_ITEM_IMAGE` at upload and shown in the FILE envelope; the screen checks only the 20-image count — G1, ADR-CAT-076; moved from F3-SCR-CAT-001 to F2-SCR-CAT-001, where the upload refusal is routed) and TC-CAT-166 (its client check stays; the server's type / size check waits on the core); it ADDED no TC. No id is renumbered or REMOVED.
 
 ### Framework
 `profile.stack.testing` is **agnostic**. Each block is the whole contract. This plan names no framework, runner, selector strategy or file layout.
@@ -25,7 +25,7 @@ The current state holds no earlier test plan, so every TC is ADDED. The frontend
 ### Open ADRs
 - ADR-CAT-052 (this stage) is ACCEPTED and non-breaking. It covers the track split, frontend package binding, host data, option-set isolation, fields the API document does not expose, and UXD integration.
 - ADR-CAT-053 (this stage, analyze round 2) is ACCEPTED and non-breaking. It records the eight server codes the frontend plan routes to a control without binding their words (`text:`): TC-CAT-130, 143, 144, 145, 150, 157, 165 and 171 assert the routing and the verbatim display of the envelope's messageAr / messageEn, not the words, which the backend TCs assert. It also replaces the unseeded AC value H87 by a seeded value in TC-CAT-175.
-- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). From the gate-analysis round 3 they cite ADR-CAT-068 (three repairs stay allowed on an inactive Item). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). From the gate-analysis round 7 they cite ADR-CAT-073 (an inactive lookup value renders as its raw code — TC-CAT-139, 177) and ADR-CAT-075 (the Item reads carry the Category label — TC-CAT-195). None of them is BLOCKED.
+- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). From the gate-analysis round 3 they cite ADR-CAT-068 (three repairs stay allowed on an inactive Item). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). From the gate-analysis round 7 they cite ADR-CAT-073 (an inactive lookup value renders as its raw code — TC-CAT-139, 177) and ADR-CAT-075 (the Item reads carry the Category label — TC-CAT-195). From round 8 they cite ADR-CAT-076 (image type and size held by the FILE category `CAT_ITEM_IMAGE` — TC-CAT-146; the import's server-side type / size check waits on the core — TC-CAT-166). None of them is BLOCKED.
 - Host values of CAT_BRAND are created by the given mdl call `POST /api/v1/mdl/lookup-types/{id}/values` and deactivated by `DELETE /api/v1/mdl/lookup-values/{id}`, where `{id}` is the CAT_BRAND type found by `POST /api/v1/mdl/lookup-types/search` (SRS A6). Each Host data line names the call it uses.
 
 ### Shared precondition F0 (applies to every TC; each TC adds only what it states)
@@ -344,17 +344,17 @@ Test data    : images A, B (from the AC)
 <!-- TC:TC-CAT-145:END -->
 
 <!-- TC:TC-CAT-146:START traces=AC-CAT-112,REQ-CAT-110,SCR-CAT-001 -->
-### TC-CAT-146 — A 7 MB JPG is refused in the image drawer
+### TC-CAT-146 — A 7 MB JPG is refused by the image category at upload; a 21st image is refused on the screen
 Derived from : AC-CAT-112  (REQ-CAT-110)
-Exercises    : SCR-CAT-001 `/cat/items/:itemPk?drawer=image:new` (image line validator)
-Rule / code  : RULE-CAT-038 (client validator; server code CAT-422-IMAGE-NOT-ACCEPTED)
-Package      : F3-SCR-CAT-001
+Exercises    : SCR-CAT-001 `/cat/items/:itemPk?drawer=image:new` (ITEM-SAVE step 8: GIVEN-FILE-UPLOAD to the FILE category `CAT_ITEM_IMAGE`, then API-CAT-018; F3 image line validator — the 20-image count)
+Rule / code  : RULE-CAT-038 — file part (type, size, public storage) refused by the FILE category `CAT_ITEM_IMAGE` at upload, in the FILE envelope (ADR-CAT-076); count part by the client validator (server code CAT-422-IMAGE-NOT-ACCEPTED)
+Package      : F2-SCR-CAT-001
 Scenario     : VIOLATION · data class BOUNDARY · language ALL
-Preconditions: F0 · an Item
+Preconditions: F0 · an Item A with 0 active images; the FILE upload to `CAT_ITEM_IMAGE` refuses a file above 5 MB (as the given FILE module answers for the category's limit) · an Item B with 20 active images
 Host data    : none
-Steps        : 1. Open "Add image". 2. Choose a 7 MB JPG. 3. Confirm.
-Expected     : Inline on the file: ar «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.» · en "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item."; no image line is added, no file is uploaded to the given FILE endpoint and no request is made to API-CAT-018, so no media record is created.
-Test data    : a 7 MB JPG (from the AC)
+Steps        : 1. Open A, "Add image", choose a 7 MB JPG, Confirm, then Save. 2. Open B, "Add image", choose a 1 MB PNG, Confirm.
+Expected     : 1 → the client does not check the type or size itself: Save uploads the file to `CAT_ITEM_IMAGE`, the FILE upload refuses it, and the image line is marked failed with the FILE envelope's messageAr / messageEn shown inline on its file input, unchanged; no request is made to API-CAT-018, and after the re-read A still has 0 active images. 2 → inline on the file: ar «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.» · en "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item."; the line is not returned to the form, no file is uploaded and no request is made to API-CAT-018.
+Test data    : a 7 MB JPG (from the AC); a 1 MB PNG (placeholder file)
 <!-- TC:TC-CAT-146:END -->
 
 <!-- TC:TC-CAT-147:START traces=AC-CAT-118,REQ-CAT-116,SCR-CAT-001 -->
@@ -633,7 +633,7 @@ Test data    : 50 rows, row 7 (from the AC)
 ### TC-CAT-166 — A .csv file is refused on the file input
 Derived from : AC-CAT-041  (REQ-CAT-040)
 Exercises    : SCR-CAT-004 `/cat/item-import` (`ImportForm` validator)
-Rule / code  : RULE-CAT-044 (client validator; server code CAT-422-IMPORT-FILE-REJECTED)
+Rule / code  : RULE-CAT-044 (client validator on the chosen file's extension and size, so a wrong file is never uploaded; the server's own type / size check of API-CAT-049, code CAT-422-IMPORT-FILE-REJECTED, waits on CORE-GAP-file-document-metadata-read and is asserted by TC-CAT-018 once the core answers — ADR-CAT-076)
 Package      : F3-SCR-CAT-004
 Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: F0
@@ -1061,7 +1061,7 @@ A row marked "routed, words unbound" is a code the frontend plan routes to a con
 | RULE-CAT-035 | CAT-422-SCALE-LABEL-UNREADABLE | 144 | F2 BARCODE-LOOKUP-QUERY — routed, words unbound (wording: TC-CAT-051) |
 | RULE-CAT-036 | CAT-422-LABEL-COPIES-OUT-OF-RANGE | 169 | F3 labels · F2 LABEL-PRINT |
 | RULE-CAT-037 | CAT-422-LABEL-VARIANT-NO-BARCODE | 170 | F3 labels · F2 LABEL-PRINT |
-| RULE-CAT-038 | CAT-422-IMAGE-NOT-ACCEPTED | 146 | F3 image line · F2 ITEM-SAVE |
+| RULE-CAT-038 | CAT-422-IMAGE-NOT-ACCEPTED | 146 (the 20-image count; the file part is the FILE category's refusal, shown in the FILE envelope — ADR-CAT-076) | F3 image line (count) · F2 ITEM-SAVE (step 8 upload refusal and the count code) |
 | RULE-CAT-039 | CAT-200-PRIMARY-IMAGE-REPLACED | 145 | F2 ITEM-SAVE step 8 — routed, words unbound (wording: TC-CAT-054) |
 | RULE-CAT-041 | CAT-422-PUBLISH-BLOCKED | 147 (176 state) | F2 ITEM-STATE-COMMAND |
 | RULE-CAT-042 | CAT-422-EINVOICE-CODE-INVALID | 148 | F3 `ItemForm` e-invoice pair · F2 ITEM-SAVE |
@@ -1088,8 +1088,8 @@ The other rules are asserted on the backend track. No case here asserts the word
 ### Package → TC (TC-CAT-…)
 | Package (frontend plan unit) | # | TCs |
 |---|---|---|
-| F2-SCR-CAT-001 | 17 | 125, 126, 127, 130, 131, 137, 138, 139, 141, 143, 144, 145, 147, 149, 150, 195, 220 |
-| F3-SCR-CAT-001 | 12 | 132, 133, 134, 135, 136, 140, 142, 146, 148, 196, 209, 210 |
+| F2-SCR-CAT-001 | 18 | 125, 126, 127, 130, 131, 137, 138, 139, 141, 143, 144, 145, 146, 147, 149, 150, 195, 220 |
+| F3-SCR-CAT-001 | 11 | 132, 133, 134, 135, 136, 140, 142, 148, 196, 209, 210 |
 | F4-SCR-CAT-001 | 9 | 128, 129, 176, 177, 178, 179, 180, 181, 182 |
 | F2-SCR-CAT-002 | 4 | 152, 154, 156, 157 |
 | F3-SCR-CAT-002 | 1 | 155 |

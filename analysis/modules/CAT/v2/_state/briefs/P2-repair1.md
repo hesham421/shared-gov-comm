@@ -1,7 +1,7 @@
 # REPAIR BRIEF — stage `P2` (Database) · module CAT · v2 · round 1
 
 ## What to do
-You wrote this stage's files, and `gov.py analyze` refused them with the 12 finding(s) below.
+You wrote this stage's files, and `gov.py analyze` refused them with the 1 finding(s) below.
 Read the files at the absolute paths listed (an exception to the base brief's 'read only what this brief
 contains'), fix EVERY finding by editing those files in place with your file tools, and change nothing else:
 never re-number an id, never restart a sequence, never raise a `[QUESTION]`.
@@ -13,19 +13,19 @@ End with a short list of what you changed. The files you may edit:
 - `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P2\db-script-cat.md`
 - `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P2\registry-db-cat.md`
 
+This repair follows a gate revise, which edited the earlier stages too. A finding whose fix belongs in
+one of THEIR files (a `given-usage` row lives in the SRS and is repeated in the contract) is fixed there,
+in place, keeping both sides in step. Those files:
+- `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P0\platform-summary.md`
+- `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P0\module-registry-cat.md`
+- `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P0\business-policies-cat.md`
+- `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P0_5\prd-cat.md`
+- `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P1\srs-cat.md`
+- `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P1\registry-srs-cat.md`
+- `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P1_5\contract-cat.md`
+
 ## Findings to fix
-- [MAJOR] C6.15 (db-column-only) db-script:738 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:739 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:740 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:741 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:742 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:743 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:744 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:745 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:746 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:747 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:748 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) db-script:749 — a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
+- [MAJOR] C-GIVEN-2 (given-via-extension) backend-execution-plan — `backend-execution-plan` names `FilePrivateStoreApi` (erp-core:modules.file interfaces) and no `given-usage` row declares that use — add the row (erp-core · file · com.erp.file.crossmodule.FilePrivateStoreApi · purpose) to the `given-usage` block of `srs` and repeat it in `contract`, or stop using it
 
 ---
 # THE STAGE'S BRIEF (its rules still bind; its inputs are below)
@@ -37,7 +37,7 @@ Lane `analysis` · implementer ['claude:opus'] · effort high · round 1
 ## Rules that bind this run
 - Questions: **forbidden**. A `[QUESTION]` block is refused. Ambiguity → ADR in `analysis/decisions/CAT/` (`ADR-{MOD}-{seq:03d}.md`): non-breaking → continue; breaking → status BLOCKED and stop.
 - Owns IDs: DBF, XM — ID grammar `{prefix}-{MOD}-{seq}` (seq width 3); never re-number, never restart a sequence.
-- ADRs continue the module's stream: the next free id is `ADR-CAT-054`; an existing ADR is never rewritten under its id.
+- ADRs continue the module's stream: the next free id is `ADR-CAT-077`; an existing ADR is never rewritten under its id.
 - Read only what this brief contains (generated current state); never open version folders yourself.
 - Write exactly these files (complete files; this is a delta version, so only what changed):
 - `governance-shared\analysis\modules\CAT\v2\P2\db-script-cat.md` — absolute path `C:\Users\moe133212665\source\repos\commerce\governance-shared\analysis\modules\CAT\v2\P2\db-script-cat.md`
@@ -62,18 +62,7 @@ Lane `analysis` · implementer ['claude:opus'] · effort high · round 1
   ```
 
 ## The previous run of this stage was refused by `gov.py analyze` — fix exactly these, keep everything else
-- [MAJOR] C6.15 (db-column-only) `db-script` line 738: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 739: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 740: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 741: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 742: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 743: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 744: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 745: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 746: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 747: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 748: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
-- [MAJOR] C6.15 (db-column-only) `db-script` line 749: a constraint references `CORE_TENANT`, a table this script does not create — a cross-module FK is column-only; the constraint is the edge's integration block
+- [MAJOR] C-GIVEN-2 (given-via-extension) `backend-execution-plan`: `backend-execution-plan` names `FilePrivateStoreApi` (erp-core:modules.file interfaces) and no `given-usage` row declares that use — add the row (erp-core · file · com.erp.file.crossmodule.FilePrivateStoreApi · purpose) to the `given-usage` block of `srs` and repeat it in `contract`, or stop using it
 
 ---
 # ENGINE
@@ -501,7 +490,7 @@ DOES NOT  : POL (P0) · US (P0.5) · REQ (P1) · AC (P1) · ENT (P1) · RULE (P1
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved 2026-10-26 — gate prd-approval)
-Counts : REQ 127 · AC 129 · ENT 12 · RULE 49 · SCR-REQ 6 · ADR 6
+Counts : REQ 147 · AC 164 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 19
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -516,7 +505,12 @@ Counts : REQ 127 · AC 129 · ENT 12 · RULE 49 · SCR-REQ 6 · ADR 6
 | Date | 2026-10-26 |
 | Status | DRAFT — P1 pass 1 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions applied | 6 ADR (ADR-CAT-038 … ADR-CAT-043) · 15 DEFAULT (D-01 … D-15) |
+| Decisions applied | 19 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise; ADR-CAT-072 at the sixth gate-analysis revise; ADR-CAT-074 at the seventh gate-analysis revise; ADR-CAT-076 at the eighth gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
+| Revisions (third gate-analysis revise) | ADDED: REQ-CAT-136 … REQ-CAT-138, AC-CAT-153 … AC-CAT-160 · MODIFIED: REQ-CAT-135 and RULE-CAT-053 (three repair operations stay allowed on an inactive Item — ADR-CAT-068), RULE-CAT-003, AC-CAT-007 and AC-CAT-043 (the message names the existing Item's code), RULE-CAT-016, RULE-CAT-023 and RULE-CAT-024 (also checked on reactivation — ADR-CAT-069), A7 |
+| Revisions (fourth gate-analysis revise) | ADDED: REQ-CAT-139, AC-CAT-161 (an import past its time limit is rolled back whole — ADR-CAT-071) · MODIFIED: REQ-CAT-005 and A7 (deactivating an Item leaves its barcodes active; a GTIN is released by deactivating the barcode), RULE-CAT-049 (traces REQ-CAT-139) |
+| Revisions (sixth gate-analysis revise) | ADDED: AC-CAT-162 (reactivation refused when another active Item took the name), AC-CAT-163 and AC-CAT-164 (the default Variant moves — ADR-CAT-072) · MODIFIED: REQ-CAT-025, A7 and ENT-CAT-002.isDefaultFl (an active Item always has exactly one active default Variant), REQ-CAT-130 and RULE-CAT-003 (RULE-CAT-003 named on reactivation), RULE-CAT-029 (a GTIN repeated in one import file), AC-CAT-096 (scans the code of the precondition's SCALE barcode), AC-CAT-145 (the read of an inactive Variant returns no active barcode) |
+| Revisions (seventh gate-analysis revise) | ADDED: REQ-CAT-140 and REQ-CAT-141 (split from REQ-CAT-025: one REQ per default-Variant move), REQ-CAT-142, REQ-CAT-143 and REQ-CAT-144 (split from REQ-CAT-130: one REQ per reactivation refusal), REQ-CAT-145, REQ-CAT-146 and REQ-CAT-147 (split from REQ-CAT-135: one REQ per repair allowed on an inactive Item) · MODIFIED: REQ-CAT-025, REQ-CAT-130 and REQ-CAT-135 (each keeps one behaviour), AC-CAT-163 and AC-CAT-164 re-pointed to REQ-CAT-140 / 141, AC-CAT-133, AC-CAT-134 and AC-CAT-162 to REQ-CAT-142 / 143 / 144, AC-CAT-154, AC-CAT-155 and AC-CAT-156 to REQ-CAT-145 / 146 / 147 (no AC renumbered), RULE-CAT-003, 019, 026 and 053 traces, A7, REQ-CAT-139 rationale (the 60-second figure is a measured target — ADR-CAT-074) |
+| Revisions (eighth gate-analysis revise) | ADDED: none · MODIFIED: RULE-CAT-038 (the file part is enforced at upload by the FILE category CAT_ITEM_IMAGE; CAT refuses the 21st image), REQ-CAT-110 rationale, AC-CAT-112 (the 7 MB JPG refused by the image category, the 21st image by RULE-CAT-038), A9 given-usage (FileDocumentLookupApi lists only its published methods; the tenant row registers the image category) — ADR-CAT-076 |
 
 ## A2 — Functional context
 
@@ -611,7 +605,7 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 | code | text (≤ 20) | yes | core number series CAT_VARIANT (D-11) | read-only (RULE-CAT-004) | الرمز | Code |
 | nameAr | text (≤ 400) | yes | derived at read: Item nameAr, then the value nameAr of each assignment in attribute sortOrder, joined by " / " (D-15) | not entered | الاسم بالعربية | Arabic name |
 | nameEn | text (≤ 400) | no | derived the same way from the nameEn values, with nameAr used where nameEn is empty | not entered | الاسم بالإنجليزية | English name |
-| isDefaultFl | flag | yes | true for the Variant created with the Item | — | المتغيّر الأساسي | Default variant |
+| isDefaultFl | flag | yes | true for exactly one Variant of the Item: the Variant created with the Item, until the default moves (REQ-CAT-140, REQ-CAT-141, ADR-CAT-072) | — | المتغيّر الأساسي | Default variant |
 | einvoiceCodeTypeCode | lookup | no | CAT_EINVOICE_ITEM_CODE_TYPE | override (RULE-CAT-042) | نوع رمز الفاتورة الإلكترونية | E-invoice code type |
 | einvoiceCode | text (≤ 100) | no | entered | override (RULE-CAT-042) | رمز الفاتورة الإلكترونية | E-invoice code |
 | isActiveFl | flag | yes | default true | RULE-CAT-015, RULE-CAT-021, RULE-CAT-048 | نشط | Active |
@@ -619,7 +613,7 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 ### ENT-CAT-003 — Variant attribute / خاصية المتغيّر
 | Kind | Ownership | Business number | Operations | Cross-module | Source |
 |---|---|---|---|---|---|
-| lookup — a dimension that Variants differ by (size, colour). The tenant keeps its own growing list, so it is an entity rather than an mdl key | PRIVATE | no — code entered by the owner | create, read, list, update, deactivate | none (consumers read the names through Variant reads) | registry CAND-CAT-003; DP §8 P-03 |
+| lookup — a dimension that Variants differ by (size, colour). The tenant defines the attributes themselves at runtime, each with its own nested value list that Variant assignments reference by foreign key, so it is an entity rather than an mdl key (ADR-CAT-070) | PRIVATE | no — code entered by the owner | create, read, list, update, deactivate, reactivate | none (consumers read the names through Variant reads) | registry CAND-CAT-003; DP §8 P-03 |
 
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
@@ -633,7 +627,7 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 ### ENT-CAT-004 — Variant attribute value / قيمة خاصية المتغيّر
 | Kind | Ownership | Business number | Operations | Cross-module | Source |
 |---|---|---|---|---|---|
-| lookup — one value of a Variant attribute (for example M, أحمر) | PRIVATE | no | create, read, list, update, deactivate | none | US-CAT-011; DP §8 P-03 |
+| lookup — one value of a Variant attribute (for example M, أحمر); held in CAT with its attribute (ADR-CAT-070) | PRIVATE | no | create, read, list, update, deactivate, reactivate | none | US-CAT-011; DP §8 P-03 |
 
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
@@ -661,7 +655,7 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 ### ENT-CAT-006 — Category / فئة
 | Kind | Ownership | Business number | Operations | Cross-module | Source |
 |---|---|---|---|---|---|
-| master — a node in the tenant's item classification tree | SHARED (owner) | no — code entered by the owner | create, read, list (tree), update, deactivate | read by SFR (browse) and INS (reporting) | DP §8 P-05; registry CAND-CAT-004; US-CAT-013 |
+| master — a node in the tenant's item classification tree | SHARED (owner) | no — code entered by the owner | create, read, list (tree), update, deactivate, reactivate | read by SFR (browse) and INS (reporting) | DP §8 P-05; registry CAND-CAT-004; US-CAT-013 |
 
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
@@ -741,10 +735,10 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
 | scaleLabelLayoutPk | identifier (BIGINT identity) | yes | assigned by the database | — | المعرّف | Identifier |
-| key | text (2 digits) | yes | entered: the label prefix (02 or 20–29) | RULE-CAT-034 | البادئة | Prefix |
+| key | text (2 digits) | yes | entered: the label prefix (02 or 20–29) | fixed after creation; RULE-CAT-034 | البادئة | Prefix |
 | valueAr | text (≤ 200) | no | layout description, default «ملصق ميزان {key}» | — | الوصف بالعربية | Arabic description |
 | valueEn | text (≤ 200) | no | layout description, default "Scale label {key}" | — | الوصف بالإنجليزية | English description |
-| scaleCodeLength | number (4–6) | yes | default 5 | the embedded value takes 10 − scaleCodeLength digits | طول رمز الميزان | Scale code length |
+| scaleCodeLength | number (4–6) | yes | default 5 | fixed after creation, because the SCALE barcodes of the layout were validated against it (ADR-CAT-064); the embedded value takes 10 − scaleCodeLength digits | طول رمز الميزان | Scale code length |
 | embeddedValueTypeCode | lookup | yes | CAT_SCALE_VALUE_TYPE, default WEIGHT | — | نوع القيمة المضمّنة | Embedded value type |
 | valueDecimals | number (0–3) | yes | default 3 | — | الأرقام العشرية | Decimals |
 | isActiveFl | flag | yes | default true | — | نشط | Active |
@@ -823,11 +817,11 @@ Then  : the next read returns that brandCode, and updatedBy holds the owner's us
 
 ### REQ-CAT-005 — Deactivate an Item
 Pattern    : event
-Statement  : When an owner deactivates an Item, the system shall set its isActiveFl to false and its publishStateCode to UNPUBLISHED.
+Statement  : When an owner deactivates an Item, the system shall set its isActiveFl to false and its publishStateCode to UNPUBLISHED, and leave its Variants and their barcodes active.
 Traces     : US-CAT-001
-Entities   : ENT-CAT-001
-Rationale  : An Item that is no longer sold leaves every channel but stays readable by earlier documents.
-Source     : US-CAT-001; RULE-CAT-041; RULE-CAT-048
+Entities   : ENT-CAT-001, ENT-CAT-009
+Rationale  : An Item that is no longer sold leaves every channel but stays readable by earlier documents. Its barcodes stay active so that the Item can be reactivated with them: while the Item is inactive they no longer resolve (REQ-CAT-086) but still hold their values under RULE-CAT-029. The owner releases a GTIN by deactivating the barcode (REQ-CAT-085, API-CAT-016), which stays allowed on an inactive Item (RULE-CAT-053 never refuses a child deactivation). Deactivating a Variant, by contrast, deactivates its barcodes (REQ-CAT-050).
+Source     : US-CAT-001; RULE-CAT-041; RULE-CAT-048; ADR-CAT-063
 Priority   : HIGH
 
 #### AC-CAT-005 — [REQ-CAT-005]
@@ -837,17 +831,17 @@ Then  : isActiveFl is false, publishStateCode is UNPUBLISHED, a read by itemPk s
 
 ### REQ-CAT-006 — Reactivate an Item
 Pattern    : event
-Statement  : When an owner reactivates an inactive Item, the system shall set its isActiveFl to true and keep its publishStateCode UNPUBLISHED.
+Statement  : When an owner reactivates an inactive Item that meets the ACTIVE-state invariants of A7, the system shall set its isActiveFl to true and keep its publishStateCode UNPUBLISHED.
 Traces     : US-CAT-001
-Entities   : ENT-CAT-001
-Rationale  : An Item comes back without reappearing on the storefront by accident.
-Source     : US-CAT-001
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-006, ENT-CAT-007
+Rationale  : An Item comes back without reappearing on the storefront by accident, and in a state an active Item may hold.
+Source     : US-CAT-001; ADR-CAT-059
 Priority   : HIGH
 
 #### AC-CAT-006 — [REQ-CAT-006]
-Given : an inactive Item
+Given : an inactive STANDARD Item with 1 active Variant, no Category, and no other active Item with its nameAr
 When  : the owner reactivates it
-Then  : isActiveFl is true and publishStateCode is UNPUBLISHED
+Then  : isActiveFl is true, publishStateCode is UNPUBLISHED, and the Item read returns exactly 1 active Variant
 
 ### REQ-CAT-007 — Same Item entered twice
 Pattern    : unwanted
@@ -859,9 +853,14 @@ Source     : US-CAT-001; D-13
 Priority   : HIGH
 
 #### AC-CAT-007 — [REQ-CAT-007]
-Given : an active Item named «شاحن سامسونج 25W»
+Given : an active Item named «شاحن سامسونج 25W» with code ITM-000012
 When  : the owner creates another Item named «شاحن سامسونج 25W»
-Then  : no Item is created and the response shows ar: «يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name. Open the existing item or change the name." with the existing Item's code as the next action
+Then  : no Item is created and the response shows ar: «يوجد صنف نشط بالاسم نفسه: ITM-000012. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name: ITM-000012. Open the existing item or change the name.", naming the existing Item's code as the next action
+
+#### AC-CAT-149 — [REQ-CAT-007]
+Given : no active Item named «كوب زجاج»
+When  : two requests that each create an Item named «كوب زجاج» are submitted in parallel
+Then  : exactly 1 Item named «كوب زجاج» is created, and the other request is refused with code CAT-409-ITEM-NAME-DUPLICATE
 
 ### REQ-CAT-008 — Publish catalogue-change events
 Pattern    : event
@@ -901,9 +900,9 @@ Source     : US-CAT-002
 Priority   : HIGH
 
 #### AC-CAT-010 — [REQ-CAT-010]
-Given : the owner changed an Item's nameEn from "Charger" to "Fast charger 25W" and the change is committed
+Given : the owner changed an Item's nameEn from "Charger" to "Charger 25W" and the change is committed
 When  : the point-of-sale read and the storefront read request the Item after the commit
-Then  : both reads return nameEn "Fast charger 25W"
+Then  : both reads return nameEn "Charger 25W"
 
 ### REQ-CAT-011 — Behaviour follows capability flags only
 Pattern    : ubiquitous
@@ -977,10 +976,10 @@ Then  : the kind field and the kind filter are absent, and 0 Bundle component se
 
 ### REQ-CAT-016 — Flag-off operation refused
 Pattern    : unwanted
-Statement  : If a request invokes a Variant attribute operation or a bundle operation while the capability flag that enables it is off, then the system shall reject the request with RULE-CAT-008.
+Statement  : If a request creates an Item of kind BUNDLE, generates Variants, saves Bundle components, or creates or updates a Variant attribute or value while the capability flag that enables it is off, then the system shall reject the request with RULE-CAT-008.
 Traces     : US-CAT-004
-Entities   : ENT-CAT-001, ENT-CAT-003, ENT-CAT-005, ENT-CAT-007
-Rationale  : Hidden functions also stay closed to direct calls.
+Entities   : ENT-CAT-001, ENT-CAT-003, ENT-CAT-004, ENT-CAT-005, ENT-CAT-007
+Rationale  : Hidden functions also stay closed to direct calls. Reading, deactivating and reactivating records that already exist stay allowed while the flag is off, so data that depends on a flag can always be cleaned up (POL-CAT-005 is not yet enforced by the flag writer — platform finding 2).
 Source     : US-CAT-004; POL-CAT-003
 Priority   : HIGH
 
@@ -994,6 +993,11 @@ Given : the `bundles` flag is off
 When  : a request creates an Item of kind BUNDLE
 Then  : nothing is created and the response shows ar: «هذه الوظيفة غير مفعّلة لنشاطك. فعّل مفتاح القدرة «bundles» من الإعدادات لاستخدامها.» · en: "This function is not switched on for your business. Turn on the «bundles» capability flag in settings to use it."
 
+#### AC-CAT-143 — [REQ-CAT-016]
+Given : the `bundles` flag is off and an active Bundle created while it was on
+When  : the owner reads the Bundle, then deactivates it
+Then  : the read returns the Bundle with its component lines, the deactivation sets isActiveFl to false, and neither request answers code CAT-422-CAPABILITY-OFF
+
 ### REQ-CAT-017 — Turning variants on keeps existing Items
 Pattern    : event
 Statement  : When the `variants` capability flag is turned on, the system shall keep every existing Item with its default Variant, codes, barcodes and identifiers unchanged.
@@ -1002,9 +1006,6 @@ Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-009
 Rationale  : No re-setup and no data move (G3, G8).
 Source     : US-CAT-005; POL-CAT-004; KB:raw-idea.md §6.2, §6.8
 Priority   : HIGH
-
-#### AC-CAT-017 — reserved
-(See AC-CAT-018; this placeholder is not used.)
 
 #### AC-CAT-018 — [REQ-CAT-017]
 Given : 200 Items, each with only its default Variant, while `variants` is off
@@ -1114,8 +1115,8 @@ Pattern    : event
 Statement  : When an Item is created, the system shall create one default Variant for it with isDefaultFl true.
 Traces     : US-CAT-007
 Entities   : ENT-CAT-001, ENT-CAT-002
-Rationale  : Stock, price and barcode always have a Variant to attach to (D-01).
-Source     : US-CAT-007; DP §8 P-04
+Rationale  : Stock, price and barcode always have a Variant to attach to (D-01). The moves of the default flag are REQ-CAT-140 and REQ-CAT-141 (split from this REQ at the seventh gate-analysis revise).
+Source     : US-CAT-007; DP §8 P-04; ADR-CAT-072
 Priority   : HIGH
 
 #### AC-CAT-026 — [REQ-CAT-025]
@@ -1350,7 +1351,7 @@ Then  : 9 Items are created, row 4 creates nothing, and row 4 is reported for co
 #### AC-CAT-043 — [REQ-CAT-041]
 Given : an import file whose rows 2 and 9 both carry nameAr «كوب زجاج», with no such active Item in the tenant
 When  : the owner submits it
-Then  : row 2 creates the Item, row 9 is rejected for column nameAr, and the reason reads ar: «يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name. Open the existing item or change the name."
+Then  : row 2 creates the Item, row 9 is rejected for column nameAr, and the reason reads ar: «يوجد صنف نشط بالاسم نفسه: {code}. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name: {code}. Open the existing item or change the name.", with {code} the code the import gave to the Item of row 2
 
 ### REQ-CAT-042 — Create a Variant attribute
 Pattern    : event
@@ -1466,17 +1467,22 @@ Then  : the Item has 4 active Variants (the default Variant takes M / «أحمر
 
 ### REQ-CAT-050 — Deactivate a Variant
 Pattern    : event
-Statement  : When an owner deactivates a Variant, the system shall set its isActiveFl to false and keep it readable by its identifier.
+Statement  : When an owner deactivates a Variant, the system shall set its isActiveFl to false, set the isActiveFl of its active attribute assignments and active barcodes to false, and keep the Variant readable by its identifier.
 Traces     : US-CAT-011
-Entities   : ENT-CAT-002
-Rationale  : Discontinued combinations leave the channels but earlier documents still resolve them.
-Source     : US-CAT-011; RULE-CAT-048
+Entities   : ENT-CAT-002, ENT-CAT-005, ENT-CAT-009
+Rationale  : Discontinued combinations leave the channels but earlier documents still resolve them. A barcode of an inactive Variant can no longer be looked up (RULE-CAT-047), so it is released for RULE-CAT-029 instead of blocking its value (ADR-CAT-063).
+Source     : US-CAT-011; RULE-CAT-048; ADR-CAT-063
 Priority   : HIGH
 
 #### AC-CAT-052 — [REQ-CAT-050]
 Given : an Item with 4 active Variants
 When  : the owner deactivates the Variant L / «أزرق»
 Then  : the Item read returns 3 active Variants, and a read by that Variant's variantPk returns it with isActiveFl false
+
+#### AC-CAT-145 — [REQ-CAT-050]
+Given : an Item with 2 active Variants, the first carrying the active GTIN 6223000000014
+When  : the owner deactivates the first Variant, then adds the GTIN 6223000000014 to a Variant of another Item
+Then  : a read of the deactivated Variant returns it with isActiveFl false and with no active barcode, and the GTIN 6223000000014 is saved as an active barcode of the other Variant
 
 ### REQ-CAT-051 — Duplicate combination
 Pattern    : unwanted
@@ -1501,13 +1507,15 @@ Rationale  : Bounded combinations per Item (D-10).
 Source     : US-CAT-011; D-10
 Priority   : HIGH
 
-#### AC-CAT-053 — reserved
-(See AC-CAT-054; this placeholder is not used.)
-
 #### AC-CAT-054 — [REQ-CAT-052]
 Given : an Item with 290 active Variants
 When  : the owner generates 20 new combinations
 Then  : 0 Variants are created and the response shows ar: «الحد الأقصى 3 خصائص و300 متغيّر نشط للصنف الواحد.» · en: "An item can have at most 3 attributes and 300 active variants."
+
+#### AC-CAT-147 — [REQ-CAT-052]
+Given : an Item with 280 active Variants
+When  : two generation requests, each adding 15 combinations the Item does not carry, are submitted in parallel
+Then  : exactly 1 request succeeds, the other is refused with code CAT-422-VARIANT-LIMIT-EXCEEDED, and the Item has 295 active Variants
 
 ### REQ-CAT-053 — Last active Variant
 Pattern    : unwanted
@@ -1522,6 +1530,11 @@ Priority   : HIGH
 Given : an active Item with exactly 1 active Variant
 When  : the owner deactivates that Variant
 Then  : the Variant stays active and the response shows ar: «لا يمكن إيقاف آخر متغيّر نشط لصنف نشط. أوقف الصنف نفسه بدلًا من ذلك.» · en: "The last active variant of an active item cannot be deactivated. Deactivate the item instead."
+
+#### AC-CAT-146 — [REQ-CAT-053]
+Given : an active Item with exactly 2 active Variants
+When  : two requests, each deactivating a different one of the 2 Variants, are submitted in parallel
+Then  : exactly 1 request succeeds, the other is refused with code CAT-409-LAST-ACTIVE-VARIANT, and the Item keeps exactly 1 active Variant
 
 ### REQ-CAT-054 — Attribute or value in use
 Pattern    : unwanted
@@ -1649,6 +1662,11 @@ Given : a Variant that is a component of 2 active Bundles
 When  : the owner deactivates that Variant
 Then  : the Variant stays active and the response shows ar: «هذا المتغيّر مكوّن في 2 حزمة نشطة. أزله من هذه الحزم أو أوقفها أولًا.» · en: "This variant is a component of 2 active bundles. Remove it from those bundles or deactivate them first."
 
+#### AC-CAT-151 — [REQ-CAT-062]
+Given : a Variant P of an active STANDARD Item that has a second active Variant, and an active Bundle B whose lines do not include P
+When  : a request that deactivates P and a request that saves B's components with P added are submitted in parallel
+Then  : exactly 1 request succeeds; either P is inactive and the Bundle save is refused with code CAT-422-BUNDLE-COMPONENT-INVALID, or B holds P and the deactivation is refused with code CAT-409-VARIANT-IN-ACTIVE-BUNDLE
+
 ### REQ-CAT-063 — Item kind changed after saving
 Pattern    : unwanted
 Statement  : If an update request changes the itemKindCode of a saved Item, then the system shall reject the request with RULE-CAT-022.
@@ -1687,9 +1705,9 @@ Source     : US-CAT-013
 Priority   : —
 
 #### AC-CAT-067 — [REQ-CAT-065]
-Given : the Category PHONES under «إلكترونيات»
+Given : the Category PHONES under «إلكترونيات», holding 3 active Items
 When  : the owner moves it to the top level and saves
-Then  : PHONES has an empty parentCategoryFk, and its Items keep categoryFk PHONES
+Then  : PHONES has an empty parentCategoryFk, and all 3 Items keep categoryFk PHONES
 
 ### REQ-CAT-066 — Deactivate a Category
 Pattern    : event
@@ -1704,6 +1722,11 @@ Priority   : —
 Given : a Category with 0 active sub-categories and 0 active Items
 When  : the owner deactivates it
 Then  : isActiveFl is false, the Item entry's Category list omits it, and a read by categoryPk still returns it
+
+#### AC-CAT-142 — [REQ-CAT-066]
+Given : an inactive Item «كوب زجاج» whose Category «أدوات قديمة» was deactivated after the Item
+When  : the owner lists Items with the active filter set to inactive, then opens that Item
+Then  : the list row and the Item header both show the Category label «أدوات قديمة» (not its identifier), and the Category selection list offers 0 entries named «أدوات قديمة»
 
 ### REQ-CAT-067 — Category tree
 Pattern    : event
@@ -1774,6 +1797,11 @@ Priority   : —
 Given : a Category holding 4 active Items
 When  : the owner deactivates it
 Then  : it stays active and the response shows ar: «لا يمكن إيقاف الفئة لوجود 4 فئة فرعية أو صنف نشط فيها. انقلها أو أوقفها أولًا.» · en: "The category cannot be deactivated while it holds 4 active sub-categories or items. Move or deactivate them first."
+
+#### AC-CAT-153 — [REQ-CAT-071]
+Given : an active Category «إلكترونيات» with 0 active sub-categories and 0 active Items
+When  : a request that creates the sub-category PHONES under «إلكترونيات» and a request that deactivates «إلكترونيات» are submitted in parallel
+Then  : exactly 1 request succeeds; either PHONES is created and the deactivation is refused with code CAT-409-CATEGORY-IN-USE, or «إلكترونيات» is inactive and the create is refused with code CAT-422-CATEGORY-PARENT-INVALID; no active Category has an inactive parent
 
 ### REQ-CAT-072 — Inactive Category on an Item
 Pattern    : unwanted
@@ -1973,17 +2001,22 @@ Then  : isActiveFl is false and the lookup returns no Variant
 
 ### REQ-CAT-086 — Barcode lookup
 Pattern    : event
-Statement  : When a barcode value is submitted for lookup, the system shall return the active Variant, its Item and the unit of the active barcode with that value.
+Statement  : When a barcode value is submitted for lookup, the system shall return the active Variant of an active Item, that Item and the unit of the active barcode with that value.
 Traces     : US-CAT-016
 Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-009
-Rationale  : Selling and receiving find the exact Variant and unit.
-Source     : US-CAT-016
+Rationale  : Selling and receiving find the exact Variant and unit; an Item that left every channel no longer scans (REQ-CAT-005).
+Source     : US-CAT-016; ADR-CAT-059
 Priority   : —
 
 #### AC-CAT-088 — [REQ-CAT-086]
 Given : the active barcode 16223000000011 bound to unit CARTON of a Variant VAR-000200
 When  : a seller/cashier scans 16223000000011
 Then  : the response returns VAR-000200, its Item and uomCode CARTON
+
+#### AC-CAT-135 — [REQ-CAT-086]
+Given : the active barcode 6223000000021 on the active Variant of an Item that the owner deactivated
+When  : a seller/cashier scans 6223000000021
+Then  : no Variant is returned and the response shows ar: «لا يوجد صنف بهذا الباركود. ابحث بالاسم أو أضف الباركود إلى الصنف.» · en: "No item has this barcode. Search by name or add the barcode to the item."
 
 ### REQ-CAT-087 — Duplicate barcode
 Pattern    : unwanted
@@ -1998,6 +2031,11 @@ Priority   : —
 Given : the active GTIN 6223000000014 on an Item with code ITM-000005
 When  : the owner adds 6223000000014 to another Variant
 Then  : nothing is saved and the response shows ar: «هذا الباركود مستخدم في الصنف ITM-000005. افتح ذلك الصنف أو استخدم باركودًا آخر.» · en: "This barcode is already used by item ITM-000005. Open that item or use another barcode."
+
+#### AC-CAT-150 — [REQ-CAT-087]
+Given : no active barcode 6223000000038 in the tenant
+When  : two requests that add the GTIN 6223000000038 to two different Variants are submitted in parallel
+Then  : exactly 1 barcode 6223000000038 is saved, and the other request is refused with code CAT-409-BARCODE-DUPLICATE
 
 ### REQ-CAT-088 — Invalid GTIN
 Pattern    : unwanted
@@ -2071,11 +2109,11 @@ Then  : the layout is created with isActiveFl true
 
 ### REQ-CAT-093 — Update a scale label layout
 Pattern    : event
-Statement  : When an owner changes the scale code length, embedded value type, decimals or descriptions of a scale label layout, the system shall save the change.
+Statement  : When an owner changes the embedded value type, decimals or descriptions of a scale label layout, the system shall save the change and read the embedded value of every later scanned label with that prefix by the new type and decimals.
 Traces     : US-CAT-017
-Entities   : ENT-CAT-011
-Rationale  : A scale replaced or re-set keeps working.
-Source     : US-CAT-017
+Entities   : ENT-CAT-011, ENT-CAT-009
+Rationale  : A scale replaced or re-set keeps working. The prefix and the scale code length are fixed after creation, because the layout's SCALE barcodes were validated against that length (RULE-CAT-033); a change of type or decimals changes only how the embedded value is read, and every SCALE barcode keeps resolving (ADR-CAT-064).
+Source     : US-CAT-017; ADR-CAT-064
 Priority   : LOW
 
 #### AC-CAT-095 — [REQ-CAT-093]
@@ -2083,18 +2121,23 @@ Given : the layout with prefix 20 and embeddedValueTypeCode WEIGHT
 When  : the owner changes embeddedValueTypeCode to PRICE and valueDecimals to 2
 Then  : the next read returns PRICE and 2
 
+#### AC-CAT-152 — [REQ-CAT-093]
+Given : the active layout prefix 20, scaleCodeLength 5, WEIGHT, valueDecimals 3, and a Variant with SCALE barcode 01230
+When  : the owner changes valueDecimals to 2 and a seller/cashier then scans 2001230012342
+Then  : the response returns that Variant with a weight of 12.34, and the SCALE barcode 01230 is unchanged and active
+
 ### REQ-CAT-094 — Deactivate a scale label layout
 Pattern    : event
-Statement  : When an owner deactivates a scale label layout, the system shall set its isActiveFl to false and stop decoding values with its prefix.
+Statement  : When an owner deactivates a scale label layout, the system shall set its isActiveFl to false, stop decoding values with its prefix, and keep every SCALE barcode stored and active.
 Traces     : US-CAT-017
-Entities   : ENT-CAT-011
-Rationale  : A scale taken out of use stops being decoded.
-Source     : US-CAT-017
+Entities   : ENT-CAT-011, ENT-CAT-009
+Rationale  : A scale taken out of use stops being decoded. Its SCALE barcodes stay stored but are not decodable until an active layout with the same scale code length exists again (ADR-CAT-064).
+Source     : US-CAT-017; ADR-CAT-064
 Priority   : LOW
 
 #### AC-CAT-096 — [REQ-CAT-094]
-Given : the active layout with prefix 20
-When  : the owner deactivates it and a seller/cashier scans 2000123012346
+Given : the active layout with prefix 20 (scaleCodeLength 5), no other active layout, and a Variant with the active SCALE barcode 01230
+When  : the owner deactivates the layout and a seller/cashier scans 2001230012342 (prefix 20, code 01230, valid check digit)
 Then  : isActiveFl is false and the lookup returns no Variant with the RULE-CAT-047 message
 
 ### REQ-CAT-095 — Read the catalogue settings
@@ -2183,17 +2226,22 @@ Then  : no Variant is returned and the response shows ar: «تعذّر قراء�
 
 ### REQ-CAT-101 — Find Variants for labels
 Pattern    : event
-Statement  : When a user searches Variants by code, name or barcode, the system shall return a page of active Variants with their Item nameAr and their first active barcode.
+Statement  : When a user searches Variants by code, name or barcode, the system shall return a page of the active Variants of active Items with their Item nameAr and their first active barcode.
 Traces     : US-CAT-018
-Entities   : ENT-CAT-002, ENT-CAT-009
-Rationale  : Warehouse staff pick the Variants to label.
-Source     : US-CAT-018
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-009
+Rationale  : Warehouse staff pick the Variants to label; an Item that left every channel gets no new labels (REQ-CAT-005).
+Source     : US-CAT-018; ADR-CAT-059
 Priority   : —
 
 #### AC-CAT-103 — [REQ-CAT-101]
-Given : 3 active Variants whose Item nameAr contains «قميص»
+Given : 3 active Variants of active Items whose Item nameAr contains «قميص»
 When  : warehouse staff search Variants with «قميص» and page size 20
 Then  : 3 Variants are returned, each with its Item nameAr and its earliest-created active barcode (empty when it has none)
+
+#### AC-CAT-136 — [REQ-CAT-101]
+Given : 2 active Variants of an active Item named «حذاء رياضي» and 1 active Variant of an inactive Item named «حذاء جلد»
+When  : warehouse staff search Variants with «حذاء» and page size 20
+Then  : exactly 2 Variants are returned, both of «حذاء رياضي», and 0 Variants of «حذاء جلد»
 
 ### REQ-CAT-102 — Produce barcode labels
 Pattern    : event
@@ -2239,11 +2287,11 @@ Then  : no document is produced, the 2 Variants are listed, and the response sho
 
 ### REQ-CAT-105 — Add an image
 Pattern    : event
-Statement  : When an owner uploads an image for an Item, the system shall save the file in the core public image storage and create an active Item media record that points to it, with nameAr defaulting to the Item's nameAr.
+Statement  : When an owner adds to an Item an image file already uploaded to the core public image storage, the system shall create an active Item media record that points to that file, with nameAr defaulting to the Item's nameAr.
 Traces     : US-CAT-019
 Entities   : ENT-CAT-010
-Rationale  : Shoppers see the Item as it really is.
-Source     : US-CAT-019; DP §8 P-12
+Rationale  : Shoppers see the Item as it really is; the bytes are kept by the core file module only.
+Source     : US-CAT-019; DP §8 P-12; ADR-CAT-056
 Priority   : MEDIUM
 
 #### AC-CAT-107 — [REQ-CAT-105]
@@ -2264,6 +2312,11 @@ Priority   : MEDIUM
 Given : an Item whose primary image is image A, and image B is not primary
 When  : the owner sets isPrimaryFl on image B
 Then  : B is primary, A is not, the Item has exactly 1 primary image, and the response shows ar: «للصنف صورة رئيسية واحدة فقط؛ تم تعيين الصورة المختارة رئيسية بدل السابقة.» · en: "An item has exactly one main image; the selected image replaced the previous main image."
+
+#### AC-CAT-148 — [REQ-CAT-106]
+Given : an Item with active images A (primary), B and C
+When  : a request that sets isPrimaryFl on B and a request that sets isPrimaryFl on C are submitted in parallel
+Then  : both requests complete one after the other, and the Item then has exactly 1 primary image, B or C
 
 ### REQ-CAT-107 — Remove an image
 Pattern    : event
@@ -2291,7 +2344,7 @@ Priority   : MEDIUM
 #### AC-CAT-110 — [REQ-CAT-108]
 Given : an Item with 0 active images
 When  : the owner uploads one image
-Then  : that image has isPrimaryFl true
+Then  : that image has isPrimaryFl true, and exactly 1 active image of the Item has isPrimaryFl true
 
 ### REQ-CAT-109 — Images of a Variant
 Pattern    : event
@@ -2312,14 +2365,14 @@ Pattern    : unwanted
 Statement  : If an uploaded image is not JPG, PNG or WEBP, exceeds 5 MB, or would give the Item more than 20 active images, then the system shall reject the upload with RULE-CAT-038.
 Traces     : US-CAT-019
 Entities   : ENT-CAT-010
-Rationale  : Storefront pages load bounded media (D-10).
-Source     : US-CAT-019; D-10
+Rationale  : Storefront pages load bounded media (D-10). The file part of RULE-CAT-038 (type, size, public storage) is enforced at upload by the FILE category CAT_ITEM_IMAGE that CAT registers, in the file module's own envelope; CAT itself refuses the 21st active image (ADR-CAT-076).
+Source     : US-CAT-019; D-10; ADR-CAT-076
 Priority   : MEDIUM
 
 #### AC-CAT-112 — [REQ-CAT-110]
-Given : an Item
-When  : the owner uploads a 7 MB JPG
-Then  : no media record is created and the response shows ar: «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.» · en: "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item."
+Given : an Item with 20 active images
+When  : the owner uploads a 7 MB JPG, then a 1 MB PNG as a 21st image
+Then  : the 7 MB JPG is refused at its upload to the image category, in the file module's envelope, and the 1 MB PNG is refused with ar: «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.» · en: "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item."; the Item keeps 20 active media records
 
 ### REQ-CAT-111 — Main image removed
 Pattern    : unwanted
@@ -2559,7 +2612,295 @@ Given : a custom role without VIEW on CAT_ITEMS
 When  : its user searches «شاحن» in the global search
 Then  : the catalogue contributes 0 results
 
-> Note on AC numbering: the two lines titled "reserved" above are editorial notes, not acceptance criteria; they carry no trace brackets and no Given/When/Then. Every AC id AC-CAT-001 … AC-CAT-129 appears exactly once with its trace.
+### REQ-CAT-128 — Item unit used by active barcodes
+Pattern    : unwanted
+Statement  : If an owner deactivates an Item unit while active barcodes of the Item's Variants are bound to that unit, then the system shall reject the deactivation with RULE-CAT-051.
+Traces     : US-CAT-016
+Entities   : ENT-CAT-008, ENT-CAT-009
+Rationale  : A barcode never resolves to a unit the Item no longer offers.
+Source     : US-CAT-016; US-CAT-015; ADR-CAT-060
+Priority   : —
+
+#### AC-CAT-130 — [REQ-CAT-128]
+Given : an Item with the active Item unit CARTON and 2 active barcodes bound to unit CARTON
+When  : the owner deactivates the Item unit CARTON
+Then  : CARTON stays active and the response shows ar: «هذه الوحدة مستخدمة في 2 باركود نشط. أوقف هذه الباركودات أولًا.» · en: "This unit is used by 2 active barcodes. Deactivate those barcodes first."
+
+### REQ-CAT-129 — Generation omits a used attribute
+Pattern    : unwanted
+Statement  : If a Variant generation request for an Item omits an attribute that the Item's active Variants already carry, or selects no value for it, then the system shall reject the whole request with RULE-CAT-052.
+Traces     : US-CAT-011
+Entities   : ENT-CAT-002, ENT-CAT-005
+Rationale  : Every active Variant of an Item carries one value of each attribute the Item uses (RULE-CAT-013).
+Source     : US-CAT-011
+Priority   : HIGH
+
+#### AC-CAT-131 — [REQ-CAT-129]
+Given : a STANDARD Item whose 2 active Variants carry the attributes SIZE (values S, M) and COLOUR (value «أحمر»)
+When  : the owner generates Variants with selections SIZE [L] only
+Then  : 0 Variants are created and the response shows ar: «اختر قيمة واحدة على الأقل لكل خاصية يستخدمها الصنف بالفعل.» · en: "Select at least one value for every attribute the item already uses."
+
+### REQ-CAT-130 — Reactivation of an Item with no active Variant
+Pattern    : unwanted
+Statement  : If an owner reactivates an Item that has no active Variant, then the system shall reject the reactivation with RULE-CAT-050 and keep the Item inactive.
+Traces     : US-CAT-001
+Entities   : ENT-CAT-001, ENT-CAT-002
+Rationale  : Every transition into ACTIVE re-establishes the Item invariants of A7; this REQ holds invariant 1. The other three refusals on reactivation are REQ-CAT-142, REQ-CAT-143 and REQ-CAT-144 (split from this REQ at the seventh gate-analysis revise).
+Source     : US-CAT-001; ADR-CAT-059
+Priority   : HIGH
+
+#### AC-CAT-132 — [REQ-CAT-130]
+Given : an inactive Item whose only Variant was deactivated while the Item was inactive, so it has 0 active Variants
+When  : the owner reactivates the Item
+Then  : isActiveFl stays false and the response shows ar: «لا يمكن إعادة تفعيل صنف بلا متغيّر نشط. أنشئ متغيّرًا له أو أنشئ صنفًا جديدًا.» · en: "An item with no active variant cannot be reactivated. Generate a variant for it, or create a new item."
+
+### REQ-CAT-131 — Operation without permission
+Pattern    : unwanted
+Statement  : If a user calls a catalogue operation without the permission of its page and action in the SRS B4 matrix, then the system shall refuse the request with CAT-403-FORBIDDEN and change no record, except for the catalogue search, which REQ-CAT-127 answers with no results.
+Traces     : US-CAT-001
+Entities   : ENT-CAT-001
+Rationale  : Only the roles that SRS B4 grants change the catalogue; the screens hide what the user may not do.
+Source     : US-CAT-001; SRS B4; profile security_model; ADR-CAT-046
+Priority   : HIGH
+
+#### AC-CAT-137 — [REQ-CAT-131]
+Given : a Seller/cashier who holds only PERM_CAT_ITEMS_VIEW, and an active Item with nameEn "Charger"
+When  : the user creates an Item, sets the Item's nameEn to "Charger 25W", and deactivates the Item, in 3 requests
+Then  : each of the 3 requests is refused with code CAT-403-FORBIDDEN, 0 Items are created, and the Item keeps nameEn "Charger" and isActiveFl true
+
+#### AC-CAT-138 — [REQ-CAT-131]
+Given : a Seller/cashier who holds only PERM_CAT_ITEMS_VIEW
+When  : the user opens the Items entry of an existing Item
+Then  : 0 Save actions and 0 Deactivate actions are shown, and every header field is read-only
+
+### REQ-CAT-132 — Record of another tenant
+Pattern    : unwanted
+Statement  : If a request names a catalogue record of another tenant by its identifier, then the system shall answer with CAT-404-NOT-FOUND and change no record.
+Traces     : US-CAT-001
+Entities   : ENT-CAT-001
+Rationale  : One tenant's catalogue is invisible to every other tenant (contract §0, tenancy).
+Source     : US-CAT-001; contract §0; given erp-core tenancy
+Priority   : HIGH
+
+#### AC-CAT-139 — [REQ-CAT-132]
+Given : an Item with nameEn "Charger" in tenant A, and an Owner of tenant B holding every PERM_CAT_* permission
+When  : the tenant B Owner reads that Item by its itemPk, then submits an update of its nameEn
+Then  : both requests are answered with code CAT-404-NOT-FOUND, and the Item in tenant A keeps nameEn "Charger"
+
+### REQ-CAT-133 — Stale version
+Pattern    : unwanted
+Statement  : If an update request carries a version older than the stored version of the record, then the system shall reject it with CAT-409-STALE-VERSION and keep the stored values.
+Traces     : US-CAT-002
+Entities   : ENT-CAT-001
+Rationale  : A change made by one user is never silently overwritten by another.
+Source     : US-CAT-002; ADR-CAT-044
+Priority   : HIGH
+
+#### AC-CAT-140 — [REQ-CAT-133]
+Given : two owners read the same Item at the same version, and the first saves nameEn "Charger 25W"
+When  : the second submits nameEn "Charger 30W" with the version read before the first save
+Then  : the request is refused with code CAT-409-STALE-VERSION, and the Item keeps nameEn "Charger 25W"
+
+### REQ-CAT-134 — Catalogue seeds of a new tenant
+Pattern    : event
+Statement  : When a tenant is provisioned, the system shall give it the CAT lookup values of A6, the number series CAT_ITEM, CAT_VARIANT and CAT_INTERNAL_BARCODE with their counters at 1, and the 8 seeded Unit e-invoice codes of D-12.
+Traces     : US-CAT-009, US-CAT-021
+Entities   : ENT-CAT-001, ENT-CAT-012
+Rationale  : The first Item of a new tenant receives its codes, and its units carry their e-invoice units, without a setup step.
+Source     : US-CAT-009; US-CAT-021; D-11; D-12; ADR-CAT-058
+Priority   : HIGH
+
+#### AC-CAT-141 — [REQ-CAT-134]
+Given : a tenant provisioned from PLATFORM after CAT was installed, with no catalogue record yet
+When  : its owner opens the catalogue settings, then creates an Item with nameAr «كوب زجاج»
+Then  : the settings list 8 active Unit e-invoice codes, and the Item is created with code ITM-000001 and a default Variant with code VAR-000001
+
+### REQ-CAT-135 — Change under an inactive parent
+Pattern    : unwanted
+Statement  : If a request changes an inactive Item other than by changing only its categoryFk, adds or updates an Item unit or adds or updates an image of an inactive Item, or adds a barcode or sets the e-invoice override of a Variant that is inactive or belongs to an inactive Item, then the system shall reject the request with RULE-CAT-053.
+Traces     : US-CAT-001, US-CAT-016
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-008, ENT-CAT-009, ENT-CAT-010
+Rationale  : An inactive record has left every channel; a write under it creates data no channel can use and that the ACTIVE-state invariants (A7) never checked. Deactivating children stays allowed, so an inactive Item can always be cleaned up (ADR-CAT-063). The three repair operations that stay allowed on an inactive Item are REQ-CAT-145, REQ-CAT-146 and REQ-CAT-147 (split from this REQ at the seventh gate-analysis revise — ADR-CAT-068).
+Source     : US-CAT-001; US-CAT-016; ADR-CAT-063; ADR-CAT-068
+Priority   : HIGH
+
+#### AC-CAT-144 — [REQ-CAT-135]
+Given : an inactive Item with base unit PIECE and no Item unit CARTON
+When  : the owner adds the Item unit CARTON with conversionFactor 12
+Then  : no Item unit is created and the response shows ar: «هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا.» · en: "This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant."
+
+### REQ-CAT-136 — Reactivate a Category
+Pattern    : event
+Statement  : When an owner reactivates an inactive Category whose parent is empty or active and whose nameAr no active Category under the same parent carries, the system shall set its isActiveFl to true and offer it again for selection.
+Traces     : US-CAT-013
+Entities   : ENT-CAT-006
+Rationale  : A mistaken deactivation is undone without losing the Category or its code, which stays unique among active and inactive Categories (ADR-CAT-069).
+Source     : US-CAT-013; ADR-CAT-069
+Priority   : —
+
+#### AC-CAT-157 — [REQ-CAT-136]
+Given : an inactive top-level Category with code PHONES and nameAr «هواتف», and no active top-level Category named «هواتف»
+When  : the owner reactivates it
+Then  : isActiveFl is true, its code stays PHONES, and the Item entry's Category list offers it
+
+#### AC-CAT-158 — [REQ-CAT-136]
+Given : an inactive Category PHONES whose parent «إلكترونيات» is inactive
+When  : the owner reactivates PHONES
+Then  : PHONES stays inactive and the response shows ar: «الفئة الأم يجب أن تكون نشطة، وألا تكون الفئة نفسها أو إحدى فئاتها الفرعية، وألا يتجاوز العمق 5 مستويات.» · en: "The parent category must be active, must not be the category itself or one of its sub-categories, and the depth cannot exceed 5 levels."
+
+### REQ-CAT-137 — Reactivate a Variant attribute
+Pattern    : event
+Statement  : When an owner reactivates an inactive Variant attribute whose nameAr no active Variant attribute carries, the system shall set its isActiveFl to true and offer it again to Variant generation.
+Traces     : US-CAT-011
+Entities   : ENT-CAT-003
+Rationale  : A mistaken deactivation is undone without losing the attribute or its code (ADR-CAT-069).
+Source     : US-CAT-011; ADR-CAT-069
+Priority   : HIGH
+
+#### AC-CAT-159 — [REQ-CAT-137]
+Given : the inactive Variant attribute SIZE «المقاس», and no active attribute named «المقاس»
+When  : the owner reactivates SIZE
+Then  : isActiveFl is true, its code stays SIZE, and the Variant generation list offers SIZE with its active values
+
+### REQ-CAT-138 — Reactivate a Variant attribute value
+Pattern    : event
+Statement  : When an owner reactivates an inactive value of an active Variant attribute whose nameAr no active value of that attribute carries, the system shall set its isActiveFl to true and offer it again to Variant generation.
+Traces     : US-CAT-011
+Entities   : ENT-CAT-004
+Rationale  : A mistaken deactivation is undone without losing the value or its code (ADR-CAT-069).
+Source     : US-CAT-011; ADR-CAT-069
+Priority   : HIGH
+
+#### AC-CAT-160 — [REQ-CAT-138]
+Given : the active attribute SIZE with the inactive value XS «صغير جدًا», and no active value of SIZE named «صغير جدًا»
+When  : the owner reactivates XS
+Then  : isActiveFl is true, its code stays XS, and the Variant generation list for SIZE offers XS
+
+### REQ-CAT-139 — Import past its time limit
+Pattern    : unwanted
+Statement  : If an item import does not complete within 120 seconds, then the system shall roll the whole import back, store no Item, Variant or barcode of it, publish no catalogue-change event for it, and answer with RULE-CAT-049.
+Traces     : US-CAT-010
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-009
+Rationale  : An import is all or nothing, so a slow import never leaves half a catalogue behind; the codes already drawn stay as gaps in their series, and the owner imports the file again, split into smaller files. The target for a file of 5,000 valid rows is 60 seconds, a budget measured on the reference deployment by the test of this REQ (ADR-CAT-071, ADR-CAT-074); the 120-second limit is the guarantee.
+Source     : US-CAT-010; ADR-CAT-071; ADR-CAT-074; RULE-CAT-049
+Priority   : HIGH
+
+#### AC-CAT-161 — [REQ-CAT-139]
+Given : an import file of 5,000 valid rows, in a tenant with 0 Items, whose processing is held past 120 seconds
+When  : the owner submits it
+Then  : 0 Items, 0 Variants, 0 barcodes and 0 catalogue-change events are stored, and the response shows ar: «تعذّر حفظ التغيير ولم يُرسل أي إشعار بالتغيير. أعد المحاولة.» · en: "The change was not saved and no change notice was sent. Try again."
+
+### REQ-CAT-140 — Default Variant moves on its deactivation
+Pattern    : event
+Statement  : When the default Variant of an Item is deactivated while another Variant of the Item is active, the system shall move isDefaultFl, in the same transaction, to the remaining active Variant with the lowest code.
+Traces     : US-CAT-007, US-CAT-011
+Entities   : ENT-CAT-001, ENT-CAT-002
+Rationale  : Consumers always find one active default Variant on an active Item to fall back to (CON-CAT-002, A7 invariant 5). Split from REQ-CAT-025 at the seventh gate-analysis revise.
+Source     : US-CAT-007; ADR-CAT-072
+Priority   : HIGH
+
+#### AC-CAT-163 — [REQ-CAT-140]
+Given : an active Item with 3 active Variants VAR-000010 (isDefaultFl true), VAR-000011 and VAR-000012, none of them a Bundle component
+When  : the owner deactivates VAR-000010
+Then  : VAR-000011 has isDefaultFl true, VAR-000010 has isDefaultFl false, and the Item has exactly 1 Variant with isDefaultFl true
+
+### REQ-CAT-141 — Default Variant moves on generation for an Item with no active Variant
+Pattern    : event
+Statement  : When Variants are generated for an Item with no active Variant, the system shall give isDefaultFl to the first Variant created and clear it on the inactive former default.
+Traces     : US-CAT-007, US-CAT-011
+Entities   : ENT-CAT-001, ENT-CAT-002
+Rationale  : An Item repaired by generation returns to ACTIVE with an active default Variant (A7 invariant 5). Split from REQ-CAT-025 at the seventh gate-analysis revise.
+Source     : US-CAT-007; ADR-CAT-072
+Priority   : HIGH
+
+#### AC-CAT-164 — [REQ-CAT-141]
+Given : `variants` is on, an inactive STANDARD Item whose only Variant V (isDefaultFl true) was deactivated, and the active attribute SIZE with the active value M
+When  : the owner generates Variants for the Item with selections SIZE [M], then reactivates the Item
+Then  : the new Variant carrying M has isDefaultFl true, V has isDefaultFl false, and the reactivated Item has exactly 1 Variant with isDefaultFl true, which is active
+
+### REQ-CAT-142 — Reactivation of an Item whose Category is inactive
+Pattern    : unwanted
+Statement  : If an owner reactivates an Item whose categoryFk points to an inactive Category, then the system shall reject the reactivation with RULE-CAT-026 and keep the Item inactive.
+Traces     : US-CAT-001, US-CAT-013
+Entities   : ENT-CAT-001, ENT-CAT-006
+Rationale  : A7 invariant 2. Split from REQ-CAT-130 at the seventh gate-analysis revise.
+Source     : US-CAT-001; ADR-CAT-059
+Priority   : HIGH
+
+#### AC-CAT-133 — [REQ-CAT-142]
+Given : an inactive Item with categoryFk OLD, where the Category OLD was deactivated after the Item
+When  : the owner reactivates the Item
+Then  : isActiveFl stays false and the response shows ar: «الفئة المختارة غير نشطة. اختر فئة نشطة.» · en: "The selected category is inactive. Choose an active category."
+
+### REQ-CAT-143 — Reactivation of a Bundle with an invalid component
+Pattern    : unwanted
+Statement  : If an owner reactivates a Bundle holding a component line that RULE-CAT-019 refuses, then the system shall reject the reactivation with RULE-CAT-019 and keep the Bundle inactive.
+Traces     : US-CAT-001, US-CAT-012
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-007
+Rationale  : A7 invariant 3. Split from REQ-CAT-130 at the seventh gate-analysis revise.
+Source     : US-CAT-001; ADR-CAT-059
+Priority   : HIGH
+
+#### AC-CAT-134 — [REQ-CAT-143]
+Given : an inactive Bundle with 2 component lines, one of whose component Variants was deactivated after the Bundle was deactivated
+When  : the owner reactivates the Bundle
+Then  : isActiveFl stays false and the response shows ar: «المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها.» · en: "A component must be an active variant of an item that is not a bundle, listed once per bundle."
+
+### REQ-CAT-144 — Reactivation of an Item whose name another active Item carries
+Pattern    : unwanted
+Statement  : If an owner reactivates an Item whose normalised nameAr another active Item of the tenant carries, then the system shall reject the reactivation with RULE-CAT-003 and keep the Item inactive.
+Traces     : US-CAT-001
+Entities   : ENT-CAT-001
+Rationale  : A7 invariant 4; the repair is to rename or deactivate the other active Item, whose code the message names. Split from REQ-CAT-130 at the seventh gate-analysis revise.
+Source     : US-CAT-001; ADR-CAT-059; ADR-CAT-062
+Priority   : HIGH
+
+#### AC-CAT-162 — [REQ-CAT-144]
+Given : an inactive Item named «كوب زجاج» with 1 active Variant and no Category, and another active Item named «كوب زجاج» with code ITM-000031, created while the first was inactive
+When  : the owner reactivates the first Item
+Then  : the first Item stays inactive and the response shows ar: «يوجد صنف نشط بالاسم نفسه: ITM-000031. افتح الصنف الموجود أو غيّر الاسم.» · en: "An active item already has this name: ITM-000031. Open the existing item or change the name."
+
+### REQ-CAT-145 — Variant generation allowed on an inactive Item
+Pattern    : state
+Statement  : While an Item is inactive, the system shall accept a Variant generation for it under RULE-CAT-008, RULE-CAT-012, RULE-CAT-013, RULE-CAT-014, RULE-CAT-020 and RULE-CAT-052, and leave the Item inactive.
+Traces     : US-CAT-001, US-CAT-011
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005
+Rationale  : Generation is the repair of REQ-CAT-130, so an Item with no active Variant can return to ACTIVE (ADR-CAT-068). Split from REQ-CAT-135 at the seventh gate-analysis revise.
+Source     : US-CAT-001; ADR-CAT-068
+Priority   : HIGH
+
+#### AC-CAT-154 — [REQ-CAT-145]
+Given : `variants` is on, and an inactive STANDARD Item with 0 active Variants, 0 Variant attributes in use and the active attribute SIZE with the active value M
+When  : the owner generates Variants for the Item with selections SIZE [M], then reactivates the Item
+Then  : the generation creates 1 active Variant carrying M, and the reactivation sets isActiveFl to true
+
+### REQ-CAT-146 — Category-only change allowed on an inactive Item
+Pattern    : state
+Statement  : While an Item is inactive, the system shall accept an update whose only change is categoryFk under RULE-CAT-026, and leave the Item inactive.
+Traces     : US-CAT-001, US-CAT-013
+Entities   : ENT-CAT-001, ENT-CAT-006
+Rationale  : The categoryFk-only change is the repair of REQ-CAT-142 (ADR-CAT-068); any other change stays refused by REQ-CAT-135. Split from REQ-CAT-135 at the seventh gate-analysis revise.
+Source     : US-CAT-001; ADR-CAT-068
+Priority   : HIGH
+
+#### AC-CAT-155 — [REQ-CAT-146]
+Given : an inactive Item with nameEn "Glass cup" and categoryFk OLD, where the Category OLD is inactive, and an active Category NEW
+When  : the owner saves the Item with categoryFk NEW and every other field unchanged, then saves it with nameEn "Glass cup 2", then reactivates it
+Then  : the first save sets categoryFk to NEW, the second save is refused with code CAT-422-PARENT-INACTIVE and nameEn stays "Glass cup", and the reactivation sets isActiveFl to true
+
+### REQ-CAT-147 — Bundle component replacement allowed on an inactive Bundle
+Pattern    : state
+Statement  : While a Bundle Item is inactive, the system shall accept the replacement of its component lines under RULE-CAT-008, RULE-CAT-018 and RULE-CAT-019, and leave the Bundle inactive.
+Traces     : US-CAT-001, US-CAT-012
+Entities   : ENT-CAT-001, ENT-CAT-007
+Rationale  : Replacing the components is the repair of REQ-CAT-143 (ADR-CAT-068). Split from REQ-CAT-135 at the seventh gate-analysis revise.
+Source     : US-CAT-001; ADR-CAT-068
+Priority   : HIGH
+
+#### AC-CAT-156 — [REQ-CAT-147]
+Given : `bundles` is on, an inactive Bundle with the component lines P × 1 and C × 1 where the Variant P was deactivated, and an active Variant Q of an active STANDARD Item
+When  : the owner replaces the Bundle's component lines with C × 1 and Q × 1, then reactivates the Bundle
+Then  : the Bundle holds exactly 2 active lines (C × 1 and Q × 1), and the reactivation sets isActiveFl to true
 
 ## A5 — Business rules
 
@@ -2584,12 +2925,13 @@ Source     : PRD P-3
 
 ### RULE-CAT-003 — One active Item per name
 Scope      : ENT-CAT-001
-Trigger    : on create · on update · on import row
-Statement  : The system shall prevent saving an Item when its nameAr, compared without leading, trailing or repeated spaces, equals the nameAr of another active Item of the tenant or of an earlier valid row of the same import file.
-Message    : ar: يوجد صنف نشط بالاسم نفسه. افتح الصنف الموجود أو غيّر الاسم. · en: An active item already has this name. Open the existing item or change the name.
-Traces     : REQ-CAT-007, REQ-CAT-041
-Data source: ENT-CAT-001.nameAr, ENT-CAT-001.isActiveFl
-Source     : D-13; US-CAT-001
+Trigger    : on create · on update · on reactivation · on import row
+Statement  : The system shall prevent saving or reactivating an Item when its nameAr, after Arabic normalisation (tashkeel and tatweel removed; أ إ آ ٱ read as ا, ة as ه, ى as ي; Latin letters lower-cased; leading, trailing and repeated spaces removed — ADR-CAT-062), equals the normalised nameAr of another active Item of the tenant or of an earlier valid row of the same import file.
+Message    : ar: يوجد صنف نشط بالاسم نفسه: {code}. افتح الصنف الموجود أو غيّر الاسم. · en: An active item already has this name: {code}. Open the existing item or change the name.
+Traces     : REQ-CAT-007, REQ-CAT-041, REQ-CAT-144
+Data source: ENT-CAT-001.nameAr, ENT-CAT-001.isActiveFl, ENT-CAT-001.code ({code} = the code of the other active Item; for an earlier row of the same import file, the code the import gave to that row's Item)
+Source     : D-13; US-CAT-001; ADR-CAT-062
+Test-Hint  : «شنطة سفر» and «شنطه سفر» are one name; «أحمر» and «احمر» are one name.
 
 ### RULE-CAT-004 — Codes are system-assigned
 Scope      : ENT-CAT-001, ENT-CAT-002
@@ -2629,8 +2971,8 @@ Source     : D-14
 
 ### RULE-CAT-008 — Flag-bound operation refused while its flag is off
 Scope      : ENT-CAT-001, ENT-CAT-003, ENT-CAT-004, ENT-CAT-005, ENT-CAT-007
-Trigger    : on any create, update or deactivate of scope
-Statement  : The system shall prevent Variant attribute, Variant attribute value and Variant generation operations while the `variants` flag is off, and BUNDLE Item and Bundle component operations while the `bundles` flag is off, reading the flag through the FeatureFlags API.
+Trigger    : on create of an Item of kind BUNDLE · on Variant generation · on Bundle component save · on create or update of a Variant attribute · on create or update of a Variant attribute value
+Statement  : The system shall prevent creating an Item of kind BUNDLE and saving Bundle components while the `bundles` flag is off, and generating Variants and creating or updating Variant attributes and Variant attribute values while the `variants` flag is off, reading the flag through the FeatureFlags API. Reading, deactivating and reactivating records that already exist stay allowed while a flag is off, so data that depends on the flag can be cleaned up.
 Message    : ar: هذه الوظيفة غير مفعّلة لنشاطك. فعّل مفتاح القدرة «{flag}» من الإعدادات لاستخدامها. · en: This function is not switched on for your business. Turn on the «{flag}» capability flag in settings to use it.
 Traces     : REQ-CAT-014, REQ-CAT-015, REQ-CAT-016
 Data source: ENT-CAT-001.itemKindCode, ENT-CAT-005.variantAttributeValueFk, ENT-CAT-007.componentVariantFk
@@ -2638,9 +2980,9 @@ Source     : POL-CAT-003; DP §5 G1, G2; ADR-CAT-041
 Test-Hint  : Test each flag in both states (G2).
 
 ### RULE-CAT-009 — Unknown flag value refuses the operation
-Scope      : ENT-CAT-001, ENT-CAT-005, ENT-CAT-007
-Trigger    : on any flag-bound operation
-Statement  : The system shall prevent a flag-bound operation when the FeatureFlags read returns no value.
+Scope      : ENT-CAT-001, ENT-CAT-003, ENT-CAT-004, ENT-CAT-005, ENT-CAT-007
+Trigger    : on any operation RULE-CAT-008 refuses while its flag is off
+Statement  : The system shall prevent an operation that RULE-CAT-008 binds to a flag when the FeatureFlags read of that flag returns no value.
 Message    : ar: تعذّر التحقق من إعدادات القدرات الآن، ولم يُحفظ شيء. أعد المحاولة بعد لحظات. · en: Capability settings could not be checked, and nothing was saved. Try again in a moment.
 Traces     : REQ-CAT-013
 Data source: ENT-CAT-001.itemKindCode, ENT-CAT-005.variantAttributeValueFk
@@ -2676,7 +3018,7 @@ Source     : POL-CAT-004; KB:raw-idea.md §6.8
 ### RULE-CAT-013 — One value per attribute and unique combinations
 Scope      : ENT-CAT-002, ENT-CAT-005
 Trigger    : on Variant generation
-Statement  : The system shall require each active Variant of an Item to carry exactly one value of each attribute used by the Item, and prevent two active Variants of the same Item from carrying the same combination.
+Statement  : The system shall require each active Variant of an Item to carry exactly one value of each attribute used by the Item, and prevent two active Variants of the same Item from carrying the same combination. A generation whose selections omit an attribute the Item already uses, or select no value for it, is refused under RULE-CAT-052 before any combination is checked.
 Message    : ar: هذه التركيبة من القيم موجودة في متغيّر آخر لهذا الصنف. · en: This combination of values already exists on another variant of this item.
 Traces     : REQ-CAT-049, REQ-CAT-051
 Data source: ENT-CAT-005.variantFk, ENT-CAT-005.variantAttributeFk, ENT-CAT-005.variantAttributeValueFk, ENT-CAT-002.itemFk, ENT-CAT-002.isActiveFl
@@ -2702,10 +3044,10 @@ Source     : DP §8 P-04; D-01
 
 ### RULE-CAT-016 — Attribute and value codes and names unique
 Scope      : ENT-CAT-003, ENT-CAT-004
-Trigger    : on create · on update
-Statement  : The system shall require a code of 1 to 30 Latin letters, digits or hyphens, unique per tenant for a Variant attribute and per attribute for a value, and a nameAr unique among the active records of the same scope.
+Trigger    : on create · on update · on reactivation
+Statement  : The system shall require a code of 1 to 30 Latin letters, digits or hyphens, unique per tenant for a Variant attribute and per attribute for a value, and a nameAr unique among the active records of the same scope; a record being reactivated keeps its code and must not carry the nameAr of another active record of its scope.
 Message    : ar: الرمز أو الاسم مستخدم بالفعل. استخدم رمزًا (حتى 30 حرفًا لاتينيًا أو رقمًا أو شرطة) واسمًا مختلفين. · en: The code or name is already used. Use a different code (up to 30 Latin letters, digits or hyphens) and name.
-Traces     : REQ-CAT-042, REQ-CAT-045, REQ-CAT-055
+Traces     : REQ-CAT-042, REQ-CAT-045, REQ-CAT-055, REQ-CAT-137, REQ-CAT-138
 Data source: ENT-CAT-003.code, ENT-CAT-003.nameAr, ENT-CAT-003.isActiveFl, ENT-CAT-004.variantAttributeFk, ENT-CAT-004.code, ENT-CAT-004.nameAr, ENT-CAT-004.isActiveFl
 Source     : US-CAT-011
 
@@ -2729,12 +3071,12 @@ Source     : US-CAT-012; D-04
 
 ### RULE-CAT-019 — Valid Bundle components
 Scope      : ENT-CAT-002, ENT-CAT-007
-Trigger    : on Bundle save · on component line change
-Statement  : The system shall require each component Variant to be active, to belong to a STANDARD Item, and to appear once among the active lines of the Bundle.
+Trigger    : on Bundle save · on component line change · on reactivation of the Bundle
+Statement  : The system shall require each component Variant to be active, to belong to an active STANDARD Item, and to appear once among the active lines of the Bundle.
 Message    : ar: المكوّن يجب أن يكون متغيّرًا نشطًا لصنف ليس حزمة، ولا يتكرر في الحزمة نفسها. · en: A component must be an active variant of an item that is not a bundle, listed once per bundle.
-Traces     : REQ-CAT-057, REQ-CAT-060
-Data source: ENT-CAT-007.componentVariantFk, ENT-CAT-007.bundleItemFk, ENT-CAT-002.isActiveFl, ENT-CAT-002.itemFk, ENT-CAT-001.itemKindCode
-Source     : D-04
+Traces     : REQ-CAT-057, REQ-CAT-060, REQ-CAT-143, REQ-CAT-147
+Data source: ENT-CAT-007.componentVariantFk, ENT-CAT-007.bundleItemFk, ENT-CAT-007.isActiveFl, ENT-CAT-002.isActiveFl, ENT-CAT-002.itemFk, ENT-CAT-001.itemKindCode, ENT-CAT-001.isActiveFl
+Source     : D-04; ADR-CAT-059
 
 ### RULE-CAT-020 — A Bundle has one Variant
 Scope      : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005
@@ -2765,19 +3107,19 @@ Source     : D-04
 
 ### RULE-CAT-023 — Category hierarchy
 Scope      : ENT-CAT-006
-Trigger    : on create · on update
-Statement  : The system shall require the parent Category to be active, to be neither the Category itself nor one of its sub-categories, and the resulting depth to be at most 5 levels.
+Trigger    : on create · on update · on reactivation
+Statement  : The system shall require the parent Category to be active, to be neither the Category itself nor one of its sub-categories, and the resulting depth to be at most 5 levels; a Category being reactivated must have an empty or active parent.
 Message    : ar: الفئة الأم يجب أن تكون نشطة، وألا تكون الفئة نفسها أو إحدى فئاتها الفرعية، وألا يتجاوز العمق 5 مستويات. · en: The parent category must be active, must not be the category itself or one of its sub-categories, and the depth cannot exceed 5 levels.
-Traces     : REQ-CAT-069
+Traces     : REQ-CAT-069, REQ-CAT-136
 Data source: ENT-CAT-006.parentCategoryFk, ENT-CAT-006.isActiveFl
 Source     : D-03
 
 ### RULE-CAT-024 — Category code and sibling name unique
 Scope      : ENT-CAT-006
-Trigger    : on create · on update
-Statement  : The system shall require a code of 1 to 30 Latin letters, digits or hyphens unique per tenant, and a nameAr unique among the active Categories of the same parent.
+Trigger    : on create · on update · on reactivation
+Statement  : The system shall require a code of 1 to 30 Latin letters, digits or hyphens unique per tenant, and a nameAr unique among the active Categories of the same parent; a Category being reactivated keeps its code and must not carry the nameAr of another active Category of its parent.
 Message    : ar: يوجد رمز الفئة نفسه، أو الاسم نفسه تحت الفئة الأم نفسها. استخدم رمزًا أو اسمًا مختلفًا. · en: The category code already exists, or the name already exists under the same parent. Use a different code or name.
-Traces     : REQ-CAT-070
+Traces     : REQ-CAT-070, REQ-CAT-136
 Data source: ENT-CAT-006.code, ENT-CAT-006.nameAr, ENT-CAT-006.parentCategoryFk, ENT-CAT-006.isActiveFl
 Source     : US-CAT-013
 
@@ -2792,12 +3134,12 @@ Source     : ARCH-5; US-CAT-013
 
 ### RULE-CAT-026 — Item Category active
 Scope      : ENT-CAT-001
-Trigger    : on create · on update · on import row
-Statement  : The system shall require a changed categoryFk of an Item to point to an active Category.
+Trigger    : on create · on update · on import row · on reactivation
+Statement  : The system shall require a changed categoryFk of an Item, and the categoryFk of an Item being reactivated, to be empty or to point to an active Category.
 Message    : ar: الفئة المختارة غير نشطة. اختر فئة نشطة. · en: The selected category is inactive. Choose an active category.
-Traces     : REQ-CAT-072
+Traces     : REQ-CAT-072, REQ-CAT-142, REQ-CAT-146
 Data source: ENT-CAT-001.categoryFk, ENT-CAT-006.isActiveFl
-Source     : US-CAT-013
+Source     : US-CAT-013; ADR-CAT-059
 
 ### RULE-CAT-027 — Valid Item unit
 Scope      : ENT-CAT-008
@@ -2820,10 +3162,10 @@ Source     : D-14
 ### RULE-CAT-029 — Barcode unique among active barcodes
 Scope      : ENT-CAT-009
 Trigger    : on create · on import row
-Statement  : The system shall prevent saving a barcode whose barcodeValue equals the barcodeValue of an active barcode of the tenant, with SCALE barcodes compared only with SCALE barcodes.
+Statement  : The system shall prevent saving a barcode whose barcodeValue equals the barcodeValue of an active barcode of the tenant or of an earlier valid row of the same import file, with SCALE barcodes compared only with SCALE barcodes.
 Message    : ar: هذا الباركود مستخدم في الصنف {code}. افتح ذلك الصنف أو استخدم باركودًا آخر. · en: This barcode is already used by item {code}. Open that item or use another barcode.
 Traces     : REQ-CAT-087
-Data source: ENT-CAT-009.barcodeValue, ENT-CAT-009.barcodeTypeCode, ENT-CAT-009.isActiveFl
+Data source: ENT-CAT-009.barcodeValue, ENT-CAT-009.barcodeTypeCode, ENT-CAT-009.isActiveFl, ENT-CAT-001.code ({code} = the code of the Item that owns the active barcode; for an earlier row of the same import file, the code the import gave to that row's Item)
 Source     : US-CAT-016
 
 ### RULE-CAT-030 — GTIN format
@@ -2865,7 +3207,7 @@ Source     : US-CAT-017; module-registry OI-10
 ### RULE-CAT-034 — Valid scale label layout
 Scope      : ENT-CAT-011
 Trigger    : on create · on update
-Statement  : The system shall require a key of 02 or 20 to 29 that no other active layout uses, a scaleCodeLength of 4 to 6 and valueDecimals of 0 to 3.
+Statement  : The system shall require a key of 02 or 20 to 29 that no other active layout uses, a scaleCodeLength of 4 to 6 and valueDecimals of 0 to 3. The key and the scaleCodeLength are set on create only; an update carries neither (ADR-CAT-064).
 Message    : ar: البادئة رقمان (02 أو من 20 إلى 29) غير مستخدمة في إعداد نشط آخر، وطول رمز الميزان من 4 إلى 6، والأرقام العشرية من 0 إلى 3. · en: The prefix is two digits (02 or 20 to 29) not used by another active layout, the scale code length is 4 to 6, and the decimals are 0 to 3.
 Traces     : REQ-CAT-092, REQ-CAT-093, REQ-CAT-098
 Data source: ENT-CAT-011.key, ENT-CAT-011.scaleCodeLength, ENT-CAT-011.valueDecimals, ENT-CAT-011.isActiveFl
@@ -2901,7 +3243,7 @@ Source     : US-CAT-018
 ### RULE-CAT-038 — Image file and count
 Scope      : ENT-CAT-010
 Trigger    : on upload
-Statement  : The system shall require a JPG, PNG or WEBP file of at most 5 MB, and at most 20 active media records per Item.
+Statement  : The system shall require a JPG, PNG or WEBP file of at most 5 MB, held in public storage, and at most 20 active media records per Item. The file part is enforced at upload by the FILE category CAT_ITEM_IMAGE that CAT registers (allowPublic, PNG / JPEG / WEBP, 5 MB), whose refusal is the file module's own; CAT refuses the 21st active media record with this message, and answers a file reference that is not available or has no public URL as not found (ADR-CAT-076).
 Message    : ar: الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف. · en: The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item.
 Traces     : REQ-CAT-110
 Data source: ENT-CAT-010.fileDocumentRef, ENT-CAT-010.itemFk, ENT-CAT-010.isActiveFl
@@ -2982,11 +3324,11 @@ Source     : D-10
 ### RULE-CAT-047 — Barcode not found
 Scope      : ENT-CAT-009
 Trigger    : on barcode lookup
-Statement  : The system shall return no Variant, with a next action, when no active barcode and no active scale label layout matches the value.
+Statement  : The system shall return no Variant, with a next action, when no active barcode of an active Variant of an active Item and no active scale label layout matches the value.
 Message    : ar: لا يوجد صنف بهذا الباركود. ابحث بالاسم أو أضف الباركود إلى الصنف. · en: No item has this barcode. Search by name or add the barcode to the item.
-Traces     : REQ-CAT-090
-Data source: ENT-CAT-009.barcodeValue, ENT-CAT-009.isActiveFl, ENT-CAT-011.key, ENT-CAT-011.isActiveFl
-Source     : KB:raw-idea.md §6.5
+Traces     : REQ-CAT-090, REQ-CAT-086
+Data source: ENT-CAT-009.barcodeValue, ENT-CAT-009.isActiveFl, ENT-CAT-002.isActiveFl, ENT-CAT-001.isActiveFl, ENT-CAT-011.key, ENT-CAT-011.isActiveFl
+Source     : KB:raw-idea.md §6.5; ADR-CAT-059
 
 ### RULE-CAT-048 — Deactivation keeps records for consumers (ARCH-5)
 Scope      : ENT-CAT-001, ENT-CAT-002, ENT-CAT-006, ENT-CAT-007, ENT-CAT-008, ENT-CAT-009
@@ -3002,9 +3344,46 @@ Scope      : ENT-CAT-001, ENT-CAT-002, ENT-CAT-005, ENT-CAT-007, ENT-CAT-008, EN
 Trigger    : on commit or rollback of a catalogue change
 Statement  : The system shall record each catalogue-change event in the same transaction as the change and deliver it only after commit.
 Message    : ar: تعذّر حفظ التغيير ولم يُرسل أي إشعار بالتغيير. أعد المحاولة. · en: The change was not saved and no change notice was sent. Try again.
-Traces     : REQ-CAT-008, REQ-CAT-009
+Traces     : REQ-CAT-008, REQ-CAT-009, REQ-CAT-139
 Data source: ENT-CAT-001.itemPk, ENT-CAT-002.variantPk
 Source     : US-CAT-002; given `events` outbox
+
+### RULE-CAT-050 — A reactivated Item has an active Variant
+Scope      : ENT-CAT-001, ENT-CAT-002
+Trigger    : on reactivation
+Statement  : The system shall prevent reactivating an Item that has no active Variant.
+Message    : ar: لا يمكن إعادة تفعيل صنف بلا متغيّر نشط. أنشئ متغيّرًا له أو أنشئ صنفًا جديدًا. · en: An item with no active variant cannot be reactivated. Generate a variant for it, or create a new item.
+Traces     : REQ-CAT-130
+Data source: ENT-CAT-002.itemFk, ENT-CAT-002.isActiveFl
+Source     : A7 ACTIVE-state invariants; ADR-CAT-059
+
+### RULE-CAT-051 — Item unit used by active barcodes stays active
+Scope      : ENT-CAT-008, ENT-CAT-009
+Trigger    : on Item unit deactivation
+Statement  : The system shall prevent deactivating an Item unit while active barcodes of the Variants of the same Item are bound to its uomCode.
+Message    : ar: هذه الوحدة مستخدمة في {count} باركود نشط. أوقف هذه الباركودات أولًا. · en: This unit is used by {count} active barcodes. Deactivate those barcodes first.
+Traces     : REQ-CAT-128
+Data source: ENT-CAT-008.itemFk, ENT-CAT-008.uomCode, ENT-CAT-009.uomCode, ENT-CAT-009.variantFk, ENT-CAT-009.isActiveFl, ENT-CAT-002.itemFk
+Source     : US-CAT-016; ADR-CAT-060
+
+### RULE-CAT-052 — Generation names every attribute the Item uses
+Scope      : ENT-CAT-002, ENT-CAT-005
+Trigger    : on Variant generation
+Statement  : The system shall require a generation request to select at least one active value of every attribute that the Item's active Variants already carry.
+Message    : ar: اختر قيمة واحدة على الأقل لكل خاصية يستخدمها الصنف بالفعل. · en: Select at least one value for every attribute the item already uses.
+Traces     : REQ-CAT-129
+Data source: ENT-CAT-005.variantFk, ENT-CAT-005.variantAttributeFk, ENT-CAT-005.isActiveFl, ENT-CAT-002.itemFk, ENT-CAT-002.isActiveFl
+Source     : US-CAT-011; RULE-CAT-013
+
+### RULE-CAT-053 — An inactive parent refuses child writes
+Scope      : ENT-CAT-001, ENT-CAT-002, ENT-CAT-008, ENT-CAT-009, ENT-CAT-010
+Trigger    : on Item update that changes more than categoryFk · on Item unit create or update · on image create or update · on barcode create · on Variant e-invoice override
+Statement  : The system shall prevent changing any field of an inactive Item other than categoryFk, creating or changing an Item unit or image of an inactive Item, and adding a barcode to, or setting the e-invoice override of, a Variant that is inactive or belongs to an inactive Item. Three repair operations stay allowed on an inactive Item, each under its own rules: Variant generation (RULE-CAT-008, 012, 013, 014, 020, 052), an update whose only change is categoryFk (RULE-CAT-026) and the replacement of the Bundle components (RULE-CAT-008, 018, 019) — ADR-CAT-068. Deactivating a child record stays allowed.
+Message    : ar: هذا الصنف أو المتغيّر غير نشط ولا يمكن تعديله. أعد تفعيل الصنف أو اختر متغيّرًا نشطًا. · en: This item or variant is inactive and cannot be changed. Reactivate the item, or choose an active variant.
+Traces     : REQ-CAT-135, REQ-CAT-145, REQ-CAT-146, REQ-CAT-147
+Data source: ENT-CAT-001.isActiveFl, ENT-CAT-001.categoryFk, ENT-CAT-002.isActiveFl, ENT-CAT-002.itemFk, ENT-CAT-008.itemFk, ENT-CAT-009.variantFk, ENT-CAT-010.itemFk
+Source     : US-CAT-001; ADR-CAT-063; ADR-CAT-068
+Test-Hint  : Each refused write on an inactive Item is refused; each child deactivation and each of the three repairs on it succeeds.
 
 ## A6 — Lookups
 
@@ -3012,7 +3391,7 @@ Source     : US-CAT-002; given `events` outbox
 lookups:
   - {key: CAT_ITEM_KIND, seeded: [STANDARD, BUNDLE], open: false, values: [STANDARD, BUNDLE], fields: [itemKindCode], owner: CAT, entity: ENT-CAT-001, control: lookup, source: "US-CAT-012; D-04"}
   - {key: CAT_PUBLISH_STATE, seeded: [UNPUBLISHED, PUBLISHED], open: false, values: [UNPUBLISHED, PUBLISHED], fields: [publishStateCode], owner: CAT, entity: ENT-CAT-001, control: lookup, source: "POL-CAT-008; US-CAT-020"}
-  - {key: CAT_BRAND, seeded: [], open: true, values: [], fields: [brandCode], owner: CAT, entity: ENT-CAT-001, control: lookup, source: "US-CAT-014; module-registry LOOKUPS OWNED (brand); DP §8 P-05"}
+  - {key: CAT_BRAND, seeded: [], open: true, values: [OLDBRAND, XYZ, BRAND_068, BRAND1_137, BRAND2_137, BRAND3_137, BRAND4_137, BRAND5_137, BRAND6_137, RETIRED_177], fields: [brandCode], owner: CAT, entity: ENT-CAT-001, control: lookup, source: "US-CAT-014; module-registry LOOKUPS OWNED (brand); DP §8 P-05"}
   - {key: CAT_UOM, seeded: [PIECE, CARTON, BOX, DOZEN, KILOGRAM, GRAM, METRE, LITRE], open: true, values: [PIECE, CARTON, BOX, DOZEN, KILOGRAM, GRAM, METRE, LITRE, BAG], fields: [baseUomCode, uomCode, key], owner: CAT, entity: "ENT-CAT-001, ENT-CAT-008, ENT-CAT-009, ENT-CAT-012", control: lookup, source: "US-CAT-014, US-CAT-015; module-registry LOOKUPS OWNED (unit-of-measure); D-12"}
   - {key: CAT_TAX_CLASS, seeded: [STANDARD, ZERO_RATED, EXEMPT], open: true, values: [STANDARD, ZERO_RATED, EXEMPT], fields: [taxClassCode], owner: CAT, entity: ENT-CAT-001, control: lookup, source: "US-CAT-021; ADR-CAT-040"}
   - {key: CAT_EINVOICE_ITEM_CODE_TYPE, seeded: [GS1, EGS], open: false, values: [GS1, EGS], fields: [einvoiceCodeTypeCode], owner: CAT, entity: "ENT-CAT-001, ENT-CAT-002", control: lookup, source: "PRD P-4; Egypt ETA e-invoice SDK itemType"}
@@ -3038,8 +3417,10 @@ Labels per language:
 
 Rationale:
 - All keys are held in the core lookup module (`mdl`) and loaded at runtime [DP §5 G6].
-- CAT_BRAND starts empty because the list belongs to the tenant.
+- CAT_BRAND starts empty because the list belongs to the tenant. Its `values` list every brand the analysis names: OLDBRAND and XYZ from the acceptance criteria, and BRAND_068, BRAND1_137 … BRAND6_137 and RETIRED_177, the per-case values of the test plans (named `<VALUE>_<TC seq>` so that no two cases share one).
 - BAG (CAT_UOM) and H87 (CAT_EINVOICE_UNIT) are named in acceptance criteria as values added later; they are not seeded.
+- A value beyond the seeded ones is host data. It is created through the given mdl call `POST /api/v1/mdl/lookup-types/{id}/values` and deactivated through `DELETE /api/v1/mdl/lookup-values/{id}`, where `{id}` is the lookup type found by `POST /api/v1/mdl/lookup-types/search`; CAT never seeds it.
+- The screens read the active values of a key through CAT's own read of its keys (`GET /api/v1/cat/lookups/{key}`, ADR-CAT-065), never through a pass-through to arbitrary mdl keys.
 
 Consumed lookups: none.
 
@@ -3065,6 +3446,25 @@ Only ENT-CAT-001 Item has more than two transitions; it combines isActiveFl and 
    └──────────────────────┘
 ```
 
+**ACTIVE-state invariants (ADR-CAT-059).** An Item in ACTIVE (·UNPUBLISHED or ·PUBLISHED) always has:
+1. at least one active Variant (RULE-CAT-015 while active; RULE-CAT-050 on reactivation);
+2. an empty categoryFk, or one that points to an active Category (RULE-CAT-026);
+3. when its kind is BUNDLE, active component lines whose Variants are active and belong to active STANDARD Items (RULE-CAT-019, RULE-CAT-021);
+4. a normalised nameAr that no other active Item carries (RULE-CAT-003);
+5. exactly one default Variant (isDefaultFl true), and it is active.
+
+The default Variant moves with the Item's active Variants (REQ-CAT-140, REQ-CAT-141, ADR-CAT-072). When the default Variant is deactivated while another Variant of the Item is active, isDefaultFl moves in the same transaction, under the Item lock, to the remaining active Variant with the lowest code. When Variants are generated for an Item with no active Variant, the first Variant created takes isDefaultFl and the inactive former default loses it. An Item therefore holds at most one Variant with isDefaultFl true at any time, and while it has an active Variant, that Variant is active.
+
+Every transition into ACTIVE (create, import row, reactivate) re-establishes these invariants, not only the guard of its own trigger. While the Item is inactive, the records it points to may still change (its Category, its component Variants), and its own children may be deactivated, but no child of it may be created or changed (RULE-CAT-053, ADR-CAT-063). Reactivation is therefore refused (REQ-CAT-130, REQ-CAT-142, REQ-CAT-143, REQ-CAT-144) until the invariants hold again. Each broken invariant has a repair that stays allowed on the inactive Item, so an inactive Item can always return to ACTIVE (ADR-CAT-068):
+- invariant 1 (no active Variant): Variant generation creates an active Variant (REQ-CAT-049, REQ-CAT-145; it needs `variants` on — while the flag is off, the next action is to turn it on or to create a new Item, as RULE-CAT-050's message says);
+- invariant 2 (inactive Category): an update whose only change is categoryFk points the Item to an active Category or to none (REQ-CAT-072, REQ-CAT-146), or the Category itself is reactivated (REQ-CAT-136, ADR-CAT-069);
+- invariant 3 (invalid component): the Bundle components are replaced with valid lines (REQ-CAT-057, REQ-CAT-147; it needs `bundles` on);
+- invariant 4 (name taken): the other active Item is renamed or deactivated; the Item's own name cannot change while it is inactive.
+
+Deactivating an Item leaves its Variants and their barcodes active, so that the Item can be reactivated with them (REQ-CAT-005). While the Item is inactive, those barcodes no longer resolve (REQ-CAT-086, ADR-CAT-059) but still hold their values under RULE-CAT-029; the owner releases a GTIN by deactivating the barcode (REQ-CAT-085, API-CAT-016), which stays allowed on an inactive Item. Deactivating a Variant, by contrast, deactivates its barcodes and releases their values (REQ-CAT-050, ADR-CAT-063).
+
+The other records that can be deactivated also have a way back: Categories, Variant attributes and Variant attribute values are reactivated under their own uniqueness and hierarchy rules (REQ-CAT-136 … REQ-CAT-138), and a Variant is replaced by regenerating its combination. The channel reads of an Item's children (barcode lookup, Variant search, labels) also require an active Item (REQ-CAT-086, REQ-CAT-101). Only the reads by identifier return inactive records (RULE-CAT-048).
+
 No module-specific approval flow: no story asks for one, and the profile forbids a workflow engine.
 
 ## A8 — Module dependencies
@@ -3084,14 +3484,16 @@ CAT is first in the fixed module order and consumes no entity of another busines
 ```yaml name=given-usage
 rows:
   - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "load the values of the CAT_* lookup keys (brand, unit of measure, tax class, e-invoice codes, barcode type, scale value type, item kind, publish state) at runtime"}
+  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "serve CAT's own lookup keys to the screens (API-CAT-052) through the common owned-lookups capability, com.erp.common.lookup.OwnedLookups.read(key, the 10 CAT keys, CAT-404-LOOKUP-KEY-UNKNOWN, MdlLookupApi::readActiveValuesByKey) — never a pass-through for other keys (ADR-CAT-065); erp-core's manifest lists owned-lookups under common but publishes no interface for it, so the row names the mdl interface the call goes through"}
   - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "read the `variants` and `bundles` capability flags behind the FeatureFlags API (ADR-CAT-041)"}
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "issue Item codes (CAT_ITEM), Variant codes (CAT_VARIANT) and internal barcode digits (CAT_INTERNAL_BARCODE)"}
-  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileImageStoreApi, purpose: "save Item images in the public image storage and return their file reference"}
-  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "read the type and size of an uploaded image file for RULE-CAT-038"}
+  - {given: erp-core, module: modules.file, via: docs/api-docs/file/index.md, purpose: "the client uploads Item images to the FILE category CAT_ITEM_IMAGE (allowPublic = true, PNG / JPEG / WEBP, at most 5 MB — the FILE endpoint refuses any other file, ADR-CAT-076) and import files to the private storage through the given FILE upload endpoints, and passes the returned FILE_DOCUMENT.ID to CAT; CAT has no multipart endpoint (ADR-CAT-056)"}
+  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "the published methods only: isAvailable (a referenced file exists and is available in the caller's tenant — API-CAT-018, API-CAT-049), publicUrl and publicUrls (an image has a public URL, and image URLs for reads); the type, size and bytes of an import file are not published and wait on CORE-GAP-file-document-metadata-read (ADR-CAT-076)"}
   - {given: erp-core, module: modules.events, via: com.erp.events.OutboxPublisher, purpose: "record catalogue-change events in the change transaction and deliver them after commit (RULE-CAT-049)"}
-  - {given: erp-core, module: modules.report, via: com.erp.report.crossmodule.PrintApi, purpose: "produce the printable barcode label document (REQ-CAT-102)"}
-  - {given: erp-core, module: modules.report, via: com.erp.report.ReportProvider, purpose: "register the barcode label report of the catalogue"}
+  - {given: erp-core, module: modules.report, via: com.erp.report.crossmodule.PrintApi, purpose: "produce the printable barcode label document (REQ-CAT-102) and the xlsx item import sheet (REQ-CAT-036)"}
+  - {given: erp-core, module: modules.report, via: com.erp.report.ReportProvider, purpose: "register the catalogue reports CAT_BARCODE_LABEL and CAT_ITEM_IMPORT_SHEET (ADR-CAT-057)"}
   - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "register the CAT page codes so the security module derives their VIEW/CREATE/UPDATE/DELETE permissions"}
+  - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "copy the 8 seeded Unit e-invoice codes into each newly provisioned tenant and register the FILE category CAT_ITEM_IMAGE there (ADR-CAT-076); the given copies the CAT lookup values and number series itself (ADR-CAT-058, REQ-CAT-134)"}
 ```
 
 No ENT re-creates an entity that a given provides. Tenant, User, Role, LookupType/LookupValue, FileDocument and NumberSeries are used, never re-declared [C:C-GIVEN-1].
@@ -3107,8 +3509,9 @@ Operations   : search, list, create, read, update, deactivate, reactivate, publi
 Users        : Owner (all), Seller/cashier (read), Warehouse staff (read)
 Navigation   : Catalog / الكتالوج → Items / الأصناف; from: home, global search result, Categories (Items of a Category); to: Variant attributes, Barcode labels, Item import
 Content shape: header + repeating lines (Variants, Item units, barcodes, Bundle components, images)
-Traces       : REQ-CAT-001 … REQ-CAT-007, REQ-CAT-014 … REQ-CAT-020, REQ-CAT-024 … REQ-CAT-035, REQ-CAT-049 … REQ-CAT-063, REQ-CAT-072 … REQ-CAT-091, REQ-CAT-096, REQ-CAT-105 … REQ-CAT-119
+Traces       : REQ-CAT-001 … REQ-CAT-007, REQ-CAT-014 … REQ-CAT-020, REQ-CAT-024 … REQ-CAT-035, REQ-CAT-049 … REQ-CAT-063, REQ-CAT-072 … REQ-CAT-091, REQ-CAT-096, REQ-CAT-105 … REQ-CAT-119, REQ-CAT-128 … REQ-CAT-133, REQ-CAT-135, REQ-CAT-140 … REQ-CAT-147
 Composite    : Search + Entry — one screen requirement
+Inactive Item: the Entry of an inactive Item is read-only except Reactivate, the line deactivations and the three repairs — the Category field, "Generate variants" (while `variants` is on) and the Bundle components (while `bundles` is on) (REQ-CAT-135, REQ-CAT-145 … REQ-CAT-147, RULE-CAT-053, ADR-CAT-068).
 
 ### B2 — Search / list
 | Filter | Source | Result column |
@@ -3130,21 +3533,21 @@ Sorted by nameAr (REQ-CAT-003). Applies REQ-CAT-014 and REQ-CAT-015 to filters.
 - **Units section:** ENT-CAT-008 lines (uomCode, conversionFactor, isPurchaseFl, isSalesFl).
 - **Barcodes section:** ENT-CAT-009 lines per Variant (barcodeValue, barcodeTypeCode, uomCode). SCALE is offered per REQ-CAT-096.
 - **Bundle components section (kind BUNDLE, while `bundles` is on):** ENT-CAT-007 lines (componentVariantFk, quantity, sortOrder).
-- **Images section:** ENT-CAT-010 lines (file, nameAr, nameEn, variantFk, sortOrder, isPrimaryFl).
+- **Images section:** ENT-CAT-010 lines (image file — uploaded through the core FILE endpoints, then referenced by fileDocumentRef (ADR-CAT-056) — nameAr, nameEn, variantFk, sortOrder, isPrimaryFl).
 
 | Action | Operation | RULEs applied |
 |---|---|---|
-| Save | create (REQ-CAT-024, REQ-CAT-025) / update (REQ-CAT-004) | RULE-CAT-001, 002, 003, 004, 005, 006, 007, 022, 026, 042 |
-| Deactivate / Reactivate | REQ-CAT-005 / REQ-CAT-006 | RULE-CAT-021, 041, 048 |
+| Save | create (REQ-CAT-024, REQ-CAT-025) / update (REQ-CAT-004) | RULE-CAT-001, 002, 003, 004, 005, 006, 007, 022, 026, 042, 053 |
+| Deactivate / Reactivate | REQ-CAT-005 / REQ-CAT-006, REQ-CAT-130, REQ-CAT-142, REQ-CAT-143, REQ-CAT-144 | RULE-CAT-021, 041, 048 / RULE-CAT-003, 019, 026, 050 |
 | Publish / Unpublish | REQ-CAT-113 / REQ-CAT-114 | RULE-CAT-041 |
-| Generate variants | REQ-CAT-049 | RULE-CAT-008, 012, 013, 014, 020 |
-| Deactivate variant | REQ-CAT-050 | RULE-CAT-015, 021, 048 |
-| Save variant e-invoice override | REQ-CAT-118 | RULE-CAT-042 |
-| Add unit / change flags / deactivate unit | REQ-CAT-077 / 078 / 079 | RULE-CAT-027, 028, 048 |
-| Add GTIN / Generate internal barcode / Add scale code | REQ-CAT-083 / 084 / 096 | RULE-CAT-029, 030, 031, 032, 033 |
+| Generate variants (also on an inactive Item — ADR-CAT-068) | REQ-CAT-049, REQ-CAT-129, REQ-CAT-141, REQ-CAT-145 | RULE-CAT-008, 012, 013, 014, 020, 052 |
+| Deactivate variant (its barcodes and assignments with it) | REQ-CAT-050, REQ-CAT-140 | RULE-CAT-015, 021, 048 |
+| Save variant e-invoice override | REQ-CAT-118 | RULE-CAT-042, 053 |
+| Add unit / change flags / deactivate unit | REQ-CAT-077 / 078 / 079, REQ-CAT-128 | RULE-CAT-027, 028, 048, 051, 053 |
+| Add GTIN / Generate internal barcode / Add scale code | REQ-CAT-083 / 084 / 096 | RULE-CAT-029, 030, 031, 032, 033, 053 |
 | Deactivate barcode | REQ-CAT-085 | RULE-CAT-048 |
-| Save Bundle components | REQ-CAT-056, REQ-CAT-057 | RULE-CAT-008, 018, 019 |
-| Upload / update / remove image | REQ-CAT-105 / 106 / 107 | RULE-CAT-038, 039, 040 |
+| Save Bundle components (also on an inactive Bundle — ADR-CAT-068) | REQ-CAT-056, REQ-CAT-057, REQ-CAT-147 | RULE-CAT-008, 018, 019 |
+| Upload / update / remove image | REQ-CAT-105 / 106 / 107 | RULE-CAT-038, 039, 040, 053 |
 | Import items | opens SCR-REQ-CAT-004 | — |
 | Print labels | opens SCR-REQ-CAT-005 | — |
 
@@ -3163,24 +3566,25 @@ Page code: CAT_ITEMS (one SEC_PAGES row)
 | create Item | POST | /api/v1/cat/items | Item fields | Item with default Variant | RULE-CAT-001, 002, 003, 004, 005, 006, 008, 026, 042 | REQ-CAT-024, 025, 032, 033 |
 | search Items | GET | /api/v1/cat/items | filters of B2, paging | Page of Item | — | REQ-CAT-003 |
 | read Item | GET | /api/v1/cat/items/{id} | id | Item with lines | — | REQ-CAT-002, 058, 119 |
-| update Item | PUT | /api/v1/cat/items/{id} | Item fields | Item | RULE-CAT-001, 002, 003, 004, 006, 007, 022, 026, 042 | REQ-CAT-004, 117 |
+| update Item | PUT | /api/v1/cat/items/{id} | Item fields | Item | RULE-CAT-001, 002, 003, 004, 006, 007, 022, 026, 042, 053 | REQ-CAT-004, 117, 135, 146 |
 | deactivate Item | DELETE | /api/v1/cat/items/{id} | id | confirmation | RULE-CAT-021, 041, 048 | REQ-CAT-005 |
-| reactivate / publish / unpublish Item | PATCH | /api/v1/cat/items/{id} | isActiveFl or publishStateCode | Item | RULE-CAT-041 | REQ-CAT-006, 113, 114 |
-| generate Variants | POST | /api/v1/cat/items/{id}/variants | selected attribute values | list of Variant | RULE-CAT-008, 012, 013, 014, 020 | REQ-CAT-049 |
-| update Variant override | PUT | /api/v1/cat/variants/{id} | einvoiceCodeTypeCode, einvoiceCode | Variant | RULE-CAT-004, 042 | REQ-CAT-118 |
-| deactivate Variant | DELETE | /api/v1/cat/variants/{id} | id | confirmation | RULE-CAT-015, 021, 048 | REQ-CAT-050 |
-| add Item unit | POST | /api/v1/cat/items/{id}/units | uomCode, conversionFactor, flags | Item unit | RULE-CAT-006, 027 | REQ-CAT-077 |
-| update Item unit | PUT | /api/v1/cat/item-units/{id} | isPurchaseFl, isSalesFl | Item unit | RULE-CAT-028 | REQ-CAT-078 |
-| deactivate Item unit | DELETE | /api/v1/cat/item-units/{id} | id | confirmation | RULE-CAT-048 | REQ-CAT-079 |
-| add barcode | POST | /api/v1/cat/variants/{id}/barcodes | barcodeValue, barcodeTypeCode, uomCode | Barcode | RULE-CAT-006, 029, 030, 031, 032, 033 | REQ-CAT-083, 096 |
-| generate internal barcode | POST | /api/v1/cat/variants/{id}/barcodes/internal | uomCode | Barcode | RULE-CAT-005, 031 | REQ-CAT-084 |
+| reactivate / publish / unpublish Item | PATCH | /api/v1/cat/items/{id} | isActiveFl or publishStateCode | Item | RULE-CAT-003, 019, 026, 041, 050 | REQ-CAT-006, 113, 114, 130, 142, 143, 144 |
+| generate Variants | POST | /api/v1/cat/items/{id}/variants | selected attribute values | list of Variant | RULE-CAT-008, 012, 013, 014, 020, 052 (allowed on an inactive Item — ADR-CAT-068) | REQ-CAT-049, 129, 141, 145 |
+| update Variant override | PUT | /api/v1/cat/variants/{id} | einvoiceCodeTypeCode, einvoiceCode | Variant | RULE-CAT-004, 042, 053 | REQ-CAT-118, 135 |
+| deactivate Variant | DELETE | /api/v1/cat/variants/{id} | id | confirmation | RULE-CAT-015, 021, 048 | REQ-CAT-050, 140 |
+| add Item unit | POST | /api/v1/cat/items/{id}/units | uomCode, conversionFactor, flags | Item unit | RULE-CAT-006, 027, 053 | REQ-CAT-077, 135 |
+| update Item unit | PUT | /api/v1/cat/item-units/{id} | isPurchaseFl, isSalesFl | Item unit | RULE-CAT-028, 053 | REQ-CAT-078, 135 |
+| deactivate Item unit | DELETE | /api/v1/cat/item-units/{id} | id | confirmation | RULE-CAT-048, 051 | REQ-CAT-079, 128 |
+| add barcode | POST | /api/v1/cat/variants/{id}/barcodes | barcodeValue, barcodeTypeCode, uomCode | Barcode | RULE-CAT-006, 029, 030, 031, 032, 033, 053 | REQ-CAT-083, 096, 135 |
+| generate internal barcode | POST | /api/v1/cat/variants/{id}/barcodes/internal | uomCode | Barcode | RULE-CAT-005, 031, 053 | REQ-CAT-084, 135 |
 | deactivate barcode | DELETE | /api/v1/cat/barcodes/{id} | id | confirmation | RULE-CAT-048 | REQ-CAT-085 |
 | barcode lookup (incl. scale label) | GET | /api/v1/cat/barcodes/lookup | value | Variant, Item, unit, embedded value | RULE-CAT-035, 047 | REQ-CAT-086, 090, 097, 100 |
-| save Bundle components | PUT | /api/v1/cat/items/{id}/bundle-components | component lines | list of Bundle component | RULE-CAT-008, 018, 019 | REQ-CAT-056, 057 |
-| upload image | POST | /api/v1/cat/items/{id}/media | file, nameAr, nameEn, variantFk | Item media | RULE-CAT-038, 039, 040 | REQ-CAT-105, 108 |
-| update image | PUT | /api/v1/cat/media/{id} | sortOrder, isPrimaryFl, names, variantFk | Item media | RULE-CAT-039, 040 | REQ-CAT-106 |
+| save Bundle components | PUT | /api/v1/cat/items/{id}/bundle-components | component lines | list of Bundle component | RULE-CAT-008, 018, 019 (allowed on an inactive Item — ADR-CAT-068) | REQ-CAT-056, 057, 147 |
+| add image | POST | /api/v1/cat/items/{id}/media | fileDocumentRef (the file uploaded through the core FILE endpoints — ADR-CAT-056), nameAr, nameEn, variantFk | Item media | RULE-CAT-038, 039, 040, 053 | REQ-CAT-105, 108, 135 |
+| update image | PUT | /api/v1/cat/media/{id} | sortOrder, isPrimaryFl, names, variantFk | Item media | RULE-CAT-039, 040, 053 | REQ-CAT-106, 135 |
 | remove image | DELETE | /api/v1/cat/media/{id} | id | confirmation | RULE-CAT-039 | REQ-CAT-107, 111 |
 | images of a Variant | GET | /api/v1/cat/variants/{id}/media | id | list of Item media | — | REQ-CAT-109 |
+| active values of a CAT lookup key | GET | /api/v1/cat/lookups/{key} | one of the 10 CAT keys of A6 | list of code + ar/en label | — | REQ-CAT-073, 074, 076 |
 
 Cross-module read operations (contract stage P1.5, not HTTP): read Item / Variant by identifier (REQ-CAT-001, 010, 119), storefront catalogue read (REQ-CAT-115), Items of a Category (REQ-CAT-068), barcode lookup (REQ-CAT-086).
 
@@ -3189,11 +3593,11 @@ Cross-module read operations (contract stage P1.5, not HTTP): read Item / Varian
 ### B1 — Definition
 Purpose      : Organise Items into a tree of Categories and sub-categories.
 Entities     : ENT-CAT-006, ENT-CAT-001 (Items of a Category)
-Operations   : list (tree), create, read, update (move), deactivate, list Items of a Category
+Operations   : list (tree), create, read, update (move), deactivate, reactivate, list Items of a Category
 Users        : Owner (all), Seller/cashier and Warehouse staff (read)
 Navigation   : Catalog / الكتالوج → Categories / الفئات; from: Items; to: Items (filtered by Category)
 Content shape: true hierarchy (parent/child)
-Traces       : REQ-CAT-064 … REQ-CAT-072
+Traces       : REQ-CAT-064 … REQ-CAT-072, REQ-CAT-136
 Composite    : Master + Detail (tree + node entry) — one screen requirement
 
 ### B2 — Search / list
@@ -3212,6 +3616,7 @@ Tree ordered by sortOrder under each parent (REQ-CAT-067).
 |---|---|---|
 | Save | REQ-CAT-064 / REQ-CAT-065 | RULE-CAT-001, 002, 023, 024 |
 | Deactivate | REQ-CAT-066 | RULE-CAT-025, 048 |
+| Reactivate | REQ-CAT-136 | RULE-CAT-023, 024 |
 | Show Items | REQ-CAT-068 | — |
 
 ### B4 — Access
@@ -3231,6 +3636,7 @@ Page code: CAT_CATEGORIES
 | read Category | GET | /api/v1/cat/categories/{id} | id | Category | — | REQ-CAT-067 |
 | update Category | PUT | /api/v1/cat/categories/{id} | names, parentCategoryFk, sortOrder | Category | RULE-CAT-023, 024 (code fixed) | REQ-CAT-065 |
 | deactivate Category | DELETE | /api/v1/cat/categories/{id} | id | confirmation | RULE-CAT-025, 048 | REQ-CAT-066 |
+| reactivate Category | PATCH | /api/v1/cat/categories/{id} | isActiveFl true | Category | RULE-CAT-023, 024 | REQ-CAT-136 |
 | Items of a Category | GET | /api/v1/cat/categories/{id}/items | id, paging | Page of Item | — | REQ-CAT-068 |
 
 ## SCR-REQ-CAT-003 — Variant attributes / خصائص المتغيّرات
@@ -3238,11 +3644,11 @@ Page code: CAT_CATEGORIES
 ### B1 — Definition
 Purpose      : Keep the tenant's Variant attributes (size, colour) and their values.
 Entities     : ENT-CAT-003, ENT-CAT-004
-Operations   : list, create, read, update, deactivate (attribute and value)
+Operations   : list, create, read, update, deactivate, reactivate (attribute and value)
 Users        : Owner (all), Seller/cashier and Warehouse staff (read)
 Navigation   : Catalog / الكتالوج → Variant attributes / خصائص المتغيّرات (menu entry present only while `variants` is on — REQ-CAT-014); from: Items; to: Items
 Content shape: header + repeating lines (attribute + its values)
-Traces       : REQ-CAT-014, REQ-CAT-016, REQ-CAT-042 … REQ-CAT-048, REQ-CAT-054, REQ-CAT-055
+Traces       : REQ-CAT-014, REQ-CAT-016, REQ-CAT-042 … REQ-CAT-048, REQ-CAT-054, REQ-CAT-055, REQ-CAT-137, REQ-CAT-138
 Composite    : Master + Detail — one screen requirement
 
 ### B2 — Search / list
@@ -3260,7 +3666,8 @@ Ordered by sortOrder (REQ-CAT-048).
 | Action | Operation | RULEs applied |
 |---|---|---|
 | Save attribute / value | REQ-CAT-042, 043 / REQ-CAT-045, 046 | RULE-CAT-001, 002, 008, 016 |
-| Deactivate attribute / value | REQ-CAT-044 / REQ-CAT-047 | RULE-CAT-008, 017 |
+| Deactivate attribute / value (allowed while `variants` is off — RULE-CAT-008) | REQ-CAT-044 / REQ-CAT-047 | RULE-CAT-017 |
+| Reactivate attribute / value (allowed while `variants` is off — RULE-CAT-008) | REQ-CAT-137 / REQ-CAT-138 | RULE-CAT-016 |
 
 ### B4 — Access
 Page code: CAT_VARIANT_ATTRIBUTES
@@ -3274,13 +3681,15 @@ Page code: CAT_VARIANT_ATTRIBUTES
 ### B5 — API expectations
 | Operation | Verb | Path | Inputs | Outputs | RULEs | Traces (REQ) |
 |---|---|---|---|---|---|---|
-| list attributes with values | GET | /api/v1/cat/variant-attributes | text, isActiveFl | list of Variant attribute with values | RULE-CAT-008 | REQ-CAT-048 |
+| list attributes with values | GET | /api/v1/cat/variant-attributes | text, isActiveFl | list of Variant attribute with values | — (a read stays allowed while `variants` is off — RULE-CAT-008) | REQ-CAT-048 |
 | create attribute | POST | /api/v1/cat/variant-attributes | code, nameAr, nameEn, sortOrder | Variant attribute | RULE-CAT-001, 002, 008, 016 | REQ-CAT-042 |
-| update attribute | PUT | /api/v1/cat/variant-attributes/{id} | nameAr, nameEn, sortOrder | Variant attribute | RULE-CAT-001, 002, 016 | REQ-CAT-043 |
+| update attribute | PUT | /api/v1/cat/variant-attributes/{id} | nameAr, nameEn, sortOrder | Variant attribute | RULE-CAT-001, 002, 008, 016 | REQ-CAT-043 |
 | deactivate attribute | DELETE | /api/v1/cat/variant-attributes/{id} | id | confirmation | RULE-CAT-017 | REQ-CAT-044 |
+| reactivate attribute | PATCH | /api/v1/cat/variant-attributes/{id} | isActiveFl true | Variant attribute | RULE-CAT-016 | REQ-CAT-137 |
 | create value | POST | /api/v1/cat/variant-attributes/{id}/values | code, nameAr, nameEn, sortOrder | Variant attribute value | RULE-CAT-001, 002, 008, 016 | REQ-CAT-045 |
-| update value | PUT | /api/v1/cat/variant-attribute-values/{id} | nameAr, nameEn, sortOrder | Variant attribute value | RULE-CAT-001, 002, 016 | REQ-CAT-046 |
+| update value | PUT | /api/v1/cat/variant-attribute-values/{id} | nameAr, nameEn, sortOrder | Variant attribute value | RULE-CAT-001, 002, 008, 016 | REQ-CAT-046 |
 | deactivate value | DELETE | /api/v1/cat/variant-attribute-values/{id} | id | confirmation | RULE-CAT-017 | REQ-CAT-047 |
+| reactivate value | PATCH | /api/v1/cat/variant-attribute-values/{id} | isActiveFl true | Variant attribute value | RULE-CAT-016 | REQ-CAT-138 |
 
 ## SCR-REQ-CAT-004 — Item import / استيراد الأصناف
 
@@ -3291,14 +3700,14 @@ Operations   : download import sheet, submit file (custom), read result
 Users        : Owner
 Navigation   : Setup wizard step 5 "import items" (wizard owner: P-02) → Item import / استيراد الأصناف; also Catalog / الكتالوج → Items → Import; to: Items
 Content shape: other (upload + result list)
-Traces       : REQ-CAT-036 … REQ-CAT-041
+Traces       : REQ-CAT-036 … REQ-CAT-041, REQ-CAT-139
 Composite    : Wizard step — one screen requirement
 
 ### B2 — Search / list
 Not applicable. The result list shows rejected rows (row number, column, reason ar/en) from REQ-CAT-039.
 
 ### B3 — Input
-- Mandatory (1 field): the xlsx file.
+- Mandatory (1 field): the xlsx file, uploaded through the core FILE endpoints to the private storage and passed to CAT as fileDocumentRef (ADR-CAT-056).
 
 | Action | Operation | RULEs applied |
 |---|---|---|
@@ -3315,8 +3724,8 @@ Page code: CAT_ITEM_IMPORT
 ### B5 — API expectations
 | Operation | Verb | Path | Inputs | Outputs | RULEs | Traces (REQ) |
 |---|---|---|---|---|---|---|
-| download import sheet | GET | /api/v1/cat/item-imports/sheet | — | xlsx file | — | REQ-CAT-036 |
-| import items | POST | /api/v1/cat/item-imports | xlsx file | import result (counts, rejected rows) | RULE-CAT-044, 045 | REQ-CAT-037, 038, 039, 040, 041 |
+| download import sheet | GET | /api/v1/cat/item-imports/sheet | — | xlsx file (report CAT_ITEM_IMPORT_SHEET rendered by the core print service — ADR-CAT-057) | — | REQ-CAT-036 |
+| import items | POST | /api/v1/cat/item-imports | fileDocumentRef of the uploaded xlsx file | import result (counts, rejected rows) | RULE-CAT-044, 045, 049 | REQ-CAT-037, 038, 039, 040, 041, 139 |
 
 ## SCR-REQ-CAT-005 — Barcode labels / ملصقات الباركود
 
@@ -3365,14 +3774,14 @@ Operations   : read, create, update, deactivate (layouts and Unit e-invoice code
 Users        : Owner
 Navigation   : Catalog / الكتالوج → Catalogue settings / إعدادات الكتالوج; from: Items; to: Items (dependent Items of a turn-off check)
 Content shape: other (two flat lists + check panel)
-Traces       : REQ-CAT-021 … REQ-CAT-023, REQ-CAT-092 … REQ-CAT-095, REQ-CAT-098, REQ-CAT-120 … REQ-CAT-124
+Traces       : REQ-CAT-021 … REQ-CAT-023, REQ-CAT-092 … REQ-CAT-095, REQ-CAT-098, REQ-CAT-120 … REQ-CAT-124, REQ-CAT-134
 Composite    : Master + Detail per list — one screen requirement
 
 ### B2 — Search / list
 Not applicable: both lists are short and shown in full (REQ-CAT-095).
 
 ### B3 — Input
-- Scale label layout, mandatory (4 fields): ENT-CAT-011.key, scaleCodeLength (pre-filled 5), embeddedValueTypeCode (pre-filled WEIGHT), valueDecimals (pre-filled 3). Advanced: valueAr, valueEn.
+- Scale label layout, mandatory (4 fields): ENT-CAT-011.key, scaleCodeLength (pre-filled 5), embeddedValueTypeCode (pre-filled WEIGHT), valueDecimals (pre-filled 3). Advanced: valueAr, valueEn. key and scaleCodeLength are read-only after creation (ADR-CAT-064).
 - Unit e-invoice code, mandatory (2 fields): ENT-CAT-012.key, einvoiceUnitCode.
 - Turn-off check panel: flag (`variants`, `bundles`). Result: allowed, count, up to 20 Items.
 
@@ -3394,7 +3803,7 @@ Page code: CAT_SETTINGS
 |---|---|---|---|---|---|---|
 | read catalogue settings | GET | /api/v1/cat/settings | — | layouts + Unit e-invoice codes | — | REQ-CAT-095 |
 | create layout | POST | /api/v1/cat/scale-label-layouts | key, scaleCodeLength, embeddedValueTypeCode, valueDecimals, valueAr, valueEn | Scale label layout | RULE-CAT-006, 034 | REQ-CAT-092 |
-| update layout | PUT | /api/v1/cat/scale-label-layouts/{id} | fields except key | Scale label layout | RULE-CAT-034 | REQ-CAT-093 |
+| update layout | PUT | /api/v1/cat/scale-label-layouts/{id} | fields except key and scaleCodeLength | Scale label layout | RULE-CAT-034 | REQ-CAT-093 |
 | deactivate layout | DELETE | /api/v1/cat/scale-label-layouts/{id} | id | confirmation | — | REQ-CAT-094 |
 | create Unit e-invoice code | POST | /api/v1/cat/unit-einvoice-codes | key, einvoiceUnitCode | Unit e-invoice code | RULE-CAT-006, 043 | REQ-CAT-120 |
 | update Unit e-invoice code | PUT | /api/v1/cat/unit-einvoice-codes/{id} | einvoiceUnitCode | Unit e-invoice code | RULE-CAT-006 | REQ-CAT-121 |
@@ -3407,27 +3816,27 @@ Page code: CAT_SETTINGS
 
 | US | REQ | AC | RULE | ENT | SCR-REQ |
 |---|---|---|---|---|---|
-| US-CAT-001 | REQ-CAT-001 … 007 | AC-CAT-001 … 007 | RULE-CAT-003, 041, 048 | ENT-CAT-001, 002, 005, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
-| US-CAT-002 | REQ-CAT-008 … 010 | AC-CAT-008 … 010 | RULE-CAT-049 | ENT-CAT-001, 002, 005, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
+| US-CAT-001 | REQ-CAT-001 … 007, 130, 131, 132, 135, 142 … 147 | AC-CAT-001 … 007, 132 … 134, 137 … 139, 144, 149, 154 … 156, 162 | RULE-CAT-003, 019, 026, 041, 048, 050, 053 | ENT-CAT-001, 002, 005, 006, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
+| US-CAT-002 | REQ-CAT-008 … 010, 133 | AC-CAT-008 … 010, 140 | RULE-CAT-049 | ENT-CAT-001, 002, 005, 007, 008, 009, 010 | SCR-REQ-CAT-001 |
 | US-CAT-003 | REQ-CAT-011 … 013 | AC-CAT-011 … 013 | RULE-CAT-009 | ENT-CAT-001, 002, 003, 005, 007 | SCR-REQ-CAT-001, 003 |
-| US-CAT-004 | REQ-CAT-014 … 016 | AC-CAT-014 … 017 | RULE-CAT-008 | ENT-CAT-001, 002, 003, 004, 005, 007 | SCR-REQ-CAT-001, 003 |
+| US-CAT-004 | REQ-CAT-014 … 016 | AC-CAT-014 … 017, 143 | RULE-CAT-008 | ENT-CAT-001, 002, 003, 004, 005, 007 | SCR-REQ-CAT-001, 003 |
 | US-CAT-005 | REQ-CAT-017 … 020 | AC-CAT-018 … 021 | RULE-CAT-012 | ENT-CAT-001, 002, 005, 007, 009 | SCR-REQ-CAT-001 |
 | US-CAT-006 | REQ-CAT-021 … 023 | AC-CAT-022 … 024 | RULE-CAT-010, 011 | ENT-CAT-001, 002, 005 | SCR-REQ-CAT-006 |
-| US-CAT-007 | REQ-CAT-024 … 027 | AC-CAT-025 … 028 | RULE-CAT-001 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
+| US-CAT-007 | REQ-CAT-024 … 027, 140, 141 | AC-CAT-025 … 028, 163, 164 | RULE-CAT-001 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
 | US-CAT-008 | REQ-CAT-028 … 031 | AC-CAT-029 … 032 | RULE-CAT-001, 002 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
-| US-CAT-009 | REQ-CAT-032 … 035 | AC-CAT-033 … 036 | RULE-CAT-004, 005 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
-| US-CAT-010 | REQ-CAT-036 … 041 | AC-CAT-037 … 043 | RULE-CAT-003, 044, 045 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-004 |
-| US-CAT-011 | REQ-CAT-042 … 055 | AC-CAT-044 … 057 | RULE-CAT-001, 013, 014, 015, 016, 017, 048 | ENT-CAT-001, 002, 003, 004, 005 | SCR-REQ-CAT-001, 003 |
-| US-CAT-012 | REQ-CAT-056 … 063 | AC-CAT-058 … 065 | RULE-CAT-018, 019, 020, 021, 022 | ENT-CAT-001, 002, 005, 007 | SCR-REQ-CAT-001 |
-| US-CAT-013 | REQ-CAT-064 … 072 | AC-CAT-066 … 074 | RULE-CAT-001, 023, 024, 025, 026, 048 | ENT-CAT-001, 006 | SCR-REQ-CAT-002 |
+| US-CAT-009 | REQ-CAT-032 … 035, 134 | AC-CAT-033 … 036, 141 | RULE-CAT-004, 005 | ENT-CAT-001, 002, 012 | SCR-REQ-CAT-001, 006 |
+| US-CAT-010 | REQ-CAT-036 … 041, 139 | AC-CAT-037 … 043, 161 | RULE-CAT-003, 044, 045, 049 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-004 |
+| US-CAT-011 | REQ-CAT-042 … 055, 129, 137, 138, 140, 141, 145 | AC-CAT-044 … 057, 131, 145, 146, 147, 154, 159, 160, 163, 164 | RULE-CAT-001, 013, 014, 015, 016, 017, 048, 052 | ENT-CAT-001, 002, 003, 004, 005 | SCR-REQ-CAT-001, 003 |
+| US-CAT-012 | REQ-CAT-056 … 063, 143, 147 | AC-CAT-058 … 065, 134, 151, 156 | RULE-CAT-018, 019, 020, 021, 022 | ENT-CAT-001, 002, 005, 007 | SCR-REQ-CAT-001 |
+| US-CAT-013 | REQ-CAT-064 … 072, 136, 142, 146 | AC-CAT-066 … 074, 133, 142, 153, 155, 157, 158 | RULE-CAT-001, 023, 024, 025, 026, 048 | ENT-CAT-001, 006 | SCR-REQ-CAT-002 |
 | US-CAT-014 | REQ-CAT-073 … 076 | AC-CAT-075 … 078 | RULE-CAT-006 | ENT-CAT-001, 008, 009, 011, 012 | SCR-REQ-CAT-001 |
 | US-CAT-015 | REQ-CAT-077 … 082 | AC-CAT-079 … 084 | RULE-CAT-007, 027, 028, 048 | ENT-CAT-001, 008 | SCR-REQ-CAT-001 |
-| US-CAT-016 | REQ-CAT-083 … 091 | AC-CAT-085 … 093 | RULE-CAT-029, 030, 031, 032, 047, 048 | ENT-CAT-001, 002, 008, 009, 011 | SCR-REQ-CAT-001 |
-| US-CAT-017 | REQ-CAT-092 … 100 | AC-CAT-094 … 102 | RULE-CAT-033, 034, 035 | ENT-CAT-009, 011, 012 | SCR-REQ-CAT-001, 006 |
-| US-CAT-018 | REQ-CAT-101 … 104 | AC-CAT-103 … 106 | RULE-CAT-036, 037 | ENT-CAT-002, 009 | SCR-REQ-CAT-005 |
-| US-CAT-019 | REQ-CAT-105 … 112 | AC-CAT-107 … 114 | RULE-CAT-001, 038, 039, 040 | ENT-CAT-002, 010 | SCR-REQ-CAT-001 |
+| US-CAT-016 | REQ-CAT-083 … 091, 128, 135 | AC-CAT-085 … 093, 130, 135, 150 | RULE-CAT-029, 030, 031, 032, 047, 048, 051, 053 | ENT-CAT-001, 002, 008, 009, 011 | SCR-REQ-CAT-001 |
+| US-CAT-017 | REQ-CAT-092 … 100 | AC-CAT-094 … 102, 152 | RULE-CAT-033, 034, 035 | ENT-CAT-009, 011, 012 | SCR-REQ-CAT-001, 006 |
+| US-CAT-018 | REQ-CAT-101 … 104 | AC-CAT-103 … 106, 136 | RULE-CAT-036, 037 | ENT-CAT-002, 009 | SCR-REQ-CAT-005 |
+| US-CAT-019 | REQ-CAT-105 … 112 | AC-CAT-107 … 114, 148 | RULE-CAT-001, 038, 039, 040 | ENT-CAT-002, 010 | SCR-REQ-CAT-001 |
 | US-CAT-020 | REQ-CAT-113 … 116 | AC-CAT-115 … 118 | RULE-CAT-041 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
-| US-CAT-021 | REQ-CAT-095, 117 … 124 | AC-CAT-097, 119 … 126 | RULE-CAT-042, 043 | ENT-CAT-001, 002, 012 | SCR-REQ-CAT-001, 006 |
+| US-CAT-021 | REQ-CAT-095, 117 … 124, 134 | AC-CAT-097, 119 … 126, 141 | RULE-CAT-042, 043 | ENT-CAT-001, 002, 012 | SCR-REQ-CAT-001, 006 |
 | US-CAT-022 | REQ-CAT-125 … 127 | AC-CAT-127 … 129 | RULE-CAT-046 | ENT-CAT-001, 009 | — (the global search box sits outside CAT and calls the catalogue search — ADR-CAT-043) |
 
 Every story maps to ≥ 1 REQ, including ≥ 1 REQ with pattern `unwanted`. Every REQ has ≥ 1 AC. Every RULE traces to ≥ 1 REQ. Every SCR-REQ traces to REQs.
@@ -3465,6 +3874,19 @@ Every story maps to ≥ 1 REQ, including ≥ 1 REQ with pattern `unwanted`. Ever
 | ADR-CAT-041 | Capability flags are read through SettingsApi behind FeatureFlags; CAT offers a turn-off check for the flag owner (P-02) | DP §4 #15; KB:raw-idea.md §6.2 | ACCEPTED (non-breaking) |
 | ADR-CAT-042 | Scale label layout and Unit e-invoice code are CAT config entities | module-registry OI-10; US-CAT-021 | ACCEPTED (non-breaking) |
 | ADR-CAT-043 | CAT provides the item search; the global search box sits outside CAT | KB:raw-idea.md §6.6 | ACCEPTED (non-breaking) |
+| ADR-CAT-058 | The given copies the CAT lookup values and number series into each new tenant; `CatTenantProvisioningContributor` copies the 8 Unit e-invoice codes (REQ-CAT-134, A9) | given erp-core `modules.tenant` / `mdl` / `sequence` | ACCEPTED (non-breaking) |
+| ADR-CAT-059 | Every transition into ACTIVE re-establishes the Item invariants (A7, REQ-CAT-130, RULE-CAT-050); channel reads see only active Items (REQ-CAT-086, REQ-CAT-101) | gate-analysis G6 | ACCEPTED (non-breaking) |
+| ADR-CAT-060 | An Item unit used by active barcodes stays active (REQ-CAT-128, RULE-CAT-051) | gate-analysis G7 | ACCEPTED (non-breaking) |
+| ADR-CAT-062 | Arabic normalisation for RULE-CAT-003 and for search | gate-analysis G18 | ACCEPTED (non-breaking) |
+| ADR-CAT-063 | An inactive parent refuses child writes (REQ-CAT-135, RULE-CAT-053); deactivating a Variant also deactivates its barcodes (REQ-CAT-050) | gate-analysis round 2, G2 | ACCEPTED (non-breaking) |
+| ADR-CAT-064 | The scale code length of a layout is fixed after creation; type and decimals change only how the embedded value is read; a deactivated layout leaves its SCALE barcodes stored (REQ-CAT-093, REQ-CAT-094) | gate-analysis round 2, G3 | ACCEPTED (non-breaking) |
+| ADR-CAT-065 | CAT serves its own lookup keys to the screens through `OwnedLookups` (`GET /api/v1/cat/lookups/{key}`); amends ADR-CAT-050 §1 and §2 | gate-analysis round 2, G5; erp-core checklist C6 | ACCEPTED (non-breaking) |
+| ADR-CAT-068 | Three repair operations stay allowed on an inactive Item — Variant generation, a categoryFk-only update and the replacement of the Bundle components (REQ-CAT-135, REQ-CAT-145 … REQ-CAT-147, RULE-CAT-053, A7); amends ADR-CAT-063 | gate-analysis round 3, G1 | ACCEPTED (non-breaking) |
+| ADR-CAT-069 | Categories, Variant attributes and Variant attribute values can be reactivated (REQ-CAT-136 … REQ-CAT-138) | gate-analysis round 3, G10 | ACCEPTED (non-breaking) |
+| ADR-CAT-070 | Variant attributes and their values are CAT tables, not mdl lookup types (erp-core checklist C5 / F3); CORE-GAP-tenant-lookup-types raised | gate-analysis round 3, G11 | ACCEPTED (non-breaking) |
+| ADR-CAT-072 | The default Variant moves: on deactivation of the default to the remaining active Variant with the lowest code, and on generation for an Item with no active Variant to the first Variant created; an active Item always has exactly one active default Variant (REQ-CAT-025, REQ-CAT-140, REQ-CAT-141, A7, CON-CAT-002) | gate-analysis round 6, G3 | ACCEPTED (non-breaking) |
+| ADR-CAT-074 | The item import saves entities (no JDBC batching); the 60-second figure for 5,000 rows is a target measured on the reference deployment, the 120-second limit is the guarantee (REQ-CAT-139); amends ADR-CAT-071 | gate-analysis round 7, G3 | ACCEPTED (non-breaking) |
+| ADR-CAT-076 | Image type, size and public storage are enforced at upload by the FILE category CAT_ITEM_IMAGE; CAT checks a file reference's availability and public URL and the 20-image count (RULE-CAT-038, REQ-CAT-110); the import's byte read and type / size check (RULE-CAT-044) wait on CORE-GAP-file-document-metadata-read; amends ADR-CAT-056 §2 | gate-analysis round 8, G1; erp-core conventions §Files rule 3, modules.file | ACCEPTED (non-breaking) |
 
 No ADR is BLOCKED. No question was raised.
 
@@ -3504,7 +3926,7 @@ Custom roles receive actions through the given `sec` module. Permission names ar
 | ENT-CAT-012 | Unit e-invoice code / رمز الوحدة في الفاتورة الإلكترونية | config | PRIVATE | REGISTERED |
 
 ### Consumed
-`module-dependencies` block: `consumes: []`. CAT consumes no business-module entity. Given uses (erp-core mdl, cu, sequence, file, events, report, sec) are listed in the SRS A9 `given-usage` block and create no graph edge.
+`module-dependencies` block: `consumes: []`. CAT consumes no business-module entity. Given uses (erp-core mdl, cu, sequence, file, events, report, sec, tenant) are listed in the SRS A9 `given-usage` block and create no graph edge.
 
 ### Lookups owned
 | Key | ENT | Values count |
@@ -3533,20 +3955,20 @@ Lookups consumed: none.
 | SCR-REQ-CAT-006 | Catalogue settings / إعدادات الكتالوج | CAT_SETTINGS |
 
 ### Requirements
-- REQ count 127 · AC count 129 · RULE count 49 · ENT count 12 · SCR-REQ count 6
-- Last sequence per atom: REQ: 127, AC: 129, ENT: 12, RULE: 49, SCR-REQ: 6
+- REQ count 147 · AC count 164 · RULE count 53 · ENT count 12 · SCR-REQ count 6
+- Last sequence per atom: REQ: 147, AC: 164, ENT: 12, RULE: 53, SCR-REQ: 6
 
-REQ ids: REQ-CAT-001, REQ-CAT-002, REQ-CAT-003, REQ-CAT-004, REQ-CAT-005, REQ-CAT-006, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-010, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-015, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-020, REQ-CAT-021, REQ-CAT-022, REQ-CAT-023, REQ-CAT-024, REQ-CAT-025, REQ-CAT-026, REQ-CAT-027, REQ-CAT-028, REQ-CAT-029, REQ-CAT-030, REQ-CAT-031, REQ-CAT-032, REQ-CAT-033, REQ-CAT-034, REQ-CAT-035, REQ-CAT-036, REQ-CAT-037, REQ-CAT-038, REQ-CAT-039, REQ-CAT-040, REQ-CAT-041, REQ-CAT-042, REQ-CAT-043, REQ-CAT-044, REQ-CAT-045, REQ-CAT-046, REQ-CAT-047, REQ-CAT-048, REQ-CAT-049, REQ-CAT-050, REQ-CAT-051, REQ-CAT-052, REQ-CAT-053, REQ-CAT-054, REQ-CAT-055, REQ-CAT-056, REQ-CAT-057, REQ-CAT-058, REQ-CAT-059, REQ-CAT-060, REQ-CAT-061, REQ-CAT-062, REQ-CAT-063, REQ-CAT-064, REQ-CAT-065, REQ-CAT-066, REQ-CAT-067, REQ-CAT-068, REQ-CAT-069, REQ-CAT-070, REQ-CAT-071, REQ-CAT-072, REQ-CAT-073, REQ-CAT-074, REQ-CAT-075, REQ-CAT-076, REQ-CAT-077, REQ-CAT-078, REQ-CAT-079, REQ-CAT-080, REQ-CAT-081, REQ-CAT-082, REQ-CAT-083, REQ-CAT-084, REQ-CAT-085, REQ-CAT-086, REQ-CAT-087, REQ-CAT-088, REQ-CAT-089, REQ-CAT-090, REQ-CAT-091, REQ-CAT-092, REQ-CAT-093, REQ-CAT-094, REQ-CAT-095, REQ-CAT-096, REQ-CAT-097, REQ-CAT-098, REQ-CAT-099, REQ-CAT-100, REQ-CAT-101, REQ-CAT-102, REQ-CAT-103, REQ-CAT-104, REQ-CAT-105, REQ-CAT-106, REQ-CAT-107, REQ-CAT-108, REQ-CAT-109, REQ-CAT-110, REQ-CAT-111, REQ-CAT-112, REQ-CAT-113, REQ-CAT-114, REQ-CAT-115, REQ-CAT-116, REQ-CAT-117, REQ-CAT-118, REQ-CAT-119, REQ-CAT-120, REQ-CAT-121, REQ-CAT-122, REQ-CAT-123, REQ-CAT-124, REQ-CAT-125, REQ-CAT-126, REQ-CAT-127
+REQ ids: REQ-CAT-001, REQ-CAT-002, REQ-CAT-003, REQ-CAT-004, REQ-CAT-005, REQ-CAT-006, REQ-CAT-007, REQ-CAT-008, REQ-CAT-009, REQ-CAT-010, REQ-CAT-011, REQ-CAT-012, REQ-CAT-013, REQ-CAT-014, REQ-CAT-015, REQ-CAT-016, REQ-CAT-017, REQ-CAT-018, REQ-CAT-019, REQ-CAT-020, REQ-CAT-021, REQ-CAT-022, REQ-CAT-023, REQ-CAT-024, REQ-CAT-025, REQ-CAT-026, REQ-CAT-027, REQ-CAT-028, REQ-CAT-029, REQ-CAT-030, REQ-CAT-031, REQ-CAT-032, REQ-CAT-033, REQ-CAT-034, REQ-CAT-035, REQ-CAT-036, REQ-CAT-037, REQ-CAT-038, REQ-CAT-039, REQ-CAT-040, REQ-CAT-041, REQ-CAT-042, REQ-CAT-043, REQ-CAT-044, REQ-CAT-045, REQ-CAT-046, REQ-CAT-047, REQ-CAT-048, REQ-CAT-049, REQ-CAT-050, REQ-CAT-051, REQ-CAT-052, REQ-CAT-053, REQ-CAT-054, REQ-CAT-055, REQ-CAT-056, REQ-CAT-057, REQ-CAT-058, REQ-CAT-059, REQ-CAT-060, REQ-CAT-061, REQ-CAT-062, REQ-CAT-063, REQ-CAT-064, REQ-CAT-065, REQ-CAT-066, REQ-CAT-067, REQ-CAT-068, REQ-CAT-069, REQ-CAT-070, REQ-CAT-071, REQ-CAT-072, REQ-CAT-073, REQ-CAT-074, REQ-CAT-075, REQ-CAT-076, REQ-CAT-077, REQ-CAT-078, REQ-CAT-079, REQ-CAT-080, REQ-CAT-081, REQ-CAT-082, REQ-CAT-083, REQ-CAT-084, REQ-CAT-085, REQ-CAT-086, REQ-CAT-087, REQ-CAT-088, REQ-CAT-089, REQ-CAT-090, REQ-CAT-091, REQ-CAT-092, REQ-CAT-093, REQ-CAT-094, REQ-CAT-095, REQ-CAT-096, REQ-CAT-097, REQ-CAT-098, REQ-CAT-099, REQ-CAT-100, REQ-CAT-101, REQ-CAT-102, REQ-CAT-103, REQ-CAT-104, REQ-CAT-105, REQ-CAT-106, REQ-CAT-107, REQ-CAT-108, REQ-CAT-109, REQ-CAT-110, REQ-CAT-111, REQ-CAT-112, REQ-CAT-113, REQ-CAT-114, REQ-CAT-115, REQ-CAT-116, REQ-CAT-117, REQ-CAT-118, REQ-CAT-119, REQ-CAT-120, REQ-CAT-121, REQ-CAT-122, REQ-CAT-123, REQ-CAT-124, REQ-CAT-125, REQ-CAT-126, REQ-CAT-127, REQ-CAT-128, REQ-CAT-129, REQ-CAT-130, REQ-CAT-131, REQ-CAT-132, REQ-CAT-133, REQ-CAT-134, REQ-CAT-135, REQ-CAT-136, REQ-CAT-137, REQ-CAT-138, REQ-CAT-139, REQ-CAT-140, REQ-CAT-141, REQ-CAT-142, REQ-CAT-143, REQ-CAT-144, REQ-CAT-145, REQ-CAT-146, REQ-CAT-147
 
-AC ids: AC-CAT-001, AC-CAT-002, AC-CAT-003, AC-CAT-004, AC-CAT-005, AC-CAT-006, AC-CAT-007, AC-CAT-008, AC-CAT-009, AC-CAT-010, AC-CAT-011, AC-CAT-012, AC-CAT-013, AC-CAT-014, AC-CAT-015, AC-CAT-016, AC-CAT-017, AC-CAT-018, AC-CAT-019, AC-CAT-020, AC-CAT-021, AC-CAT-022, AC-CAT-023, AC-CAT-024, AC-CAT-025, AC-CAT-026, AC-CAT-027, AC-CAT-028, AC-CAT-029, AC-CAT-030, AC-CAT-031, AC-CAT-032, AC-CAT-033, AC-CAT-034, AC-CAT-035, AC-CAT-036, AC-CAT-037, AC-CAT-038, AC-CAT-039, AC-CAT-040, AC-CAT-041, AC-CAT-042, AC-CAT-043, AC-CAT-044, AC-CAT-045, AC-CAT-046, AC-CAT-047, AC-CAT-048, AC-CAT-049, AC-CAT-050, AC-CAT-051, AC-CAT-052, AC-CAT-053, AC-CAT-054, AC-CAT-055, AC-CAT-056, AC-CAT-057, AC-CAT-058, AC-CAT-059, AC-CAT-060, AC-CAT-061, AC-CAT-062, AC-CAT-063, AC-CAT-064, AC-CAT-065, AC-CAT-066, AC-CAT-067, AC-CAT-068, AC-CAT-069, AC-CAT-070, AC-CAT-071, AC-CAT-072, AC-CAT-073, AC-CAT-074, AC-CAT-075, AC-CAT-076, AC-CAT-077, AC-CAT-078, AC-CAT-079, AC-CAT-080, AC-CAT-081, AC-CAT-082, AC-CAT-083, AC-CAT-084, AC-CAT-085, AC-CAT-086, AC-CAT-087, AC-CAT-088, AC-CAT-089, AC-CAT-090, AC-CAT-091, AC-CAT-092, AC-CAT-093, AC-CAT-094, AC-CAT-095, AC-CAT-096, AC-CAT-097, AC-CAT-098, AC-CAT-099, AC-CAT-100, AC-CAT-101, AC-CAT-102, AC-CAT-103, AC-CAT-104, AC-CAT-105, AC-CAT-106, AC-CAT-107, AC-CAT-108, AC-CAT-109, AC-CAT-110, AC-CAT-111, AC-CAT-112, AC-CAT-113, AC-CAT-114, AC-CAT-115, AC-CAT-116, AC-CAT-117, AC-CAT-118, AC-CAT-119, AC-CAT-120, AC-CAT-121, AC-CAT-122, AC-CAT-123, AC-CAT-124, AC-CAT-125, AC-CAT-126, AC-CAT-127, AC-CAT-128, AC-CAT-129
+AC ids: AC-CAT-001, AC-CAT-002, AC-CAT-003, AC-CAT-004, AC-CAT-005, AC-CAT-006, AC-CAT-007, AC-CAT-008, AC-CAT-009, AC-CAT-010, AC-CAT-011, AC-CAT-012, AC-CAT-013, AC-CAT-014, AC-CAT-015, AC-CAT-016, AC-CAT-017, AC-CAT-018, AC-CAT-019, AC-CAT-020, AC-CAT-021, AC-CAT-022, AC-CAT-023, AC-CAT-024, AC-CAT-025, AC-CAT-026, AC-CAT-027, AC-CAT-028, AC-CAT-029, AC-CAT-030, AC-CAT-031, AC-CAT-032, AC-CAT-033, AC-CAT-034, AC-CAT-035, AC-CAT-036, AC-CAT-037, AC-CAT-038, AC-CAT-039, AC-CAT-040, AC-CAT-041, AC-CAT-042, AC-CAT-043, AC-CAT-044, AC-CAT-045, AC-CAT-046, AC-CAT-047, AC-CAT-048, AC-CAT-049, AC-CAT-050, AC-CAT-051, AC-CAT-052, AC-CAT-053, AC-CAT-054, AC-CAT-055, AC-CAT-056, AC-CAT-057, AC-CAT-058, AC-CAT-059, AC-CAT-060, AC-CAT-061, AC-CAT-062, AC-CAT-063, AC-CAT-064, AC-CAT-065, AC-CAT-066, AC-CAT-067, AC-CAT-068, AC-CAT-069, AC-CAT-070, AC-CAT-071, AC-CAT-072, AC-CAT-073, AC-CAT-074, AC-CAT-075, AC-CAT-076, AC-CAT-077, AC-CAT-078, AC-CAT-079, AC-CAT-080, AC-CAT-081, AC-CAT-082, AC-CAT-083, AC-CAT-084, AC-CAT-085, AC-CAT-086, AC-CAT-087, AC-CAT-088, AC-CAT-089, AC-CAT-090, AC-CAT-091, AC-CAT-092, AC-CAT-093, AC-CAT-094, AC-CAT-095, AC-CAT-096, AC-CAT-097, AC-CAT-098, AC-CAT-099, AC-CAT-100, AC-CAT-101, AC-CAT-102, AC-CAT-103, AC-CAT-104, AC-CAT-105, AC-CAT-106, AC-CAT-107, AC-CAT-108, AC-CAT-109, AC-CAT-110, AC-CAT-111, AC-CAT-112, AC-CAT-113, AC-CAT-114, AC-CAT-115, AC-CAT-116, AC-CAT-117, AC-CAT-118, AC-CAT-119, AC-CAT-120, AC-CAT-121, AC-CAT-122, AC-CAT-123, AC-CAT-124, AC-CAT-125, AC-CAT-126, AC-CAT-127, AC-CAT-128, AC-CAT-129, AC-CAT-130, AC-CAT-131, AC-CAT-132, AC-CAT-133, AC-CAT-134, AC-CAT-135, AC-CAT-136, AC-CAT-137, AC-CAT-138, AC-CAT-139, AC-CAT-140, AC-CAT-141, AC-CAT-142, AC-CAT-143, AC-CAT-144, AC-CAT-145, AC-CAT-146, AC-CAT-147, AC-CAT-148, AC-CAT-149, AC-CAT-150, AC-CAT-151, AC-CAT-152, AC-CAT-153, AC-CAT-154, AC-CAT-155, AC-CAT-156, AC-CAT-157, AC-CAT-158, AC-CAT-159, AC-CAT-160, AC-CAT-161, AC-CAT-162, AC-CAT-163, AC-CAT-164
 
-RULE ids: RULE-CAT-001, RULE-CAT-002, RULE-CAT-003, RULE-CAT-004, RULE-CAT-005, RULE-CAT-006, RULE-CAT-007, RULE-CAT-008, RULE-CAT-009, RULE-CAT-010, RULE-CAT-011, RULE-CAT-012, RULE-CAT-013, RULE-CAT-014, RULE-CAT-015, RULE-CAT-016, RULE-CAT-017, RULE-CAT-018, RULE-CAT-019, RULE-CAT-020, RULE-CAT-021, RULE-CAT-022, RULE-CAT-023, RULE-CAT-024, RULE-CAT-025, RULE-CAT-026, RULE-CAT-027, RULE-CAT-028, RULE-CAT-029, RULE-CAT-030, RULE-CAT-031, RULE-CAT-032, RULE-CAT-033, RULE-CAT-034, RULE-CAT-035, RULE-CAT-036, RULE-CAT-037, RULE-CAT-038, RULE-CAT-039, RULE-CAT-040, RULE-CAT-041, RULE-CAT-042, RULE-CAT-043, RULE-CAT-044, RULE-CAT-045, RULE-CAT-046, RULE-CAT-047, RULE-CAT-048, RULE-CAT-049
+RULE ids: RULE-CAT-001, RULE-CAT-002, RULE-CAT-003, RULE-CAT-004, RULE-CAT-005, RULE-CAT-006, RULE-CAT-007, RULE-CAT-008, RULE-CAT-009, RULE-CAT-010, RULE-CAT-011, RULE-CAT-012, RULE-CAT-013, RULE-CAT-014, RULE-CAT-015, RULE-CAT-016, RULE-CAT-017, RULE-CAT-018, RULE-CAT-019, RULE-CAT-020, RULE-CAT-021, RULE-CAT-022, RULE-CAT-023, RULE-CAT-024, RULE-CAT-025, RULE-CAT-026, RULE-CAT-027, RULE-CAT-028, RULE-CAT-029, RULE-CAT-030, RULE-CAT-031, RULE-CAT-032, RULE-CAT-033, RULE-CAT-034, RULE-CAT-035, RULE-CAT-036, RULE-CAT-037, RULE-CAT-038, RULE-CAT-039, RULE-CAT-040, RULE-CAT-041, RULE-CAT-042, RULE-CAT-043, RULE-CAT-044, RULE-CAT-045, RULE-CAT-046, RULE-CAT-047, RULE-CAT-048, RULE-CAT-049, RULE-CAT-050, RULE-CAT-051, RULE-CAT-052, RULE-CAT-053
 
 ### Decisions
-ADR-CAT-038, ADR-CAT-039, ADR-CAT-040, ADR-CAT-041, ADR-CAT-042, ADR-CAT-043. None BLOCKED.
+ADR-CAT-038, ADR-CAT-039, ADR-CAT-040, ADR-CAT-041, ADR-CAT-042, ADR-CAT-043; at the gate-analysis revise ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062; at the second gate-analysis revise ADR-CAT-063, ADR-CAT-064, ADR-CAT-065; at the third gate-analysis revise ADR-CAT-068, ADR-CAT-069, ADR-CAT-070; at the sixth gate-analysis revise ADR-CAT-072; at the seventh gate-analysis revise ADR-CAT-074 (ADR-CAT-073 and ADR-CAT-075 were raised by the same revise for P3.1 / P3.2); at the eighth gate-analysis revise ADR-CAT-076 (RULE-CAT-038, REQ-CAT-110, A9). None BLOCKED. Next free ADR: ADR-CAT-077.
 
 ### Event
-"P1 completed: CAT v2 — REQ 127 · AC 129 · ENT 12 · RULE 49 · SCR-REQ 6 · ADR 6 (038–043, none BLOCKED)"
+"P1 completed: CAT v2 — REQ 147 · AC 164 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 19 (038–043, 058–060, 062–065, 068–070, 072, 074, 076; none BLOCKED)"
 
 <<<END INPUT>>>
 
@@ -3554,7 +3976,7 @@ ADR-CAT-038, ADR-CAT-039, ADR-CAT-040, ADR-CAT-041, ADR-CAT-042, ADR-CAT-043. No
 # CONTRACT — Catalog / الكتالوج (CAT) — outbound promise
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P1.5
-Inputs : srs (P1, CAT v2 — REQ 127 · ENT 12), registry-srs
+Inputs : srs (P1, CAT v2 — REQ 147 · AC 164 · ENT 12 · RULE 53), registry-srs (re-stamped from the current registries at the eighth gate-analysis revise; CON-CAT-002 wording amended by ADR-CAT-072; §4 given-usage repeated from SRS A9 as amended by ADR-CAT-076)
 Counts : CON 18 (entity items 6 · operation items 11 · event item 1)
 Status : DRAFT — P1.5 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -3577,6 +3999,8 @@ This contract states what other modules may depend on in CAT before CAT is built
 - **Tenancy.** The given core resolves the tenant. Every operation answers within the caller's tenant, and a record of another tenant reads as *not found*.
 - **Names.** `nameAr` is always present. Where `nameEn` is empty, the English display returns `nameAr` (REQ-CAT-029).
 - **Lookup codes.** Lookup-backed values are returned as codes of the CAT-owned `mdl` keys (SRS A6). Consumers resolve labels through the core lookup module. A code that is deactivated later stays on existing records (REQ-CAT-076).
+- **Authorization of in-process calls (ADR-CAT-061).** The operation items are in-process calls. CAT does not check a CAT permission on them: the **calling module authorizes its own caller** against its own permissions before it calls CAT (for example SFR for a storefront shopper, SLS for a cashier). The one exception is the catalogue search (CON-CAT-016), which answers an empty result to a user without VIEW on CAT_ITEMS. Tenancy still applies to every call. Checklist C13 states no exception for an in-process read, so this rule stands on condition: CAT has raised `CORE-GAP-in-process-authorization.md`, and ADR-CAT-066 follows the core's answer (for example a core-provided caller authority for in-process reads) without changing these signatures.
+- **Obligation of the capability-flag writer (POL-CAT-005).** A write that turns `variants` or `bundles` off must first call CON-CAT-017 and must refuse the write when `allowed` is false, showing the returned message and dependent Items. CAT answers the check and never writes a flag. The writer (owner OPEN, P-02) does not yet honour this, so it is recorded as an OPEN platform finding in `business-policies-cat.md` (PLATFORM FINDINGS, row 2).
 
 ---
 
@@ -3592,9 +4016,9 @@ Consumers store `itemPk`. `code` is unique per tenant and never changes (RULE-CA
 ### CON-CAT-002 — Variant (متغيّر الصنف / Variant)
 
 Entity    : ENT-CAT-002 — key columns: code (business key, series CAT_VARIANT, read-only), variantPk (identifier) · identifier type: BIGINT
-Traces    : ENT-CAT-002, REQ-CAT-025, REQ-CAT-033, REQ-CAT-017
+Traces    : ENT-CAT-002, REQ-CAT-025, REQ-CAT-140, REQ-CAT-141, REQ-CAT-033, REQ-CAT-017
 
-Stock, price, barcode and the e-invoice override attach to the Variant (D-01). Every Item has at least one Variant, its default Variant (`isDefaultFl` true). Turning `variants` on never changes an existing `variantPk`, code or barcode (REQ-CAT-017).
+Stock, price, barcode and the e-invoice override attach to the Variant (D-01). Every Item has at least one Variant, and an active Item always has exactly one active default Variant (`isDefaultFl` true), the Variant stock and price consumers fall back to. When the default Variant is deactivated, the flag moves to the Item's remaining active Variant with the lowest code; when Variants are generated for an Item with no active Variant, the first Variant created becomes the default (REQ-CAT-025, ADR-CAT-072). A consumer therefore reads the default from the Variant reads and never assumes it is the Variant created with the Item. Turning `variants` on never changes an existing `variantPk`, code or barcode (REQ-CAT-017).
 
 ### CON-CAT-003 — Category (فئة / Category)
 
@@ -3636,14 +4060,14 @@ Traces    : ENT-CAT-001, REQ-CAT-001, REQ-CAT-002, REQ-CAT-010, REQ-CAT-058
 An inactive Item is still returned, with `isActiveFl` false. Every read that starts after a commit returns that commit's state (REQ-CAT-010).
 
 ### CON-CAT-008 — Read a Variant (قراءة متغيّر / Read a Variant)
-Signature : getVariant(variantPk: BIGINT) → Variant {variantPk, itemPk, code, nameAr, nameEn (derived, D-15), isDefaultFl, isActiveFl, Item baseUomCode, Item taxClassCode, effective einvoiceCodeTypeCode and einvoiceCode (Variant override, else Item), einvoiceUnitCode of the base unit (empty when the unit has no active Unit e-invoice code)} · errors: not found
+Signature : getVariant(variantPk: BIGINT) → Variant {variantPk, itemFk, code, nameAr, nameEn (derived, D-15), isDefaultFl, isActiveFl, Item baseUomCode, Item taxClassCode, effective einvoiceCodeTypeCode and einvoiceCode (Variant override, else Item), einvoiceUnitCode of the base unit (empty when the unit has no active Unit e-invoice code)} · errors: not found
 Entity    : ENT-CAT-002
 Traces    : ENT-CAT-002, REQ-CAT-050, REQ-CAT-119, REQ-CAT-122, REQ-CAT-029
 
 An inactive Variant is still returned, with `isActiveFl` false (REQ-CAT-050).
 
 ### CON-CAT-009 — Read an Item unit (قراءة وحدة صنف / Read an Item unit)
-Signature : getItemUnit(itemUnitPk: BIGINT) → Item unit {itemUnitPk, itemPk, uomCode, conversionFactor, isPurchaseFl, isSalesFl, isActiveFl, einvoiceUnitCode (empty when none is active)} · errors: not found
+Signature : getItemUnit(itemUnitPk: BIGINT) → Item unit {itemUnitPk, itemFk, uomCode, conversionFactor, isPurchaseFl, isSalesFl, isActiveFl, einvoiceUnitCode (empty when none is active)} · errors: not found
 Entity    : ENT-CAT-008
 Traces    : ENT-CAT-008, REQ-CAT-079, REQ-CAT-122
 
@@ -3652,7 +4076,7 @@ Signature : lookupBarcode(value: text) → {variantPk, itemPk, uomCode, embedded
 Entity    : ENT-CAT-009
 Traces    : ENT-CAT-009, REQ-CAT-086, REQ-CAT-090, REQ-CAT-097, REQ-CAT-100
 
-Only active barcodes and active scale label layouts match (REQ-CAT-085, REQ-CAT-094).
+Only active barcodes of active Variants of active Items, and active scale label layouts, match (REQ-CAT-085, REQ-CAT-094, REQ-CAT-086 — ADR-CAT-059).
 
 ### CON-CAT-011 — Read a Category (قراءة فئة / Read a Category)
 Signature : getCategory(categoryPk: BIGINT) → Category {categoryPk, code, nameAr, nameEn, parentCategoryFk, sortOrder, isActiveFl} · errors: not found
@@ -3689,7 +4113,7 @@ Traces    : ENT-CAT-001, REQ-CAT-125, REQ-CAT-126, REQ-CAT-127
 The global search box sits outside CAT (ADR-CAT-043).
 
 ### CON-CAT-017 — Capability turn-off check (فحص إيقاف القدرة / Capability turn-off check)
-Signature : checkCapabilityTurnOff(flag: `variants` | `bundles`) → {allowed: flag, dependentCount: number, dependentItems: at most 20 {itemPk, code, nameAr}, message ar/en (RULE-CAT-010 or RULE-CAT-011 when not allowed)} · errors: invalid input — flag other than `variants` or `bundles`
+Signature : checkCapabilityTurnOff(flag: `variants` | `bundles`) → {allowed: flag, dependentCount: number, dependentItems: at most 20 {itemPk, code, nameAr}, messageAr and messageEn (the RULE-CAT-010 or RULE-CAT-011 message with {count} filled when not allowed; empty when allowed)} · errors: invalid input — flag other than `variants` or `bundles`
 Entity    : ENT-CAT-001
 Traces    : ENT-CAT-001, REQ-CAT-021, REQ-CAT-022, REQ-CAT-023
 
@@ -3713,17 +4137,19 @@ The event is recorded in the same transaction as the change through the given `e
 ```yaml name=given-usage
 rows:
   - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "load the values of the CAT_* lookup keys (brand, unit of measure, tax class, e-invoice codes, barcode type, scale value type, item kind, publish state) at runtime"}
+  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "serve CAT's own lookup keys to the screens (API-CAT-052) through the common owned-lookups capability, com.erp.common.lookup.OwnedLookups.read(key, the 10 CAT keys, CAT-404-LOOKUP-KEY-UNKNOWN, MdlLookupApi::readActiveValuesByKey) — never a pass-through for other keys (ADR-CAT-065); erp-core's manifest lists owned-lookups under common but publishes no interface for it, so the row names the mdl interface the call goes through"}
   - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "read the `variants` and `bundles` capability flags behind the FeatureFlags API (ADR-CAT-041)"}
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "issue Item codes (CAT_ITEM), Variant codes (CAT_VARIANT) and internal barcode digits (CAT_INTERNAL_BARCODE)"}
-  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileImageStoreApi, purpose: "save Item images in the public image storage and return their file reference"}
-  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "read the type and size of an uploaded image file for RULE-CAT-038"}
+  - {given: erp-core, module: modules.file, via: docs/api-docs/file/index.md, purpose: "the client uploads Item images to the FILE category CAT_ITEM_IMAGE (allowPublic = true, PNG / JPEG / WEBP, at most 5 MB — the FILE endpoint refuses any other file, ADR-CAT-076) and import files to the private storage through the given FILE upload endpoints, and passes the returned FILE_DOCUMENT.ID to CAT; CAT has no multipart endpoint (ADR-CAT-056)"}
+  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "the published methods only: isAvailable (a referenced file exists and is available in the caller's tenant — API-CAT-018, API-CAT-049), publicUrl and publicUrls (an image has a public URL, and image URLs for reads); the type, size and bytes of an import file are not published and wait on CORE-GAP-file-document-metadata-read (ADR-CAT-076)"}
   - {given: erp-core, module: modules.events, via: com.erp.events.OutboxPublisher, purpose: "record catalogue-change events in the change transaction and deliver them after commit (RULE-CAT-049)"}
-  - {given: erp-core, module: modules.report, via: com.erp.report.crossmodule.PrintApi, purpose: "produce the printable barcode label document (REQ-CAT-102)"}
-  - {given: erp-core, module: modules.report, via: com.erp.report.ReportProvider, purpose: "register the barcode label report of the catalogue"}
+  - {given: erp-core, module: modules.report, via: com.erp.report.crossmodule.PrintApi, purpose: "produce the printable barcode label document (REQ-CAT-102) and the xlsx item import sheet (REQ-CAT-036)"}
+  - {given: erp-core, module: modules.report, via: com.erp.report.ReportProvider, purpose: "register the catalogue reports CAT_BARCODE_LABEL and CAT_ITEM_IMPORT_SHEET (ADR-CAT-057)"}
   - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "register the CAT page codes so the security module derives their VIEW/CREATE/UPDATE/DELETE permissions"}
+  - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "copy the 8 seeded Unit e-invoice codes into each newly provisioned tenant and register the FILE category CAT_ITEM_IMAGE there (ADR-CAT-076); the given copies the CAT lookup values and number series itself (ADR-CAT-058, REQ-CAT-134)"}
 ```
 
-The contract does not promise any entity that a given provides. Tenant, User, Role, LookupType/LookupValue, FileDocument and NumberSeries stay with `erp-core` [C:C-GIVEN-1].
+The contract does not promise any entity that a given provides. Tenant, User, Role, LookupType/LookupValue, FileDocument and NumberSeries stay with `erp-core` [C:C-GIVEN-1]. A new tenant receives the CAT seeds through the given provisioning (REQ-CAT-134, ADR-CAT-058), so every operation item works in every tenant from its first request.
 
 ---
 
@@ -3737,18 +4163,18 @@ The contract does not promise any entity that a given provides. Tenant, User, Ro
 - [x] Every SHARED ENT of the SRS has an entity item (ENT-CAT-001, 002, 006, 007, 008, 009). No consumer's A8 block exists yet that names any other CAT entity, and no PRIVATE entity is promised.
 - [x] Every operation item has a `Signature` line and names no path or verb.
 - [x] Every item traces to at least one ENT and one REQ (C13.5).
-- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). No ADR was needed, so the next free ADR stays ADR-CAT-044.
+- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). The contract itself raised no ADR; ADR-CAT-072 (gate-analysis round 6) amends the wording of CON-CAT-002 without changing its key columns or identifier type. Per the current registries the next free ADR is ADR-CAT-077.
 - [x] §4 carries the SRS `given-usage` rows verbatim, in the same order.
 - [x] Every item title carries ar and en.
 
 <<<END INPUT>>>
 
 <<<INPUT: db-script (baseline — continue it, never restart it)>>>
-# DB SCRIPT — Catalog / الكتالوج (CAT)
+﻿# DB SCRIPT — Catalog / الكتالوج (CAT)
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P2
-Inputs : srs (P1, CAT v2 — REQ 127 · ENT 12 · RULE 49), registry-srs, contract (P1.5, CON 18)
-Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 12 · lookup keys 10 (34 seeded values)
+Inputs : srs (P1, CAT v2 — REQ 147 · AC 164 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the eighth gate-analysis revise
+Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 12 (given CORE_TENANT — ADR-CAT-055) · lookup keys 10 (34 seeded values)
 Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
 
@@ -3765,7 +4191,8 @@ Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 | Type declared here (not in the syntax map) | logical `number` → `INTEGER` (sortOrder, scaleCodeLength, valueDecimals). The profile `syntax_map` has no integer entry, so it is declared once here |
 | Date | 2026-10-26 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). 0 ADR. The next free ADR sequence is unchanged (044) |
+| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067, ADR-CAT-072 (the default Variant moves; `UQ_CAT_VARIANT_DEFAULT` kept, comments only). The next free ADR sequence, per the current registries, is 077 (ADR-CAT-076, gate-analysis round 8, changes no database object) |
+| Migration file | `V1000__cat_catalog.sql` in the application's `classpath:db/migration` (erp-core conventions § Migrations: `V1000+`, `V<N>__<module>_<snake_case>.sql`). It is the first CAT script; a later change is a new `V1001+` script, never an edit |
 
 ## 2 — DB field traceability matrix
 
@@ -3796,7 +4223,7 @@ rows:
   # ── CAT_VARIANT — ENT-CAT-002 Variant (master; nameAr / nameEn derived at read, D-P2-08) ──
   - {id: DBF-CAT-022, table: CAT_VARIANT, column: VARIANT_PK, type: "BIGINT", entity_field: ENT-CAT-002.variantPk, traces: [ENT-CAT-002, REQ-CAT-025, REQ-CAT-050], nullable: "NOT NULL", default: "identity"}
   - {id: DBF-CAT-023, table: CAT_VARIANT, column: CODE, type: "VARCHAR(20)", entity_field: ENT-CAT-002.code, traces: [ENT-CAT-002, REQ-CAT-033, REQ-CAT-034], nullable: "NOT NULL", default: "—"}
-  - {id: DBF-CAT-024, table: CAT_VARIANT, column: IS_DEFAULT_FL, type: "BOOLEAN", entity_field: ENT-CAT-002.isDefaultFl, traces: [ENT-CAT-002, REQ-CAT-025, REQ-CAT-018], nullable: "NOT NULL", default: "FALSE"}
+  - {id: DBF-CAT-024, table: CAT_VARIANT, column: IS_DEFAULT_FL, type: "BOOLEAN", entity_field: ENT-CAT-002.isDefaultFl, traces: [ENT-CAT-002, REQ-CAT-025, REQ-CAT-140, REQ-CAT-141, REQ-CAT-018], nullable: "NOT NULL", default: "FALSE"}
   - {id: DBF-CAT-025, table: CAT_VARIANT, column: EINVOICE_CODE_TYPE_CODE, type: "VARCHAR(50)", entity_field: ENT-CAT-002.einvoiceCodeTypeCode, traces: [ENT-CAT-002, REQ-CAT-118, REQ-CAT-119, REQ-CAT-123], nullable: "NULL", default: "—"}
   - {id: DBF-CAT-026, table: CAT_VARIANT, column: EINVOICE_CODE, type: "VARCHAR(100)", entity_field: ENT-CAT-002.einvoiceCode, traces: [ENT-CAT-002, REQ-CAT-118, REQ-CAT-119, REQ-CAT-123], nullable: "NULL", default: "—"}
   - {id: DBF-CAT-027, table: CAT_VARIANT, column: IS_ACTIVE_FL, type: "BOOLEAN", entity_field: ENT-CAT-002.isActiveFl, traces: [ENT-CAT-002, REQ-CAT-050, REQ-CAT-053, REQ-CAT-062], nullable: "NOT NULL", default: "TRUE"}
@@ -3977,7 +4404,7 @@ CAT consumes no entity of another business module (SRS A8 `module-dependencies`:
 
 Given references create no XM:
 - `CAT_ITEM_MEDIA.FILE_DOCUMENT_REF` (DBF-CAT-122) holds the given `FILE_DOCUMENT` identifier. It is a given soft read with no constraint (SRS A3 "GIVEN, no XM edge").
-- Every `TENANT_ID` column holds the given tenant identifier.
+- Every `TENANT_ID` column holds the given tenant identifier, with `FK_<TABLE>_TENANT → CORE_TENANT(ID)` (erp-core checklist C1). `CORE_TENANT` is a given table, so the FK is a permitted given reference and not an XM (ADR-CAT-055).
 - Lookup codes are given lookup values read through `MdlLookupApi`.
 
 ## 4 — FULL_DATABASE_SCRIPT
@@ -3988,13 +4415,29 @@ Given references create no XM:
 -- Migration for CS-CAT-001 (ADDITIVE): the current state holds no earlier CAT script,
 -- so this migration creates every CAT object. No schema prefix. Identifiers are UPPER_SNAKE_CASE, unquoted.
 -- PK generation: GENERATED ALWAYS AS IDENTITY on every PK column (profile stack.db.pk_generation).
+-- File: V1000__cat_catalog.sql (erp-core conventions § Migrations; the given core chain runs first).
 -- ══════════════════════════════════════════════════════════════════
 
 -- ──────────────────────────────────────────────────────────────────
--- BLOCK 1 — SEQUENCES
--- none: every PK uses the identity clause. Item / Variant codes and internal
+-- BLOCK 1 — SEQUENCES, EXTENSION AND FUNCTION used by later blocks
+-- Sequences: none. Every PK uses the identity clause. Item / Variant codes and internal
 -- barcode digits come from the core number series (BLOCK 8c), never from a CAT sequence.
+-- Extension pg_trgm: trigram indexes of BLOCK 7 (ADR-CAT-062). DEPLOYMENT PRECONDITION: the role that runs
+-- Flyway holds the CREATE privilege on the database (pg_trgm is a trusted extension from PostgreSQL 13, so
+-- CREATE is enough and no superuser is needed); where that grant is withheld, a DBA runs
+-- `CREATE EXTENSION pg_trgm;` once before the first deployment and the statement below is a no-op.
+-- Function CAT_NORMALIZE_AR: Arabic normalisation of RULE-CAT-003 and of search (ADR-CAT-062);
+-- created here because UQ_CAT_ITEM_NAME_AR (BLOCK 5b) and the trigram indexes (BLOCK 7) use it.
 -- ──────────────────────────────────────────────────────────────────
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE OR REPLACE FUNCTION CAT_NORMALIZE_AR(P_TEXT TEXT) RETURNS TEXT
+    LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE AS
+$$ SELECT btrim(regexp_replace(lower(translate(regexp_replace(P_TEXT, '[ً-ٰٟـ]', '', 'g'),
+                                                  'أإآٱةى', 'ااااهي')), '\s+', ' ', 'g')) $$;
+
+COMMENT ON FUNCTION CAT_NORMALIZE_AR(TEXT) IS 'RULE-CAT-003 / search: drops tashkeel and tatweel, folds أ إ آ ٱ to ا, ة to ه, ى to ي, lower-cases Latin, trims and collapses spaces (ADR-CAT-062)';
 
 -- ──────────────────────────────────────────────────────────────────
 -- BLOCK 2 — PARENT TABLES (no FK dependency on another CAT table)
@@ -4239,7 +4682,7 @@ COMMENT ON COLUMN CAT_SCALE_LABEL_LAYOUT.SCALE_LABEL_LAYOUT_PK IS 'DBF-CAT-136 �
 COMMENT ON COLUMN CAT_SCALE_LABEL_LAYOUT.KEY IS 'DBF-CAT-137 — Label prefix 02 or 20-29, unique among active layouts (RULE-CAT-034)';
 COMMENT ON COLUMN CAT_SCALE_LABEL_LAYOUT.VALUE_AR IS 'DBF-CAT-138 — Arabic layout description';
 COMMENT ON COLUMN CAT_SCALE_LABEL_LAYOUT.VALUE_EN IS 'DBF-CAT-139 — English layout description';
-COMMENT ON COLUMN CAT_SCALE_LABEL_LAYOUT.SCALE_CODE_LENGTH IS 'DBF-CAT-140 — Scale code length 4-6; embedded value takes 10 minus this length';
+COMMENT ON COLUMN CAT_SCALE_LABEL_LAYOUT.SCALE_CODE_LENGTH IS 'DBF-CAT-140 — Scale code length 4-6, fixed after creation (ADR-CAT-064); embedded value takes 10 minus this length';
 COMMENT ON COLUMN CAT_SCALE_LABEL_LAYOUT.EMBEDDED_VALUE_TYPE_CODE IS 'DBF-CAT-141 — Embedded value type, lookup CAT_SCALE_VALUE_TYPE code';
 COMMENT ON COLUMN CAT_SCALE_LABEL_LAYOUT.VALUE_DECIMALS IS 'DBF-CAT-142 — Decimals of the embedded value 0-3';
 COMMENT ON COLUMN CAT_SCALE_LABEL_LAYOUT.IS_ACTIVE_FL IS 'DBF-CAT-143 — Active flag';
@@ -4305,7 +4748,7 @@ COMMENT ON COLUMN CAT_VAR_ATTR_VALUE.UPDATED_AT IS 'DBF-CAT-059 — Last update 
 COMMENT ON TABLE CAT_VARIANT IS 'ENT-CAT-002 Variant / متغيّر الصنف — sellable, stockable version of an Item; names derived at read (D-15)';
 COMMENT ON COLUMN CAT_VARIANT.VARIANT_PK IS 'DBF-CAT-022 — Variant identifier (identity)';
 COMMENT ON COLUMN CAT_VARIANT.CODE IS 'DBF-CAT-023 — Variant code from core number series CAT_VARIANT, read-only (RULE-CAT-004)';
-COMMENT ON COLUMN CAT_VARIANT.IS_DEFAULT_FL IS 'DBF-CAT-024 — True for the Variant created with the Item; one per Item';
+COMMENT ON COLUMN CAT_VARIANT.IS_DEFAULT_FL IS 'DBF-CAT-024 — True for one Variant per Item: the Variant created with the Item, until the default moves to an active Variant (REQ-CAT-025, ADR-CAT-072)';
 COMMENT ON COLUMN CAT_VARIANT.EINVOICE_CODE_TYPE_CODE IS 'DBF-CAT-025 — E-invoice code type override, lookup CAT_EINVOICE_ITEM_CODE_TYPE code (RULE-CAT-042)';
 COMMENT ON COLUMN CAT_VARIANT.EINVOICE_CODE IS 'DBF-CAT-026 — E-invoice code override (RULE-CAT-042)';
 COMMENT ON COLUMN CAT_VARIANT.IS_ACTIVE_FL IS 'DBF-CAT-027 — Active flag (RULE-CAT-015, RULE-CAT-021, RULE-CAT-048)';
@@ -4415,6 +4858,12 @@ ALTER TABLE CAT_VAR_ATTR       ADD CONSTRAINT UQ_CAT_VAR_ATTR_CODE       UNIQUE 
 ALTER TABLE CAT_ITEM           ADD CONSTRAINT UQ_CAT_ITEM_CODE           UNIQUE (TENANT_ID, CODE);                          -- RULE-CAT-004
 ALTER TABLE CAT_VAR_ATTR_VALUE ADD CONSTRAINT UQ_CAT_VAR_ATTR_VALUE_CODE UNIQUE (TENANT_ID, VARIANT_ATTRIBUTE_FK, CODE);    -- RULE-CAT-016
 ALTER TABLE CAT_VARIANT        ADD CONSTRAINT UQ_CAT_VARIANT_CODE        UNIQUE (TENANT_ID, CODE);                          -- RULE-CAT-004
+-- targets of the tenant-composite FKs of 5d: every intra-module FK carries TENANT_ID, so a row can only
+-- point to a parent of its own tenant (D-P2-12, ADR-CAT-067)
+ALTER TABLE CAT_CATEGORY       ADD CONSTRAINT UQ_CAT_CATEGORY_PK            UNIQUE (TENANT_ID, CATEGORY_PK);
+ALTER TABLE CAT_VAR_ATTR       ADD CONSTRAINT UQ_CAT_VAR_ATTR_PK            UNIQUE (TENANT_ID, VARIANT_ATTRIBUTE_PK);
+ALTER TABLE CAT_ITEM           ADD CONSTRAINT UQ_CAT_ITEM_PK                UNIQUE (TENANT_ID, ITEM_PK);
+ALTER TABLE CAT_VARIANT        ADD CONSTRAINT UQ_CAT_VARIANT_PK             UNIQUE (TENANT_ID, VARIANT_PK);
 -- targets of the same-parent composite FKs of 5d (RULE-CAT-013, RULE-CAT-040)
 ALTER TABLE CAT_VAR_ATTR_VALUE ADD CONSTRAINT UQ_CAT_VAR_ATTR_VALUE_PK_ATTR UNIQUE (TENANT_ID, VARIANT_ATTRIBUTE_VALUE_PK, VARIANT_ATTRIBUTE_FK);
 ALTER TABLE CAT_VARIANT        ADD CONSTRAINT UQ_CAT_VARIANT_PK_ITEM        UNIQUE (TENANT_ID, VARIANT_PK, ITEM_FK);
@@ -4423,9 +4872,9 @@ CREATE UNIQUE INDEX UQ_CAT_CATEGORY_NAME_AR       ON CAT_CATEGORY (TENANT_ID, PA
 CREATE UNIQUE INDEX UQ_CAT_VAR_ATTR_NAME_AR       ON CAT_VAR_ATTR (TENANT_ID, NAME_AR) WHERE IS_ACTIVE_FL;                                      -- RULE-CAT-016
 CREATE UNIQUE INDEX UQ_CAT_SCALE_LABEL_LAYOUT_KEY ON CAT_SCALE_LABEL_LAYOUT (TENANT_ID, KEY) WHERE IS_ACTIVE_FL;                                 -- RULE-CAT-034
 CREATE UNIQUE INDEX UQ_CAT_UNIT_EINVOICE_CODE_KEY ON CAT_UNIT_EINVOICE_CODE (TENANT_ID, KEY) WHERE IS_ACTIVE_FL;                                 -- RULE-CAT-043
-CREATE UNIQUE INDEX UQ_CAT_ITEM_NAME_AR           ON CAT_ITEM (TENANT_ID, regexp_replace(btrim(NAME_AR), '\s+', ' ', 'g')) WHERE IS_ACTIVE_FL;  -- RULE-CAT-003
+CREATE UNIQUE INDEX UQ_CAT_ITEM_NAME_AR           ON CAT_ITEM (TENANT_ID, CAT_NORMALIZE_AR(NAME_AR)) WHERE IS_ACTIVE_FL;                         -- RULE-CAT-003, ADR-CAT-062
 CREATE UNIQUE INDEX UQ_CAT_VAR_ATTR_VALUE_NAME_AR ON CAT_VAR_ATTR_VALUE (TENANT_ID, VARIANT_ATTRIBUTE_FK, NAME_AR) WHERE IS_ACTIVE_FL;          -- RULE-CAT-016
-CREATE UNIQUE INDEX UQ_CAT_VARIANT_DEFAULT        ON CAT_VARIANT (TENANT_ID, ITEM_FK) WHERE IS_DEFAULT_FL;                                      -- REQ-CAT-025
+CREATE UNIQUE INDEX UQ_CAT_VARIANT_DEFAULT        ON CAT_VARIANT (TENANT_ID, ITEM_FK) WHERE IS_DEFAULT_FL;                                      -- REQ-CAT-025, ADR-CAT-072 (at most one default per Item; the service clears the former default before it sets the new one)
 CREATE UNIQUE INDEX UQ_CAT_VAR_ATTR_ASSIGN_ATTR   ON CAT_VAR_ATTR_ASSIGN (TENANT_ID, VARIANT_FK, VARIANT_ATTRIBUTE_FK) WHERE IS_ACTIVE_FL;     -- RULE-CAT-013
 CREATE UNIQUE INDEX UQ_CAT_BUNDLE_COMP_VARIANT    ON CAT_BUNDLE_COMP (TENANT_ID, BUNDLE_ITEM_FK, COMPONENT_VARIANT_FK) WHERE IS_ACTIVE_FL;     -- RULE-CAT-019
 CREATE UNIQUE INDEX UQ_CAT_ITEM_UNIT_UOM          ON CAT_ITEM_UNIT (TENANT_ID, ITEM_FK, UOM_CODE) WHERE IS_ACTIVE_FL;                           -- RULE-CAT-027
@@ -4451,48 +4900,62 @@ ALTER TABLE CAT_ITEM_UNIT ADD CONSTRAINT CHK_CAT_ITEM_UNIT_CONVERSION_FACTOR CHE
 ALTER TABLE CAT_BARCODE ADD CONSTRAINT CHK_CAT_BARCODE_BARCODE_VALUE CHECK (BARCODE_VALUE ~ '^[0-9]+$');                                  -- RULE-CAT-030, RULE-CAT-033
 ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT CHK_CAT_ITEM_MEDIA_NAME_AR CHECK (NAME_AR ~ '[\u0621-\u064A]');                                 -- RULE-CAT-001
 
--- 5d — INTRA-MODULE FOREIGN KEYS (parent PK / UNIQUE already in place)
+-- 5d — INTRA-MODULE FOREIGN KEYS (parent PK / UNIQUE already in place). Every one is composite with
+-- TENANT_ID (D-P2-12, ADR-CAT-067); a NULL optional FK column skips the check (MATCH SIMPLE).
 ALTER TABLE CAT_CATEGORY ADD CONSTRAINT FK_CAT_CATEGORY_CAT_CATEGORY
-    FOREIGN KEY (PARENT_CATEGORY_FK) REFERENCES CAT_CATEGORY (CATEGORY_PK);
+    FOREIGN KEY (TENANT_ID, PARENT_CATEGORY_FK) REFERENCES CAT_CATEGORY (TENANT_ID, CATEGORY_PK);
 ALTER TABLE CAT_ITEM ADD CONSTRAINT FK_CAT_ITEM_CAT_CATEGORY
-    FOREIGN KEY (CATEGORY_FK) REFERENCES CAT_CATEGORY (CATEGORY_PK);
+    FOREIGN KEY (TENANT_ID, CATEGORY_FK) REFERENCES CAT_CATEGORY (TENANT_ID, CATEGORY_PK);
 ALTER TABLE CAT_VAR_ATTR_VALUE ADD CONSTRAINT FK_CAT_VAR_ATTR_VALUE_CAT_VAR_ATTR
-    FOREIGN KEY (VARIANT_ATTRIBUTE_FK) REFERENCES CAT_VAR_ATTR (VARIANT_ATTRIBUTE_PK);
+    FOREIGN KEY (TENANT_ID, VARIANT_ATTRIBUTE_FK) REFERENCES CAT_VAR_ATTR (TENANT_ID, VARIANT_ATTRIBUTE_PK);
 ALTER TABLE CAT_VARIANT ADD CONSTRAINT FK_CAT_VARIANT_CAT_ITEM
-    FOREIGN KEY (ITEM_FK) REFERENCES CAT_ITEM (ITEM_PK);
+    FOREIGN KEY (TENANT_ID, ITEM_FK) REFERENCES CAT_ITEM (TENANT_ID, ITEM_PK);
 ALTER TABLE CAT_VAR_ATTR_ASSIGN ADD CONSTRAINT FK_CAT_VAR_ATTR_ASSIGN_CAT_VARIANT
-    FOREIGN KEY (VARIANT_FK) REFERENCES CAT_VARIANT (VARIANT_PK);
+    FOREIGN KEY (TENANT_ID, VARIANT_FK) REFERENCES CAT_VARIANT (TENANT_ID, VARIANT_PK);
 ALTER TABLE CAT_VAR_ATTR_ASSIGN ADD CONSTRAINT FK_CAT_VAR_ATTR_ASSIGN_CAT_VAR_ATTR
-    FOREIGN KEY (VARIANT_ATTRIBUTE_FK) REFERENCES CAT_VAR_ATTR (VARIANT_ATTRIBUTE_PK);
+    FOREIGN KEY (TENANT_ID, VARIANT_ATTRIBUTE_FK) REFERENCES CAT_VAR_ATTR (TENANT_ID, VARIANT_ATTRIBUTE_PK);
 ALTER TABLE CAT_VAR_ATTR_ASSIGN ADD CONSTRAINT FK_CAT_VAR_ATTR_ASSIGN_CAT_VAR_ATTR_VALUE
     FOREIGN KEY (TENANT_ID, VARIANT_ATTRIBUTE_VALUE_FK, VARIANT_ATTRIBUTE_FK)
     REFERENCES CAT_VAR_ATTR_VALUE (TENANT_ID, VARIANT_ATTRIBUTE_VALUE_PK, VARIANT_ATTRIBUTE_FK);
 ALTER TABLE CAT_BUNDLE_COMP ADD CONSTRAINT FK_CAT_BUNDLE_COMP_CAT_ITEM
-    FOREIGN KEY (BUNDLE_ITEM_FK) REFERENCES CAT_ITEM (ITEM_PK);
+    FOREIGN KEY (TENANT_ID, BUNDLE_ITEM_FK) REFERENCES CAT_ITEM (TENANT_ID, ITEM_PK);
 ALTER TABLE CAT_BUNDLE_COMP ADD CONSTRAINT FK_CAT_BUNDLE_COMP_CAT_VARIANT
-    FOREIGN KEY (COMPONENT_VARIANT_FK) REFERENCES CAT_VARIANT (VARIANT_PK);
+    FOREIGN KEY (TENANT_ID, COMPONENT_VARIANT_FK) REFERENCES CAT_VARIANT (TENANT_ID, VARIANT_PK);
 ALTER TABLE CAT_ITEM_UNIT ADD CONSTRAINT FK_CAT_ITEM_UNIT_CAT_ITEM
-    FOREIGN KEY (ITEM_FK) REFERENCES CAT_ITEM (ITEM_PK);
+    FOREIGN KEY (TENANT_ID, ITEM_FK) REFERENCES CAT_ITEM (TENANT_ID, ITEM_PK);
 ALTER TABLE CAT_BARCODE ADD CONSTRAINT FK_CAT_BARCODE_CAT_VARIANT
-    FOREIGN KEY (VARIANT_FK) REFERENCES CAT_VARIANT (VARIANT_PK);
+    FOREIGN KEY (TENANT_ID, VARIANT_FK) REFERENCES CAT_VARIANT (TENANT_ID, VARIANT_PK);
 ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_CAT_ITEM
-    FOREIGN KEY (ITEM_FK) REFERENCES CAT_ITEM (ITEM_PK);
+    FOREIGN KEY (TENANT_ID, ITEM_FK) REFERENCES CAT_ITEM (TENANT_ID, ITEM_PK);
 ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_CAT_VARIANT
     FOREIGN KEY (TENANT_ID, VARIANT_FK, ITEM_FK) REFERENCES CAT_VARIANT (TENANT_ID, VARIANT_PK, ITEM_FK);
 
--- tenant FKs (given tenancy convention; every table)
-ALTER TABLE CAT_CATEGORY ADD CONSTRAINT FK_CAT_CATEGORY_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_VAR_ATTR ADD CONSTRAINT FK_CAT_VAR_ATTR_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_SCALE_LABEL_LAYOUT ADD CONSTRAINT FK_CAT_SCALE_LABEL_LAYOUT_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_UNIT_EINVOICE_CODE ADD CONSTRAINT FK_CAT_UNIT_EINVOICE_CODE_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_ITEM ADD CONSTRAINT FK_CAT_ITEM_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_VAR_ATTR_VALUE ADD CONSTRAINT FK_CAT_VAR_ATTR_VALUE_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_VARIANT ADD CONSTRAINT FK_CAT_VARIANT_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_VAR_ATTR_ASSIGN ADD CONSTRAINT FK_CAT_VAR_ATTR_ASSIGN_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_BUNDLE_COMP ADD CONSTRAINT FK_CAT_BUNDLE_COMP_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_ITEM_UNIT ADD CONSTRAINT FK_CAT_ITEM_UNIT_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_BARCODE ADD CONSTRAINT FK_CAT_BARCODE_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
-ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+-- 5e — TENANT FOREIGN KEYS (given erp-core CORE_TENANT, created by the given migration chain; erp-core checklist C1,
+-- conventions § Migrations rule 5 — a permitted given reference, not an XM: ADR-CAT-055)
+ALTER TABLE CAT_CATEGORY ADD CONSTRAINT FK_CAT_CATEGORY_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_VAR_ATTR ADD CONSTRAINT FK_CAT_VAR_ATTR_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_SCALE_LABEL_LAYOUT ADD CONSTRAINT FK_CAT_SCALE_LABEL_LAYOUT_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_UNIT_EINVOICE_CODE ADD CONSTRAINT FK_CAT_UNIT_EINVOICE_CODE_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_ITEM ADD CONSTRAINT FK_CAT_ITEM_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_VAR_ATTR_VALUE ADD CONSTRAINT FK_CAT_VAR_ATTR_VALUE_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_VARIANT ADD CONSTRAINT FK_CAT_VARIANT_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_VAR_ATTR_ASSIGN ADD CONSTRAINT FK_CAT_VAR_ATTR_ASSIGN_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_BUNDLE_COMP ADD CONSTRAINT FK_CAT_BUNDLE_COMP_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_ITEM_UNIT ADD CONSTRAINT FK_CAT_ITEM_UNIT_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_BARCODE ADD CONSTRAINT FK_CAT_BARCODE_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
+ALTER TABLE CAT_ITEM_MEDIA ADD CONSTRAINT FK_CAT_ITEM_MEDIA_TENANT
+    FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID);
 
 
 -- ──────────────────────────────────────────────────────────────────
@@ -4543,29 +5006,47 @@ CREATE INDEX IDX_CAT_CATEGORY_IS_ACTIVE_FL   ON CAT_CATEGORY (IS_ACTIVE_FL);
 CREATE INDEX IDX_CAT_VAR_ATTR_NAME_AR        ON CAT_VAR_ATTR (NAME_AR);
 CREATE INDEX IDX_CAT_VAR_ATTR_IS_ACTIVE_FL   ON CAT_VAR_ATTR (IS_ACTIVE_FL);
 
+-- substring search (LIKE '%…%' with ESCAPE) on names, codes and barcodes — trigram GIN (ADR-CAT-062)
+CREATE INDEX IDX_CAT_ITEM_NAME_AR_TRGM          ON CAT_ITEM USING gin (CAT_NORMALIZE_AR(NAME_AR) gin_trgm_ops);
+CREATE INDEX IDX_CAT_ITEM_NAME_EN_TRGM          ON CAT_ITEM USING gin (CAT_NORMALIZE_AR(NAME_EN) gin_trgm_ops);
+CREATE INDEX IDX_CAT_ITEM_CODE_TRGM             ON CAT_ITEM USING gin (CODE gin_trgm_ops);
+CREATE INDEX IDX_CAT_VARIANT_CODE_TRGM          ON CAT_VARIANT USING gin (CODE gin_trgm_ops);
+CREATE INDEX IDX_CAT_BARCODE_BARCODE_VALUE_TRGM ON CAT_BARCODE USING gin (BARCODE_VALUE gin_trgm_ops);
+
 -- ──────────────────────────────────────────────────────────────────
--- BLOCK 8 — LOOKUP AND REFERENCE SEED DATA (PLATFORM tenant, TENANT_ID = 1;
--- new tenants receive copies through the given provisioning contributors)
+-- BLOCK 8 — LOOKUP AND REFERENCE SEED DATA (PLATFORM tenant, TENANT_ID = 1).
+-- New tenants (ADR-CAT-058, REQ-CAT-134): the given copies 8a/8b (erp-core mdl) and 8c (sequence,
+-- counter at 1) from PLATFORM at provisioning; CatTenantProvisioningContributor (given TenantProvisioningContributor)
+-- copies 8d with an explicit TENANT_ID.
+-- Column names verified against erp-core 1.6.0 (V3__mdl_schema.sql + V10__tenant_schema.sql for MDL_*,
+-- V14__sequence_and_settings.sql for CORE_NUMBER_SERIES, V10 for CORE_TENANT ID 1 = 'PLATFORM') and written
+-- the way the core's own seed V8__mdl_seed.sql writes them (D-P2-13). VERSION defaults to 0 in each table.
+-- No COMMIT: Flyway runs a PostgreSQL migration in its own transaction and commits it.
 -- ──────────────────────────────────────────────────────────────────
 
 -- 8a — lookup types. Table owned by erp-core modules.mdl (MDL_LOOKUP_TYPE); the keys are owned by CAT (SRS A6).
-INSERT INTO MDL_LOOKUP_TYPE (ID, TENANT_ID, KEY, OWNER_MODULE_CODE, CREATED_BY)
-VALUES
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_ITEM_KIND', 'CAT', 'system'),
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_PUBLISH_STATE', 'CAT', 'system'),
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_BRAND', 'CAT', 'system'),
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_UOM', 'CAT', 'system'),
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_TAX_CLASS', 'CAT', 'system'),
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_EINVOICE_ITEM_CODE_TYPE', 'CAT', 'system'),
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_EINVOICE_UNIT', 'CAT', 'system'),
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_BARCODE_TYPE', 'CAT', 'system'),
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_SCALE_VALUE_TYPE', 'CAT', 'system'),
-    (nextval('SEQ_MDL_LOOKUP_TYPE'), 1, 'CAT_CHANGE_KIND', 'CAT', 'system');
+-- OWNER_MODULE_CODE 'CAT' is the permission module CatPermissions declares (RULE-MDL-001 is checked
+-- application-side against SEC_MODULE_REG, which the given fills from the contributor at startup).
+INSERT INTO MDL_LOOKUP_TYPE (LOOKUP_TYPE_PK, TENANT_ID, KEY, OWNER_MODULE_CODE, NAME_AR, NAME_EN, IS_ACTIVE_FL, CREATED_BY, CREATED_AT)
+SELECT nextval('SEQ_MDL_LOOKUP_TYPE'), 1, v.TYPE_KEY, 'CAT', v.NAME_AR, v.NAME_EN, TRUE, 'SYSTEM', CURRENT_TIMESTAMP
+FROM (VALUES
+    (1, 'CAT_ITEM_KIND', 'نوع الصنف', 'Item kind'),
+    (2, 'CAT_PUBLISH_STATE', 'حالة النشر', 'Publish state'),
+    (3, 'CAT_BRAND', 'العلامة التجارية', 'Brand'),
+    (4, 'CAT_UOM', 'وحدة القياس', 'Unit of measure'),
+    (5, 'CAT_TAX_CLASS', 'التصنيف الضريبي', 'Tax class'),
+    (6, 'CAT_EINVOICE_ITEM_CODE_TYPE', 'نوع رمز الفاتورة الإلكترونية', 'E-invoice code type'),
+    (7, 'CAT_EINVOICE_UNIT', 'وحدة الفاتورة الإلكترونية', 'E-invoice unit'),
+    (8, 'CAT_BARCODE_TYPE', 'نوع الباركود', 'Barcode type'),
+    (9, 'CAT_SCALE_VALUE_TYPE', 'نوع القيمة المضمّنة', 'Embedded value type'),
+    (10, 'CAT_CHANGE_KIND', 'نوع تغيير الكتالوج', 'Catalogue change kind')
+) AS v (ORD, TYPE_KEY, NAME_AR, NAME_EN)
+ORDER BY v.ORD;
 
 -- 8b — lookup values. Table owned by erp-core modules.mdl (MDL_LOOKUP_VALUE); the values are owned by CAT (SRS A6).
--- CAT_BRAND has no seeded value (the tenant builds its own list).
-INSERT INTO MDL_LOOKUP_VALUE (ID, TENANT_ID, LOOKUP_TYPE_ID, CODE, LABEL_AR, LABEL_EN, SORT_ORDER, IS_ACTIVE_FL, CREATED_BY)
-SELECT nextval('SEQ_MDL_LOOKUP_VALUE'), 1, t.ID, v.CODE, v.LABEL_AR, v.LABEL_EN, v.SORT_ORDER, TRUE, 'system'
+-- CAT_BRAND has no seeded value (the tenant builds its own list). LOOKUP_TYPE_ID is resolved by KEY.
+INSERT INTO MDL_LOOKUP_VALUE (LOOKUP_VALUE_PK, TENANT_ID, LOOKUP_TYPE_ID, CODE, NAME_AR, NAME_EN, SORT_ORDER, IS_ACTIVE_FL, CREATED_BY, CREATED_AT)
+SELECT nextval('SEQ_MDL_LOOKUP_VALUE'), 1, t.LOOKUP_TYPE_PK, v.CODE, v.NAME_AR, v.NAME_EN, v.SORT_ORDER, TRUE, 'SYSTEM', CURRENT_TIMESTAMP
 FROM (VALUES
     ('CAT_ITEM_KIND', 'STANDARD', 'صنف عادي', 'Standard item', 1),
     ('CAT_ITEM_KIND', 'BUNDLE', 'حزمة', 'Bundle', 2),
@@ -4601,15 +5082,16 @@ FROM (VALUES
     ('CAT_CHANGE_KIND', 'UPDATED', 'تعديل', 'Updated', 2),
     ('CAT_CHANGE_KIND', 'DEACTIVATED', 'إيقاف', 'Deactivated', 3),
     ('CAT_CHANGE_KIND', 'REACTIVATED', 'إعادة تفعيل', 'Reactivated', 4)
-) AS v (TYPE_KEY, CODE, LABEL_AR, LABEL_EN, SORT_ORDER)
+) AS v (TYPE_KEY, CODE, NAME_AR, NAME_EN, SORT_ORDER)
 JOIN MDL_LOOKUP_TYPE t ON t.TENANT_ID = 1 AND t.KEY = v.TYPE_KEY;
 
 -- 8c — number series (SRS D-11). Table owned by erp-core modules.sequence (CORE_NUMBER_SERIES); the series codes are owned by CAT.
+-- PERIOD_KEY ('' for NEVER), NEXT_VALUE (1), IS_ACTIVE (TRUE), CREATED_AT and VERSION take their column defaults.
 INSERT INTO CORE_NUMBER_SERIES (ID, TENANT_ID, CODE, PREFIX, PATTERN, RESET_POLICY, CREATED_BY)
 VALUES
-    (nextval('SEQ_CORE_NUMBER_SERIES'), 1, 'CAT_ITEM', 'ITM', '{PREFIX}-{SEQ:6}', 'NEVER', 'system'),
-    (nextval('SEQ_CORE_NUMBER_SERIES'), 1, 'CAT_VARIANT', 'VAR', '{PREFIX}-{SEQ:6}', 'NEVER', 'system'),
-    (nextval('SEQ_CORE_NUMBER_SERIES'), 1, 'CAT_INTERNAL_BARCODE', '04', '{SEQ:10}', 'NEVER', 'system');
+    (nextval('SEQ_CORE_NUMBER_SERIES'), 1, 'CAT_ITEM', 'ITM', '{PREFIX}-{SEQ:6}', 'NEVER', 'SYSTEM'),
+    (nextval('SEQ_CORE_NUMBER_SERIES'), 1, 'CAT_VARIANT', 'VAR', '{PREFIX}-{SEQ:6}', 'NEVER', 'SYSTEM'),
+    (nextval('SEQ_CORE_NUMBER_SERIES'), 1, 'CAT_INTERNAL_BARCODE', '04', '{SEQ:10}', 'NEVER', 'SYSTEM');
 
 -- 8d — Unit e-invoice codes (SRS D-12: CAT_UOM → CAT_EINVOICE_UNIT). Table created by this script.
 INSERT INTO CAT_UNIT_EINVOICE_CODE (KEY, VALUE_AR, VALUE_EN, EINVOICE_UNIT_CODE, IS_ACTIVE_FL, TENANT_ID, CREATED_BY, CREATED_AT)
@@ -4623,8 +5105,6 @@ VALUES
     ('METRE', 'متر', 'Metre', 'MTR', TRUE, 1, 'system', now()),
     ('LITRE', 'لتر', 'Litre', 'LTR', TRUE, 1, 'system', now());
 
-COMMIT;
-
 -- ──────────────────────────────────────────────────────────────────
 -- BLOCK 9 — VIEWS
 -- none: no SRS requirement asks for a view; derived Variant names are composed at read by the service.
@@ -4632,7 +5112,7 @@ COMMIT;
 
 -- ──────────────────────────────────────────────────────────────────
 -- BLOCK 10 — FUNCTIONS / PROCEDURES
--- none: no SRS requirement asks for one.
+-- CAT_NORMALIZE_AR is created in BLOCK 1 (it must exist before BLOCK 5b and BLOCK 7). No procedure.
 -- ──────────────────────────────────────────────────────────────────
 ```
 
@@ -4640,11 +5120,12 @@ COMMIT;
 
 | Check | Result |
 |---|---|
-| SYNTAX S-1 … S-8 | Every statement ends with `;`. No trailing comma. Every CAT object referenced is created above. The given tables of BLOCK 8 (MDL_LOOKUP_TYPE, MDL_LOOKUP_VALUE, CORE_NUMBER_SERIES) are created by the given's own migration chain, which runs before application scripts. Types come only from §4.1, plus INTEGER declared in the header. All constraints are in ALTER TABLE form. No PK trigger, no PK sequence default. INSERTs carry column lists, with COMMIT after the DML. No schema prefix. No placeholders |
+| SYNTAX S-1 … S-8 | Every statement ends with `;`. No trailing comma. Every CAT object referenced is created above. The given tables of BLOCK 8 (MDL_LOOKUP_TYPE, MDL_LOOKUP_VALUE, CORE_NUMBER_SERIES) and the FK target CORE_TENANT of BLOCK 5e are created by the given's own migration chain, which runs before application scripts. Types come only from §4.1, plus INTEGER declared in the header. All constraints are in ALTER TABLE form. No PK trigger, no PK sequence default. INSERTs carry column lists, named as erp-core 1.6.0 names them (D-P2-13). No transaction statement: Flyway owns the migration's transaction. No schema prefix. No placeholders |
 | PK strategy | 12 of 12 PK columns use `GENERATED ALWAYS AS IDENTITY`. No PK sequence |
-| Order | Parent tables come before child tables. Every PK is added before any UNIQUE or FK, and the UNIQUE targets of the composite FKs are added before those FKs. The lookup types are inserted before the lookup values. One COMMIT closes BLOCK 8 |
+| Order | Parent tables come before child tables. Every PK is added before any UNIQUE or FK, and the UNIQUE targets of the tenant-composite FKs are added before those FKs. The lookup types are inserted before the lookup values |
+| Deployment preconditions | The given core migration chain (V1 … V34 of erp-core 1.6.0) has run. The Flyway role holds CREATE on the database for `pg_trgm`, or a DBA has installed `pg_trgm` beforehand (BLOCK 1) |
 | Completeness | 12 of 12 ENT have a table, and every stored SRS field has a DBF. The two derived Variant names are not stored (D-P2-08). All 10 lookup keys are seeded (34 values). The shared lookup tables are not re-created |
-| Cross-module | No XM, so no cross-module column. No constraint references another module's table, live or commented. The given references (TENANT_ID, FILE_DOCUMENT_REF) are column-only |
+| Cross-module | No XM, so no cross-module column. No constraint references another business module's table. The only constraint to a given table is `FK_<TABLE>_TENANT → CORE_TENANT(ID)` on the 12 tables (checklist C1, ADR-CAT-055); FILE_DOCUMENT_REF and the lookup and series codes are soft reads with no constraint. Every intra-module FK is composite with TENANT_ID (D-P2-12, ADR-CAT-067) |
 | Trace | Every DBF traces to its ENT.field and to at least 1 REQ. No XM exists, so no orphan XM and no dangling id |
 
 ## 5 — Decisions applied
@@ -4653,33 +5134,34 @@ COMMIT;
 |---|---|---|---|
 | D-P2-01 | Identifier transformation: camelCase → UPPER_SNAKE_CASE, unquoted. PostgreSQL stores the name in lower case, which matches the given's physical naming. Tables are named `CAT_` + entity abbreviation (VAR_ATTR = Variant attribute, COMP = component) | brief §3; given migrations convention | Rename in a later delta (breaking for consumers of physical names) |
 | D-P2-02 | Every table carries the given entity column set: TENANT_ID, VERSION, CREATED_BY, CREATED_AT, UPDATED_BY, UPDATED_AT. This includes the lookup tables (ENT-CAT-003, 004) and config tables (ENT-CAT-011, 012), whose SRS kind lists no audit fields. The source is the given's tenancy rule (every table has `TENANT_ID BIGINT NOT NULL`; every entity extends `AuditableEntity`). SRS A2 says "Tenancy is handled by the given core", and SRS A3 says audit fields are filled by the system. Without these columns the given's base entity cannot map the table | SRS A2, A3; given erp-core 1.6.0 conventions (tenancy, migrations) | Drop the columns from the lookup and config tables only if the given allows an entity that does not extend `AuditableEntity` |
-| D-P2-03 | REVERSED (gate analysis G1): every table has `FK_<TABLE>_TENANT` → `CORE_TENANT(ID)` (BLOCK 5d), a `TENANT_ID` NOT NULL column, an index led by `TENANT_ID` (a non-partial UNIQUE of 5b or an `IDX_<TABLE>_TENANT_ID` of BLOCK 7), and every UNIQUE composite with `TENANT_ID`. The tenant table is the given erp-core `CORE_TENANT`, created by its own migration chain before this script | brief §5.1; given tenancy convention | — |
+| D-P2-03 | Every table has a `TENANT_ID` NOT NULL column, an index led by `TENANT_ID` (a non-partial UNIQUE of 5b or an `IDX_<TABLE>_TENANT_ID` of BLOCK 7), and every UNIQUE composite with `TENANT_ID`. Every table also carries `FK_<TABLE>_TENANT FOREIGN KEY (TENANT_ID) REFERENCES CORE_TENANT (ID)` (BLOCK 5e). The tenant table is the given erp-core `CORE_TENANT`, so the FK is a permitted given reference and not an XM. This supersedes ADR-CAT-054. The factory's explicit exemption of this FK from C6.15 is OPEN platform finding 1 in business-policies-cat.md | brief §5.1; erp-core checklist C1; conventions § Migrations rule 5; ADR-CAT-055 | — |
 | D-P2-04 | The PK is `{entity}Pk` with the identity clause. This replaces the given's `ID` + `SEQ_<TABLE>` default, because the profile decision governs and one database carries one PK strategy | profile `stack.db.pk_generation`, `naming.pk_pattern`; brief §4 | Profile change only |
 | D-P2-05 | Lookup-backed columns are `VARCHAR(50)` and hold the code. They carry no CHECK of allowed codes and no DB default. The service applies the SRS defaults (STANDARD, PIECE, STANDARD, UNPUBLISHED — D-09) and validates against the active values in `mdl` (RULE-CAT-006) | profile lookups rule; given lookups convention | — |
 | D-P2-06 | Logical `number` → `INTEGER`, declared once in the header. Decimal precision: `quantity` NUMERIC(18,3) and `conversionFactor` NUMERIC(18,6). The SRS fixes the scale only; 15 and 12 integer digits are enough for any retail quantity | SRS A3 (3 and 6 decimals) | Widen the precision in a later delta (non-breaking) |
 | D-P2-07 | `createdBy` and `updatedBy` are `VARCHAR(100)` principal strings. The created pair is NOT NULL and the updated pair is NULL until the first update | brief §3 audit rule; given migrations convention | — |
 | D-P2-08 | Variant `nameAr` and `nameEn` are derived at read (SRS D-15) and are not stored. A stored copy would go stale when a value is renamed (AC-CAT-048) | SRS ENT-CAT-002, D-15 | Store an owner override name if D-15 changes |
 | D-P2-09 | Unit e-invoice code `valueAr` and `valueEn` are stored (config-kind defaults) and nullable. The service copies them from the CAT_UOM labels at save; they are never entered | SRS ENT-CAT-012; profile entity_defaults.config | Derive at read and drop the columns in a later delta |
-| D-P2-10 | Rules that apply among active records are partial unique indexes named `UQ_…`. The Item Arabic name is compared without leading, trailing or repeated spaces (RULE-CAT-003). Rows from the same import file are checked by the service | SRS RULE-CAT-003, 016, 019, 024, 027, 029, 034, 039, 043 | — |
+| D-P2-10 | Rules that apply among active records are partial unique indexes named `UQ_…`. The Item Arabic name is compared after `CAT_NORMALIZE_AR` (tashkeel and tatweel dropped, alef / taa marbuta / alef maqsura folded, Latin lower-cased, spaces trimmed and collapsed — RULE-CAT-003, ADR-CAT-062). Rows from the same import file are checked by the service | SRS RULE-CAT-003, 016, 019, 024, 027, 029, 034, 039, 043 | — |
 | D-P2-11 | Barcode uniqueness is one partial unique index on the value among active barcodes. A SCALE code has 4–6 digits (RULE-CAT-033, RULE-CAT-034); a GTIN has 8–14 and an INTERNAL code has 13. So a SCALE code can never equal a GTIN or INTERNAL value, and RULE-CAT-029's per-type comparison holds without naming a lookup code in DDL | SRS RULE-CAT-029, 030, 033 | — |
-| D-P2-12 | Same-parent integrity is structural. A composite FK makes an assignment's value belong to its attribute (RULE-CAT-013). Another makes a media record's Variant belong to its Item (RULE-CAT-040; no check when the Variant is empty). Both FKs include TENANT_ID | SRS RULE-CAT-013, RULE-CAT-040 | — |
-| D-P2-13 | Lookup seeds go into the given's `mdl` tables. The given documents `KEY`, `OWNER_MODULE_CODE`, `TENANT_ID = 1` (PLATFORM) and the `SEQ_MDL_LOOKUP_*` id sequences. The value columns (`CODE`, `LABEL_AR`, `LABEL_EN`, `SORT_ORDER`) follow the given's `LookupOptionView`, and the type link is `LOOKUP_TYPE_ID`. Before P3.1 applies BLOCK 8, it must check these value-table column names against the given's `mdl` migration. No CAT table or column depends on them | brief §4.2 (the key owner owns the seed); given lookups convention | Adjust the column names only; keys and values are fixed by SRS A6 |
-| D-P2-14 | The number series CAT_ITEM (ITM-000001), CAT_VARIANT (VAR-000001) and CAT_INTERNAL_BARCODE (10 digits) are seeded in `CORE_NUMBER_SERIES` with RESET_POLICY NEVER, so the first save does not fail with `SEQUENCE_NOT_CONFIGURED` | SRS D-11; given numbering convention | Patterns are configurable per tenant in the core sequence module |
+| D-P2-12 | Same-tenant and same-parent integrity are structural. Every intra-module FK of 5d is composite with `TENANT_ID` and targets a `(TENANT_ID, <PK>)` UNIQUE of its parent (UQ_CAT_CATEGORY_PK, UQ_CAT_VAR_ATTR_PK, UQ_CAT_ITEM_PK, UQ_CAT_VARIANT_PK), so a row can never point to a parent of another tenant, even through a native query or a script that bypasses the given tenant filter (ADR-CAT-067). Two FKs also hold a same-parent rule: an assignment's value belongs to its attribute (RULE-CAT-013), and a media record's Variant belongs to its Item (RULE-CAT-040; no check when the Variant is empty — MATCH SIMPLE) | SRS RULE-CAT-013, RULE-CAT-040; erp-core conventions § Tenancy; ADR-CAT-067 | — |
+| D-P2-13 | Seeds go into the given's tables by the columns of erp-core 1.6.0, checked against its migrations (gate-analysis round 2, G14): `MDL_LOOKUP_TYPE (LOOKUP_TYPE_PK from SEQ_MDL_LOOKUP_TYPE, TENANT_ID, KEY, OWNER_MODULE_CODE VARCHAR(10), NAME_AR, NAME_EN — both NOT NULL —, IS_ACTIVE_FL, CREATED_BY, CREATED_AT, VERSION default 0)` (V3 + V10); `MDL_LOOKUP_VALUE (LOOKUP_VALUE_PK from SEQ_MDL_LOOKUP_VALUE, TENANT_ID, LOOKUP_TYPE_ID → LOOKUP_TYPE_PK, CODE, NAME_AR, NAME_EN, SORT_ORDER, IS_ACTIVE_FL, CREATED_BY, CREATED_AT)` (V3 + V10); `CORE_NUMBER_SERIES (ID from SEQ_CORE_NUMBER_SERIES, TENANT_ID, CODE, PREFIX, PATTERN, RESET_POLICY; PERIOD_KEY, NEXT_VALUE, IS_ACTIVE, CREATED_AT, VERSION by default)` (V14); `CORE_TENANT` row ID 1 = `PLATFORM` (V10). Result: the earlier names `ID`, `LABEL_AR`, `LABEL_EN` of the mdl tables were wrong and are replaced, `NAME_AR` / `NAME_EN` are added to the type rows, and the series columns and the PLATFORM id were right. The rows follow the core's own seed `V8__mdl_seed.sql` (types by KEY, values joined by KEY) | brief §4.2 (the key owner owns the seed); given lookups convention; erp-core 1.6.0 V3, V8, V10, V14 | Adjust the column names only if a later erp-core release renames them; keys and values are fixed by SRS A6 |
+| D-P2-14 | The number series CAT_ITEM (ITM-000001), CAT_VARIANT (VAR-000001) and CAT_INTERNAL_BARCODE (10 digits) are seeded in `CORE_NUMBER_SERIES` with RESET_POLICY NEVER, so the first save does not fail with `SEQUENCE_NOT_CONFIGURED`. The given copies the series to every new tenant with the counter at 1, and the Unit e-invoice codes are copied by `CatTenantProvisioningContributor` (REQ-CAT-134, ADR-CAT-058) | SRS D-11; given numbering convention; ADR-CAT-058 | Patterns are configurable per tenant in the core sequence module |
 | D-P2-15 | The 8 Unit e-invoice codes of D-12 are seeded for the PLATFORM tenant (AC-CAT-097 lists 8 active ones) | SRS D-12, ENT-CAT-012 | Re-map against the authority's code table |
 | D-P2-16 | These rules stay with the service and are not DDL, because they need other rows, flags, files or sequences: RULE-CAT-004, 005, 006, 007, 008, 009, 010, 011, 012, 013 (unique combination), 014, 015, 017, 018 (at least one line), 019 (active, STANDARD), 020, 021, 022, 023 (active parent, no cycle, depth ≤ 5), 025, 026, 027 (differs from base unit), 028, 030 (check digit), 031, 032, 033 (length), 035, 036, 037, 038, 039 (exactly one), 040 (when the Variant is empty), 041, 042 (GS1 / EGS format), 044, 045, 046, 047, 048, 049 | SRS A5 | — |
 | D-P2-17 | Profile check CM-8: CAT holds no stock quantity, no monetary amount and no price (SRS A2 out of scope: PRC, INV). No warehouse, currency or price-list dimension applies to a CAT row | SRS A2; profile CM-8 | — |
 | D-P2-18 | Delta: the current state holds no earlier CAT db-script, so this v2 migration creates every object. The DBF sequence starts at 001 (next free 162). No XM exists (next free XM sequence 001) | brief delta rule; change-manifest CS-CAT-001 | — |
 
-No ADR was raised and no question was asked. The next free ADR sequence for CAT is unchanged (044). Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
+No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. ADR-CAT-072 (the default Variant moves) changes only the comments of `IS_DEFAULT_FL` and `UQ_CAT_VARIANT_DEFAULT`: the index stays non-partial, because the service clears the former default before it sets the new one. The next free ADR sequence for CAT, per the current registries, is 077. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
 
 ## 6 — Registry content
 
 See `registry-db-cat.md` (same content). Event: "P2 completed: CAT v2 — 12 tables, 161 DBF, 0 XM".
 
+
 <<<END INPUT>>>
 
 <<<INPUT: registry-db (baseline — continue it, never restart it)>>>
-## REGISTRY — P2 — CAT v2
+﻿## REGISTRY — P2 — CAT v2
 
 ### Tables
 | Table | ENT id | Kind | DBF range |
@@ -4697,9 +5179,9 @@ See `registry-db-cat.md` (same content). Event: "P2 completed: CAT v2 — 12 tab
 | CAT_SCALE_LABEL_LAYOUT | ENT-CAT-011 | config | DBF-CAT-136 … DBF-CAT-149 |
 | CAT_UNIT_EINVOICE_CODE | ENT-CAT-012 | config | DBF-CAT-150 … DBF-CAT-161 |
 
-Tenant constraint: every table carries FK_<TABLE>_TENANT → CORE_TENANT(ID) (12 FKs) and an index led by TENANT_ID.
+Tenant: every table carries TENANT_ID with `FK_<TABLE>_TENANT → CORE_TENANT(ID)` (12 constraints, db-script BLOCK 5e; erp-core checklist C1) and an index led by TENANT_ID. The FK targets a given table, so it is a permitted given reference, not an XM (ADR-CAT-055, superseding ADR-CAT-054). The factory's explicit exemption of this FK from `gov.py` C6.15 is OPEN platform finding 1 in business-policies-cat.md. Every intra-module FK is composite with TENANT_ID and targets a `(TENANT_ID, <PK>)` UNIQUE of its parent, so same-tenant integrity is structural (D-P2-12, ADR-CAT-067).
 
-Given tables read, never created: MDL_LOOKUP_TYPE and MDL_LOOKUP_VALUE (`erp-core:modules.mdl`, seeded only), CORE_NUMBER_SERIES (`erp-core:modules.sequence`, seeded only), FILE_DOCUMENT (`erp-core:modules.file`, soft read through `CAT_ITEM_MEDIA.FILE_DOCUMENT_REF`) and CORE_TENANT (`erp-core:modules.tenant`, through `TENANT_ID`).
+Given tables read, never created: MDL_LOOKUP_TYPE and MDL_LOOKUP_VALUE (`erp-core:modules.mdl`, seeded only), CORE_NUMBER_SERIES (`erp-core:modules.sequence`, seeded only), FILE_DOCUMENT (`erp-core:modules.file`, soft read through `CAT_ITEM_MEDIA.FILE_DOCUMENT_REF`) and CORE_TENANT (`erp-core:modules.tenant`, through `TENANT_ID` and its FK). New tenants receive the CAT lookups and number series from the given at provisioning, and the Unit e-invoice codes from `CatTenantProvisioningContributor` (ADR-CAT-058).
 
 ### XM index
 ```yaml name=xm-register
@@ -4726,20 +5208,24 @@ Total: 10 keys, 34 seeded values.
 Other seeds:
 - Number series CAT_ITEM, CAT_VARIANT and CAT_INTERNAL_BARCODE go into CORE_NUMBER_SERIES (owner: erp-core sequence).
 - 8 Unit e-invoice codes go into CAT_UNIT_EINVOICE_CODE (owner: CAT).
+- The columns of the given seed tables were checked against the erp-core 1.6.0 migrations (V3, V8, V10, V14 — D-P2-13). BLOCK 8 ends without a COMMIT; Flyway owns the transaction. Deployment precondition: the Flyway role may CREATE on the database for `pg_trgm`, or a DBA installs it beforehand.
 
 ### Sequences
 - Last DBF: DBF-CAT-161 (next free sequence 162)
 - Last XM: none (next free sequence 001)
 - No database sequence is created (every PK uses the identity clause)
+- One function (`CAT_NORMALIZE_AR`) and the `pg_trgm` extension are created for RULE-CAT-003 and search (ADR-CAT-062)
+- Migration file: `V1000__cat_catalog.sql`
 
 ### Decisions
-DEFAULTs D-P2-01 … D-P2-18 (db-script §5). No ADR, none BLOCKED. The next free ADR sequence is unchanged (044).
+DEFAULTs D-P2-01 … D-P2-18 (db-script §5). ADR-CAT-055 (tenant FK restored; supersedes ADR-CAT-054), ADR-CAT-058 (tenant provisioning of seeds), ADR-CAT-062 (CAT_NORMALIZE_AR, pg_trgm indexes), ADR-CAT-067 (tenant-composite intra-module FKs), ADR-CAT-072 (the default Variant moves; UQ_CAT_VARIANT_DEFAULT kept non-partial, comments only). None BLOCKED. The next free ADR sequence, per the current registries (re-stamped at the eighth gate-analysis revise), is 077. Inputs: srs REQ 147 · AC 164 · ENT 12 · RULE 53.
 
 ### Event
 "P2 completed: CAT v2 — 12 tables, 161 DBF, 0 XM"
 
 ### Cascade
 None by hand. `gov.py graph` derives the edges that target CAT and raises their resolution events (shared/XM-PROTOCOL.md §5). No consumer edge exists yet.
+
 
 <<<END INPUT>>>
 

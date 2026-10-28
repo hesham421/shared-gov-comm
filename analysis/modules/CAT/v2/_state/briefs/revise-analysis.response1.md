@@ -1,53 +1,37 @@
-I applied all eight findings by editing the source files in place, the same way as the last two revises. I didn't paste full-file `<<<FILE>>>` blocks because the plans run to thousands of lines. Nothing is committed and I haven't run `gov.py analyze`. My own checks passed:
-- `api-spec-cat.yaml` still parses, with 55 operations.
-- The SRS has 147 REQs, each with its own ACs.
-- Each new REQ is traced by an endpoint, a frontend binding and at least one backend test.
-- The test counts are unchanged: 157 backend and 65 frontend.
+I applied both MAJOR findings by editing the source files in place, as in the earlier revises, rather than pasting full-file `<<<FILE>>>` blocks; the plans are thousands of lines. Nothing is committed and I haven't run `gov.py analyze`. My own checks: `api-spec-cat.yaml` still parses with 55 operations, the diff is 164 lines added and 104 removed across 15 files, and nothing else in the artifacts still claims CAT reads a file's type or size.
 
-**MAJOR**
-- **G1 (inactive lookup value label):**
-  - New ADR-CAT-073 and `CORE-GAP-lookup-inactive-value-label.md`.
-  - API-CAT-052 still returns active values only. Until the core answers, a value deactivated later shows as its raw code on every screen.
-  - The frontend plan's `LookupOption` drops `isActive` and now matches the API document. UXD-CAT-001 is narrowed to match.
-  - TC-CAT-139 and TC-CAT-177 use host brands whose labels differ from their codes (OLDBRAND and a new RETIRED_177, added to the SRS lookup values) and assert the code is shown.
-  - Platform finding 10 records the gap.
-- **G3 (import batching):** I took the recommended option, recorded as ADR-CAT-074, which amends ADR-CAT-071.
-  - The import saves entities through QR-CAT-003, 011 and 049, keeping the savepoint per batch and the row-by-row replay. "JDBC batching" is gone, and there are still six native statements.
-  - The 60 s figure is now a target, measured by a new undelayed run in TC-CAT-217. The 120 s limit stays the guarantee.
-  - TC-CAT-217's fault point now reads "after the first 500 rows are saved".
-- **G4 (bulk updates):** QR-CAT-020, 072 and 075 now load the rows as entities and save each one. Every change is audited and gets its own change event with its record id. QR-CAT-075 flushes between clearing the old default and setting the new one.
+**G1 — file metadata read (new ADR-CAT-076 and `CORE-GAP-file-document-metadata-read.md`)**
+- **Images:** CAT registers a FILE category `CAT_ITEM_IMAGE` (public, PNG/JPEG/WEBP, 5 MB), added as a bootstrap row and copied into each new tenant by `CatTenantProvisioningContributor`. The FILE upload endpoint now refuses a wrong file before CAT is called.
+- **What API-CAT-018 still checks:** availability, plus a public URL, and the 20-image count (RULE-CAT-038 keeps its code and message). The public-URL check is my own addition, using `publicUrl`, which erp-core publishes. Without it a privately stored file would pass `isAvailable` and be attached even though the storefront can't show it. Such a file now gets CAT-404-NOT-FOUND.
+- **Import:** the byte read and the type/size check of API-CAT-049 are marked as waiting on the core gap. The endpoint, its codes and its tests are unchanged. The backend test plan says TC-CAT-017…020, 083, 084 and 217 run once the core answers.
+- **Category registration:** erp-core doesn't document how a module registers a FILE category, so I added that as question 3 of the core gap.
+- **Given-usage rows** in SRS A9, contract §4 and the backend plan now list only `isAvailable`, `publicUrl` and `publicUrls`. The gap is in the backend plan's core-gaps table and index, and platform finding 11 records it.
+- **SRS:** RULE-CAT-038 and AC-CAT-112 had to change too, which the fix text didn't mention. AC-CAT-112 now covers the 7 MB JPG refused by the image category and a 21st image refused by RULE-CAT-038. No AC was added.
+- **Tests:**
+  - TC-CAT-056: the FILE category refuses a 7 MB JPG and a GIF.
+  - TC-CAT-218: CAT's own checks — a file with no public URL or a missing reference gives 404, and the 21st image gives RULE-CAT-038.
+  - TC-CAT-146: the client no longer checks type or size; the FILE refusal shows on the file input. It moved from package F3 to F2.
+  - TC-CAT-166: keeps its client-side check, with a note that the server-side check waits on the core.
 
-**MINOR**
-- **G2 (request size and paging):**
-  - Every paged read goes through the given `PageableBuilder` (size ≤ 200, page ≥ 0), and the native queries take their LIMIT and OFFSET from it.
-  - The API document now caps the arrays: selections 3, values per selection 300, Bundle lines 100, label lines 5,000. It also bounds the page and size parameters.
-  - API-CAT-006 checks the 300-Variant limit arithmetically before building any combination.
-  - TC-CAT-184 has a row 3 where 4 attributes get CAT-400-REQUEST-INVALID.
-- **G5 (Category label):** New ADR-CAT-075, with amendment notes on ADR-CAT-048 and ADR-CAT-051.
-  - The Item read schemas now carry the Category's code and names, filled by a join in the read queries.
-  - The separate Category-tree label read is dropped from the frontend plan.
-  - TC-CAT-195 adds a step for a user who can't read the Category tree.
-- **G6 (empty import cells):** API-CAT-049 now says an empty base unit or tax class cell takes PIECE / STANDARD, and a filled cell is checked against the active values and never overridden. I covered this by extending TC-CAT-083 rather than adding a new test.
-- **G7 (bundled REQs):**
-  - New REQ-CAT-140 and 141 are split from REQ-CAT-025 (one per default-Variant move).
-  - New REQ-CAT-142, 143 and 144 are split from REQ-CAT-130 (one per reactivation refusal).
-  - The fix text only named those two, but the problem also listed REQ-CAT-135, so I split it too. New REQ-CAT-145, 146 and 147 cover the three repairs allowed on an inactive Item.
-  - Eight ACs are re-pointed, not renumbered. The rules, endpoints, API traces, frontend bindings and tests now point at the new REQs.
-- **G8 (dependent master entities):** No CAT change while ADR-CAT-039 stands. Platform finding 9 stays OPEN and notes this round.
+**G2 — contradictory requests**
+- PHASE CORE "API conventions" has one new rule: a request whose fields contradict each other, or that names a record outside the addressed parent, gets CAT-400-REQUEST-INVALID before any RULE runs and writes nothing.
+  - It covers the four groups the finding listed: API-CAT-006, the STANDARD-Item case on API-CAT-001, API-CAT-017, and API-CAT-014 (now beyond INTERNAL).
+  - I also included two cases the finding didn't list: a component listed twice, and a client-chosen value on API-CAT-015.
+- A second rule says any database constraint backing a RULE is reported as that RULE's error, never CAT-500.
+- API-CAT-001, 006, 014, 015 and 017 cite the rule, and the CAT-400-REQUEST-INVALID trigger lists the cases.
+- New TC-CAT-223 (SVC-API-CRUD) has 10 rows, each asserting 400, nothing written and no events. The backend test plan now has 158 TCs.
 
-**Bookkeeping:** downstream headers now read REQ 147 · AC 164 · RULE 53 · next free ADR 076, in the contract, db-script and all registries.
+**Bookkeeping:** next free ADR restamped to 077 in the contract, db-script and all registries. The SRS ADR count is now 19, and the backend plan lists 5 core gaps.
 
 **Files changed:**
-- New: ADR-CAT-073, 074, 075 and `CORE-GAP-lookup-inactive-value-label.md`.
-- Amended: ADR-CAT-048, 051 and 071.
+- New: `ADR-CAT-076.md`, `CORE-GAP-file-document-metadata-read.md`
+- Amended: `ADR-CAT-056.md` (note added to §2)
 - P0: `business-policies-cat.md`
 - P1: `srs-cat.md`, `registry-srs-cat.md`
 - P1.5: `contract-cat.md`
-- P2: `db-script-cat.md`, `registry-db-cat.md`
+- P2: `db-script-cat.md`, `registry-db-cat.md` (header stamps only)
 - P3.1: `backend-execution-plan-cat.md`, `api-spec-cat.yaml`, `registry-exec-be-cat.md`
-- P3.2: `flow-diagram-cat.md`, `ui-ux-spec-cat.md`, `frontend-execution-plan-cat.md`, `registry-exec-fe-cat.md`
+- P3.2: `frontend-execution-plan-cat.md`, `ui-ux-spec-cat.md`, `registry-exec-fe-cat.md`
 - P4: `backend-test-plan-cat.md`, `frontend-test-plan-cat.md`
 
-**Not changed:**
-- `platform-summary.md`, `module-registry-cat.md` and `prd-cat.md` needed no edits.
-- `platform/contracts/contract-cat.md`, `change-manifest.md` and the `_state/current-*` copies were outside the writable list, so they need regenerating.
+**Not changed:** `platform-summary.md`, `module-registry-cat.md`, `prd-cat.md` and `flow-diagram-cat.md` needed no edits. `platform/contracts/contract-cat.md` and the `_state/current-*` copies are outside the writable list, so they need regenerating.

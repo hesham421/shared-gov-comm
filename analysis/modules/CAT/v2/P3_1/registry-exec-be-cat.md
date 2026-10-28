@@ -119,10 +119,12 @@ Verdict as stamped by the orchestrator from `gov.py analyze` (self-check block p
 | decisions/CAT/ADR-CAT-073 | an inactive lookup value renders as its raw code until the core can label it; API-CAT-052 serves active values only | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-074 | the item import saves entities (QR-CAT-003, 011, 049), no JDBC batching; the 60 s figure is a measured target; amends ADR-CAT-071 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-075 | ItemSummary / ItemDetail carry the derived categoryCode, categoryNameAr, categoryNameEn; amends ADR-CAT-048 §5 | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-076 | image type, size and public storage enforced by the FILE category CAT_ITEM_IMAGE at upload; API-CAT-018 checks availability, a public URL and the 20-image count; the import's byte read waits on the core; amends ADR-CAT-056 §2 | ACCEPTED (non-breaking) |
 | decisions/CAT/CORE-GAP-in-process-authorization | how a cross-module read API is authorized for callers without a permission of the owning module | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-tenant-lookup-types | whether a tenant can create lookup types with nested values at runtime | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-number-series-block-allocation | whether NumberSeriesApi can allocate a block of n numbers in one call | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-lookup-inactive-value-label | whether MdlLookupApi can read the values of a key by code, active or not, with their labels | OPEN (asked of erp-core) |
+| decisions/CAT/CORE-GAP-file-document-metadata-read | whether FileDocumentLookupApi / FilePrivateStoreApi can return a document's type, size and visibility and a bounded read of a private document's bytes; how a module registers its FILE categories | OPEN (asked of erp-core) |
 
 The fourth gate-analysis revise raised no ADR; the next free ADR sequence for CAT is 072. None BLOCKED.
 
@@ -140,10 +142,15 @@ Seventh gate-analysis revise (backend), ADR-CAT-073 … ADR-CAT-075 and CORE-GAP
 - G5: ItemSummary / ItemDetail carry the derived categoryCode, categoryNameAr, categoryNameEn, from a left join in QR-CAT-001, 005, 006, 007 or QR-CAT-032 for API-CAT-004 (ADR-CAT-075).
 - G6: API-CAT-049 states that an empty baseUomCode / taxClassCode cell takes PIECE / STANDARD and a filled one is validated under RULE-CAT-006, never overridden.
 - G7: API-CAT-003, 005, 006, 009 and 017 trace the REQs split from REQ-CAT-025, 130 and 135 (REQ-CAT-140 … 147).
-The next free ADR sequence is 076.
+The next free ADR sequence was 076.
+
+Eighth gate-analysis revise (backend), ADR-CAT-076 and CORE-GAP-file-document-metadata-read raised:
+- G1: the FileDocumentLookupApi given-usage row lists only isAvailable, publicUrl and publicUrls; image type, size and public storage are enforced by the FILE category CAT_ITEM_IMAGE (bootstrap row, registered per tenant by CatTenantProvisioningContributor); API-CAT-018 answers CAT-404-NOT-FOUND for a reference that is not available or has no public URL, and RULE-CAT-038 for a 21st image; the byte read and type / size check of API-CAT-049 are a delivery dependency on the new core gap.
+- G2: PHASE CORE API conventions carry one request-consistency rule (CAT-400-REQUEST-INVALID before any RULE runs, nothing written) cited by API-CAT-001, 006, 014, 015 and 017, and a constraint-translation rule (a constraint backing a RULE answers that RULE's row, never CAT-500); the CAT-400-REQUEST-INVALID trigger lists the cases; TC-CAT-223 tests them.
+The next free ADR sequence is 077.
 
 ### Traceability
 REQ covered by ≥ 1 API: 147 / 147 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
 
 ### Event
-"P3.1 completed: CAT v2 — API 55 · QR 75 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–075, none BLOCKED · CORE-GAP 4"
+"P3.1 completed: CAT v2 — API 55 · QR 75 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–076, none BLOCKED · CORE-GAP 5"

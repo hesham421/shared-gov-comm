@@ -145,7 +145,7 @@ Pane action: "Add component / إضافة مكوّن" opens the **Bundle componen
 | isPrimaryFl | الصورة الرئيسية | Main image | no (one per Item; "Set as main") |
 | isActiveFl | نشط | Active | changed by "Remove" |
 
-Pane action: "Add image / إضافة صورة" (one-line drawer: file JPG/PNG/WEBP ≤ 5 MB, descriptions, Variant).
+Pane action: "Add image / إضافة صورة" (one-line drawer: file, descriptions, Variant). The file must be JPG, PNG or WEBP of at most 5 MB; the FILE category `CAT_ITEM_IMAGE` checks this when Save uploads it, and a refusal is shown on the file input in the FILE envelope's language (ADR-CAT-076). The screen itself checks only the 20-image count (RULE-CAT-038).
 
 ### Entry sub-view — record commands (outside the form)
 

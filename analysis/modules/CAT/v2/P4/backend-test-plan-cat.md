@@ -1,7 +1,7 @@
 # Backend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : backend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the frontend test plan (this file: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207, TC-CAT-211 … TC-CAT-219, TC-CAT-221 and TC-CAT-222; frontend: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196, TC-CAT-208 … TC-CAT-210 and TC-CAT-220)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the frontend test plan (this file: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207, TC-CAT-211 … TC-CAT-219, TC-CAT-221 … TC-CAT-223; frontend: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196, TC-CAT-208 … TC-CAT-210 and TC-CAT-220)
 
 ## Header
 
@@ -17,7 +17,7 @@ Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared wi
 | dependency-graph | `_state/current-dependency-graph.md` | CAT v2 | CAT is tier 1, no outbound edge |
 
 ### Delta
-The current state holds no earlier test plan, so every TC is ADDED. The TC stream starts at 001. Within v2, the third gate-analysis revise ADDED TC-CAT-211 … TC-CAT-216 and MODIFIED TC-CAT-003, TC-CAT-020 and TC-CAT-203 (the RULE-CAT-003 message names the existing Item's code — G12) and TC-CAT-185, TC-CAT-186 and TC-CAT-187 (each now repairs the Item and reactivates it — G3, ADR-CAT-068). The fourth gate-analysis revise ADDED TC-CAT-217 (an import past its 120-second limit is rolled back whole — G4, REQ-CAT-139, ADR-CAT-071) and MODIFIED TC-CAT-188 (the GTIN of a deactivated Item stays active and refuses another Variant — G6). The fifth gate-analysis revise ADDED TC-CAT-218 (an image file held in the private storage is refused, and one public file may back two images — G1) and MODIFIED TC-CAT-184 (a second row: an empty `selections`, or an attribute with no value, answers CAT-400-REQUEST-INVALID — G3). The sixth gate-analysis revise ADDED TC-CAT-219 (reactivation refused when another active Item took the name — G2, AC-CAT-162), TC-CAT-221 and TC-CAT-222 (the default Variant moves on deactivation and on generation — G3, ADR-CAT-072) and MODIFIED TC-CAT-048 (scans 2001230012342, the code of the precondition's SCALE barcode — G8), TC-CAT-199 (the read of the deactivated Variant returns no active barcode — G1), TC-CAT-185 and TC-CAT-200 (each also asserts the one active default Variant — G3). The seventh gate-analysis revise MODIFIED TC-CAT-083 (empty baseUomCode / taxClassCode cells take PIECE / STANDARD, a filled cell is kept — G6), TC-CAT-184 (row 3: four attributes answer CAT-400-REQUEST-INVALID — G2), TC-CAT-217 (fault point after the first 500 rows are saved, and an undelayed run that measures the 60-second target — G3, ADR-CAT-074) and re-pointed TC-CAT-185, 186, 187, 212, 219, 221 and 222 to the REQs split from REQ-CAT-025, 130 and 135 (REQ-CAT-140 … 147 — G7); it ADDED no TC. No id is renumbered or REMOVED.
+The current state holds no earlier test plan, so every TC is ADDED. The TC stream starts at 001. Within v2, the third gate-analysis revise ADDED TC-CAT-211 … TC-CAT-216 and MODIFIED TC-CAT-003, TC-CAT-020 and TC-CAT-203 (the RULE-CAT-003 message names the existing Item's code — G12) and TC-CAT-185, TC-CAT-186 and TC-CAT-187 (each now repairs the Item and reactivates it — G3, ADR-CAT-068). The fourth gate-analysis revise ADDED TC-CAT-217 (an import past its 120-second limit is rolled back whole — G4, REQ-CAT-139, ADR-CAT-071) and MODIFIED TC-CAT-188 (the GTIN of a deactivated Item stays active and refuses another Variant — G6). The fifth gate-analysis revise ADDED TC-CAT-218 (an image file held in the private storage is refused, and one public file may back two images — G1) and MODIFIED TC-CAT-184 (a second row: an empty `selections`, or an attribute with no value, answers CAT-400-REQUEST-INVALID — G3). The sixth gate-analysis revise ADDED TC-CAT-219 (reactivation refused when another active Item took the name — G2, AC-CAT-162), TC-CAT-221 and TC-CAT-222 (the default Variant moves on deactivation and on generation — G3, ADR-CAT-072) and MODIFIED TC-CAT-048 (scans 2001230012342, the code of the precondition's SCALE barcode — G8), TC-CAT-199 (the read of the deactivated Variant returns no active barcode — G1), TC-CAT-185 and TC-CAT-200 (each also asserts the one active default Variant — G3). The seventh gate-analysis revise MODIFIED TC-CAT-083 (empty baseUomCode / taxClassCode cells take PIECE / STANDARD, a filled cell is kept — G6), TC-CAT-184 (row 3: four attributes answer CAT-400-REQUEST-INVALID — G2), TC-CAT-217 (fault point after the first 500 rows are saved, and an undelayed run that measures the 60-second target — G3, ADR-CAT-074) and re-pointed TC-CAT-185, 186, 187, 212, 219, 221 and 222 to the REQs split from REQ-CAT-025, 130 and 135 (REQ-CAT-140 … 147 — G7); it ADDED no TC. The eighth gate-analysis revise ADDED TC-CAT-223 (a request that contradicts itself or names a record outside its parent answers CAT-400-REQUEST-INVALID and writes nothing — G2) and MODIFIED TC-CAT-056 and TC-CAT-218 (the image type, size and storage are refused by the FILE category `CAT_ITEM_IMAGE` at upload; CAT answers CAT-404-NOT-FOUND for a reference with no public URL and RULE-CAT-038 for a 21st image — G1, ADR-CAT-076). No id is renumbered or REMOVED.
 
 ### Framework
 `profile.stack.testing` is **agnostic**. Each block below is the whole contract: the consumer repo chooses its tool and turns each TC into a test. This plan names no framework, annotation or file layout.
@@ -25,14 +25,15 @@ The current state holds no earlier test plan, so every TC is ADDED. The TC strea
 ### Open ADRs
 - ADR-CAT-052 (this stage) is ACCEPTED and non-breaking. It covers the track split, the package binding, the host-data creation surface, catalogue isolation, fields the API document does not expose, and fault injection.
 - ADR-CAT-053 (this stage, analyze round 2) is ACCEPTED and non-breaking. It replaces the unseeded AC values BAG and H87 by seeded values in TC-CAT-063, 120, 121, 122, so that those cases stay on seeded data, and records the frontend plan's unbound refusal texts.
-- The TCs also cite ADR-CAT-041, 044, 045, 047 and 048 (P1/P3.1), and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-058 (tenant provisioning), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-062 (Arabic normalisation). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes; a Variant's barcodes follow it), ADR-CAT-064 (layout keeps its scale code length) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). From the gate-analysis round 3 they cite ADR-CAT-047 as amended (Category tree lock on deactivation), ADR-CAT-068 (three repairs stay allowed on an inactive Item) and ADR-CAT-069 (reactivation of Categories, Variant attributes and values). From the gate-analysis round 6 they cite ADR-CAT-072 (the default Variant moves), and from round 7 ADR-CAT-074 (the item import saves entities; its 60-second figure is a measured target). None of them is BLOCKED.
+- The TCs also cite ADR-CAT-041, 044, 045, 047 and 048 (P1/P3.1), and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-058 (tenant provisioning), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-062 (Arabic normalisation). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes; a Variant's barcodes follow it), ADR-CAT-064 (layout keeps its scale code length) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). From the gate-analysis round 3 they cite ADR-CAT-047 as amended (Category tree lock on deactivation), ADR-CAT-068 (three repairs stay allowed on an inactive Item) and ADR-CAT-069 (reactivation of Categories, Variant attributes and values). From the gate-analysis round 6 they cite ADR-CAT-072 (the default Variant moves), and from round 7 ADR-CAT-074 (the item import saves entities; its 60-second figure is a measured target). From round 8 they cite ADR-CAT-076 (image type, size and public storage enforced by the FILE category `CAT_ITEM_IMAGE`; the import's byte read waits on the core). None of them is BLOCKED.
+- Core dependency (ADR-CAT-076): TC-CAT-017 … 020, 083, 084 and 217 exercise API-CAT-049, whose byte read and type / size check depend on `CORE-GAP-file-document-metadata-read.md`. They stand as written and run once the core publishes that read; until then they are reported as blocked by the core gap, not as failures.
 - Host values of an open lookup key (CAT_BRAND) are created and deactivated through the given mdl HTTP surface: the CAT_BRAND type is found by `POST /api/v1/mdl/lookup-types/search`, a value is added by `POST /api/v1/mdl/lookup-types/{id}/values` and deactivated by `DELETE /api/v1/mdl/lookup-values/{id}` (SRS A6). Each Host data line names the call it uses.
 
 ### Shared precondition S0 (applies to every TC; each TC adds only what it states)
 - The caller is a user of preset role Owner holding every `PERM_CAT_*` permission, with a valid bearer token.
 - The capability flags `variants` and `bundles` are on and readable through the given `SettingsApi` (FeatureFlags).
 - The CAT bootstrap is present: the 10 lookup keys with their seeded values, the series CAT_ITEM / CAT_VARIANT / CAT_INTERNAL_BARCODE, and the 8 seeded Unit e-invoice codes (D-12). Every test tenant receives them at its provisioning: the given copies the lookups and series, and `CatTenantProvisioningContributor` copies the Unit e-invoice codes (ADR-CAT-058). TC-CAT-193 proves this for a newly provisioned tenant.
-- An uploaded file (an image for API-CAT-018, an xlsx for API-CAT-049) is first uploaded through the given erp-core FILE endpoint: public image storage for images, private storage for import files. The TC then sends the returned `fileDocumentRef` in the JSON body of the CAT call. "POST the file" below means these two steps (ADR-CAT-056).
+- An uploaded file (an image for API-CAT-018, an xlsx for API-CAT-049) is first uploaded through the given erp-core FILE endpoint: images to the FILE category `CAT_ITEM_IMAGE` (allowPublic, PNG / JPEG / WEBP, at most 5 MB — registered by CAT for every tenant, ADR-CAT-076), import files to the private storage. The TC then sends the returned `fileDocumentRef` in the JSON body of the CAT call. "POST the file" below means these two steps (ADR-CAT-056).
 - The TC runs in a tenant of its own, and no data is shared between TCs (ADR-CAT-052 §4).
 - Error bodies are read as `LocalizedException → {code, messageAr, messageEn}`. Success notices are read from `ApiResponse<T>` `code` / `messageAr` / `messageEn` (ADR-CAT-048).
 - "Owner" below is that user. Every message is asserted in ar and en, copied from the SRS.
@@ -40,9 +41,9 @@ The current state holds no earlier test plan, so every TC is ADDED. The TC strea
 <!-- PHASE:TEST-PLAN-BE:START traces=REQ-CAT-140,REQ-CAT-141,REQ-CAT-142,REQ-CAT-143,REQ-CAT-144,REQ-CAT-145,REQ-CAT-146,REQ-CAT-147,AC-CAT-162,AC-CAT-163,AC-CAT-164,AC-CAT-161,REQ-CAT-139,AC-CAT-153,AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-157,AC-CAT-158,AC-CAT-159,AC-CAT-160,REQ-CAT-136,REQ-CAT-137,REQ-CAT-138,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,AC-CAT-137,AC-CAT-139,AC-CAT-140,AC-CAT-141,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-131,REQ-CAT-132,REQ-CAT-133,REQ-CAT-134,AC-CAT-001,AC-CAT-002,AC-CAT-003,AC-CAT-004,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-008,AC-CAT-009,AC-CAT-010,AC-CAT-011,AC-CAT-012,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-018,AC-CAT-019,AC-CAT-020,AC-CAT-021,AC-CAT-022,AC-CAT-023,AC-CAT-024,AC-CAT-025,AC-CAT-026,AC-CAT-028,AC-CAT-029,AC-CAT-030,AC-CAT-031,AC-CAT-032,AC-CAT-033,AC-CAT-034,AC-CAT-035,AC-CAT-036,AC-CAT-037,AC-CAT-038,AC-CAT-039,AC-CAT-040,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-044,AC-CAT-045,AC-CAT-046,AC-CAT-047,AC-CAT-048,AC-CAT-049,AC-CAT-050,AC-CAT-051,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-058,AC-CAT-059,AC-CAT-060,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-066,AC-CAT-067,AC-CAT-068,AC-CAT-069,AC-CAT-070,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-079,AC-CAT-080,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-085,AC-CAT-086,AC-CAT-087,AC-CAT-088,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-094,AC-CAT-095,AC-CAT-096,AC-CAT-097,AC-CAT-098,AC-CAT-099,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-103,AC-CAT-104,AC-CAT-105,AC-CAT-106,AC-CAT-107,AC-CAT-108,AC-CAT-109,AC-CAT-110,AC-CAT-111,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-117,AC-CAT-118,AC-CAT-119,AC-CAT-120,AC-CAT-121,AC-CAT-122,AC-CAT-123,AC-CAT-124,AC-CAT-125,AC-CAT-126,AC-CAT-127,AC-CAT-128,AC-CAT-129,REQ-CAT-001,REQ-CAT-002,REQ-CAT-003,REQ-CAT-004,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-008,REQ-CAT-009,REQ-CAT-010,REQ-CAT-011,REQ-CAT-012,REQ-CAT-013,REQ-CAT-016,REQ-CAT-017,REQ-CAT-018,REQ-CAT-019,REQ-CAT-020,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-024,REQ-CAT-025,REQ-CAT-027,REQ-CAT-028,REQ-CAT-029,REQ-CAT-030,REQ-CAT-031,REQ-CAT-032,REQ-CAT-033,REQ-CAT-034,REQ-CAT-035,REQ-CAT-036,REQ-CAT-037,REQ-CAT-038,REQ-CAT-039,REQ-CAT-040,REQ-CAT-041,REQ-CAT-042,REQ-CAT-043,REQ-CAT-044,REQ-CAT-045,REQ-CAT-046,REQ-CAT-047,REQ-CAT-048,REQ-CAT-049,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-056,REQ-CAT-057,REQ-CAT-058,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-064,REQ-CAT-065,REQ-CAT-066,REQ-CAT-067,REQ-CAT-068,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-077,REQ-CAT-078,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-083,REQ-CAT-084,REQ-CAT-085,REQ-CAT-086,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-096,REQ-CAT-097,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-101,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104,REQ-CAT-105,REQ-CAT-106,REQ-CAT-107,REQ-CAT-108,REQ-CAT-109,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-115,REQ-CAT-116,REQ-CAT-117,REQ-CAT-118,REQ-CAT-119,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,REQ-CAT-125,REQ-CAT-126,REQ-CAT-127,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135,AC-CAT-152,AC-CAT-076,REQ-CAT-074 -->
 ## PHASE TEST-PLAN-BE — module scenarios
 
-The phase holds 157 TCs, which is more than 12, so it is split into two SUBs:
-- `RULE-SCENARIOS` (86): each AC whose Then names a RULE refusal, a RULE notice or a RULE-governed state transition, including the parallel-request cases of the concurrency guards (TC-CAT-200 … 205, 211) and the inactive-parent matrix (TC-CAT-212), the import time limit (TC-CAT-217), the image storage check (TC-CAT-218) and the name clash on reactivation (TC-CAT-219).
-- `API-SCENARIOS` (71): endpoint-driven ACs — happy paths, reads, paging, search, events, permission, tenant isolation, optimistic lock, tenant provisioning, CAT lookup reads, reactivation of Categories, Variant attributes and values, and the default-Variant moves (TC-CAT-221, 222).
+The phase holds 158 TCs, which is more than 12, so it is split into two SUBs:
+- `RULE-SCENARIOS` (86): each AC whose Then names a RULE refusal, a RULE notice or a RULE-governed state transition, including the parallel-request cases of the concurrency guards (TC-CAT-200 … 205, 211) and the inactive-parent matrix (TC-CAT-212), the import time limit (TC-CAT-217), the image reference and 20-image checks (TC-CAT-218) and the name clash on reactivation (TC-CAT-219).
+- `API-SCENARIOS` (72): endpoint-driven ACs — happy paths, reads, paging, search, events, permission, tenant isolation, optimistic lock, tenant provisioning, CAT lookup reads, reactivation of Categories, Variant attributes and values, the default-Variant moves (TC-CAT-221, 222) and request consistency (TC-CAT-223).
 
 <!-- SUB:RULE-SCENARIOS:START traces=REQ-CAT-141,REQ-CAT-142,REQ-CAT-143,REQ-CAT-144,REQ-CAT-145,REQ-CAT-146,REQ-CAT-147,AC-CAT-162,AC-CAT-161,REQ-CAT-139,AC-CAT-153,AC-CAT-154,AC-CAT-155,AC-CAT-156,AC-CAT-158,REQ-CAT-136,AC-CAT-130,AC-CAT-131,AC-CAT-132,AC-CAT-133,AC-CAT-134,AC-CAT-135,AC-CAT-136,REQ-CAT-128,REQ-CAT-129,REQ-CAT-130,REQ-CAT-086,REQ-CAT-101,AC-CAT-005,AC-CAT-006,AC-CAT-007,AC-CAT-009,AC-CAT-013,AC-CAT-016,AC-CAT-017,AC-CAT-019,AC-CAT-020,AC-CAT-023,AC-CAT-024,AC-CAT-028,AC-CAT-031,AC-CAT-032,AC-CAT-035,AC-CAT-036,AC-CAT-038,AC-CAT-041,AC-CAT-042,AC-CAT-043,AC-CAT-052,AC-CAT-053,AC-CAT-054,AC-CAT-055,AC-CAT-056,AC-CAT-057,AC-CAT-061,AC-CAT-062,AC-CAT-063,AC-CAT-064,AC-CAT-065,AC-CAT-071,AC-CAT-072,AC-CAT-073,AC-CAT-074,AC-CAT-077,AC-CAT-078,AC-CAT-081,AC-CAT-082,AC-CAT-083,AC-CAT-084,AC-CAT-087,AC-CAT-089,AC-CAT-090,AC-CAT-091,AC-CAT-092,AC-CAT-093,AC-CAT-096,AC-CAT-100,AC-CAT-101,AC-CAT-102,AC-CAT-105,AC-CAT-106,AC-CAT-108,AC-CAT-110,AC-CAT-112,AC-CAT-113,AC-CAT-114,AC-CAT-115,AC-CAT-116,AC-CAT-118,AC-CAT-125,AC-CAT-126,AC-CAT-128,REQ-CAT-005,REQ-CAT-006,REQ-CAT-007,REQ-CAT-009,REQ-CAT-013,REQ-CAT-016,REQ-CAT-018,REQ-CAT-019,REQ-CAT-022,REQ-CAT-023,REQ-CAT-027,REQ-CAT-030,REQ-CAT-031,REQ-CAT-034,REQ-CAT-035,REQ-CAT-037,REQ-CAT-040,REQ-CAT-041,REQ-CAT-050,REQ-CAT-051,REQ-CAT-052,REQ-CAT-053,REQ-CAT-054,REQ-CAT-055,REQ-CAT-059,REQ-CAT-060,REQ-CAT-061,REQ-CAT-062,REQ-CAT-063,REQ-CAT-069,REQ-CAT-070,REQ-CAT-071,REQ-CAT-072,REQ-CAT-075,REQ-CAT-076,REQ-CAT-079,REQ-CAT-080,REQ-CAT-081,REQ-CAT-082,REQ-CAT-085,REQ-CAT-087,REQ-CAT-088,REQ-CAT-089,REQ-CAT-090,REQ-CAT-091,REQ-CAT-094,REQ-CAT-098,REQ-CAT-099,REQ-CAT-100,REQ-CAT-103,REQ-CAT-104,REQ-CAT-106,REQ-CAT-108,REQ-CAT-110,REQ-CAT-111,REQ-CAT-112,REQ-CAT-113,REQ-CAT-114,REQ-CAT-116,REQ-CAT-123,REQ-CAT-124,REQ-CAT-126,AC-CAT-143,AC-CAT-144,AC-CAT-145,AC-CAT-146,AC-CAT-147,AC-CAT-148,AC-CAT-149,AC-CAT-150,AC-CAT-151,REQ-CAT-135 -->
 ### SUB RULE-SCENARIOS
@@ -818,17 +819,17 @@ Test data    : one PNG image (placeholder file ≤ 5 MB)
 <!-- TC:TC-CAT-055:END -->
 
 <!-- TC:TC-CAT-056:START traces=AC-CAT-112,REQ-CAT-110,API-CAT-018,API-CAT-002 -->
-### TC-CAT-056 — A 7 MB JPG is refused
+### TC-CAT-056 — A 7 MB JPG is refused by the image category at upload and never reaches CAT
 Derived from : AC-CAT-112  (REQ-CAT-110)
-Exercises    : API-CAT-018 POST /api/v1/cat/items/{id}/media · API-CAT-002 GET /api/v1/cat/items/{id}
-Rule / code  : RULE-CAT-038 → CAT-422-IMAGE-NOT-ACCEPTED
+Exercises    : the given FILE upload endpoint with category `CAT_ITEM_IMAGE` (registered by CAT — bootstrap, ADR-CAT-076) · API-CAT-002 GET /api/v1/cat/items/{id}
+Rule / code  : RULE-CAT-038, file part — held by the FILE category `CAT_ITEM_IMAGE` (limit 5 MB), refused in the FILE module's own envelope; CAT raises no code (ADR-CAT-076)
 Package      : SVC-API-CRUD
 Scenario     : VIOLATION · data class BOUNDARY · language ALL
-Preconditions: S0 · an Item · the given FILE category of the public image storage accepts a 7 MB JPG at upload, so the file reaches CAT (otherwise the FILE endpoint refuses it in its own envelope before any CAT call — ADR-CAT-056)
+Preconditions: S0 · an Item with 20 active images
 Host data    : none
-Steps        : 1. Upload a 7 MB JPG through the given FILE endpoint and POST its `fileDocumentRef` as the image. 2. GET the Item.
-Expected     : 1 → 422, code CAT-422-IMAGE-NOT-ACCEPTED, messageAr «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.», messageEn "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item.". 2 → the media count is unchanged: no media record is created.
-Test data    : a 7 MB JPG (from the AC)
+Steps        : 1. Upload a 7 MB JPG through the given FILE endpoint to the category `CAT_ITEM_IMAGE`. 2. Upload a 1 MB GIF to the same category. 3. GET the Item.
+Expected     : 1 → the FILE endpoint refuses the upload, in its own envelope, and returns no `fileDocumentRef`, so no request to API-CAT-018 can be made. 2 → the same: a GIF is not an allowed type of the category. 3 → the Item still has 20 active media records: no media record is created. (The 21st-image half of AC-CAT-112 is asserted by TC-CAT-218.)
+Test data    : a 7 MB JPG (from the AC); a 1 MB GIF (this case's own)
 <!-- TC:TC-CAT-056:END -->
 
 <!-- TC:TC-CAT-057:START traces=AC-CAT-113,REQ-CAT-111,API-CAT-020,API-CAT-002 -->
@@ -1246,17 +1247,17 @@ Test data    : 5,000 rows, 100 GTINs (placeholders `<name-1..5000>`, `<GTIN-1..1
 <!-- TC:TC-CAT-217:END -->
 
 <!-- TC:TC-CAT-218:START traces=AC-CAT-112,REQ-CAT-110,API-CAT-018,API-CAT-002 -->
-### TC-CAT-218 — An image uploaded to the private storage is refused; one public file may back two images
-Derived from : AC-CAT-112  (REQ-CAT-110; the storage condition of RULE-CAT-038 added at the fifth gate-analysis revise, G1)
+### TC-CAT-218 — What CAT decides on an image: an unusable reference is not found, a 21st image is refused, one public file may back two images
+Derived from : AC-CAT-112  (REQ-CAT-110; the CAT part of RULE-CAT-038 as amended by ADR-CAT-076)
 Exercises    : API-CAT-018 POST /api/v1/cat/items/{id}/media · API-CAT-002 GET /api/v1/cat/items/{id}
-Rule / code  : RULE-CAT-038 → CAT-422-IMAGE-NOT-ACCEPTED · one fileDocumentRef may back several media records (ADR-CAT-056 §4)
+Rule / code  : PLATFORM-STD CAT-404-NOT-FOUND (a reference that is not available or has no public URL — `FileDocumentLookupApi.isAvailable` / `publicUrl`) · RULE-CAT-038 → CAT-422-IMAGE-NOT-ACCEPTED (the 20-record count) · one fileDocumentRef may back several media records (ADR-CAT-056 §4). Type, size and public storage are not asserted here: they are the FILE category's (TC-CAT-056)
 Package      : SVC-API-CRUD
 Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: S0 · an active Item with 0 active images
 Host data    : none
-Steps        : 1. Upload a 1 MB PNG through the given FILE endpoint to the private storage, then POST its `fileDocumentRef` as an image of the Item. 2. GET the Item. 3. Upload a 1 MB PNG through the given FILE endpoint to the public image storage, then POST its `fileDocumentRef` as an image of the Item, twice. 4. GET the Item.
-Expected     : 1 → 422, code CAT-422-IMAGE-NOT-ACCEPTED, messageAr «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.», messageEn "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item.". 2 → 0 active media records: nothing was created. 3 → 201 both times. 4 → 2 active media records carrying the same fileDocumentRef, exactly 1 of them primary.
-Test data    : two 1 MB PNG files (placeholders), one per storage
+Steps        : 1. Upload a 1 MB PNG through the given FILE endpoint to the private storage (not the image category), then POST its `fileDocumentRef` as an image of the Item. 2. POST a `fileDocumentRef` that names no FILE document of the tenant. 3. GET the Item. 4. Upload a 1 MB PNG to the category `CAT_ITEM_IMAGE` and POST its `fileDocumentRef` as an image of the Item, twice. 5. Upload 18 more 1 MB PNGs to `CAT_ITEM_IMAGE` and POST each one (20 active images). 6. Upload one more 1 MB PNG to `CAT_ITEM_IMAGE` and POST it. 7. GET the Item.
+Expected     : 1 → 404, code CAT-404-NOT-FOUND (the document has no public URL): the storefront could not show it. 2 → 404, code CAT-404-NOT-FOUND. 3 → 0 active media records: nothing was created. 4 → 201 both times. 5 → 201 each time. 6 → 422, code CAT-422-IMAGE-NOT-ACCEPTED, messageAr «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.», messageEn "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item.". 7 → exactly 20 active media records, 2 of them carrying the same fileDocumentRef, exactly 1 of them primary.
+Test data    : 21 1 MB PNG files in the image category and 1 in the private storage (placeholders); a fileDocumentRef of no document (placeholder)
 <!-- TC:TC-CAT-218:END -->
 
 <!-- TC:TC-CAT-219:START traces=AC-CAT-162,REQ-CAT-144,API-CAT-005,API-CAT-001,API-CAT-004,API-CAT-002 -->
@@ -2270,6 +2271,34 @@ Steps        : 1. POST to the Item the generation {selections: [{variantAttribut
 Expected     : 1 → 201; one new active Variant carrying M, with isDefaultFl true. 2 → V isActiveFl false and isDefaultFl false. 3 → 200; isActiveFl true. 4 → exactly 1 Variant of the Item with isDefaultFl true — the M Variant — and it is active.
 Test data    : SIZE, M (from the AC); V placeholder
 <!-- TC:TC-CAT-222:END -->
+
+<!-- TC:TC-CAT-223:START traces=AC-CAT-051,AC-CAT-058,AC-CAT-059,AC-CAT-085,REQ-CAT-049,REQ-CAT-056,REQ-CAT-057,REQ-CAT-083,REQ-CAT-084,API-CAT-001,API-CAT-006,API-CAT-014,API-CAT-015,API-CAT-017,API-CAT-002 -->
+### TC-CAT-223 — A request that contradicts itself or names a record outside its parent is refused before any rule and writes nothing
+Derived from : AC-CAT-051, AC-CAT-058, AC-CAT-059, AC-CAT-085  (REQ-CAT-049, REQ-CAT-056, REQ-CAT-057, REQ-CAT-083, REQ-CAT-084 — the malformed counterpart of each accepted request)
+Exercises    : API-CAT-006, API-CAT-001, API-CAT-017, API-CAT-014, API-CAT-015 (one row each case) · API-CAT-002 GET /api/v1/cat/items/{id}
+Rule / code  : PLATFORM-STD CAT-400-REQUEST-INVALID — the request-consistency rule of the backend plan's PHASE CORE API conventions, checked before any RULE runs (ADR-CAT-044); constraint translation: no row answers CAT-500-SERVER-ERROR
+Package      : SVC-API-CRUD
+Scenario     : VIOLATION · data class INVALID · language ALL · parameterised (one row per case)
+Preconditions: S0 · a STANDARD Item I with only its default Variant D (no barcode) and no Variant attribute in use · the active attributes SIZE (values S, M) and COLOUR (value «أحمر») · a BUNDLE Item B with the active lines L1 {P, 1} and L2 {C, 1}, read with its version · a second BUNDLE Item B2 with the active line L3 {C, 1} · an active Variant Q of an active STANDARD Item · the outbox is observed
+Host data    : none
+Steps        : 1. Send each row below. 2. GET I, B and B2, and collect the cat.CatalogueChanged events delivered after step 1.
+
+| Row | Endpoint | Request | Contradiction |
+|---|---|---|---|
+| 1 | API-CAT-006 | POST to I: selections [{SIZE, [S]}, {SIZE, [M]}] | an attribute selected twice |
+| 2 | API-CAT-006 | POST to I: selections [{SIZE, [S, S]}] | a value id listed twice |
+| 3 | API-CAT-006 | POST to I: selections [{SIZE, [«أحمر»]}] | a value of another attribute |
+| 4 | API-CAT-001 | POST an Item with a valid nameAr, itemKindCode STANDARD and bundleComponents [{Q, 1}] | Bundle lines on a STANDARD Item |
+| 5 | API-CAT-001 | POST an Item with itemKindCode BUNDLE and bundleComponents [{Q, 1}, {Q, 2}] | a component listed twice |
+| 6 | API-CAT-017 | PUT B's lines [{bundleComponentPk: L3, C, 1}] with B's version | a line of another Bundle |
+| 7 | API-CAT-017 | PUT B's lines [{bundleComponentPk: L1, Q, 1}, {bundleComponentPk: L2, C, 1}] with B's version | a kept line whose componentVariantFk changed |
+| 8 | API-CAT-017 | PUT B's lines [{bundleComponentPk: L1, P, 1}, {bundleComponentPk: L1, P, 2}] with B's version | a line listed twice |
+| 9 | API-CAT-014 | POST to D {barcodeValue: 0400000000428, barcodeTypeCode: INTERNAL} | type INTERNAL on the GTIN / SCALE endpoint |
+| 10 | API-CAT-015 | POST to D {uomCode: PIECE, barcodeValue: 0400000000428} | a client-chosen value for an internal barcode |
+
+Expected     : 1 → every row answers 400, code CAT-400-REQUEST-INVALID, messageAr «الطلب غير صالح. راجع الحقول المحددة ثم أعد المحاولة.», messageEn "The request is not valid. Check the highlighted fields and try again."; no row answers CAT-500-SERVER-ERROR or any RULE code. 2 → nothing was written: I still has exactly 1 Variant (D) with no attribute assignment and no barcode; B's lines are still L1 {P, 1} and L2 {C, 1} with its version unchanged; B2's line is still L3 {C, 1}; no Item was created by rows 4 and 5 (GET /api/v1/cat/items lists no new Item); 0 catalogue-change events were delivered.
+Test data    : I, D, B, B2, L1 … L3, P, C, Q (placeholders); SIZE S, M; COLOUR «أحمر»; 0400000000428 (this case's own)
+<!-- TC:TC-CAT-223:END -->
 <!-- SUB:API-SCENARIOS:END -->
 <!-- PHASE:TEST-PLAN-BE:END -->
 
@@ -2334,15 +2363,15 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | AC-CAT-048 | REQ-CAT-046 | TC-CAT-089 |
 | AC-CAT-049 | REQ-CAT-047 | TC-CAT-090 |
 | AC-CAT-050 | REQ-CAT-048 | TC-CAT-091 |
-| AC-CAT-051 | REQ-CAT-049 | TC-CAT-092 |
+| AC-CAT-051 | REQ-CAT-049 | TC-CAT-092, 223 (malformed request) |
 | AC-CAT-052 | REQ-CAT-050 | TC-CAT-021 |
 | AC-CAT-053 | REQ-CAT-051 | TC-CAT-022 |
 | AC-CAT-054 | REQ-CAT-052 | TC-CAT-023 |
 | AC-CAT-055 | REQ-CAT-053 | TC-CAT-024 |
 | AC-CAT-056 | REQ-CAT-054 | TC-CAT-025 |
 | AC-CAT-057 | REQ-CAT-055 | TC-CAT-026 |
-| AC-CAT-058 | REQ-CAT-056 | TC-CAT-093 |
-| AC-CAT-059 | REQ-CAT-057 | TC-CAT-094 |
+| AC-CAT-058 | REQ-CAT-056 | TC-CAT-093, 223 (malformed request) |
+| AC-CAT-059 | REQ-CAT-057 | TC-CAT-094, 223 (malformed request) |
 | AC-CAT-060 | REQ-CAT-058 | TC-CAT-095 |
 | AC-CAT-061 | REQ-CAT-059 | TC-CAT-027 |
 | AC-CAT-062 | REQ-CAT-060 | TC-CAT-028 |
@@ -2368,7 +2397,7 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | AC-CAT-082 | REQ-CAT-080 | TC-CAT-039 |
 | AC-CAT-083 | REQ-CAT-081 | TC-CAT-040 |
 | AC-CAT-084 | REQ-CAT-082 | TC-CAT-041 |
-| AC-CAT-085 | REQ-CAT-083 | TC-CAT-103 |
+| AC-CAT-085 | REQ-CAT-083 | TC-CAT-103, 223 (malformed request) |
 | AC-CAT-086 | REQ-CAT-084 | TC-CAT-104 |
 | AC-CAT-087 | REQ-CAT-085 | TC-CAT-042 |
 | AC-CAT-088 | REQ-CAT-086 | TC-CAT-105 |
@@ -2452,12 +2481,12 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 ### API → TC (TC-CAT-…)
 | API | TCs |
 |---|---|
-| API-CAT-001 | 003, 005, 007, 012, 013, 014, 016, 027, 028, 035, 036, 071, 074, 076, 077, 078, 080, 081, 093, 190, 193, 203, 219 |
-| API-CAT-002 | 001, 007, 008, 009, 015, 021, 022, 023, 029, 031, 037, 038, 041, 054, 056, 057, 061, 062, 065, 066, 068, 070, 073, 077, 078, 079, 083, 092, 094, 095, 097, 113, 114, 117, 184, 185, 186, 187, 188, 190, 191, 192, 197, 198, 200, 201, 202, 205, 212, 219, 221, 222 |
+| API-CAT-001 | 003, 005, 007, 012, 013, 014, 016, 027, 028, 035, 036, 071, 074, 076, 077, 078, 080, 081, 093, 190, 193, 203, 219, 223 |
+| API-CAT-002 | 001, 007, 008, 009, 015, 021, 022, 023, 029, 031, 037, 038, 041, 054, 056, 057, 061, 062, 065, 066, 068, 070, 073, 077, 078, 079, 083, 092, 094, 095, 097, 113, 114, 117, 184, 185, 186, 187, 188, 190, 191, 192, 197, 198, 200, 201, 202, 205, 212, 219, 221, 222, 223 |
 | API-CAT-003 | 004, 015, 031, 041, 062, 068, 069, 070, 117, 186, 190, 191, 192, 212 |
 | API-CAT-004 | 001, 188, 190, 197 |
 | API-CAT-005 | 002, 059, 060, 061, 185, 186, 187, 212, 219, 222 |
-| API-CAT-006 | 006, 008, 009, 022, 023, 029, 092, 184, 185, 201, 212, 222 |
+| API-CAT-006 | 006, 008, 009, 022, 023, 029, 092, 184, 185, 201, 212, 222, 223 |
 | API-CAT-007 | 015, 021, 024, 030, 048, 074, 086, 089, 118, 119, 199, 205, 206, 221, 222 |
 | API-CAT-008 | 015, 118, 212 |
 | API-CAT-009 | 021, 024, 030, 199, 200, 205, 212, 221 |
@@ -2465,10 +2494,10 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | API-CAT-011 | 038, 040, 102, 122, 183 |
 | API-CAT-012 | 040, 102, 212 |
 | API-CAT-013 | 038, 183, 212 |
-| API-CAT-014 | 043, 044, 045, 047, 050, 103, 109, 188, 199, 204, 212 |
-| API-CAT-015 | 104, 212 |
+| API-CAT-014 | 043, 044, 045, 047, 050, 103, 109, 188, 199, 204, 212, 223 |
+| API-CAT-015 | 104, 212, 223 |
 | API-CAT-016 | 042, 212 |
-| API-CAT-017 | 007, 094, 187, 205, 212 |
+| API-CAT-017 | 007, 094, 187, 205, 212, 223 |
 | API-CAT-018 | 055, 056, 113, 212, 218 |
 | API-CAT-019 | 054, 058, 202, 212 |
 | API-CAT-020 | 057, 114, 212 |
@@ -2548,7 +2577,7 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | RULE-CAT-035 | CAT-422-SCALE-LABEL-UNREADABLE | 051 (undefined code; wrong check digit) · 110, 206 |
 | RULE-CAT-036 | CAT-422-LABEL-COPIES-OUT-OF-RANGE | 052 · 112 |
 | RULE-CAT-037 | CAT-422-LABEL-VARIANT-NO-BARCODE | 053 · 112 |
-| RULE-CAT-038 | CAT-422-IMAGE-NOT-ACCEPTED | 056, 218 (file in the private storage) · 113, 218 (one public file backs two images) |
+| RULE-CAT-038 | CAT-422-IMAGE-NOT-ACCEPTED | 218 (the 21st active image; a reference with no public URL answers CAT-404-NOT-FOUND) · 113, 218 (one public file backs two images) · 056 (the file part — type, size, public storage — refused by the FILE category `CAT_ITEM_IMAGE` at upload, ADR-CAT-076) |
 | RULE-CAT-039 | CAT-200-PRIMARY-IMAGE-REPLACED | 054, 202 (parallel) · 055, 057 (first image, promotion) |
 | RULE-CAT-040 | CAT-422-MEDIA-VARIANT-MISMATCH | 058 |
 | RULE-CAT-041 | CAT-422-PUBLISH-BLOCKED | 061 · 001, 002, 059, 060 (state) |
@@ -2564,7 +2593,7 @@ Read REQ → TC from the REQ column. REQ-CAT-016 → TC-CAT-006, 007. REQ-CAT-04
 | RULE-CAT-051 | CAT-409-ITEM-UNIT-HAS-BARCODES | 183 |
 | RULE-CAT-052 | CAT-422-VARIANT-ATTRIBUTE-MISSING | 184 |
 | RULE-CAT-053 | CAT-422-PARENT-INACTIVE | 198, 212 (every endpoint that applies it), 186 (a change other than categoryFk) · 185, 187, 212 (the three repairs are not refused — ADR-CAT-068) |
-| PLATFORM-STD | CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-409-STALE-VERSION, CAT-404-LOOKUP-KEY-UNKNOWN | 207 (404 for a key CAT does not own and 403 without a CAT permission on API-CAT-052 — ADR-CAT-065), 190 (403 on API-CAT-001, 003, 004 — AC-CAT-137), 191 (404 across tenants — AC-CAT-139), 192 (409 on a stale version — AC-CAT-140). TC-CAT-124 asserts that the catalogue search does *not* answer 403. CAT-400-REQUEST-INVALID has no AC of its own; it is asserted by TC-CAT-184 row 2 (empty generation selections) and TC-CAT-216 (value under an inactive attribute). 401 and 500-SERVER-ERROR have no AC of their own and no TC. 413 and 415 left the catalog with the multipart surface (ADR-CAT-056) |
+| PLATFORM-STD | CAT-403-FORBIDDEN, CAT-404-NOT-FOUND, CAT-409-STALE-VERSION, CAT-404-LOOKUP-KEY-UNKNOWN | 207 (404 for a key CAT does not own and 403 without a CAT permission on API-CAT-052 — ADR-CAT-065), 190 (403 on API-CAT-001, 003, 004 — AC-CAT-137), 191 (404 across tenants — AC-CAT-139), 192 (409 on a stale version — AC-CAT-140). TC-CAT-124 asserts that the catalogue search does *not* answer 403. CAT-400-REQUEST-INVALID has no AC of its own; it is asserted by TC-CAT-184 rows 2 and 3 (empty or oversized generation selections), TC-CAT-216 (value under an inactive attribute) and TC-CAT-223 (a request that contradicts itself or names a record outside its parent — ten cases on API-CAT-001, 006, 014, 015, 017, none answering CAT-500). CAT-404-NOT-FOUND is also asserted by TC-CAT-218 (an image reference with no public URL — ADR-CAT-076). 401 and 500-SERVER-ERROR have no AC of their own and no TC. 413 and 415 left the catalog with the multipart surface (ADR-CAT-056) |
 
 ### XM → TC
 none — no `XM-*` exists (registry-db `records: []`).
@@ -2575,7 +2604,7 @@ none — no `XM-*` exists (registry-db `records: []`).
 | CORE | 11 | 004, 005, 037, 069, 071, 072, 079, 080, 081, 191, 193 |
 | DATA-DOM-MASTER | 1 | 092 |
 | DATA-DOM-LOOKUP | 2 | 048, 122 |
-| SVC-API-CRUD | 110 | 001, 002, 003, 006, 007, 008, 009, 012, 013, 014, 015, 016, 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 033, 034, 035, 036, 038, 039, 040, 041, 042, 043, 044, 045, 047, 049, 050, 054, 055, 056, 057, 058, 059, 060, 061, 062, 063, 065, 066, 068, 070, 073, 074, 076, 077, 078, 085, 086, 087, 088, 089, 090, 093, 094, 095, 096, 097, 098, 101, 102, 103, 104, 106, 107, 109, 113, 114, 117, 118, 119, 120, 121, 183, 184, 185, 186, 187, 192, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 211, 212, 213, 214, 215, 216, 218, 219, 221, 222 |
+| SVC-API-CRUD | 111 | 001, 002, 003, 006, 007, 008, 009, 012, 013, 014, 015, 016, 021, 022, 023, 024, 025, 026, 027, 028, 029, 030, 031, 032, 033, 034, 035, 036, 038, 039, 040, 041, 042, 043, 044, 045, 047, 049, 050, 054, 055, 056, 057, 058, 059, 060, 061, 062, 063, 065, 066, 068, 070, 073, 074, 076, 077, 078, 085, 086, 087, 088, 089, 090, 093, 094, 095, 096, 097, 098, 101, 102, 103, 104, 106, 107, 109, 113, 114, 117, 118, 119, 120, 121, 183, 184, 185, 186, 187, 192, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 211, 212, 213, 214, 215, 216, 218, 219, 221, 222, 223 |
 | SVC-API-SEARCH | 17 | 046, 051, 064, 067, 091, 099, 100, 105, 108, 110, 111, 115, 116, 123, 188, 189, 207 |
 | SVC-API-INT | 14 | 010, 011, 017, 018, 019, 020, 052, 053, 075, 082, 083, 084, 112, 217 |
 | SEC-BE | 2 | 124, 190 |
@@ -2593,5 +2622,5 @@ none — no `XM-*` exists (registry-db `records: []`).
 | RULE covered | 53 / 53 ✓, each with its catalog code where the rule raises one |
 | Concurrency guards | 8 / 8 — stale version (TC-CAT-192) and the seven parallel-request cases: RULE-CAT-015 (TC-CAT-200), 014 (201), 039 (202), 003 (203), 029 (204), 021 / 019 (205), 025 / 023 (211, the Category tree lock), each naming the guard and its owning unit |
 | XM edges covered | 0 / 0 — no edge, so the `INT-XM` phase is absent |
-| Track size | 157 TCs for 158 ACs (ratio < 1.0, within the ~2× guard; TC-CAT-185 … 187 and 212 each cover more than one AC). No boundary twin is added; every BOUNDARY-class TC is the AC's own case. |
+| Track size | 158 TCs for 158 ACs (TC-CAT-223 covers the malformed counterparts of four ACs) (ratio 1.0, within the ~2× guard; TC-CAT-185 … 187 and 212 each cover more than one AC). No boundary twin is added; every BOUNDARY-class TC is the AC's own case. |
 | Host data | CAT_BRAND BRAND_068 (TC-CAT-068, created active by `POST /api/v1/mdl/lookup-types/{id}/values`), CAT_BRAND OLDBRAND (TC-CAT-037, created by the same call, then made inactive by `DELETE /api/v1/mdl/lookup-values/{id}`); CAT_BRAND XYZ absent (TC-CAT-019, 036: never created). The AC values CAT_UOM BAG (AC-CAT-122 … 124) and CAT_EINVOICE_UNIT H87 (AC-CAT-126) are not seeded; TC-CAT-120, 121, 122 stay on seeded data with the unit DOZEN and TC-CAT-063 with the e-invoice unit BX in their place (ADR-CAT-053 §2). No value is demanded in opposite states, and every TC runs in its own tenant (ADR-CAT-052 §3, §4). |

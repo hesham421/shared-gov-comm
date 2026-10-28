@@ -79,7 +79,13 @@ Gate-analysis round 7 (frontend):
 - F1 `LookupOption` drops `isActive` and matches `API-CAT-052` (`code`, `labelAr`, `labelEn`, `sortOrder`); a code on a record that is not among the active options renders as the raw code, and UXD-CAT-001 is narrowed to that (G1, ADR-CAT-073, CORE-GAP-lookup-inactive-value-label).
 - The Category column, header and field are labelled from `categoryNameAr` / `categoryNameEn` of the Item read; CATEGORY-LABEL-QUERY is dropped, and a 403 on the Category tree hides only the selection field and filter (G5, ADR-CAT-075).
 - The api-surface bindings cover the REQs split from REQ-CAT-025, 130 and 135: REQ-CAT-140 → API-CAT-009, 141 and 145 → API-CAT-006, 142 … 144 → API-CAT-005, 146 → API-CAT-003, 147 → API-CAT-017 (G7).
-The next free ADR is ADR-CAT-076.
+The next free ADR was ADR-CAT-076.
+
+Gate-analysis round 8 (frontend):
+- The image type and size are no longer checked by the client: the FILE category CAT_ITEM_IMAGE refuses a wrong file at upload, and GIVEN-FILE-UPLOAD shows that refusal on the image's file input in the FILE envelope's language; the F3 image validator keeps the 20-image count (RULE-CAT-038), and CAT-422-IMAGE-NOT-ACCEPTED is routed as the count (ADR-CAT-076).
+- API-CAT-018 answers CAT-404-NOT-FOUND for an image reference that is not available or has no public URL; ITEM-SAVE drops the line and re-reads the Item, as for any CAT-404-NOT-FOUND.
+- IMPORT-SUBMIT is unchanged; the server's byte read of the import waits on CORE-GAP-file-document-metadata-read.
+The next free ADR is ADR-CAT-077.
 
 ### Traceability
 - REQ covered by at least one SCR or F-block: 147 / 147. Orphan REQ: none.

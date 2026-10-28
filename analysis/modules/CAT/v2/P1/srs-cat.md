@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved 2026-10-26 — gate prd-approval)
-Counts : REQ 147 · AC 164 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 18
+Counts : REQ 147 · AC 164 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 19
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -17,11 +17,12 @@ Counts : REQ 147 · AC 164 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 18
 | Date | 2026-10-26 |
 | Status | DRAFT — P1 pass 1 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions applied | 18 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise; ADR-CAT-072 at the sixth gate-analysis revise; ADR-CAT-074 at the seventh gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
+| Decisions applied | 19 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise; ADR-CAT-072 at the sixth gate-analysis revise; ADR-CAT-074 at the seventh gate-analysis revise; ADR-CAT-076 at the eighth gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
 | Revisions (third gate-analysis revise) | ADDED: REQ-CAT-136 … REQ-CAT-138, AC-CAT-153 … AC-CAT-160 · MODIFIED: REQ-CAT-135 and RULE-CAT-053 (three repair operations stay allowed on an inactive Item — ADR-CAT-068), RULE-CAT-003, AC-CAT-007 and AC-CAT-043 (the message names the existing Item's code), RULE-CAT-016, RULE-CAT-023 and RULE-CAT-024 (also checked on reactivation — ADR-CAT-069), A7 |
 | Revisions (fourth gate-analysis revise) | ADDED: REQ-CAT-139, AC-CAT-161 (an import past its time limit is rolled back whole — ADR-CAT-071) · MODIFIED: REQ-CAT-005 and A7 (deactivating an Item leaves its barcodes active; a GTIN is released by deactivating the barcode), RULE-CAT-049 (traces REQ-CAT-139) |
 | Revisions (sixth gate-analysis revise) | ADDED: AC-CAT-162 (reactivation refused when another active Item took the name), AC-CAT-163 and AC-CAT-164 (the default Variant moves — ADR-CAT-072) · MODIFIED: REQ-CAT-025, A7 and ENT-CAT-002.isDefaultFl (an active Item always has exactly one active default Variant), REQ-CAT-130 and RULE-CAT-003 (RULE-CAT-003 named on reactivation), RULE-CAT-029 (a GTIN repeated in one import file), AC-CAT-096 (scans the code of the precondition's SCALE barcode), AC-CAT-145 (the read of an inactive Variant returns no active barcode) |
 | Revisions (seventh gate-analysis revise) | ADDED: REQ-CAT-140 and REQ-CAT-141 (split from REQ-CAT-025: one REQ per default-Variant move), REQ-CAT-142, REQ-CAT-143 and REQ-CAT-144 (split from REQ-CAT-130: one REQ per reactivation refusal), REQ-CAT-145, REQ-CAT-146 and REQ-CAT-147 (split from REQ-CAT-135: one REQ per repair allowed on an inactive Item) · MODIFIED: REQ-CAT-025, REQ-CAT-130 and REQ-CAT-135 (each keeps one behaviour), AC-CAT-163 and AC-CAT-164 re-pointed to REQ-CAT-140 / 141, AC-CAT-133, AC-CAT-134 and AC-CAT-162 to REQ-CAT-142 / 143 / 144, AC-CAT-154, AC-CAT-155 and AC-CAT-156 to REQ-CAT-145 / 146 / 147 (no AC renumbered), RULE-CAT-003, 019, 026 and 053 traces, A7, REQ-CAT-139 rationale (the 60-second figure is a measured target — ADR-CAT-074) |
+| Revisions (eighth gate-analysis revise) | ADDED: none · MODIFIED: RULE-CAT-038 (the file part is enforced at upload by the FILE category CAT_ITEM_IMAGE; CAT refuses the 21st image), REQ-CAT-110 rationale, AC-CAT-112 (the 7 MB JPG refused by the image category, the 21st image by RULE-CAT-038), A9 given-usage (FileDocumentLookupApi lists only its published methods; the tenant row registers the image category) — ADR-CAT-076 |
 
 ## A2 — Functional context
 
@@ -1876,14 +1877,14 @@ Pattern    : unwanted
 Statement  : If an uploaded image is not JPG, PNG or WEBP, exceeds 5 MB, or would give the Item more than 20 active images, then the system shall reject the upload with RULE-CAT-038.
 Traces     : US-CAT-019
 Entities   : ENT-CAT-010
-Rationale  : Storefront pages load bounded media (D-10).
-Source     : US-CAT-019; D-10
+Rationale  : Storefront pages load bounded media (D-10). The file part of RULE-CAT-038 (type, size, public storage) is enforced at upload by the FILE category CAT_ITEM_IMAGE that CAT registers, in the file module's own envelope; CAT itself refuses the 21st active image (ADR-CAT-076).
+Source     : US-CAT-019; D-10; ADR-CAT-076
 Priority   : MEDIUM
 
 #### AC-CAT-112 — [REQ-CAT-110]
-Given : an Item
-When  : the owner uploads a 7 MB JPG
-Then  : no media record is created and the response shows ar: «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.» · en: "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item."
+Given : an Item with 20 active images
+When  : the owner uploads a 7 MB JPG, then a 1 MB PNG as a 21st image
+Then  : the 7 MB JPG is refused at its upload to the image category, in the file module's envelope, and the 1 MB PNG is refused with ar: «الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف.» · en: "The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item."; the Item keeps 20 active media records
 
 ### REQ-CAT-111 — Main image removed
 Pattern    : unwanted
@@ -2754,7 +2755,7 @@ Source     : US-CAT-018
 ### RULE-CAT-038 — Image file and count
 Scope      : ENT-CAT-010
 Trigger    : on upload
-Statement  : The system shall require a JPG, PNG or WEBP file of at most 5 MB, and at most 20 active media records per Item.
+Statement  : The system shall require a JPG, PNG or WEBP file of at most 5 MB, held in public storage, and at most 20 active media records per Item. The file part is enforced at upload by the FILE category CAT_ITEM_IMAGE that CAT registers (allowPublic, PNG / JPEG / WEBP, 5 MB), whose refusal is the file module's own; CAT refuses the 21st active media record with this message, and answers a file reference that is not available or has no public URL as not found (ADR-CAT-076).
 Message    : ar: الصورة يجب أن تكون JPG أو PNG أو WEBP بحجم لا يتجاوز 5 ميجابايت، وبحد أقصى 20 صورة نشطة للصنف. · en: The image must be JPG, PNG or WEBP of at most 5 MB, with at most 20 active images per item.
 Traces     : REQ-CAT-110
 Data source: ENT-CAT-010.fileDocumentRef, ENT-CAT-010.itemFk, ENT-CAT-010.isActiveFl
@@ -2998,13 +2999,14 @@ rows:
   - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "serve CAT's own lookup keys to the screens (API-CAT-052) through the common owned-lookups capability, com.erp.common.lookup.OwnedLookups.read(key, the 10 CAT keys, CAT-404-LOOKUP-KEY-UNKNOWN, MdlLookupApi::readActiveValuesByKey) — never a pass-through for other keys (ADR-CAT-065); erp-core's manifest lists owned-lookups under common but publishes no interface for it, so the row names the mdl interface the call goes through"}
   - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "read the `variants` and `bundles` capability flags behind the FeatureFlags API (ADR-CAT-041)"}
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "issue Item codes (CAT_ITEM), Variant codes (CAT_VARIANT) and internal barcode digits (CAT_INTERNAL_BARCODE)"}
-  - {given: erp-core, module: modules.file, via: docs/api-docs/file/index.md, purpose: "the client uploads Item images to the public image storage and import files to the private storage through the given FILE upload endpoints, and passes the returned FILE_DOCUMENT.ID to CAT; CAT has no multipart endpoint (ADR-CAT-056)"}
-  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "read the type, size and availability of an uploaded file for RULE-CAT-038 and RULE-CAT-044, the bytes of an import file, and the public URL of an image"}
+  - {given: erp-core, module: modules.file, via: docs/api-docs/file/index.md, purpose: "the client uploads Item images to the FILE category CAT_ITEM_IMAGE (allowPublic = true, PNG / JPEG / WEBP, at most 5 MB — the FILE endpoint refuses any other file, ADR-CAT-076) and import files to the private storage through the given FILE upload endpoints, and passes the returned FILE_DOCUMENT.ID to CAT; CAT has no multipart endpoint (ADR-CAT-056)"}
+  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FileDocumentLookupApi, purpose: "the published methods only: isAvailable (a referenced file exists and is available in the caller's tenant — API-CAT-018, API-CAT-049), publicUrl and publicUrls (an image has a public URL, and image URLs for reads); the type, size and bytes of an import file are not published and wait on CORE-GAP-file-document-metadata-read (ADR-CAT-076)"}
+  - {given: erp-core, module: modules.file, via: com.erp.file.crossmodule.FilePrivateStoreApi, purpose: "the private store that holds the uploaded xlsx import file (SCR-REQ-CAT-004, ADR-CAT-056), named in CORE-GAP-file-document-metadata-read as the candidate in-process read of that file's type, size and bytes for the import (RULE-CAT-044, API-CAT-049); CAT stores no file through it (the client uploads through the FILE endpoints) and wires the read when the core publishes it (ADR-CAT-076)"}
   - {given: erp-core, module: modules.events, via: com.erp.events.OutboxPublisher, purpose: "record catalogue-change events in the change transaction and deliver them after commit (RULE-CAT-049)"}
   - {given: erp-core, module: modules.report, via: com.erp.report.crossmodule.PrintApi, purpose: "produce the printable barcode label document (REQ-CAT-102) and the xlsx item import sheet (REQ-CAT-036)"}
   - {given: erp-core, module: modules.report, via: com.erp.report.ReportProvider, purpose: "register the catalogue reports CAT_BARCODE_LABEL and CAT_ITEM_IMPORT_SHEET (ADR-CAT-057)"}
   - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "register the CAT page codes so the security module derives their VIEW/CREATE/UPDATE/DELETE permissions"}
-  - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "copy the 8 seeded Unit e-invoice codes into each newly provisioned tenant; the given copies the CAT lookup values and number series itself (ADR-CAT-058, REQ-CAT-134)"}
+  - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "copy the 8 seeded Unit e-invoice codes into each newly provisioned tenant and register the FILE category CAT_ITEM_IMAGE there (ADR-CAT-076); the given copies the CAT lookup values and number series itself (ADR-CAT-058, REQ-CAT-134)"}
 ```
 
 No ENT re-creates an entity that a given provides. Tenant, User, Role, LookupType/LookupValue, FileDocument and NumberSeries are used, never re-declared [C:C-GIVEN-1].
@@ -3397,6 +3399,7 @@ Every story maps to ≥ 1 REQ, including ≥ 1 REQ with pattern `unwanted`. Ever
 | ADR-CAT-070 | Variant attributes and their values are CAT tables, not mdl lookup types (erp-core checklist C5 / F3); CORE-GAP-tenant-lookup-types raised | gate-analysis round 3, G11 | ACCEPTED (non-breaking) |
 | ADR-CAT-072 | The default Variant moves: on deactivation of the default to the remaining active Variant with the lowest code, and on generation for an Item with no active Variant to the first Variant created; an active Item always has exactly one active default Variant (REQ-CAT-025, REQ-CAT-140, REQ-CAT-141, A7, CON-CAT-002) | gate-analysis round 6, G3 | ACCEPTED (non-breaking) |
 | ADR-CAT-074 | The item import saves entities (no JDBC batching); the 60-second figure for 5,000 rows is a target measured on the reference deployment, the 120-second limit is the guarantee (REQ-CAT-139); amends ADR-CAT-071 | gate-analysis round 7, G3 | ACCEPTED (non-breaking) |
+| ADR-CAT-076 | Image type, size and public storage are enforced at upload by the FILE category CAT_ITEM_IMAGE; CAT checks a file reference's availability and public URL and the 20-image count (RULE-CAT-038, REQ-CAT-110); the import's byte read and type / size check (RULE-CAT-044) wait on CORE-GAP-file-document-metadata-read; amends ADR-CAT-056 §2 | gate-analysis round 8, G1; erp-core conventions §Files rule 3, modules.file | ACCEPTED (non-breaking) |
 
 No ADR is BLOCKED. No question was raised.
 

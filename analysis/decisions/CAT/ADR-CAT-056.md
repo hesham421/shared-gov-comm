@@ -35,3 +35,6 @@ The multipart image upload also stored the file before the media row was written
 
 ## Traces
 REQ-CAT-105 · REQ-CAT-107 · REQ-CAT-108 · REQ-CAT-110 · REQ-CAT-037 · REQ-CAT-040 · API-CAT-018 · API-CAT-049 · API-CAT-020 · DBF-CAT-122
+
+## Amended
+§2 is amended by ADR-CAT-076 (gate-analysis round 8): erp-core 1.6.0 publishes only `isAvailable`, `publicUrl` and `publicUrls` on `FileDocumentLookupApi`. Image type, size and public storage are enforced by the FILE category `CAT_ITEM_IMAGE` at upload; API-CAT-018 checks availability and a public URL (else CAT-404-NOT-FOUND) and the 20-record count (RULE-CAT-038). The import's byte read and type / size check wait on CORE-GAP-file-document-metadata-read.
