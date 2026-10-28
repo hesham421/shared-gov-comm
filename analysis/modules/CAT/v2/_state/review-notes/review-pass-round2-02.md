@@ -1,7 +1,7 @@
-# Checklist lines confirmed word for word
+# Narrow G5 to the Unit e-invoice code seeds
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: CAT        Version: v2
-Written: 2026-10-28T08:55:57+00:00
+Written: 2026-10-28T10:14:15+00:00
 
-I read `.claude/skills/erp-core-usage@1.6.0/templates/checklist.md`. Lines C1, C3, C7, C10, C12, C13, C15–C20, F2, F4, F5, F7 and F9 exist as quoted. G1–G5 and G13 stay MAJOR, as §3.6 requires.
+Checklist lines C5 and C9 tell modules to seed MDL lookups and number series at TENANT_ID = 1, so those seeds are correct. The defect left is the CAT-owned CAT_UNIT_EINVOICE_CODE rows, which exist only for tenant 1 while every read is tenant-filtered. It stays MAJOR with an ADR.

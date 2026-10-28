@@ -1,15 +1,7 @@
-# Round-1 scores and the remaining findings are accepted
+# Add G18 and G19 as MINOR
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: CAT        Version: v2
-Written: 2026-10-28T08:55:57+00:00
+Written: 2026-10-28T10:14:15+00:00
 
-Each finding was checked against the artifacts:
-- G6 (reactivation gaps, extended to bundle cases)
-- G7
-- G9
-- G10 (extended to writes: API-CAT-006, 010, 014, 015 and 018 never check that the parent is active)
-- G11 (AC-CAT-040 truncates the {reason} text)
-- G12
-- G14
-- G16–G20
+G18 covers wiring the plan leaves unstated: where the permission check sits (C13) and the event topic name (C19). G19 covers ADR traces that name POL-CAT-010 and 011, which do not exist.
