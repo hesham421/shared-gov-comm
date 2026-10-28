@@ -1,7 +1,7 @@
-# Scores kept
+# all other round-1 scores, extra checks, analyze confirmations and the G3, G4, G6, G8–G15 findings are confirmed. Verdict: REVISE.
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: CAT        Version: v2
-Written: 2026-10-28T10:59:09+00:00
+Written: 2026-10-28T11:55:50+00:00
 
-complete 1 rests on G5–G8 and G10, consistent 1 on G1 and G16, and feasible 1 on G2, G3 and G13, because plans that break library conventions cannot be built on erp-core.
+
