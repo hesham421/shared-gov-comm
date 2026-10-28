@@ -1,7 +1,7 @@
-# G4 stays MAJOR, with checklist C16 added. JPQL has no `RETURNING`. Bulk updates also bypass `@Audited` (C16) and the per-record events of REQ-CAT-008. Under the Item lock, the fix is to load and modify the entities.
+# §3.6 checklist now read, lines C1–C22 and F1–F12. No uncovered violation. The C5/F3, C13 and C7/F9 deviations are each raised as a CORE-GAP, as F9 requires. The sortOrder `MAX+1` is not a document number, so F6 does not apply.
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: CAT        Version: v2
-Written: 2026-10-28T14:14:22+00:00
+Written: 2026-10-28T16:01:32+00:00
 
 
