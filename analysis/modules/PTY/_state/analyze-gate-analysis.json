@@ -38,20 +38,20 @@
     "C3.8": 9,
     "C4.4": 17,
     "C4.7": 1,
-    "C5.2": 109,
-    "C5.3": 109,
-    "C5.4": 109,
-    "C5.5": 123,
-    "C5.6": 33,
-    "C5.8": 270,
-    "C5.13": 265,
-    "C5.14": 123,
+    "C5.2": 113,
+    "C5.3": 113,
+    "C5.4": 113,
+    "C5.5": 136,
+    "C5.6": 34,
+    "C5.8": 288,
+    "C5.13": 283,
+    "C5.14": 136,
     "C5.15": 5,
     "C5.16": 17,
     "C5.17": 1,
-    "C6.2": 67,
+    "C6.2": 79,
     "C6.3": 0,
-    "C6.5": 67,
+    "C6.5": 79,
     "C6.6": 5,
     "C6.10": 0,
     "C6.11": 1,
@@ -61,15 +61,15 @@
     "C6.15": 0,
     "C7.2": 49,
     "C7.3": 37,
-    "C7.4": 75,
+    "C7.4": 77,
     "C7.5": 0,
     "C7.5b": 0,
-    "C7.6": 109,
-    "C7.22": 38,
+    "C7.6": 113,
+    "C7.22": 40,
     "C7.21": 21,
     "C7.23": 35,
     "C7.20": 35,
-    "C7.19": 18,
+    "C7.19": 17,
     "C7.18": 4,
     "C7.24": 0,
     "C7.25": 1,
@@ -77,7 +77,7 @@
     "C7.27": 0,
     "C7.28": 0,
     "C7.29": 74,
-    "C7.30": 36,
+    "C7.30": 37,
     "C7.31": 37,
     "C9.2": 26,
     "C9.3": 1,
@@ -89,24 +89,22 @@
     "C9.15": 5,
     "C9.17": 5,
     "C9.16": 2,
-    "C9.24": 14,
+    "C9.24": 16,
     "C9.22": 5,
     "C9.23": 6,
-    "C10.1": 153,
-    "C10.2": 123,
-    "C10.7": 16,
-    "C10.8": 0,
-    "C10.9": 0,
-    "C10.10": 153,
+    "C10.1": 190,
+    "C10.2": 136,
+    "C10.7": 28,
+    "C10.8": 2,
+    "C10.9": 2,
+    "C10.10": 190,
     "C10.11": 31,
     "C13.5": 24,
     "C-GIVEN-1": 10,
-    "C-GIVEN-2": 10,
+    "C-GIVEN-2": 14,
     "C-GIVEN-3": 27
   },
   "vacuous": [
-    "C10.8",
-    "C10.9",
     "C6.10",
     "C6.12",
     "C6.15",
@@ -135,8 +133,8 @@
       "to": [
         "AC"
       ],
-      "total": 109,
-      "covered": 109,
+      "total": 113,
+      "covered": 113,
       "pct": 100.0
     },
     {
@@ -145,8 +143,8 @@
       "to": [
         "API"
       ],
-      "total": 109,
-      "covered": 107,
+      "total": 113,
+      "covered": 111,
       "pct": 98.2
     },
     {
@@ -156,9 +154,9 @@
         "SCR",
         "UXD"
       ],
-      "total": 109,
+      "total": 113,
       "covered": 41,
-      "pct": 37.6
+      "pct": 36.3
     },
     {
       "id": "ac-tc",
@@ -166,8 +164,8 @@
       "to": [
         "TC"
       ],
-      "total": 123,
-      "covered": 123,
+      "total": 136,
+      "covered": 136,
       "pct": 100.0
     }
   ],
@@ -178,7 +176,7 @@
       "check": "ambiguity",
       "message": "`AC-PTY-123` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
       "artifact": "srs",
-      "line": 1824
+      "line": 1842
     },
     {
       "severity": "MINOR",
@@ -186,7 +184,7 @@
       "check": "ac-measurable",
       "message": "`AC-PTY-011` `Then: the purchase document receives the new Supplier's identifier and code` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
       "artifact": "srs",
-      "line": 355
+      "line": 358
     },
     {
       "severity": "MINOR",
@@ -194,7 +192,7 @@
       "check": "ac-measurable",
       "message": "`AC-PTY-040` `Then: the new Address has isDefaultFl true` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
       "artifact": "srs",
-      "line": 734
+      "line": 742
     },
     {
       "severity": "MINOR",
@@ -202,7 +200,7 @@
       "check": "ac-measurable",
       "message": "`AC-PTY-076` `Then: the result is NO_CREDIT` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
       "artifact": "srs",
-      "line": 1220
+      "line": 1228
     },
     {
       "severity": "MINOR",
@@ -210,7 +208,7 @@
       "check": "ac-measurable",
       "message": "`AC-PTY-079` `Then: the response carries no creditLimit and no paymentTermDays fields` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
       "artifact": "srs",
-      "line": 1262
+      "line": 1270
     },
     {
       "severity": "MINOR",
@@ -218,7 +216,7 @@
       "check": "ac-measurable",
       "message": "`AC-PTY-083` `Then: the result is NOT_APPLICABLE` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
       "artifact": "srs",
-      "line": 1309
+      "line": 1317
     }
   ],
   "provenance": {
@@ -250,27 +248,27 @@
       "ui-ux-spec"
     ],
     "inputs": {
-      "api-spec": "23f6cc1e4c18ca74c30310fe273e0510058e24d913fed0dceda54a1a76e96f70",
-      "backend-execution-plan": "44996c73cc8eb5e27856aa7c1f533fa56054684afba2b5b74706704ff05f27a4",
-      "backend-test-plan": "1b291770f73138b02de9f70bc704e047de75a5f9c3335da529f4d9783c0f1c9c",
+      "api-spec": "f41f43b47d1b3f15f2df80d53fd9f39366994a1c4bb08dc63802d3f330d7d9f5",
+      "backend-execution-plan": "f38b63869254eba3274a1b0784232378fa22e3f1f7b033d537e1f915c6081f16",
+      "backend-test-plan": "f124a2f9765e5bac2a34e72e825f72a2284d5622a8d9c785f942b911af686feb",
       "business-policies": "7a637be9350dcf2f8758668fdc27a5d7d99f18d983fbc00a046d6cb1e5df7bef",
-      "contract": "ce3d2129a484613f3f6132750fe762038a3ecabe95977870fa37bf542109847f",
-      "db-script": "2757bc80c56c418574a3a76b1425baaee898a022e9eae0132738fbf09b51ae1f",
+      "contract": "7dd794c50c44c72942f70c172724923f0f66fa227b5802dfcfe55f8676265a89",
+      "db-script": "4691b3301e727e50b8c313c16290c42bb1272efa18e4a7a38d06b7e0229a4914",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
       "flow-diagram": "dfedbb69c34a374f2d5b0e379812c1e136d1d8b3bd8f763aaf83fe4f6850cb46",
-      "frontend-execution-plan": "539337903cbb752aeb76cc8073976fa713e54a45bee0b0a0fb2b68140f847067",
-      "frontend-test-plan": "cb1f0822fff86a8c66fd2b98c5326cbbe81597a2737084ea9720941a01f31f9e",
+      "frontend-execution-plan": "1bd10617f3cdc07829f8a16934ea03befd8c71e030a8d7d5b927700789460f39",
+      "frontend-test-plan": "0f124fcdcffbc40a4277a55fa581c6562cdd29e96bcad92ef3132d2258181ccd",
       "module-registry": "f6f92473b350de01ecc92284dc11a1c5328b767882823836a96609a02268956a",
       "platform-summary": "d3b1c682f6fbc8c4811b0e0df2fcc73cf939e64b826e03955de168291bf171fb",
       "prd": "fe7912f29b423794d7f2026f4a9bde60eb7882e7bfd7476385a0fbe84ea76492",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
-      "registry-db": "8e0160da0cd3d2dc3bd9e7ce58ba733c5965a392fc3fb226b0d903e846337f15",
-      "registry-exec-be": "467e862cab2f559193d949545d6e2fe0357ce86f0fcfa89c3416b331527bfe1b",
-      "registry-exec-fe": "d0cdbae89c2227fc268d21f84a3a916f26c8bd904f8183dc1e356cc6fdd7400a",
-      "registry-srs": "2c83b04e1abadec95275fd700e14ffa79a53a1827ead72d7522c6e6922fa47bc",
-      "srs": "6af582880dded3b31036d883e027316f4a4655b8e6c3849232c08970ab5cf557",
-      "ui-ux-spec": "ecd6334e608a41cd10f26743204150d76f956d15f06707a8163a8d5c7e3331c3"
+      "registry-db": "4312069b46ea707a720833f0f357fad81104aa61e7495f4973a94d22522160d4",
+      "registry-exec-be": "0b122699ff45b1a35983e2db759ff9325e7042f4d0f1b6a9aeeb5cb885204bdc",
+      "registry-exec-fe": "ed78e1666bc09d196c984b528ca1f64ff47928ea8e184cc3ea0ca96e6e69f664",
+      "registry-srs": "4ad37432a6512d3118c4e07eb0092a8d6830542b3da01d63ad9a78bdfe29e687",
+      "srs": "2422a56be502b42178e7d0213ee8512ea96f152941c6ca6f5b4a5a0b8f0628ca",
+      "ui-ux-spec": "8afa8f2cad60dfd3a1935cfa06b496fb4afb630e9ddc3484663df54f254ada8d"
     },
-    "at": "2026-10-29T07:44:47+00:00"
+    "at": "2026-10-29T08:48:35+00:00"
   }
 }
