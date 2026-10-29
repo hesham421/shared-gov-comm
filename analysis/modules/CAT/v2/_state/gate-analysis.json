@@ -10,7 +10,7 @@
     "P3.2",
     "P4"
   ],
-  "verdict": "ESCALATE",
+  "verdict": "APPROVE",
   "scores": {
     "unambiguous": 2,
     "verifiable": 2,
@@ -29,7 +29,7 @@
       "line": null,
       "clause": "feasible / consistent (ADR-CAT-047 guards; UQ_CAT_BUNDLE_COMP_VARIANT, UQ_CAT_ITEM_MEDIA_PRIMARY)",
       "problem": "Only the default-Variant move (API-CAT-006, 009; ADR-CAT-072) states 'clear, flush, set'. API-CAT-017 persists new lines, updates kept lines and then deactivates dropped lines. Hibernate flushes inserts before updates whatever the call order, so a PUT that drops a line and adds back the same componentVariantFk without a bundleComponentPk always inserts first. It violates UQ_CAT_BUNDLE_COMP_VARIANT, and a valid request is refused as RULE-CAT-019. API-CAT-019 ('clear the former primary first', no flush) and API-CAT-020 (clear the removed primary, then promote another) can reach UQ_CAT_ITEM_MEDIA_PRIMARY out of order when updates are reordered.",
-      "fix": "Add one rule to PHASE CORE and amend ADR-CAT-047: a write that clears a value covered by a partial unique index saves and flushes the clearing row before saving the row that sets it. Apply it in API-CAT-017 (deactivate dropped lines, flush, update kept lines, insert new lines), API-CAT-019 (clear the former primary, flush, set the new one) and API-CAT-020 (clear the removed row, flush, promote). Name the flush in QR-CAT-041 and QR-CAT-057 as QR-CAT-075 already does.",
+      "fix": "[KNOWN ISSUE - APPROVE by Hesham 2026-10-29 after 9 REVISE rounds; fix via gov.py feature] Add one rule to PHASE CORE and amend ADR-CAT-047: a write that clears a value covered by a partial unique index saves and flushes the clearing row before saving the row that sets it. Apply it in API-CAT-017 (deactivate dropped lines, flush, update kept lines, insert new lines), API-CAT-019 (clear the former primary, flush, set the new one) and API-CAT-020 (clear the removed row, flush, promote). Name the flush in QR-CAT-041 and QR-CAT-057 as QR-CAT-075 already does.",
       "adr": false
     },
     {
@@ -40,7 +40,7 @@
       "line": null,
       "clause": "verifiable (probe P1: counter-case with a statement and no test)",
       "problem": "API-CAT-004 refuses CAT-409-VARIANT-IN-ACTIVE-BUNDLE when a Variant of the Item is a component of an active Bundle (RULE-CAT-021, REQ-CAT-062 'or the Item'). Its only TCs are 001, 188, 190 and 197, and TC-CAT-001 excludes this case. The G1 orderings are also untested.",
-      "fix": "Add a TC that deactivates an Item whose Variant is a component of an active Bundle: 409 with {count}, and the Item stays active. Add a TC that replaces a Bundle line with the same component Variant, without bundleComponentPk, in one PUT: 200, exactly one active line. Extend TC-CAT-054 and TC-CAT-057 to assert that the primary swap and the promotion succeed under UQ_CAT_ITEM_MEDIA_PRIMARY.",
+      "fix": "[KNOWN ISSUE - APPROVE by Hesham 2026-10-29 after 9 REVISE rounds; fix via gov.py feature] Add a TC that deactivates an Item whose Variant is a component of an active Bundle: 409 with {count}, and the Item stays active. Add a TC that replaces a Bundle line with the same component Variant, without bundleComponentPk, in one PUT: 200, exactly one active line. Extend TC-CAT-054 and TC-CAT-057 to assert that the primary swap and the promotion succeed under UQ_CAT_ITEM_MEDIA_PRIMARY.",
       "adr": false
     },
     {
@@ -51,7 +51,7 @@
       "line": null,
       "clause": "feasible (undeclared assumption at the seam with the core)",
       "problem": "The bootstrap row says FILE category CAT_ITEM_IMAGE is 'registered for the PLATFORM tenant at deployment' and copied by CatTenantProvisioningContributor. No db-script BLOCK 8 statement seeds FILE_CATEGORY, and CORE-GAP-file-document-metadata-read question 3 still asks how a module registers one. API-CAT-018 and TC-CAT-055, 056, 113, 146, 181 and 218 therefore depend on a producer that does not exist. Only the import TCs are declared core-blocked.",
-      "fix": "Choose one, and state it in PHASE CORE 'Core gaps' and in the bootstrap row: (a) seed FILE_CATEGORY CAT_ITEM_IMAGE in db-script BLOCK 8 with columns verified against erp-core 1.6.0, as D-P2-13 does for mdl and sequence, and have CatTenantProvisioningContributor copy it; or (b) declare the image path a delivery dependency on question 3. Under (b), list the image TCs in the test plan's 'Open ADRs' as blocked by the core gap, on the same terms as the import TCs.",
+      "fix": "[KNOWN ISSUE - APPROVE by Hesham 2026-10-29 after 9 REVISE rounds; fix via gov.py feature] Choose one, and state it in PHASE CORE 'Core gaps' and in the bootstrap row: (a) seed FILE_CATEGORY CAT_ITEM_IMAGE in db-script BLOCK 8 with columns verified against erp-core 1.6.0, as D-P2-13 does for mdl and sequence, and have CatTenantProvisioningContributor copy it; or (b) declare the image path a delivery dependency on question 3. Under (b), list the image TCs in the test plan's 'Open ADRs' as blocked by the core gap, on the same terms as the import TCs.",
       "adr": false
     },
     {
@@ -62,7 +62,7 @@
       "line": null,
       "clause": "complete (probe P4: system-semantic codes stored as tenant-editable mdl values)",
       "problem": "The service relies on mdl codes a tenant can deactivate: (a) the defaults PIECE and STANDARD of open keys (D-09; API-CAT-001, 049), which RULE-CAT-006 then refuses for values the caller never sent; (b) the closed keys CAT_ITEM_KIND, CAT_PUBLISH_STATE, CAT_BARCODE_TYPE, CAT_SCALE_VALUE_TYPE and CAT_EINVOICE_ITEM_CODE_TYPE, whose codes are hard-coded in QR-CAT-007, 009, 016, 047, 053 and in the services. Deactivating PUBLISHED or GTIN in mdl breaks publish or GTIN entry through RULE-CAT-006.",
-      "fix": "Amend RULE-CAT-006 and record an ADR. Closed keys (open: false in SRS A6) are checked against their fixed seeded set, not against mdl active state. A default of an open key that is no longer active is not applied: the field becomes required, and RULE-CAT-006 names it. The screens pre-fill only an active default.",
+      "fix": "[KNOWN ISSUE - APPROVE by Hesham 2026-10-29 after 9 REVISE rounds; fix via gov.py feature] Amend RULE-CAT-006 and record an ADR. Closed keys (open: false in SRS A6) are checked against their fixed seeded set, not against mdl active state. A default of an open key that is no longer active is not applied: the field becomes required, and RULE-CAT-006 names it. The screens pre-fill only an active default.",
       "adr": true
     },
     {
@@ -73,7 +73,7 @@
       "line": null,
       "clause": "feasible (concurrency side effect)",
       "problem": "API-CAT-049 holds the tenant-wide scale-prefix lock (QR-CAT-074) for up to 120 s. Every GTIN, INTERNAL and label-screen barcode add (API-CAT-014, 015, 056) also waits on it. The plan mentions only layout creates.",
-      "fix": "State the full effect in API-CAT-049 Concurrency and ADR-CAT-071. Either take the lock only around the write-pass GTIN re-check and insert, or bound the wait with lock_timeout, returning a retryable CAT-500 code with a next action.",
+      "fix": "[KNOWN ISSUE - APPROVE by Hesham 2026-10-29 after 9 REVISE rounds; fix via gov.py feature] State the full effect in API-CAT-049 Concurrency and ADR-CAT-071. Either take the lock only around the write-pass GTIN re-check and insert, or bound the wait with lock_timeout, returning a retryable CAT-500 code with a next action.",
       "adr": false
     },
     {
@@ -84,7 +84,7 @@
       "line": null,
       "clause": "complete (seam with RULE-CAT-015)",
       "problem": "ITEM-SAVE sends Variant deactivations (step 3) before generation (step 5). Deactivating an active Item's only active Variant while a generation is pending in the same Save gets CAT-409-LAST-ACTIVE-VARIANT. The plan does not say so.",
-      "fix": "State in F2 ITEM-SAVE that, when a generation is pending, a Variant deactivation that would remove the last active Variant is sent after step 5. Otherwise the line shows the 'save-first' hint.",
+      "fix": "[KNOWN ISSUE - APPROVE by Hesham 2026-10-29 after 9 REVISE rounds; fix via gov.py feature] State in F2 ITEM-SAVE that, when a generation is pending, a Variant deactivation that would remove the last active Variant is sent after step 5. Otherwise the line shows the 'save-first' hint.",
       "adr": false
     },
     {
@@ -95,7 +95,7 @@
       "line": null,
       "clause": "consistent (RULE-CAT-031 vs REQ-CAT-097 / API-CAT-043)",
       "problem": "RULE-CAT-031 lets a SCALE barcode be bound to any active Item unit, but scale decoding returns the embedded value 'in the Item's base unit'. A SCALE barcode on CARTON returns a value whose unit contradicts its own uomCode.",
-      "fix": "Recommended: restrict SCALE barcodes to the Item's base unit (RULE-CAT-033), and add the refusal to API-CAT-014 with a TC. The SRS owns the choice.",
+      "fix": "[KNOWN ISSUE - APPROVE by Hesham 2026-10-29 after 9 REVISE rounds; fix via gov.py feature] Recommended: restrict SCALE barcodes to the Item's base unit (RULE-CAT-033), and add the refusal to API-CAT-014 with a TC. The SRS owns the choice.",
       "adr": true
     }
   ],
@@ -152,5 +152,5 @@
       "pct": 100.0
     }
   ],
-  "at": "2026-10-29T05:37:07+00:00"
+  "at": "2026-10-29T05:38:04+00:00"
 }
