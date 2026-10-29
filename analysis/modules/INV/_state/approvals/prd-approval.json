@@ -1,0 +1,11 @@
+{
+  "gate": "prd-approval",
+  "module": "INV",
+  "version": 1,
+  "by": "Hesham",
+  "at": "2026-10-29T10:40:26+00:00",
+  "after": "P0.5",
+  "artifact_sha": {
+    "prd": "0dd3ce350bd9d5106f87359d0f2ec95851d1a13a2b66e33caf632e9d209e90bb"
+  }
+}
