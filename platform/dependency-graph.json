@@ -150,7 +150,7 @@
     {
       "from": "INS",
       "to": "PTY",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -222,7 +222,7 @@
     {
       "from": "PUR",
       "to": "PTY",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -246,7 +246,7 @@
     {
       "from": "SFR",
       "to": "PTY",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -294,13 +294,13 @@
     {
       "from": "SLS",
       "to": "PTY",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
       "from": "STL",
       "to": "PTY",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
