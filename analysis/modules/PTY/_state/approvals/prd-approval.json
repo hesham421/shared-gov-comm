@@ -1,0 +1,11 @@
+{
+  "gate": "prd-approval",
+  "module": "PTY",
+  "version": 1,
+  "by": "Hesham",
+  "at": "2026-10-29T05:54:49+00:00",
+  "after": "P0.5",
+  "artifact_sha": {
+    "prd": "54ec0b7bd3fb29323041c0e34bc33b47006411c2cafe6f5c29cc6f08f39edd65"
+  }
+}
