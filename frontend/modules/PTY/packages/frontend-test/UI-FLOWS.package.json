@@ -1,0 +1,80 @@
+{
+  "unit": "UI-FLOWS",
+  "kind": "SUB",
+  "tests": [
+    "TC-PTY-122",
+    "TC-PTY-123",
+    "TC-PTY-124",
+    "TC-PTY-125",
+    "TC-PTY-126",
+    "TC-PTY-127",
+    "TC-PTY-128",
+    "TC-PTY-129",
+    "TC-PTY-130",
+    "TC-PTY-131",
+    "TC-PTY-132",
+    "TC-PTY-133",
+    "TC-PTY-134",
+    "TC-PTY-135",
+    "TC-PTY-136",
+    "TC-PTY-137",
+    "TC-PTY-138",
+    "TC-PTY-139",
+    "TC-PTY-140",
+    "TC-PTY-141",
+    "TC-PTY-142",
+    "TC-PTY-143",
+    "TC-PTY-144",
+    "TC-PTY-145",
+    "TC-PTY-179",
+    "TC-PTY-180",
+    "TC-PTY-181",
+    "TC-PTY-182",
+    "TC-PTY-183",
+    "TC-PTY-184",
+    "TC-PTY-185",
+    "TC-PTY-186",
+    "TC-PTY-187",
+    "TC-PTY-188",
+    "TC-PTY-189",
+    "TC-PTY-190"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "sec",
+        "cu",
+        "mdl",
+        "sequence",
+        "tenant",
+        "audit",
+        "events",
+        "notif",
+        "module"
+      ],
+      "extension_points": [
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.tenant.TenantProvisioningContributor",
+        "com.erp.events.OutboxSubscriber"
+      ],
+      "interfaces": [
+        "com.erp.sec.crossmodule.SecCustomerInvitationApi",
+        "com.erp.sec.crossmodule.SecUserDirectoryApi",
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.tenant.TenantRunner",
+        "com.erp.audit.crossmodule.AuditApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.events.DomainEventPublisher",
+        "com.erp.notif.crossmodule.NotificationDispatchApi"
+      ],
+      "api": [
+        "docs/api-docs/module/index.md"
+      ]
+    }
+  ]
+}

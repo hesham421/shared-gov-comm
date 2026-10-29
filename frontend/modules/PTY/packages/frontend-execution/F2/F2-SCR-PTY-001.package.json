@@ -1,0 +1,51 @@
+{
+  "unit": "F2-SCR-PTY-001",
+  "kind": "SUB",
+  "tests": [
+    "TC-PTY-123",
+    "TC-PTY-125",
+    "TC-PTY-127",
+    "TC-PTY-180",
+    "TC-PTY-183",
+    "TC-PTY-146",
+    "TC-PTY-150"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "sec",
+        "cu",
+        "mdl",
+        "sequence",
+        "tenant",
+        "audit",
+        "events",
+        "notif",
+        "module"
+      ],
+      "extension_points": [
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.tenant.TenantProvisioningContributor",
+        "com.erp.events.OutboxSubscriber"
+      ],
+      "interfaces": [
+        "com.erp.sec.crossmodule.SecCustomerInvitationApi",
+        "com.erp.sec.crossmodule.SecUserDirectoryApi",
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.tenant.TenantRunner",
+        "com.erp.audit.crossmodule.AuditApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.events.DomainEventPublisher",
+        "com.erp.notif.crossmodule.NotificationDispatchApi"
+      ],
+      "api": [
+        "docs/api-docs/module/index.md"
+      ]
+    }
+  ]
+}

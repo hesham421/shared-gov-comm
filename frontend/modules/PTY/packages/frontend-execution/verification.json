@@ -1,0 +1,13 @@
+{
+  "module": "PTY",
+  "track": "frontend",
+  "plan": "exec",
+  "version": 1,
+  "verify": "sha256",
+  "source": "analysis/modules/PTY/P3_2/frontend-execution-plan-pty.md",
+  "checked": 22,
+  "missing": [],
+  "mismatched": [],
+  "ok": true,
+  "at": "2026-10-29T10:21:48+00:00"
+}
