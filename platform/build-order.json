@@ -180,7 +180,7 @@
     },
     "2": {
       "CAT": "done",
-      "PTY": "failed",
+      "PTY": "done",
       "INV": "ready",
       "PRC": "ready",
       "PUR": "waiting",
