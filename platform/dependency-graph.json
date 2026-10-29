@@ -6,7 +6,8 @@
       "PTY": "v1"
     },
     "srs": {
-      "CAT": "v2"
+      "CAT": "v2",
+      "PTY": "v1"
     }
   },
   "modules": {
