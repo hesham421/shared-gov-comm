@@ -37,7 +37,7 @@
       "frontend/test": false
     },
     "coverage": {
-      "us-req": null,
+      "us-req": 0.0,
       "req-ac": null,
       "req-api": null,
       "req-ux": null,
