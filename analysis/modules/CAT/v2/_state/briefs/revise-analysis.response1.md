@@ -1,35 +1,31 @@
-I've applied all six findings of the REVISE brief to the CAT v2 artifacts. I edited the files in place in the repo instead of sending them back as complete-file `<<<FILE>>>` blocks; the result is the same as the earlier "REVISE applied" commits. Every YAML block validates against its schema and the api-spec parses. I didn't run the governance tool (`gov.py`), so the gate itself hasn't been re-run on this.
+All three findings are applied. I edited the files on disk (17 artifacts and ADRs, plus two new ADRs) instead of emitting `<<<FILE>>>` blocks, because whole copies of the backend plan and the SRS would be far too large. I didn't commit anything and I didn't run `gov.py analyze`. The api-spec still parses as valid YAML with 56 operations, and a sweep found no old wording left in any artifact.
 
-**G1 – generate an internal barcode from the label screen** (ADR-CAT-078, ACCEPTED)
-- I added a new endpoint, API-CAT-056 (`POST /api/v1/cat/barcode-labels/variants/{id}/internal-barcode`). It needs PERM_CAT_BARCODE_LABELS_CREATE and reuses the service, rules and locks of API-CAT-015.
-- New ids: REQ-CAT-148, AC-CAT-171, backend test TC-CAT-231 and frontend test TC-CAT-232.
-- The frontend plan has a new mutation hook (`LABEL-INTERNAL-BARCODE`) and a "Generate internal barcode" action on each flagged line of SCR-CAT-005. The UI spec and flow diagram are updated to match.
-- The ADR records two rejected options: widening API-CAT-015, and showing a different next action depending on the user's role.
+**G1 — label barcode (ADR-CAT-079)**
+- **Rule:** a label now uses only the Variant's earliest-created active GTIN or INTERNAL barcode whose unit is the Item's base unit.
+- **RULE-CAT-037:** it counts only those barcodes. A Variant without one is flagged and gets the existing "Generate internal barcode" action (API-CAT-056).
+- **Message change:** the RULE-CAT-037 message now says "no active barcode in the base unit" in both ar and en. It changed everywhere it appears: the SRS, the error catalog, the screen copy, and the backend and frontend tests that quote it.
+- **SRS:** REQ-CAT-101, 102, 104 and 148 are reworded, and AC-CAT-103, 104 and 106 are updated.
+- **Queries and API:**
+  - QR-CAT-016 now returns the label barcode as `firstBarcodeValue`; its text search still matches any barcode.
+  - QR-CAT-047 gets a label-only filter, used just by the print endpoint. The Item and Variant reads still return every barcode.
+  - The api-spec now describes `firstBarcodeValue` as the label barcode.
+- **Frontend:** a line seeded from a single Variant takes its barcode by type and base unit, and the flag on a line reads "No barcode in the base unit".
+- **New ACs and TCs:**
+  - AC-CAT-172 / TC-CAT-233: the only barcode is a SCALE code (and a second Variant has only a carton barcode). Both get no label until an internal barcode is generated.
+  - AC-CAT-173 / TC-CAT-234: a Variant has an earlier carton GTIN and a later piece GTIN. The label prints the piece GTIN.
 
-**G2 – parallel-request races**
-- I added AC-CAT-167 to 170, one per race, each with a parallel-request test (TC-CAT-227 to 230).
-- The "Concurrency guards" coverage row now reads 12 / 12.
+**G2 — Bundle component quantity unit (ADR-CAT-080)**
+- **Rule:** the quantity is always in the base unit of the component Variant's Item.
+- **Where it changed:**
+  - ENT-CAT-007, REQ-CAT-056 and REQ-CAT-058 in the SRS.
+  - CON-CAT-006 and CON-CAT-007 in the contract.
+  - The column comment on the quantity in the db-script.
+  - QR-CAT-039, which now joins the component Item.
+- **New field:** `componentBaseUomCode` is returned on each Bundle line (DTO, derived-property list, api-spec) and shown in the Bundle components pane.
+- **ADR-CAT-048:** it gets an amendment note, since this adds a derived property.
+- **New AC and TC:** AC-CAT-174 / TC-CAT-235 check that each line returns its unit. TC-CAT-095 and frontend TC-CAT-179 are extended to check it too.
 
-**G3 – Bundle quantity and conversion factor bounds**
-- In API-CAT-001 and 017, `quantity` now has `exclusiveMinimum: 0`, `maximum: 999999.999` and `multipleOf: 0.001`.
-- In API-CAT-010, `conversionFactor` now has `exclusiveMinimum: 0`, `maximum: 999999.999999` and `multipleOf: 0.000001`.
-- RULE-CAT-018 and RULE-CAT-027 are restated with these bounds. A value outside them answers CAT-400-REQUEST-INVALID before the rule runs.
-- TC-CAT-027 now has 6 boundary rows and TC-CAT-039 has 5.
-- No database change was needed; the bounds fit the existing columns.
+**G3 — stale counts**
+- The frontend plan's header, its ALIGN-FE heading and the amended note in ADR-CAT-051 now say 56 operations, 54 used.
 
-**G4 – categoryFk-only repair in API-CAT-003**
-- The text now says only RULE-CAT-026 and the version check run on that path, and that RULE-CAT-003 is checked again at reactivation.
-
-**G6 – updating an inactive record**
-- PHASE CORE has a new rule: a PUT on a record whose own `isActiveFl` is false answers CAT-400-REQUEST-INVALID and writes nothing.
-- It's cited in API-CAT-012, 019, 023, 027 and 030, and in the CAT-400 trigger. Inactive Items and Variants are left out because RULE-CAT-053 already governs them.
-- TC-CAT-223 has new rows 11 to 15. They include the removed-image case, which checks that the active primary image stays unchanged.
-
-**G7 – frontend coverage re-stamp**
-- The frontend test plan's coverage rows are re-stamped from registry-srs: AC 61 / 171 on this track and 171 / 171 across both plans, REQ 148 / 148.
-
-**Knock-on updates**
-- New totals: REQ 148, AC 171, API 56 (35 paths), 166 backend tests and 66 frontend tests. The next free ADR is 079.
-- These are re-stamped in both registries, the business policies, the contract and the db-script. None of these files still shows an old count.
-
-Four items in `git status` were already modified or untracked before I started, and I didn't touch them: `platform/contracts/contract-cat.md`, `_state/briefs/revise-analysis.md`, `backend/modules/CAT/` and `frontend/modules/CAT/`. Nothing is committed yet.
+**Re-stamped counts:** the SRS and its registry now show AC 174 and 23 ADRs, with ADR-CAT-081 as the next free number. The contract, db-script, DB registry, both plan registries and both test plans carry the same counts. Platform finding 8 in the business policies records that this stale-count defect happened again.

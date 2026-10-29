@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved 2026-10-26 — gate prd-approval)
-Counts : REQ 148 · AC 171 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 21
+Counts : REQ 148 · AC 174 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 23
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -17,7 +17,7 @@ Counts : REQ 148 · AC 171 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 21
 | Date | 2026-10-26 |
 | Status | DRAFT — P1 pass 1 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions applied | 21 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise; ADR-CAT-072 at the sixth gate-analysis revise; ADR-CAT-074 at the seventh gate-analysis revise; ADR-CAT-076 at the eighth gate-analysis revise; ADR-CAT-077 at the ninth gate-analysis revise; ADR-CAT-078 at the tenth gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
+| Decisions applied | 23 ADR (ADR-CAT-038 … ADR-CAT-043; ADR-CAT-058, ADR-CAT-059, ADR-CAT-060, ADR-CAT-062 at the gate-analysis revise; ADR-CAT-063, ADR-CAT-064, ADR-CAT-065 at the second gate-analysis revise; ADR-CAT-068, ADR-CAT-069, ADR-CAT-070 at the third gate-analysis revise; ADR-CAT-072 at the sixth gate-analysis revise; ADR-CAT-074 at the seventh gate-analysis revise; ADR-CAT-076 at the eighth gate-analysis revise; ADR-CAT-077 at the ninth gate-analysis revise; ADR-CAT-078 at the tenth gate-analysis revise; ADR-CAT-079, ADR-CAT-080 at the eleventh gate-analysis revise) · 15 DEFAULT (D-01 … D-15) |
 | Revisions (third gate-analysis revise) | ADDED: REQ-CAT-136 … REQ-CAT-138, AC-CAT-153 … AC-CAT-160 · MODIFIED: REQ-CAT-135 and RULE-CAT-053 (three repair operations stay allowed on an inactive Item — ADR-CAT-068), RULE-CAT-003, AC-CAT-007 and AC-CAT-043 (the message names the existing Item's code), RULE-CAT-016, RULE-CAT-023 and RULE-CAT-024 (also checked on reactivation — ADR-CAT-069), A7 |
 | Revisions (fourth gate-analysis revise) | ADDED: REQ-CAT-139, AC-CAT-161 (an import past its time limit is rolled back whole — ADR-CAT-071) · MODIFIED: REQ-CAT-005 and A7 (deactivating an Item leaves its barcodes active; a GTIN is released by deactivating the barcode), RULE-CAT-049 (traces REQ-CAT-139) |
 | Revisions (sixth gate-analysis revise) | ADDED: AC-CAT-162 (reactivation refused when another active Item took the name), AC-CAT-163 and AC-CAT-164 (the default Variant moves — ADR-CAT-072) · MODIFIED: REQ-CAT-025, A7 and ENT-CAT-002.isDefaultFl (an active Item always has exactly one active default Variant), REQ-CAT-130 and RULE-CAT-003 (RULE-CAT-003 named on reactivation), RULE-CAT-029 (a GTIN repeated in one import file), AC-CAT-096 (scans the code of the precondition's SCALE barcode), AC-CAT-145 (the read of an inactive Variant returns no active barcode) |
@@ -25,6 +25,7 @@ Counts : REQ 148 · AC 171 · ENT 12 · RULE 53 · SCR-REQ 6 · ADR 21
 | Revisions (eighth gate-analysis revise) | ADDED: none · MODIFIED: RULE-CAT-038 (the file part is enforced at upload by the FILE category CAT_ITEM_IMAGE; CAT refuses the 21st image), REQ-CAT-110 rationale, AC-CAT-112 (the 7 MB JPG refused by the image category, the 21st image by RULE-CAT-038), A9 given-usage (FileDocumentLookupApi lists only its published methods; the tenant row registers the image category) — ADR-CAT-076 |
 | Revisions (ninth gate-analysis revise) | ADDED: AC-CAT-165 (a Category deactivation publishes one catalogue-change event — ADR-CAT-077), AC-CAT-166 (an import row whose GTIN begins with an active scale prefix is rejected) · MODIFIED: REQ-CAT-008 and RULE-CAT-049 (Category changes publish catalogue-change events — ADR-CAT-077), RULE-CAT-003 (the removed marks are named by code point; Arabic-Indic digits are kept), RULE-CAT-032 (also on import row), RULE-CAT-045 (also checks RULE-CAT-032) |
 | Revisions (tenth gate-analysis revise) | ADDED: REQ-CAT-148 and AC-CAT-171 (the barcode label screen generates the missing internal barcode itself — ADR-CAT-078), AC-CAT-167 … AC-CAT-170 (four more parallel-request cases: a barcode add and a scale-layout create, an Item unit deactivation and a barcode add, a Variant generation and a value deactivation, an Item save and its Category's deactivation) · MODIFIED: RULE-CAT-018 and RULE-CAT-027 (the quantity and the conversion factor are bounded above), REQ-CAT-146 rationale (RULE-CAT-003 is checked again at reactivation), SCR-REQ-CAT-005 B1 / B3 / B5 |
+| Revisions (eleventh gate-analysis revise) | ADDED: AC-CAT-172 (a Variant whose only active barcode is a SCALE code is refused a label), AC-CAT-173 (a piece label uses the base-unit barcode, not an earlier carton barcode) — ADR-CAT-079; AC-CAT-174 (a Bundle line returns the unit of its quantity) — ADR-CAT-080 · MODIFIED: REQ-CAT-101, REQ-CAT-102, REQ-CAT-104, REQ-CAT-148, RULE-CAT-037 (statement, message, data source), AC-CAT-103 and AC-CAT-106 (a label uses only an active GTIN or INTERNAL barcode bound to the Item's base unit — ADR-CAT-079); ENT-CAT-007.quantity, REQ-CAT-056 and REQ-CAT-058 (a Bundle component quantity is in the base unit of the component Variant's Item — ADR-CAT-080) |
 
 ## A2 — Functional context
 
@@ -191,7 +192,7 @@ Primary key naming follows `{entity}Pk`. Logical types are: text, number, decima
 | bundleComponentPk | identifier (BIGINT identity) | yes | assigned by the database | — | المعرّف | Identifier |
 | bundleItemFk | reference | yes | ENT-CAT-001 of kind BUNDLE | — | الحزمة | Bundle |
 | componentVariantFk | reference | yes | ENT-CAT-002 | RULE-CAT-019, RULE-CAT-021 | المتغيّر المكوِّن | Component variant |
-| quantity | decimal (3 decimals) | yes | entered, default 1 | RULE-CAT-018 | الكمية | Quantity |
+| quantity | decimal (3 decimals) | yes | entered, default 1; always in the base unit (baseUomCode) of the component Variant's Item — never in an Item unit (ADR-CAT-080) | RULE-CAT-018; the unit is returned with every line as the derived componentBaseUomCode | الكمية | Quantity |
 | sortOrder | number | yes | default: line order | — | الترتيب | Sort order |
 | isActiveFl | flag | yes | default true | RULE-CAT-048 | نشط | Active |
 
@@ -1095,11 +1096,11 @@ Then  : nothing is created and the response shows ar: «الرمز أو الاس
 
 ### REQ-CAT-056 — Save a Bundle with its components
 Pattern    : event
-Statement  : When an owner saves an Item of kind BUNDLE, the system shall store its Bundle component lines, each with one component Variant and its quantity.
+Statement  : When an owner saves an Item of kind BUNDLE, the system shall store its Bundle component lines, each with one component Variant and its quantity expressed in the base unit of that Variant's Item.
 Traces     : US-CAT-012
-Entities   : ENT-CAT-001, ENT-CAT-007
-Rationale  : A kit or promo pack is sold as one line.
-Source     : US-CAT-012; POL-CAT-002; DP §8 P-06
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-007
+Rationale  : A kit or promo pack is sold as one line. INV and SLS split a sold Bundle into component movements, so the quantity has one unit for every reader: the component Item's base unit, never one of its Item units (ADR-CAT-080).
+Source     : US-CAT-012; POL-CAT-002; DP §8 P-06; ADR-CAT-080
 Priority   : HIGH
 
 #### AC-CAT-058 — [REQ-CAT-056]
@@ -1123,17 +1124,22 @@ Then  : the Bundle read returns 2 active lines with quantities 1 and 2
 
 ### REQ-CAT-058 — Bundle components returned to readers
 Pattern    : ubiquitous
-Statement  : The system shall return, with every read of a Bundle Item, its active Bundle component lines with the component Variant, its code and the quantity.
+Statement  : The system shall return, with every read of a Bundle Item, its active Bundle component lines with the component Variant, its code, the quantity and the unit of the quantity, being the base unit of the component Variant's Item.
 Traces     : US-CAT-012
-Entities   : ENT-CAT-001, ENT-CAT-007
-Rationale  : Stock is counted on the component Variants; the Bundle keeps no stock of its own.
-Source     : US-CAT-012; DP §8 P-06
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-007
+Rationale  : Stock is counted on the component Variants; the Bundle keeps no stock of its own. A reader never has to guess the unit of a component quantity (ADR-CAT-080).
+Source     : US-CAT-012; DP §8 P-06; ADR-CAT-080
 Priority   : HIGH
 
 #### AC-CAT-060 — [REQ-CAT-058]
 Given : a Bundle with 3 active component lines
 When  : a caller reads the Bundle Item
-Then  : the response holds 3 component lines, each with componentVariantFk, the Variant code and the quantity
+Then  : the response holds 3 component lines, each with componentVariantFk, the Variant code, the quantity and componentBaseUomCode
+
+#### AC-CAT-174 — [REQ-CAT-058]
+Given : a Bundle with the line rice × 0.500, whose component Item has base unit KILOGRAM and the active Item unit CARTON, and the line cup × 2, whose component Item has base unit PIECE
+When  : a caller reads the Bundle Item
+Then  : the rice line returns quantity 0.500 with componentBaseUomCode KILOGRAM (not CARTON), and the cup line returns quantity 2.000 with componentBaseUomCode PIECE
 
 ### REQ-CAT-059 — Bundle without a valid component
 Pattern    : unwanted
@@ -1765,17 +1771,17 @@ Then  : no Variant is returned and the response shows ar: «تعذّر قراء�
 
 ### REQ-CAT-101 — Find Variants for labels
 Pattern    : event
-Statement  : When a user searches Variants by code, name or barcode, the system shall return a page of the active Variants of active Items with their Item nameAr and their first active barcode.
+Statement  : When a user searches Variants by code, name or barcode, the system shall return a page of the active Variants of active Items with their Item nameAr and their label barcode, being the earliest-created active barcode of type GTIN or INTERNAL whose uomCode equals the Item's baseUomCode.
 Traces     : US-CAT-018
 Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-009
-Rationale  : Warehouse staff pick the Variants to label; an Item that left every channel gets no new labels (REQ-CAT-005).
-Source     : US-CAT-018; ADR-CAT-059
+Rationale  : Warehouse staff pick the Variants to label; an Item that left every channel gets no new labels (REQ-CAT-005). A label is stuck on one piece of the goods, so it shows only a code that identifies one base unit on its own: a SCALE code of 4 to 6 digits is not readable without its scale label, and a barcode bound to another unit (a carton) would scan as that unit (ADR-CAT-079).
+Source     : US-CAT-018; ADR-CAT-059; ADR-CAT-079
 Priority   : —
 
 #### AC-CAT-103 — [REQ-CAT-101]
 Given : 3 active Variants of active Items whose Item nameAr contains «قميص»
 When  : warehouse staff search Variants with «قميص» and page size 20
-Then  : 3 Variants are returned, each with its Item nameAr and its earliest-created active barcode (empty when it has none)
+Then  : 3 Variants are returned, each with its Item nameAr and its label barcode, the earliest-created active GTIN or INTERNAL barcode bound to the Item's base unit (empty when it has none)
 
 #### AC-CAT-136 — [REQ-CAT-101]
 Given : 2 active Variants of an active Item named «حذاء رياضي» and 1 active Variant of an inactive Item named «حذاء جلد»
@@ -1784,17 +1790,22 @@ Then  : exactly 2 Variants are returned, both of «حذاء رياضي», and 0 
 
 ### REQ-CAT-102 — Produce barcode labels
 Pattern    : event
-Statement  : When a user submits a label request listing Variants with a copy count for each, the system shall return one printable document, produced through the core print service, holding per copy the Variant nameAr, the Variant code and the Variant's earliest-created active barcode.
+Statement  : When a user submits a label request listing Variants with a copy count for each, the system shall return one printable document, produced through the core print service, holding per copy the Variant nameAr, the Variant code and the Variant's label barcode, being its earliest-created active barcode of type GTIN or INTERNAL whose uomCode equals the Item's baseUomCode.
 Traces     : US-CAT-018
-Entities   : ENT-CAT-002, ENT-CAT-009
-Rationale  : Goods without a printed GTIN can still be scanned at the point of sale.
-Source     : US-CAT-018; module-registry AUTO (report, PrintApi)
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-009
+Rationale  : Goods without a printed GTIN can still be scanned at the point of sale. A piece label scans as one piece: a SCALE code and a barcode bound to another unit are never printed on it (ADR-CAT-079).
+Source     : US-CAT-018; module-registry AUTO (report, PrintApi); ADR-CAT-079
 Priority   : —
 
 #### AC-CAT-104 — [REQ-CAT-102]
-Given : 2 Variants that each carry an active barcode
+Given : 2 Variants that each carry an active GTIN bound to their Item's base unit
 When  : warehouse staff request 10 copies of the first and 5 of the second
 Then  : one printable document holding 15 labels is returned, each label showing nameAr, code and barcode
+
+#### AC-CAT-173 — [REQ-CAT-102]
+Given : an active Variant of an active Item with base unit PIECE and the active Item unit CARTON, whose earliest-created active barcode is the GTIN 16223000000011 bound to CARTON and whose later active barcode is the GTIN 6223000000014 bound to PIECE
+When  : warehouse staff search that Variant, then request 1 label of it
+Then  : the search row shows the barcode 6223000000014, and the one label returned shows 6223000000014, not 16223000000011
 
 ### REQ-CAT-103 — Label copy limits
 Pattern    : unwanted
@@ -1812,17 +1823,22 @@ Then  : no document is produced and the response shows ar: «عدد النسخ �
 
 ### REQ-CAT-104 — Variant without a barcode
 Pattern    : unwanted
-Statement  : If a label request lists a Variant with no active barcode, then the system shall reject the request with RULE-CAT-037 and list those Variants.
+Statement  : If a label request lists a Variant with no active barcode of type GTIN or INTERNAL bound to its Item's base unit, then the system shall reject the request with RULE-CAT-037 and list those Variants.
 Traces     : US-CAT-018
-Entities   : ENT-CAT-002, ENT-CAT-009
-Rationale  : No label is printed without a scannable code; the next action generates one.
-Source     : US-CAT-018; KB:raw-idea.md §6.5
+Entities   : ENT-CAT-001, ENT-CAT-002, ENT-CAT-009
+Rationale  : No label is printed without a code that scans as one base unit; the next action generates an internal barcode in the base unit (REQ-CAT-148, ADR-CAT-078, ADR-CAT-079).
+Source     : US-CAT-018; KB:raw-idea.md §6.5; ADR-CAT-079
 Priority   : —
 
 #### AC-CAT-106 — [REQ-CAT-104]
 Given : a label request for 3 Variants, 2 of which have no active barcode
 When  : warehouse staff submit it
-Then  : no document is produced, the 2 Variants are listed, and the response shows ar: «لا يوجد باركود نشط لـ 2 متغيّر. أنشئ لها باركودًا داخليًا ثم اطبع.» · en: "2 variants have no active barcode. Generate an internal barcode for them, then print."
+Then  : no document is produced, the 2 Variants are listed, and the response shows ar: «لا يوجد باركود نشط بالوحدة الأساسية لـ 2 متغيّر. أنشئ لها باركودًا داخليًا ثم اطبع.» · en: "2 variants have no active barcode in the base unit. Generate an internal barcode for them, then print."
+
+#### AC-CAT-172 — [REQ-CAT-104]
+Given : an active scale label layout with prefix 20 and scaleCodeLength 5, and an active Variant of an active Item with base unit KILOGRAM whose only active barcode is the SCALE code 01230
+When  : warehouse staff request 1 label of that Variant
+Then  : no document is produced, the Variant is listed, and the response shows ar: «لا يوجد باركود نشط بالوحدة الأساسية لـ 1 متغيّر. أنشئ لها باركودًا داخليًا ثم اطبع.» · en: "1 variants have no active barcode in the base unit. Generate an internal barcode for them, then print."
 
 ### REQ-CAT-105 — Add an image
 Pattern    : event
@@ -2448,7 +2464,7 @@ Then  : the Bundle holds exactly 2 active lines (C × 1 and Q × 1), and the rea
 
 ### REQ-CAT-148 — Generate the missing barcode from the label screen
 Pattern    : event
-Statement  : When a user holding CREATE on page CAT_BARCODE_LABELS requests an internal barcode for a Variant listed on the barcode label screen without an active barcode, the system shall assign it an internal barcode as REQ-CAT-084 states, under the rules of that operation, and bind it to the Item's base unit.
+Statement  : When a user holding CREATE on page CAT_BARCODE_LABELS requests an internal barcode for a Variant listed on the barcode label screen without a label barcode (REQ-CAT-104), the system shall assign it an internal barcode as REQ-CAT-084 states, under the rules of that operation, and bind it to the Item's base unit.
 Traces     : US-CAT-018
 Entities   : ENT-CAT-002, ENT-CAT-009
 Rationale  : The next action of RULE-CAT-037 («Generate an internal barcode for them, then print») must be reachable by the role that prints labels; warehouse staff hold no CREATE on CAT_ITEMS, so the label screen offers the generation itself (ADR-CAT-078).
@@ -2789,14 +2805,15 @@ Traces     : REQ-CAT-103
 Data source: ENT-CAT-002.variantPk (the copy counts are inputs of the label request, not stored data)
 Source     : D-10
 
-### RULE-CAT-037 — Labelled Variant carries a barcode
+### RULE-CAT-037 — Labelled Variant carries a barcode in its base unit
 Scope      : ENT-CAT-002, ENT-CAT-009
 Trigger    : on label request
-Statement  : The system shall require every Variant of a label request to carry at least one active barcode.
-Message    : ar: لا يوجد باركود نشط لـ {count} متغيّر. أنشئ لها باركودًا داخليًا ثم اطبع. · en: {count} variants have no active barcode. Generate an internal barcode for them, then print.
-Traces     : REQ-CAT-104, REQ-CAT-148
-Data source: ENT-CAT-009.variantFk, ENT-CAT-009.isActiveFl
-Source     : US-CAT-018
+Statement  : The system shall require every Variant of a label request to carry at least one active barcode of type GTIN or INTERNAL whose uomCode equals its Item's baseUomCode, and shall print the earliest-created such barcode as the Variant's label barcode. A SCALE code, or a barcode bound to an Item unit, is never printed on a label and does not satisfy this rule (ADR-CAT-079).
+Message    : ar: لا يوجد باركود نشط بالوحدة الأساسية لـ {count} متغيّر. أنشئ لها باركودًا داخليًا ثم اطبع. · en: {count} variants have no active barcode in the base unit. Generate an internal barcode for them, then print.
+Traces     : REQ-CAT-101, REQ-CAT-102, REQ-CAT-104, REQ-CAT-148
+Data source: ENT-CAT-009.variantFk, ENT-CAT-009.isActiveFl, ENT-CAT-009.barcodeTypeCode, ENT-CAT-009.uomCode, ENT-CAT-009.createdAt, ENT-CAT-002.itemFk, ENT-CAT-001.baseUomCode
+Source     : US-CAT-018; ADR-CAT-079
+Test-Hint  : A Variant whose only active barcode is a SCALE code, or a GTIN bound to CARTON, fails; an earlier CARTON GTIN and a later PIECE GTIN print the PIECE one.
 
 ### RULE-CAT-038 — Image file and count
 Scope      : ENT-CAT-010
@@ -3091,7 +3108,7 @@ Sorted by nameAr (REQ-CAT-003). Applies REQ-CAT-014 and REQ-CAT-015 to filters.
 - **Variants section (while `variants` is on — REQ-CAT-014):** ENT-CAT-002 lines (code, derived names, attribute values from ENT-CAT-005, e-invoice override, isActiveFl). The action "Generate variants" selects values of ENT-CAT-003/ENT-CAT-004.
 - **Units section:** ENT-CAT-008 lines (uomCode, conversionFactor, isPurchaseFl, isSalesFl).
 - **Barcodes section:** ENT-CAT-009 lines per Variant (barcodeValue, barcodeTypeCode, uomCode). SCALE is offered per REQ-CAT-096.
-- **Bundle components section (kind BUNDLE, while `bundles` is on):** ENT-CAT-007 lines (componentVariantFk, quantity, sortOrder).
+- **Bundle components section (kind BUNDLE, while `bundles` is on):** ENT-CAT-007 lines (componentVariantFk, quantity — in the base unit of the component Variant's Item, shown beside it as componentBaseUomCode (ADR-CAT-080) — sortOrder).
 - **Images section:** ENT-CAT-010 lines (image file — uploaded through the core FILE endpoints, then referenced by fileDocumentRef (ADR-CAT-056) — nameAr, nameEn, variantFk, sortOrder, isPrimaryFl).
 
 | Action | Operation | RULEs applied |
@@ -3322,7 +3339,7 @@ Page code: CAT_BARCODE_LABELS
 ### B5 — API expectations
 | Operation | Verb | Path | Inputs | Outputs | RULEs | Traces (REQ) |
 |---|---|---|---|---|---|---|
-| search Variants | GET | /api/v1/cat/variants | text, paging | Page of Variant with first barcode | — | REQ-CAT-101 |
+| search Variants | GET | /api/v1/cat/variants | text, paging | Page of Variant with its label barcode (earliest-created active GTIN or INTERNAL barcode in the base unit — ADR-CAT-079) | — | REQ-CAT-101 |
 | generate internal barcode for a label line | POST | /api/v1/cat/barcode-labels/variants/{id}/internal-barcode | uomCode (optional; default the base unit) | Barcode | RULE-CAT-005, 006, 029, 031, 032, 053 | REQ-CAT-148 |
 | print labels | POST | /api/v1/cat/barcode-labels | list of variantPk + copies | printable document | RULE-CAT-036, 037 | REQ-CAT-102, 103, 104 |
 
@@ -3388,13 +3405,13 @@ Page code: CAT_SETTINGS
 | US-CAT-009 | REQ-CAT-032 … 035, 134 | AC-CAT-033 … 036, 141 | RULE-CAT-004, 005 | ENT-CAT-001, 002, 012 | SCR-REQ-CAT-001, 006 |
 | US-CAT-010 | REQ-CAT-036 … 041, 139 | AC-CAT-037 … 043, 161, 166 | RULE-CAT-003, 032, 044, 045, 049 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-004 |
 | US-CAT-011 | REQ-CAT-042 … 055, 129, 137, 138, 140, 141, 145 | AC-CAT-044 … 057, 131, 145, 146, 147, 154, 159, 160, 163, 164, 169 | RULE-CAT-001, 013, 014, 015, 016, 017, 048, 052 | ENT-CAT-001, 002, 003, 004, 005 | SCR-REQ-CAT-001, 003 |
-| US-CAT-012 | REQ-CAT-056 … 063, 143, 147 | AC-CAT-058 … 065, 134, 151, 156 | RULE-CAT-018, 019, 020, 021, 022 | ENT-CAT-001, 002, 005, 007 | SCR-REQ-CAT-001 |
+| US-CAT-012 | REQ-CAT-056 … 063, 143, 147 | AC-CAT-058 … 065, 134, 151, 156, 174 | RULE-CAT-018, 019, 020, 021, 022 | ENT-CAT-001, 002, 005, 007 | SCR-REQ-CAT-001 |
 | US-CAT-013 | REQ-CAT-064 … 072, 136, 142, 146 | AC-CAT-066 … 074, 133, 142, 153, 155, 157, 158, 170 | RULE-CAT-001, 023, 024, 025, 026, 048 | ENT-CAT-001, 006 | SCR-REQ-CAT-002 |
 | US-CAT-014 | REQ-CAT-073 … 076 | AC-CAT-075 … 078 | RULE-CAT-006 | ENT-CAT-001, 008, 009, 011, 012 | SCR-REQ-CAT-001 |
 | US-CAT-015 | REQ-CAT-077 … 082 | AC-CAT-079 … 084 | RULE-CAT-007, 027, 028, 048 | ENT-CAT-001, 008 | SCR-REQ-CAT-001 |
 | US-CAT-016 | REQ-CAT-083 … 091, 128, 135 | AC-CAT-085 … 093, 130, 135, 150, 167, 168 | RULE-CAT-029, 030, 031, 032, 047, 048, 051, 053 | ENT-CAT-001, 002, 008, 009, 011 | SCR-REQ-CAT-001 |
 | US-CAT-017 | REQ-CAT-092 … 100 | AC-CAT-094 … 102, 152 | RULE-CAT-033, 034, 035 | ENT-CAT-009, 011, 012 | SCR-REQ-CAT-001, 006 |
-| US-CAT-018 | REQ-CAT-101 … 104, 148 | AC-CAT-103 … 106, 136, 171 | RULE-CAT-005, 029, 031, 032, 036, 037, 053 | ENT-CAT-002, 009 | SCR-REQ-CAT-005 |
+| US-CAT-018 | REQ-CAT-101 … 104, 148 | AC-CAT-103 … 106, 136, 171, 172, 173 | RULE-CAT-005, 029, 031, 032, 036, 037, 053 | ENT-CAT-001, 002, 009 | SCR-REQ-CAT-005 |
 | US-CAT-019 | REQ-CAT-105 … 112 | AC-CAT-107 … 114, 148 | RULE-CAT-001, 038, 039, 040 | ENT-CAT-002, 010 | SCR-REQ-CAT-001 |
 | US-CAT-020 | REQ-CAT-113 … 116 | AC-CAT-115 … 118 | RULE-CAT-041 | ENT-CAT-001, 002 | SCR-REQ-CAT-001 |
 | US-CAT-021 | REQ-CAT-095, 117 … 124, 134 | AC-CAT-097, 119 … 126, 141 | RULE-CAT-042, 043 | ENT-CAT-001, 002, 012 | SCR-REQ-CAT-001, 006 |
@@ -3450,6 +3467,8 @@ Every story maps to ≥ 1 REQ, including ≥ 1 REQ with pattern `unwanted`. Ever
 | ADR-CAT-076 | Image type, size and public storage are enforced at upload by the FILE category CAT_ITEM_IMAGE; CAT checks a file reference's availability and public URL and the 20-image count (RULE-CAT-038, REQ-CAT-110); the import's byte read and type / size check (RULE-CAT-044) wait on CORE-GAP-file-document-metadata-read; amends ADR-CAT-056 §2 | gate-analysis round 8, G1; erp-core conventions §Files rule 3, modules.file | ACCEPTED (non-breaking) |
 | ADR-CAT-077 | Category changes publish catalogue-change events: ENT-CAT-006 joins REQ-CAT-008, RULE-CAT-049 and CON-CAT-018 (itemPk empty for a Category), so a Category creation, change, deactivation or reactivation is signalled to SFR and INS (RULE-CAT-048) | gate-analysis round 9, G1 | ACCEPTED (non-breaking) |
 | ADR-CAT-078 | The barcode label screen generates the missing internal barcode of a line itself, under the label page's CREATE permission and the rules and locks of the Items screen's internal-barcode operation, so the next action of RULE-CAT-037 is reachable by warehouse staff (REQ-CAT-148, SCR-REQ-CAT-005) | gate-analysis round 10, G1; KB:raw-idea.md §6.5 | ACCEPTED (non-breaking) |
+| ADR-CAT-079 | A label shows only the Variant's label barcode: the earliest-created active barcode of type GTIN or INTERNAL bound to the Item's base unit; RULE-CAT-037 counts only such barcodes, and a Variant without one is flagged with the REQ-CAT-148 next action (REQ-CAT-101, REQ-CAT-102, REQ-CAT-104) | gate-analysis round 11, G1 | ACCEPTED (non-breaking) |
+| ADR-CAT-080 | A Bundle component quantity is always in the base unit of the component Variant's Item; every read returns that unit as the derived componentBaseUomCode (ENT-CAT-007, REQ-CAT-056, REQ-CAT-058, CON-CAT-006) | gate-analysis round 11, G2 | ACCEPTED (non-breaking) |
 
 No ADR is BLOCKED. No question was raised.
 

@@ -1,7 +1,7 @@
 # CONTRACT — Catalog / الكتالوج (CAT) — outbound promise
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P1.5
-Inputs : srs (P1, CAT v2 — REQ 148 · AC 171 · ENT 12 · RULE 53), registry-srs (re-stamped from the current registries at the tenth gate-analysis revise; CON-CAT-002 wording amended by ADR-CAT-072; §4 given-usage repeated from SRS A9 as amended by ADR-CAT-076; CON-CAT-018 entity list extended by ADR-CAT-077)
+Inputs : srs (P1, CAT v2 — REQ 148 · AC 174 · ENT 12 · RULE 53), registry-srs (re-stamped from the current registries at the eleventh gate-analysis revise; CON-CAT-002 wording amended by ADR-CAT-072; §4 given-usage repeated from SRS A9 as amended by ADR-CAT-076; CON-CAT-018 entity list extended by ADR-CAT-077; CON-CAT-006 and CON-CAT-007 state the unit of a Bundle component quantity — ADR-CAT-080)
 Counts : CON 18 (entity items 6 · operation items 11 · event item 1)
 Status : DRAFT — P1.5 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -71,14 +71,14 @@ Every barcode identifies one Variant in one unit (`uomCode`).
 Entity    : ENT-CAT-007 — key columns: bundleItemFk + componentVariantFk (business key among the Bundle's active lines), bundleComponentPk (identifier) · identifier type: BIGINT
 Traces    : ENT-CAT-007, REQ-CAT-056, REQ-CAT-058
 
-A Bundle keeps no stock of its own; consumers count stock on the component Variants (DP §8 P-06). Component Variants always belong to STANDARD Items, and Bundles are never nested (RULE-CAT-019).
+A Bundle keeps no stock of its own; consumers count stock on the component Variants (DP §8 P-06). A line's `quantity` (decimal, 3 places) is always the number of **base units of the component Variant's Item** in one Bundle — never a quantity in one of that Item's units — and every read returns that unit as `componentBaseUomCode` (ADR-CAT-080). The base unit is fixed after the Item's first save (RULE-CAT-007), so a consumer that splits a sold Bundle into component movements multiplies the Bundle quantity by `quantity` and records the result in the component's base unit. Component Variants always belong to STANDARD Items, and Bundles are never nested (RULE-CAT-019).
 
 ---
 
 ## 2 — Operation items
 
 ### CON-CAT-007 — Read an Item (قراءة صنف / Read an Item)
-Signature : getItem(itemPk: BIGINT) → Item {itemPk, code, nameAr, nameEn, itemKindCode, baseUomCode, categoryFk, brandCode, taxClassCode, einvoiceCodeTypeCode, einvoiceCode, publishStateCode, isActiveFl; active Variants with their attribute values; Item units; barcodes; Bundle component lines (componentVariantFk, Variant code, quantity); active media} · errors: not found
+Signature : getItem(itemPk: BIGINT) → Item {itemPk, code, nameAr, nameEn, itemKindCode, baseUomCode, categoryFk, brandCode, taxClassCode, einvoiceCodeTypeCode, einvoiceCode, publishStateCode, isActiveFl; active Variants with their attribute values; Item units; barcodes; Bundle component lines (componentVariantFk, Variant code, quantity, componentBaseUomCode — the base unit of the component Variant's Item, in which the quantity is expressed); active media} · errors: not found
 Entity    : ENT-CAT-001
 Traces    : ENT-CAT-001, REQ-CAT-001, REQ-CAT-002, REQ-CAT-010, REQ-CAT-058
 
@@ -191,6 +191,6 @@ The contract does not promise any entity that a given provides. Tenant, User, Ro
 - [x] Every SHARED ENT of the SRS has an entity item (ENT-CAT-001, 002, 006, 007, 008, 009). No consumer's A8 block exists yet that names any other CAT entity, and no PRIVATE entity is promised.
 - [x] Every operation item has a `Signature` line and names no path or verb.
 - [x] Every item traces to at least one ENT and one REQ (C13.5).
-- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). The contract itself raised no ADR; ADR-CAT-072 (gate-analysis round 6) amends the wording of CON-CAT-002 without changing its key columns or identifier type, and ADR-CAT-077 (gate-analysis round 9) adds ENT-CAT-006 to the entity list of CON-CAT-018 without changing its fields. ADR-CAT-078 (gate-analysis round 10) adds an operation for the barcode label screen and changes no contract item. Per the current registries the next free ADR is ADR-CAT-079.
+- [x] No question was raised. The CON sequence starts at 001 because the current state holds no earlier contract, and it runs 001 … 018 without gaps (next free: CON-CAT-019). The contract itself raised no ADR; ADR-CAT-072 (gate-analysis round 6) amends the wording of CON-CAT-002 without changing its key columns or identifier type, and ADR-CAT-077 (gate-analysis round 9) adds ENT-CAT-006 to the entity list of CON-CAT-018 without changing its fields. ADR-CAT-078 (gate-analysis round 10) adds an operation for the barcode label screen and changes no contract item. ADR-CAT-079 (gate-analysis round 11) narrows the barcode printed on a label and changes no contract item; ADR-CAT-080 (same round) states the unit of a Bundle component quantity in CON-CAT-006 and adds `componentBaseUomCode` to the component lines of CON-CAT-007, without changing a key column or identifier type (ADDITIVE). Per the current registries the next free ADR is ADR-CAT-081.
 - [x] §4 carries the SRS `given-usage` rows verbatim, in the same order.
 - [x] Every item title carries ar and en.

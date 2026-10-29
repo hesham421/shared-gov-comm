@@ -1,7 +1,7 @@
 # DB SCRIPT — Catalog / الكتالوج (CAT)
 ══════════════════════════════════════════════════════════════════
 Module : CAT   Version : v2   Profile : commerce   Stage : P2
-Inputs : srs (P1, CAT v2 — REQ 148 · AC 171 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the tenth gate-analysis revise
+Inputs : srs (P1, CAT v2 — REQ 148 · AC 174 · ENT 12 · RULE 53), registry-srs, contract (P1.5, CON 18) — re-stamped from the current registries at the eleventh gate-analysis revise
 Counts : tables 12 · DBF 161 · XM 0 · intra-module FK 13 · tenant FK 12 (given CORE_TENANT — ADR-CAT-055) · lookup keys 10 (34 seeded values)
 Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 ══════════════════════════════════════════════════════════════════
@@ -19,7 +19,7 @@ Status : DRAFT — P2 pass 1 · no question raised · no ADR raised
 | Type declared here (not in the syntax map) | logical `number` → `INTEGER` (sortOrder, scaleCodeLength, valueDecimals). The profile `syntax_map` has no integer entry, so it is declared once here |
 | Date | 2026-10-26 |
 | Prepared by | claude:opus (analysis lane) |
-| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067, ADR-CAT-072 (the default Variant moves; `UQ_CAT_VARIANT_DEFAULT` kept, comments only). The next free ADR sequence, per the current registries, is 079 (ADR-CAT-076, ADR-CAT-077 and ADR-CAT-078, gate-analysis rounds 8 to 10, change no database object; the upper bounds of round 10 on the Bundle quantity and the conversion factor fit NUMERIC(18,3) / NUMERIC(18,6) and are checked by the API document). At the ninth gate-analysis revise the character class of `CAT_NORMALIZE_AR` was rewritten by code point so that it removes only the marks ADR-CAT-062 names (BLOCK 1) |
+| Decisions | 18 DEFAULT (D-P2-01 … D-P2-18, §5). ADR-CAT-054 (SUPERSEDED by ADR-CAT-055), ADR-CAT-055, ADR-CAT-058, ADR-CAT-062, ADR-CAT-067, ADR-CAT-072 (the default Variant moves; `UQ_CAT_VARIANT_DEFAULT` kept, comments only). The next free ADR sequence, per the current registries, is 081 (ADR-CAT-076, ADR-CAT-077 and ADR-CAT-078, gate-analysis rounds 8 to 10, change no database object; ADR-CAT-079 and ADR-CAT-080, round 11, change none either — ADR-CAT-080 only states the unit of QUANTITY in its column comment; the upper bounds of round 10 on the Bundle quantity and the conversion factor fit NUMERIC(18,3) / NUMERIC(18,6) and are checked by the API document). At the ninth gate-analysis revise the character class of `CAT_NORMALIZE_AR` was rewritten by code point so that it removes only the marks ADR-CAT-062 names (BLOCK 1) |
 | Migration file | `V1000__cat_catalog.sql` in the application's `classpath:db/migration` (erp-core conventions § Migrations: `V1000+`, `V<N>__<module>_<snake_case>.sql`). It is the first CAT script; a later change is a new `V1001+` script, never an edit |
 
 ## 2 — DB field traceability matrix
@@ -606,7 +606,7 @@ COMMENT ON COLUMN CAT_VAR_ATTR_ASSIGN.UPDATED_AT IS 'DBF-CAT-070 — Last update
 
 COMMENT ON TABLE CAT_BUNDLE_COMP IS 'ENT-CAT-007 Bundle component / مكوّن الحزمة — one component Variant of a Bundle and its quantity';
 COMMENT ON COLUMN CAT_BUNDLE_COMP.BUNDLE_COMPONENT_PK IS 'DBF-CAT-084 — Bundle component identifier (identity)';
-COMMENT ON COLUMN CAT_BUNDLE_COMP.QUANTITY IS 'DBF-CAT-085 — Component quantity above zero, 3 decimals (RULE-CAT-018)';
+COMMENT ON COLUMN CAT_BUNDLE_COMP.QUANTITY IS 'DBF-CAT-085 — Component quantity above zero, 3 decimals (RULE-CAT-018), in the base unit of the component Variant''s Item (ADR-CAT-080)';
 COMMENT ON COLUMN CAT_BUNDLE_COMP.SORT_ORDER IS 'DBF-CAT-086 — Line order';
 COMMENT ON COLUMN CAT_BUNDLE_COMP.IS_ACTIVE_FL IS 'DBF-CAT-087 — Active flag; removing a line deactivates it (RULE-CAT-048)';
 COMMENT ON COLUMN CAT_BUNDLE_COMP.BUNDLE_ITEM_FK IS 'DBF-CAT-088 — Bundle Item (kind BUNDLE)';
@@ -982,7 +982,7 @@ VALUES
 | D-P2-17 | Profile check CM-8: CAT holds no stock quantity, no monetary amount and no price (SRS A2 out of scope: PRC, INV). No warehouse, currency or price-list dimension applies to a CAT row | SRS A2; profile CM-8 | — |
 | D-P2-18 | Delta: the current state holds no earlier CAT db-script, so this v2 migration creates every object. The DBF sequence starts at 001 (next free 162). No XM exists (next free XM sequence 001) | brief delta rule; change-manifest CS-CAT-001 | — |
 
-No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. ADR-CAT-072 (the default Variant moves) changes only the comments of `IS_DEFAULT_FL` and `UQ_CAT_VARIANT_DEFAULT`: the index stays non-partial, because the service clears the former default before it sets the new one. The next free ADR sequence for CAT, per the current registries, is 079. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
+No question was asked. ADR-CAT-054 (repair round 1) is superseded by ADR-CAT-055 (gate-analysis revise); ADR-CAT-058 (tenant provisioning), ADR-CAT-062 (Arabic normalisation, trigram indexes) and ADR-CAT-067 (tenant-composite intra-module FKs) also shape this script. ADR-CAT-072 (the default Variant moves) changes only the comments of `IS_DEFAULT_FL` and `UQ_CAT_VARIANT_DEFAULT`: the index stays non-partial, because the service clears the former default before it sets the new one. The next free ADR sequence for CAT, per the current registries, is 081. Profile check CM-3 holds: every flag column (`IS_ACTIVE_FL`, `IS_DEFAULT_FL`, `IS_PURCHASE_FL`, `IS_SALES_FL`, `IS_PRIMARY_FL`) ends with the flag suffix `Fl` under the transformation of D-P2-01.
 
 ## 6 — Registry content
 

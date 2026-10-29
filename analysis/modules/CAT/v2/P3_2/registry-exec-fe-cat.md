@@ -47,6 +47,8 @@ Findings fixed during authoring:
 | decisions/CAT/ADR-CAT-049 | Items screen: one Save owning ordered calls; record commands outside the form | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-050 | Display data served by the given (lookups, capability flags, image files) → UXD-CAT-001 … 003 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-051 | API coverage of the CAT screens and binding notes | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-079 | A label shows only an active GTIN or INTERNAL barcode bound to the Item's base unit (SCR-CAT-005 lines, flag) | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-080 | A Bundle component quantity is in the component Item's base unit; the pane shows componentBaseUomCode (SCR-CAT-001) | ACCEPTED (non-breaking) |
 
 The next free ADR after P3.2 was ADR-CAT-052. At the gate-analysis revise, the frontend plan also cites ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants) and ADR-CAT-060 (unit used by barcodes); the next free ADR was ADR-CAT-063. At the gate-analysis round 2, it also cites ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052); the next free ADR was ADR-CAT-068. At the gate-analysis round 3, it also cites ADR-CAT-068 (three repairs stay allowed on an inactive Item) and ADR-CAT-069 (reactivation of Categories, Variant attributes and values); the next free ADR is ADR-CAT-072. No ADR is BLOCKED, and no question was raised.
 
@@ -95,7 +97,13 @@ The next free ADR was ADR-CAT-078.
 Gate-analysis round 10 (frontend):
 - SCR-CAT-005: a line flagged without an active barcode offers "Generate internal barcode", a record command bound to API-CAT-056 (LABEL-INTERNAL-BARCODE) under PERM_CAT_BARCODE_LABELS_CREATE; on success the line takes the barcode and Print can run, so warehouse staff reach RULE-CAT-037's next action (ADR-CAT-078). The api-surface binds REQ-CAT-148 to API-CAT-056; ALIGN-FE counts 54 of 56 operations used. ui-ux-spec and flow diagram of SCR-CAT-005 updated.
 - F3: the Bundle quantity and the conversion factor validators carry the upper bounds of the API document (999,999.999 / 999,999.999999); an inactive Category opens read-only except Reactivate.
-The next free ADR is ADR-CAT-079.
+The next free ADR was ADR-CAT-079.
+
+Gate-analysis round 11 (frontend):
+- G1: a label line's barcode is its label barcode — the earliest-created active GTIN or INTERNAL barcode bound to the Item's base unit (`VariantSearchRow.firstBarcodeValue`, or `VariantDetail.barcodes` filtered by type and `baseUomCode`); a Variant whose only barcodes are SCALE codes or carton barcodes is flagged and offered "Generate internal barcode" (ADR-CAT-079). ui-ux-spec copy of the flag and flow diagram updated.
+- G2: the Bundle components pane shows each line's unit, `componentBaseUomCode` of `BundleComponentView` (display only, never sent), labelled by CAT_UOM (ADR-CAT-080).
+- G3: the plan's header and ALIGN-FE heading re-stamped to 56 operations (54 used), and the amended note of ADR-CAT-051 to 56 / 54.
+The next free ADR is ADR-CAT-081.
 
 ### Traceability
 - REQ covered by at least one SCR or F-block: 148 / 148. Orphan REQ: none.

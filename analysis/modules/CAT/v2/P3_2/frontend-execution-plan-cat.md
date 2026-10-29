@@ -2,9 +2,9 @@
 
 Module : CAT · Version : v2 · Stage : P3.2 Part B · Track : frontend · Plan : exec · Profile : commerce
 Stack  : `react-ts-vite` · routing `react-router` · server state `tanstack-query` · forms `react-hook-form` · validation `zod` · state `zustand` · one lazy chunk per composite screen
-Bound to: `api-spec-cat.yaml` (OpenAPI 3.1.0, 55 operations, base path `/api/v1/cat`, bearer JWT). The frontend executor's mock server serves the same document until the backend is delivered.
+Bound to: `api-spec-cat.yaml` (OpenAPI 3.1.0, 56 operations, base path `/api/v1/cat`, bearer JWT). The frontend executor's mock server serves the same document until the backend is delivered.
 Design : `ui-ux-spec-cat.md` (SCR-CAT-001 … 006, UXD-CAT-001 … 003) · `flow-diagram-cat.md`
-Decisions: ADR-CAT-049 (Items: one Save owning ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage and binding notes); earlier: ADR-CAT-043, ADR-CAT-044, ADR-CAT-048; gate-analysis revise: ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes); second gate-analysis revise: ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length), ADR-CAT-065 (CAT lookup keys served through API-CAT-052); third gate-analysis revise: ADR-CAT-068 (three repairs stay allowed on an inactive Item), ADR-CAT-069 (reactivation of Categories, Variant attributes and values); eighth gate-analysis revise: ADR-CAT-076 (image type and size held by the FILE category CAT_ITEM_IMAGE); ninth gate-analysis revise: ADR-CAT-077 (Category changes publish catalogue-change events); tenth gate-analysis revise: ADR-CAT-078 (the barcode label screen generates the missing internal barcode itself)
+Decisions: ADR-CAT-049 (Items: one Save owning ordered calls) · ADR-CAT-050 (display data served by the given) · ADR-CAT-051 (API coverage and binding notes); earlier: ADR-CAT-043, ADR-CAT-044, ADR-CAT-048; gate-analysis revise: ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-059 (reactivation invariants), ADR-CAT-060 (unit used by barcodes); second gate-analysis revise: ADR-CAT-063 (inactive parent refuses child writes), ADR-CAT-064 (layout keeps its scale code length), ADR-CAT-065 (CAT lookup keys served through API-CAT-052); third gate-analysis revise: ADR-CAT-068 (three repairs stay allowed on an inactive Item), ADR-CAT-069 (reactivation of Categories, Variant attributes and values); eighth gate-analysis revise: ADR-CAT-076 (image type and size held by the FILE category CAT_ITEM_IMAGE); ninth gate-analysis revise: ADR-CAT-077 (Category changes publish catalogue-change events); tenth gate-analysis revise: ADR-CAT-078 (the barcode label screen generates the missing internal barcode itself); eleventh gate-analysis revise: ADR-CAT-079 (a label shows only an active GTIN or INTERNAL barcode in the base unit), ADR-CAT-080 (a Bundle component quantity is in the component Item's base unit)
 
 This is a delta run, but the current state holds no earlier frontend plan, so every block below is ADDED. The plan says WHAT each screen reads, validates and renders. Method, path, request and response schema, paging and envelope are read in `api-spec-cat.yaml` by `x-api-id`, not copied here.
 
@@ -240,7 +240,7 @@ Bound schemas: search `ItemSummary` page (API-CAT-038) · read `ItemDetail` with
 
 UI types:
 - `ItemSearchFilters = { text?, categoryFk?, brandCode?, itemKindCode?, publishStateCode?, isActiveFl?, page, size }`. It is the URL search params of `/cat/items`, parsed and defaulted (`isActiveFl: true`, `page: 0`, `size: 20`). `itemKindCode` is dropped while `bundles` is off.
-- `ItemForm`. Header: the `ItemUpdateRequest` properties the user edits (`nameAr`, `nameEn`, `categoryFk`, `brandCode`, `taxClassCode`, `einvoiceCodeTypeCode`, `einvoiceCode`, `descriptionAr`, `descriptionEn`), plus `itemKindCode` and `baseUomCode` on create only, plus `version` on update. Collections: `bundleLines[]` (`bundleComponentPk?`, `componentVariantFk`, `quantity`, `sortOrder`); `units[]` (`ItemUnitView` + `pending`); `barcodes[]` (`BarcodeView` + `pending`, or a new `{ variantFk, barcodeTypeCode, barcodeValue?, uomCode, internal: boolean }`); `variantOverrides[]` (`variantPk`, `einvoiceCodeTypeCode`, `einvoiceCode`, `version`); `variantDeactivations[]` (`variantPk`); `generation?` (`selections[]` as in `VariantGenerationRequest`); `media[]` (`MediaView` + `pending`, or a new `{ file: File, fileDocumentRef?, nameAr, nameEn?, variantFk? }` — `fileDocumentRef` is filled by the given FILE upload during Save, ADR-CAT-056).
+- `ItemForm`. Header: the `ItemUpdateRequest` properties the user edits (`nameAr`, `nameEn`, `categoryFk`, `brandCode`, `taxClassCode`, `einvoiceCodeTypeCode`, `einvoiceCode`, `descriptionAr`, `descriptionEn`), plus `itemKindCode` and `baseUomCode` on create only, plus `version` on update. Collections: `bundleLines[]` (`bundleComponentPk?`, `componentVariantFk`, `quantity`, `sortOrder`, and the display-only `componentBaseUomCode` — from `BundleComponentView`, or, for a line added in the picker, the `baseUomCode` of the picked Variant's Item; never sent — ADR-CAT-080); `units[]` (`ItemUnitView` + `pending`); `barcodes[]` (`BarcodeView` + `pending`, or a new `{ variantFk, barcodeTypeCode, barcodeValue?, uomCode, internal: boolean }`); `variantOverrides[]` (`variantPk`, `einvoiceCodeTypeCode`, `einvoiceCode`, `version`); `variantDeactivations[]` (`variantPk`); `generation?` (`selections[]` as in `VariantGenerationRequest`); `media[]` (`MediaView` + `pending`, or a new `{ file: File, fileDocumentRef?, nameAr, nameEn?, variantFk? }` — `fileDocumentRef` is filled by the given FILE upload during Save, ADR-CAT-056).
 - Never sent (ADR-CAT-051 §6): `code` on any request; `itemKindCode` / `baseUomCode` on update; `conversionFactor` on Item unit update. `bundleComponents` is omitted on create of a STANDARD Item: it is optional with default `[]` (ADR-CAT-051 §6 as amended).
 - `ItemRouteState = { itemPk | 'new', variant?, drawer?: '<line-kind>:<id|new>', picker?: 'variant-generation' | 'bundle-components' }`, parsed from the route and its search params.
 <!-- SUB:F1-SCR-CAT-001:END -->
@@ -285,7 +285,7 @@ Bound schemas: `VariantSearchRow` page (API-CAT-042) · `VariantDetail` (API-CAT
 
 UI types:
 - `VariantSearchFilters = { text?, page, size }` (search params of the picker).
-- `LabelLine = { variantPk, itemPk, code, nameAr, itemNameAr, barcode: string | null, copies, flagged?: 'no-barcode' | 'not-found' }`. It is projected from `VariantSearchRow` (`firstBarcodeValue`) or from `VariantDetail` (the earliest-created active barcode, i.e. the first active `BarcodeView` by `createdAt`).
+- `LabelLine = { variantPk, itemPk, code, nameAr, itemNameAr, barcode: string | null, copies, flagged?: 'no-barcode' | 'not-found' }`. It is projected from `VariantSearchRow` (`firstBarcodeValue`, which the server already narrows to the label barcode) or from `VariantDetail` (the label barcode: the first active `BarcodeView` by `createdAt` whose `barcodeTypeCode` is GTIN or INTERNAL and whose `uomCode` equals `VariantDetail.baseUomCode` — ADR-CAT-079). A SCALE code or a barcode bound to an Item unit never fills `barcode`.
 - `LabelForm = { lines: LabelLine[] }`. The request sends only `{ variantPk, copies }` per line.
 <!-- SUB:F1-SCR-CAT-005:END -->
 
@@ -372,7 +372,7 @@ Read query feeding the Variant generation picker: active attributes with their a
 The Bundle component picker searches active STANDARD Items. Expanding an Item reads it and offers its active Variants (`variants[]` with `isActiveFl`). A Variant already in `bundleLines` is disabled (RULE-CAT-019). Both stay inside PERM_CAT_ITEMS_VIEW (ADR-CAT-051 §3).
 
 #### COMPONENT-VARIANT-LABEL-QUERY — API-CAT-007            traces=API-CAT-007,REQ-CAT-058
-Labels each Bundle component line: `BundleComponentView` carries `componentVariantFk` and `componentVariantCode`, and this read adds the Variant nameAr / nameEn. One read per distinct `componentVariantFk`, cached by `variantPk`.
+Labels each Bundle component line: `BundleComponentView` carries `componentVariantFk`, `componentVariantCode` and `componentBaseUomCode`, and this read adds the Variant nameAr / nameEn. The line shows its quantity followed by the unit `componentBaseUomCode`, labelled by CAT_UOM-LOOKUP (raw code when not among the active options — ADR-CAT-073): the quantity is always in the component Item's base unit (ADR-CAT-080). One read per distinct `componentVariantFk`, cached by `variantPk`.
 
 #### SCALE-AVAILABILITY-QUERY — API-CAT-045            traces=API-CAT-045,REQ-CAT-096
 Offers barcode type SCALE in the barcode drawer only while at least one `scaleLabelLayouts[]` entry has `isActiveFl` true. The drawer also shows the expected length, from the active layouts' `scaleCodeLength` (RULE-CAT-033). It shares its key with SCR-CAT-006, so a layout saved there refreshes this read.
@@ -624,10 +624,10 @@ hooks:
 ```
 
 #### VARIANT-SEARCH-QUERY — API-CAT-042            traces=API-CAT-042,REQ-CAT-101
-Feeds the Variant picker: active Variants by code, name or barcode, paged. Each row carries `itemNameAr` and `firstBarcodeValue` (empty when none).
+Feeds the Variant picker: active Variants by code, name or barcode, paged. Each row carries `itemNameAr` and `firstBarcodeValue`, the label barcode — the earliest-created active GTIN or INTERNAL barcode bound to the Item's base unit (empty when none — ADR-CAT-079).
 
 #### SEEDED-VARIANT-QUERY — API-CAT-007            traces=API-CAT-007,REQ-CAT-101
-Runs once when the route carries `?variantPk=`. It adds that one Variant as a line, with the earliest-created active barcode from `barcodes[]`.
+Runs once when the route carries `?variantPk=`. It adds that one Variant as a line, with its label barcode from `barcodes[]`: the earliest-created active barcode of type GTIN or INTERNAL whose `uomCode` equals `baseUomCode` (ADR-CAT-079).
 
 #### LABEL-PRINT — API-CAT-050            traces=API-CAT-050,REQ-CAT-102,REQ-CAT-103,REQ-CAT-104
 Mutation, the screen's one submit. It sends `{lines: [{variantPk, copies}]}`, and the PDF body opens in a new tab. Errors:
@@ -802,7 +802,7 @@ The row count (≤ 5,000), the header row and every row rule are checked by the 
 | lines | ≥ 1 line (Print is disabled while empty) | — |
 | copies (per line) | integer 1–999 | RULE-CAT-036 |
 | total copies | ≤ 5,000 | RULE-CAT-036 |
-| barcode (per line) | lines with an empty barcode block Print and are flagged; each flagged line offers "Generate internal barcode" (REQ-CAT-148), which clears the flag on success | RULE-CAT-037 ({count} filled with the flagged lines) |
+| barcode (per line) | lines with an empty label barcode (no active GTIN or INTERNAL barcode in the base unit — ADR-CAT-079) block Print and are flagged; each flagged line offers "Generate internal barcode" (REQ-CAT-148), which clears the flag on success | RULE-CAT-037 ({count} filled with the flagged lines) |
 <!-- SUB:F3-SCR-CAT-005:END -->
 
 <!-- SUB:F3-SCR-CAT-006:START traces=API-CAT-052,REQ-CAT-134,REQ-CAT-021,REQ-CAT-022,REQ-CAT-023,REQ-CAT-092,REQ-CAT-093,REQ-CAT-094,REQ-CAT-095,REQ-CAT-098,REQ-CAT-120,REQ-CAT-121,REQ-CAT-122,REQ-CAT-123,REQ-CAT-124,API-CAT-032,API-CAT-033,API-CAT-034,API-CAT-035,API-CAT-036,API-CAT-037,API-CAT-045,API-CAT-051,UXD-CAT-001,SCR-CAT-006 -->
@@ -999,7 +999,7 @@ findings: 0
 clean: true
 ```
 
-Operations coverage (55 operations of `api-spec-cat.yaml`):
+Operations coverage (56 operations of `api-spec-cat.yaml`):
 
 | Operation | API | SCR action | Route | Status |
 |---|---|---|---|---|

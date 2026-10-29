@@ -45,7 +45,7 @@ paths:
                     type: object
                     properties:
                       componentVariantFk: {type: integer, format: int64}
-                      quantity: {type: number, exclusiveMinimum: 0, maximum: 999999.999, multipleOf: 0.001, default: 1, description: 'NUMERIC(18,3) — above zero, at most 999999.999, at most 3 decimals (RULE-CAT-018); a value outside the bounds answers CAT-400-REQUEST-INVALID'}
+                      quantity: {type: number, exclusiveMinimum: 0, maximum: 999999.999, multipleOf: 0.001, default: 1, description: 'in base units of the component Variant''s Item (ADR-CAT-080); NUMERIC(18,3) — above zero, at most 999999.999, at most 3 decimals (RULE-CAT-018); a value outside the bounds answers CAT-400-REQUEST-INVALID'}
                       sortOrder: {type: integer, format: int32}
                     required: [componentVariantFk]
                   default: []
@@ -1267,7 +1267,7 @@ paths:
                     properties:
                       bundleComponentPk: {type: integer, format: int64}
                       componentVariantFk: {type: integer, format: int64}
-                      quantity: {type: number, exclusiveMinimum: 0, maximum: 999999.999, multipleOf: 0.001, description: 'NUMERIC(18,3) — above zero, at most 999999.999, at most 3 decimals (RULE-CAT-018); a value outside the bounds answers CAT-400-REQUEST-INVALID'}
+                      quantity: {type: number, exclusiveMinimum: 0, maximum: 999999.999, multipleOf: 0.001, description: 'in base units of the component Variant''s Item (ADR-CAT-080); NUMERIC(18,3) — above zero, at most 999999.999, at most 3 decimals (RULE-CAT-018); a value outside the bounds answers CAT-400-REQUEST-INVALID'}
                       sortOrder: {type: integer, format: int32}
                     required: [componentVariantFk, quantity]
                   description: the complete new set of active lines; a bundleComponentPk that is not an active line of this Bundle, a kept line whose componentVariantFk differs from the stored one, a line or component listed twice, or a quantity outside its bounds answers CAT-400-REQUEST-INVALID before any rule runs
@@ -3092,7 +3092,7 @@ paths:
       operationId: searchVariants
       summary: search Variants
       x-api-id: API-CAT-042
-      x-traces: [REQ-CAT-101, DBF-CAT-003, DBF-CAT-022, DBF-CAT-023, DBF-CAT-027, DBF-CAT-028, DBF-CAT-110, DBF-CAT-113, DBF-CAT-118]
+      x-traces: [REQ-CAT-101, DBF-CAT-003, DBF-CAT-006, DBF-CAT-111, DBF-CAT-112, DBF-CAT-022, DBF-CAT-023, DBF-CAT-027, DBF-CAT-028, DBF-CAT-110, DBF-CAT-113, DBF-CAT-118]
       parameters:
       - name: text
         in: query
@@ -3528,7 +3528,7 @@ paths:
       operationId: printBarcodeLabels
       summary: print barcode labels
       x-api-id: API-CAT-050
-      x-traces: [REQ-CAT-102, REQ-CAT-103, REQ-CAT-104, DBF-CAT-022, DBF-CAT-023, DBF-CAT-027, DBF-CAT-110, DBF-CAT-113, DBF-CAT-114, DBF-CAT-118]
+      x-traces: [REQ-CAT-102, REQ-CAT-103, REQ-CAT-104, DBF-CAT-006, DBF-CAT-111, DBF-CAT-112, DBF-CAT-022, DBF-CAT-023, DBF-CAT-027, DBF-CAT-110, DBF-CAT-113, DBF-CAT-114, DBF-CAT-118]
       requestBody:
         required: true
         content:
@@ -3925,7 +3925,8 @@ components:
         bundleItemFk: {type: integer, format: int64}
         componentVariantFk: {type: integer, format: int64}
         componentVariantCode: {type: string}
-        quantity: {type: number}
+        componentBaseUomCode: {type: string, description: 'derived — baseUomCode of the component Variant''s Item: the unit in which quantity is expressed, never one of that Item''s units (ADR-CAT-080)'}
+        quantity: {type: number, description: 'number of base units (componentBaseUomCode) of the component Variant''s Item in one Bundle (ADR-CAT-080)'}
         sortOrder: {type: integer, format: int32}
         isActiveFl: {type: boolean}
     MediaView:
@@ -3998,7 +3999,7 @@ components:
         itemNameAr: {type: string}
         nameAr: {type: string}
         nameEn: {type: string}
-        firstBarcodeValue: {type: string}
+        firstBarcodeValue: {type: string, description: 'label barcode — the earliest-created active barcode of type GTIN or INTERNAL whose uomCode equals the Item''s baseUomCode; empty when none (a SCALE code or a barcode bound to an Item unit is never returned here — ADR-CAT-079)'}
     BarcodeLookupResult:
       type: object
       properties:

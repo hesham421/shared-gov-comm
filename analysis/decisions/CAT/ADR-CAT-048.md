@@ -24,5 +24,8 @@ SRS B5 states verbs, paths and inputs but leaves some shapes open: one PATCH for
 ## Amended (gate-analysis round 7, G5 — ADR-CAT-075)
 §5 also lists `categoryCode`, `categoryNameAr` and `categoryNameEn` on `ItemSummary` and `ItemDetail`: the code and names of the Category the Item points to, active or inactive, empty when `categoryFk` is empty. They are derived at read and never stored.
 
+## Amended (gate-analysis round 11, G2 — ADR-CAT-080)
+§5 gains one derived property: `componentBaseUomCode` on `BundleComponentView`, the base unit of the component Variant's Item, in which a Bundle line's `quantity` is always expressed (QR-CAT-039 joins the component Item). It is added beside `componentVariantCode`; no request changes.
+
 ## Traces
 REQ-CAT-006 · REQ-CAT-113 · REQ-CAT-114 · REQ-CAT-056 · REQ-CAT-059 · REQ-CAT-036 · REQ-CAT-038 · REQ-CAT-039 · REQ-CAT-102 · REQ-CAT-029 · REQ-CAT-119 · REQ-CAT-097 · REQ-CAT-019 · REQ-CAT-021 · REQ-CAT-106

@@ -123,6 +123,8 @@ Verdict as stamped by the orchestrator from `gov.py analyze` (self-check block p
 | decisions/CAT/ADR-CAT-076 | image type, size and public storage enforced by the FILE category CAT_ITEM_IMAGE at upload; API-CAT-018 checks availability, a public URL and the 20-image count; the import's byte read waits on the core; amends ADR-CAT-056 §2 | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-077 | Category changes publish catalogue-change events (ENT-CAT-006 in RULE-CAT-049 and CON-CAT-018, itemPk empty); API-CAT-021, 023, 024 and 053 record CREATED, UPDATED, DEACTIVATED and REACTIVATED | ACCEPTED (non-breaking) |
 | decisions/CAT/ADR-CAT-078 | the barcode label screen generates the missing internal barcode of a line itself: API-CAT-056 under PERM_CAT_BARCODE_LABELS_CREATE shares the body, rules and locks of API-CAT-015 | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-079 | a label shows only an active GTIN or INTERNAL barcode bound to the Item's base unit (QR-CAT-016, QR-CAT-047 label filter); RULE-CAT-037 counts only such barcodes | ACCEPTED (non-breaking) |
+| decisions/CAT/ADR-CAT-080 | a Bundle component quantity is in the component Item's base unit; BundleComponentView.componentBaseUomCode (QR-CAT-039); amends ADR-CAT-048 §5 | ACCEPTED (non-breaking) |
 | decisions/CAT/CORE-GAP-in-process-authorization | how a cross-module read API is authorized for callers without a permission of the owning module | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-tenant-lookup-types | whether a tenant can create lookup types with nested values at runtime | OPEN (asked of erp-core) |
 | decisions/CAT/CORE-GAP-number-series-block-allocation | whether NumberSeriesApi can allocate a block of n numbers in one call | OPEN (asked of erp-core) |
@@ -164,10 +166,15 @@ Tenth gate-analysis revise (backend), ADR-CAT-078 raised:
 - G3: PHASE CORE gains "Request numbers": the Bundle `quantity` (API-CAT-001, 017) and the Item unit `conversionFactor` (API-CAT-010) carry `exclusiveMinimum: 0`, a `maximum` that fits the column (999999.999 / 999999.999999) and `multipleOf` for the scale; a value outside them answers CAT-400-REQUEST-INVALID. RULE-CAT-018 and RULE-CAT-027 state the bounds. TC-CAT-027 and TC-CAT-039 carry the boundary rows.
 - G4: API-CAT-003 states that on the categoryFk-only repair of an inactive Item only RULE-CAT-026 and the version check run, and that RULE-CAT-003 is checked again at reactivation.
 - G6: PHASE CORE gains "Update of an inactive record": a PUT on a record whose own isActiveFl is false answers CAT-400-REQUEST-INVALID and writes nothing (API-CAT-012, 019, 023, 027, 030, with 033 and 036 already so); for 012 and 019 the record is re-read under the Item lock; a removed image never takes isPrimaryFl. The CAT-400-REQUEST-INVALID trigger lists it; TC-CAT-223 rows 11 … 15 test it.
-The concurrency guards the plan already states (QR-CAT-074, the Item lock of ADR-CAT-060, QR-CAT-031 and QR-CAT-032 FOR SHARE) get their parallel tests TC-CAT-227 … 230 (G2). The next free ADR sequence is 079.
+The concurrency guards the plan already states (QR-CAT-074, the Item lock of ADR-CAT-060, QR-CAT-031 and QR-CAT-032 FOR SHARE) get their parallel tests TC-CAT-227 … 230 (G2). The next free ADR sequence was 079.
+
+Eleventh gate-analysis revise (backend), ADR-CAT-079 and ADR-CAT-080 raised:
+- G1: the label barcode of a Variant is the earliest-created active barcode of type GTIN or INTERNAL bound to the Item's base unit. QR-CAT-016 returns it as firstBarcodeValue (API-CAT-042); QR-CAT-047 gains a label filter used by API-CAT-050; RULE-CAT-037 counts only such barcodes, its catalog message names the base unit, and a Variant without one gets the API-CAT-056 next action (ADR-CAT-079). TC-CAT-233 (only a SCALE code) and TC-CAT-234 (an earlier CARTON barcode) test it.
+- G2: a Bundle component quantity is always in the base unit of the component Variant's Item; QR-CAT-039 joins the component Item, and BundleComponentView carries the derived componentBaseUomCode (manifest, DTO, api-spec — ADR-CAT-080). TC-CAT-235 tests it.
+The next free ADR sequence is 081.
 
 ### Traceability
 REQ covered by ≥ 1 API: 148 / 148 · orphan REQ: none · every API traces ≥ 1 REQ and ≥ 1 DBF · every PHASE / SUB / atom carries traces=.
 
 ### Event
-"P3.1 completed: CAT v2 — API 56 · QR 75 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–078, none BLOCKED · CORE-GAP 5"
+"P3.1 completed: CAT v2 — API 56 · QR 75 · error codes 60 · XM 0 · ADR 5 (044–048) + gate-analysis revises 055–080, none BLOCKED · CORE-GAP 5"

@@ -1,7 +1,7 @@
 # Frontend test plan — Catalog / الكتالوج (CAT) — v2
 
 Module : CAT · Version : v2 · Stage : P4 · Track : frontend · Plan : test · Profile : commerce
-Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207, TC-CAT-211 … TC-CAT-219, TC-CAT-221 … TC-CAT-231; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196, TC-CAT-208 … TC-CAT-210, TC-CAT-220 and TC-CAT-232)
+Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared with the backend test plan (backend: TC-CAT-001 … TC-CAT-124, TC-CAT-183 … TC-CAT-193, TC-CAT-197 … TC-CAT-207, TC-CAT-211 … TC-CAT-219, TC-CAT-221 … TC-CAT-231, TC-CAT-233 … TC-CAT-235; this file: TC-CAT-125 … TC-CAT-182, TC-CAT-194 … TC-CAT-196, TC-CAT-208 … TC-CAT-210, TC-CAT-220 and TC-CAT-232)
 
 ## Header
 
@@ -17,7 +17,7 @@ Lane   : test-gen · questions forbidden · TC stream `TC-CAT-{seq:3}` shared wi
 | dependency-graph | `_state/current-dependency-graph.md` | CAT v2 | CAT tier 1 |
 
 ### Delta
-The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC. Within v2, the third gate-analysis revise ADDED TC-CAT-210 and MODIFIED TC-CAT-126 (the jump goes to the existing Item's code — G12) and TC-CAT-209 (the inactive Entry keeps its three repairs — G2, ADR-CAT-068). The sixth gate-analysis revise ADDED TC-CAT-220 (reactivation refused under RULE-CAT-003, with its next action — G2, AC-CAT-162). The seventh gate-analysis revise MODIFIED TC-CAT-139 and TC-CAT-177 (a host brand whose labels differ from its code is deactivated, and the screen shows its raw code — G1, ADR-CAT-073), TC-CAT-195 (the Category label comes with the Item read, also for a user who cannot read the Category tree — G5, ADR-CAT-075), and re-pointed TC-CAT-210 and TC-CAT-220 to REQ-CAT-145 … 147 and REQ-CAT-144 (G7); it ADDED no TC. The eighth gate-analysis revise MODIFIED TC-CAT-146 (the 7 MB JPG is refused by the FILE category `CAT_ITEM_IMAGE` at upload and shown in the FILE envelope; the screen checks only the 20-image count — G1, ADR-CAT-076; moved from F3-SCR-CAT-001 to F2-SCR-CAT-001, where the upload refusal is routed) and TC-CAT-166 (its client check stays; the server's type / size check waits on the core); it ADDED no TC. The ninth gate-analysis revise ADDED and MODIFIED no TC here: its new ACs (AC-CAT-165, Category change events; AC-CAT-166, an import row refused for a scale prefix) are observable at the API only and are covered on the backend track (TC-CAT-224, TC-CAT-226). The tenth gate-analysis revise ADDED TC-CAT-232 (a flagged label line gets its internal barcode on the label screen, then prints — G1, AC-CAT-171, ADR-CAT-078), MODIFIED TC-CAT-170 (each flagged line also offers "Generate internal barcode") and re-stamped the COVERAGE rows from registry-srs (AC 171 — the ninth revise had left them at 164 — G7). No id is renumbered or REMOVED.
+The current state holds no earlier test plan, so every TC is ADDED. The frontend part of the TC stream continues from TC-CAT-124, the backend plan's last TC. Within v2, the third gate-analysis revise ADDED TC-CAT-210 and MODIFIED TC-CAT-126 (the jump goes to the existing Item's code — G12) and TC-CAT-209 (the inactive Entry keeps its three repairs — G2, ADR-CAT-068). The sixth gate-analysis revise ADDED TC-CAT-220 (reactivation refused under RULE-CAT-003, with its next action — G2, AC-CAT-162). The seventh gate-analysis revise MODIFIED TC-CAT-139 and TC-CAT-177 (a host brand whose labels differ from its code is deactivated, and the screen shows its raw code — G1, ADR-CAT-073), TC-CAT-195 (the Category label comes with the Item read, also for a user who cannot read the Category tree — G5, ADR-CAT-075), and re-pointed TC-CAT-210 and TC-CAT-220 to REQ-CAT-145 … 147 and REQ-CAT-144 (G7); it ADDED no TC. The eighth gate-analysis revise MODIFIED TC-CAT-146 (the 7 MB JPG is refused by the FILE category `CAT_ITEM_IMAGE` at upload and shown in the FILE envelope; the screen checks only the 20-image count — G1, ADR-CAT-076; moved from F3-SCR-CAT-001 to F2-SCR-CAT-001, where the upload refusal is routed) and TC-CAT-166 (its client check stays; the server's type / size check waits on the core); it ADDED no TC. The ninth gate-analysis revise ADDED and MODIFIED no TC here: its new ACs (AC-CAT-165, Category change events; AC-CAT-166, an import row refused for a scale prefix) are observable at the API only and are covered on the backend track (TC-CAT-224, TC-CAT-226). The tenth gate-analysis revise ADDED TC-CAT-232 (a flagged label line gets its internal barcode on the label screen, then prints — G1, AC-CAT-171, ADR-CAT-078), MODIFIED TC-CAT-170 (each flagged line also offers "Generate internal barcode") and re-stamped the COVERAGE rows from registry-srs (AC 171 — the ninth revise had left them at 164 — G7). The eleventh gate-analysis revise ADDED no TC here (its new ACs are asserted at the API: TC-CAT-233 … 235) and MODIFIED TC-CAT-167 (the barcode shown is the label barcode, a GTIN or INTERNAL barcode in the base unit — G1, ADR-CAT-079), TC-CAT-170 (the RULE-CAT-037 message names the base unit) and TC-CAT-179 (each Bundle line shows the unit of its quantity — G2, AC-CAT-174, ADR-CAT-080); the COVERAGE rows are re-stamped from registry-srs (AC 174). No id is renumbered or REMOVED.
 
 ### Framework
 `profile.stack.testing` is **agnostic**. Each block is the whole contract. This plan names no framework, runner, selector strategy or file layout.
@@ -25,7 +25,7 @@ The current state holds no earlier test plan, so every TC is ADDED. The frontend
 ### Open ADRs
 - ADR-CAT-052 (this stage) is ACCEPTED and non-breaking. It covers the track split, frontend package binding, host data, option-set isolation, fields the API document does not expose, and UXD integration.
 - ADR-CAT-053 (this stage, analyze round 2) is ACCEPTED and non-breaking. It records the eight server codes the frontend plan routes to a control without binding their words (`text:`): TC-CAT-130, 143, 144, 145, 150, 157, 165 and 171 assert the routing and the verbatim display of the envelope's messageAr / messageEn, not the words, which the backend TCs assert. It also replaces the unseeded AC value H87 by a seeded value in TC-CAT-175.
-- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). From the gate-analysis round 3 they cite ADR-CAT-068 (three repairs stay allowed on an inactive Item). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). From the gate-analysis round 7 they cite ADR-CAT-073 (an inactive lookup value renders as its raw code — TC-CAT-139, 177) and ADR-CAT-075 (the Item reads carry the Category label — TC-CAT-195). From round 8 they cite ADR-CAT-076 (image type and size held by the FILE category `CAT_ITEM_IMAGE` — TC-CAT-146; the import's server-side type / size check waits on the core — TC-CAT-166), and from round 10 ADR-CAT-078 (the barcode label screen generates the missing internal barcode — TC-CAT-232). None of them is BLOCKED.
+- The TCs also cite ADR-CAT-043, 048, 049, 050 and 051, and, from the gate-analysis revise, ADR-CAT-056 (files through the given FILE endpoints), ADR-CAT-060 (unit used by barcodes) and ADR-CAT-061 (read facades). From the gate-analysis round 3 they cite ADR-CAT-068 (three repairs stay allowed on an inactive Item). From the gate-analysis round 2 they cite ADR-CAT-063 (inactive parent refuses child writes) and ADR-CAT-065 (CAT lookup keys served through API-CAT-052). From the gate-analysis round 7 they cite ADR-CAT-073 (an inactive lookup value renders as its raw code — TC-CAT-139, 177) and ADR-CAT-075 (the Item reads carry the Category label — TC-CAT-195). From round 8 they cite ADR-CAT-076 (image type and size held by the FILE category `CAT_ITEM_IMAGE` — TC-CAT-146; the import's server-side type / size check waits on the core — TC-CAT-166), from round 10 ADR-CAT-078 (the barcode label screen generates the missing internal barcode — TC-CAT-232), and from round 11 ADR-CAT-079 (a label shows only a GTIN or INTERNAL barcode in the base unit — TC-CAT-167, 170) and ADR-CAT-080 (a Bundle component quantity is in the component Item's base unit — TC-CAT-179). None of them is BLOCKED.
 - Host values of CAT_BRAND are created by the given mdl call `POST /api/v1/mdl/lookup-types/{id}/values` and deactivated by `DELETE /api/v1/mdl/lookup-values/{id}`, where `{id}` is the CAT_BRAND type found by `POST /api/v1/mdl/lookup-types/search` (SRS A6). Each Host data line names the call it uses.
 
 ### Shared precondition F0 (applies to every TC; each TC adds only what it states)
@@ -655,7 +655,7 @@ Scenario     : HAPPY · data class VALID · language ALL
 Preconditions: F0, with the user a Warehouse staff user · exactly 3 active Variants whose Item nameAr contains «قميص», at least one with no active barcode
 Host data    : none
 Steps        : 1. Open `/cat/barcode-labels` and "Add variants". 2. Search «قميص» with page size 20.
-Expected     : 3 rows, each showing its Item nameAr and its earliest-created active barcode, or an empty barcode cell when it has none.
+Expected     : 3 rows, each showing its Item nameAr and its label barcode — the earliest-created active GTIN or INTERNAL barcode bound to its Item's base unit (ADR-CAT-079) — or an empty barcode cell when it has none.
 Test data    : «قميص», 20 (from the AC)
 <!-- TC:TC-CAT-167:END -->
 
@@ -697,7 +697,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: F0, with the user a Warehouse staff user · 3 Variants as lines, 2 of them with no active barcode
 Host data    : none
 Steps        : 1. Print.
-Expected     : The 2 lines are flagged `no-barcode`, each with "Generate internal barcode" (TC-CAT-232) and "Open item" → `/cat/items/:itemPk`. The form shows ar «لا يوجد باركود نشط لـ 2 متغيّر. أنشئ لها باركودًا داخليًا ثم اطبع.» · en "2 variants have no active barcode. Generate an internal barcode for them, then print."; no request to API-CAT-050, so no document is produced.
+Expected     : The 2 lines are flagged `no-barcode`, each with "Generate internal barcode" (TC-CAT-232) and "Open item" → `/cat/items/:itemPk`. The form shows ar «لا يوجد باركود نشط بالوحدة الأساسية لـ 2 متغيّر. أنشئ لها باركودًا داخليًا ثم اطبع.» · en "2 variants have no active barcode in the base unit. Generate an internal barcode for them, then print."; no request to API-CAT-050, so no document is produced.
 Test data    : 3 Variants, 2 without barcode (from the AC)
 <!-- TC:TC-CAT-170:END -->
 
@@ -911,7 +911,7 @@ Test data    : nameAr / nameEn placeholders `<valid Arabic name>`, `<English nam
 <!-- SUB:INT-FLOW:END -->
 <!-- PHASE:TEST-PLAN-FE:END -->
 
-<!-- PHASE:INT-UXD:START traces=UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,AC-CAT-075,AC-CAT-076,AC-CAT-078,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,AC-CAT-013,AC-CAT-014,REQ-CAT-105,REQ-CAT-109,AC-CAT-107,AC-CAT-111 -->
+<!-- PHASE:INT-UXD:START traces=UXD-CAT-001,UXD-CAT-002,UXD-CAT-003,REQ-CAT-058,AC-CAT-174,REQ-CAT-073,REQ-CAT-074,REQ-CAT-076,AC-CAT-075,AC-CAT-076,AC-CAT-078,REQ-CAT-012,REQ-CAT-013,REQ-CAT-014,AC-CAT-013,AC-CAT-014,REQ-CAT-105,REQ-CAT-109,AC-CAT-107,AC-CAT-111 -->
 ## PHASE INT-UXD — foreign-owned fields (owner: erp-core, the given)
 
 SCR-CAT-001 renders three foreign-owned fields that the frontend plan cites: UXD-CAT-001 (lookup values, stored by the given mdl and read through CAT's `API-CAT-052` — ADR-CAT-065), UXD-CAT-002 (capability flags) and UXD-CAT-003 (image files). Their owner is the given erp-core, not a business module (ADR-CAT-050, ADR-CAT-052 §7). Engine §5 gives two cases per UXD — the field rendered, and the field empty or the owner failing — so the phase holds 6 TCs. That is no more than 8, so the phase has no SUB. All 6 are grouped under the owner erp-core.
@@ -944,17 +944,17 @@ Expected     : The tax class field shows the raw code ZERO_RATED, its select is 
 Test data    : ZERO_RATED (seeded)
 <!-- TC:TC-CAT-178:END -->
 
-<!-- TC:TC-CAT-179:START traces=UXD-CAT-002,REQ-CAT-012,REQ-CAT-014,AC-CAT-014,SCR-CAT-001 -->
+<!-- TC:TC-CAT-179:START traces=UXD-CAT-002,REQ-CAT-012,REQ-CAT-014,AC-CAT-014,REQ-CAT-058,AC-CAT-174,SCR-CAT-001 -->
 ### TC-CAT-179 — Capability flags on render the flag-bound panes
 Derived from : UXD-CAT-002  (REQ-CAT-012, REQ-CAT-014, AC-CAT-014)
 Exercises    : SCR-CAT-001 `/cat/items/:itemPk` (CAPABILITY-FLAGS-INIT, platform app-config)
 Rule / code  : —
 Package      : F4-SCR-CAT-001
 Scenario     : INTEGRATION · data class VALID · language ALL
-Preconditions: F0 (app-config reports `variants` and `bundles` on) · a BUNDLE Item and a STANDARD Item
+Preconditions: F0 (app-config reports `variants` and `bundles` on) · a BUNDLE Item whose lines are rice × 0.500 (component Item base unit KILOGRAM) and cup × 2 (component Item base unit PIECE), and a STANDARD Item
 Host data    : none
 Steps        : 1. Open `/cat/items` (search). 2. Open the STANDARD Item. 3. Open the BUNDLE Item.
-Expected     : 1 → the Item kind filter is shown. 2 → `VariantsPane` with "Generate variants" is shown. 3 → `BundleComponentsPane` is shown.
+Expected     : 1 → the Item kind filter is shown. 2 → `VariantsPane` with "Generate variants" is shown. 3 → `BundleComponentsPane` is shown; the rice line reads 0.500 followed by the unit ar «كيلوجرام» / en "Kilogram", and the cup line 2 followed by ar «قطعة» / en "Piece" — the CAT_UOM labels of each line's `componentBaseUomCode` (AC-CAT-174, ADR-CAT-080; MODIFIED at the eleventh gate-analysis revise, G2).
 Test data    : —
 <!-- TC:TC-CAT-179:END -->
 
@@ -1038,7 +1038,7 @@ Test data    : 1 image (placeholder file)
 | AC-CAT-142 | REQ-CAT-066 | TC-CAT-195 | | AC-CAT-144 | REQ-CAT-135 | TC-CAT-209 (backend: TC-CAT-198) |
 | AC-CAT-154 | REQ-CAT-145 | TC-CAT-210 (backend: TC-CAT-185, 212) | | AC-CAT-155 | REQ-CAT-146 | TC-CAT-210 (backend: TC-CAT-186, 212) |
 | AC-CAT-156 | REQ-CAT-147 | TC-CAT-210 (backend: TC-CAT-187, 212) | | AC-CAT-162 | REQ-CAT-144 | TC-CAT-220 (backend: TC-CAT-219) |
-| AC-CAT-171 | REQ-CAT-148 | TC-CAT-232 (backend: TC-CAT-231) | | | | |
+| AC-CAT-171 | REQ-CAT-148 | TC-CAT-232 (backend: TC-CAT-231) | | AC-CAT-174 | REQ-CAT-058 | UXD TC-CAT-179 (module TC on the backend: TC-CAT-235) |
 
 TC-CAT-176 (lifecycle flow) also passes through REQ-CAT-024, REQ-CAT-003 and REQ-CAT-004. Every other AC-CAT-* is covered on the backend track: see the AC → TC table of `backend-test-plan-cat.md`.
 
@@ -1128,8 +1128,8 @@ The other rules are asserted on the backend track. No case here asserts the word
 
 | Measure | Result |
 |---|---|
-| AC covered (this track) | 61 / 171 by module TCs (re-stamped from registry-srs at the tenth gate-analysis revise: AC 171). Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
-| AC covered (both plans) | 171 / 171 ✓, no gap. The other 110 ACs are covered by the backend track only; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
+| AC covered (this track) | 61 / 174 by module TCs (re-stamped from registry-srs at the eleventh gate-analysis revise: AC 174; AC-CAT-174 is also asserted here by the UXD case TC-CAT-179). Of those, AC-CAT-014, 015, 027, 075, 138 and 142 are covered on this track only (AC-CAT-076 also has its server read on the backend, TC-CAT-207). |
+| AC covered (both plans) | 174 / 174 ✓, no gap. The other 113 ACs are covered by the backend track only; see `backend-test-plan-cat.md` (ADR-CAT-052 §1). |
 | REQ covered (this track) | 62 REQs by module TCs (plus REQ-CAT-012, 105 and 109 through UXD TCs) |
 | REQ covered (both plans) | 148 / 148 ✓ |
 | SCR covered | 6 / 6 ✓ (SCR-CAT-001 … 006) |

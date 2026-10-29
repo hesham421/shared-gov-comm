@@ -158,7 +158,7 @@ Screens   : SCR-CAT-005, SCR-CAT-001
 Sequence  : Catalog menu, or Items · Entry → "Print labels" (`/cat/barcode-labels?variantPk=<variantPk>`) → Barcode labels → "Add variants" → Variant picker (second level: search by code, name, barcode) → copies per line → Print → printable document opens
 Trigger   : warehouse staff label goods without a manufacturer barcode
 Priority  : — (US-CAT-018)
-Exit      : RULE-CAT-037 → lines without a barcode are marked; each offers "Generate internal barcode" on this screen (REQ-CAT-148, ADR-CAT-078) → the line takes the barcode → Print again; "Open item" → Items · Entry `/cat/items/:itemPk` stays for reading the Item
+Exit      : RULE-CAT-037 → lines without a label barcode (no active GTIN or INTERNAL barcode in the base unit — ADR-CAT-079) are marked; each offers "Generate internal barcode" on this screen (REQ-CAT-148, ADR-CAT-078) → the line takes the barcode → Print again; "Open item" → Items · Entry `/cat/items/:itemPk` stays for reading the Item
 ```
 
 ## SCR-CAT-006 flows
