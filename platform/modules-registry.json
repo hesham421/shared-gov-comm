@@ -35,6 +35,11 @@
           "version": 1,
           "exec": "backend/modules/PTY/packages/backend-execution",
           "test": "backend/modules/PTY/packages/backend-test"
+        },
+        "frontend": {
+          "version": 1,
+          "exec": "frontend/modules/PTY/packages/frontend-execution",
+          "test": "frontend/modules/PTY/packages/frontend-test"
         }
       }
     }
