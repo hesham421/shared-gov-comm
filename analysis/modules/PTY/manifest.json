@@ -20,7 +20,9 @@
   },
   "plans": {
     "backend/exec": "P3_1/backend-execution-plan-pty.md",
-    "frontend/exec": "P3_2/frontend-execution-plan-pty.md"
+    "backend/test": "P4/backend-test-plan-pty.md",
+    "frontend/exec": "P3_2/frontend-execution-plan-pty.md",
+    "frontend/test": "P4/frontend-test-plan-pty.md"
   },
   "packages": {
     "backend/exec": "../../../backend/modules/PTY/packages/backend-execution",
