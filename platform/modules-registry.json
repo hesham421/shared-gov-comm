@@ -21,6 +21,16 @@
           "test": "frontend/modules/CAT/packages/v2/frontend-test"
         }
       }
+    },
+    "PTY": {
+      "code": "PTY",
+      "description": "",
+      "registered_at": "2026-10-29T05:39:42+00:00",
+      "versions": [
+        1
+      ],
+      "current_version": 1,
+      "delivery": {}
     }
   }
 }
