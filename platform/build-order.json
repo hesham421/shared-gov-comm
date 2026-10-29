@@ -164,7 +164,7 @@
   "status": {
     "1": {
       "CAT": "done",
-      "PTY": "ready",
+      "PTY": "done",
       "INV": "ready",
       "PRC": "ready",
       "PUR": "waiting",
