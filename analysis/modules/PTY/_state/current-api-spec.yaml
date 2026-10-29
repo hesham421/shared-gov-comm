@@ -16,6 +16,7 @@ tags:
   - {name: pty-credit}
   - {name: pty-credit-overrides}
   - {name: pty-integration}
+  - {name: pty-lookups}
 paths:
   /api/v1/pty/customers:
     post:
@@ -79,7 +80,7 @@ paths:
       summary: API-PTY-027 — Customer global search
       tags: [pty-customers]
       x-api-id: API-PTY-027
-      x-traces: [REQ-PTY-041, REQ-PTY-042, REQ-PTY-043, DBF-PTY-002, DBF-PTY-003, DBF-PTY-004, DBF-PTY-005, DBF-PTY-006, DBF-PTY-007, DBF-PTY-013, DBF-PTY-020]
+      x-traces: [REQ-PTY-041, REQ-PTY-042, REQ-PTY-043, DBF-PTY-002, DBF-PTY-003, DBF-PTY-004, DBF-PTY-005, DBF-PTY-006, DBF-PTY-007, DBF-PTY-013, DBF-PTY-018, DBF-PTY-020]
       parameters:
         - {name: term, in: query, required: true, schema: {type: string, maxLength: 254}}
       responses:
@@ -472,7 +473,7 @@ paths:
       summary: API-PTY-019 — create Credit override request
       tags: [pty-credit-overrides]
       x-api-id: API-PTY-019
-      x-traces: [REQ-PTY-072, REQ-PTY-089, REQ-PTY-091, REQ-PTY-092, REQ-PTY-093, REQ-PTY-104, REQ-PTY-105, REQ-PTY-110, REQ-PTY-113, DBF-PTY-020, DBF-PTY-050, DBF-PTY-051, DBF-PTY-052, DBF-PTY-053, DBF-PTY-054, DBF-PTY-055, DBF-PTY-060, DBF-PTY-061, DBF-PTY-062, DBF-PTY-063, DBF-PTY-079]
+      x-traces: [REQ-PTY-072, REQ-PTY-089, REQ-PTY-091, REQ-PTY-092, REQ-PTY-093, REQ-PTY-104, REQ-PTY-105, REQ-PTY-110, REQ-PTY-113, REQ-PTY-114, DBF-PTY-020, DBF-PTY-050, DBF-PTY-051, DBF-PTY-052, DBF-PTY-053, DBF-PTY-054, DBF-PTY-055, DBF-PTY-060, DBF-PTY-061, DBF-PTY-062, DBF-PTY-063, DBF-PTY-079]
       requestBody:
         required: true
         content: {application/json: {schema: {$ref: '#/components/schemas/CreditOverrideCreateRequest'}}}
@@ -483,7 +484,7 @@ paths:
         '403': {description: Forbidden, x-error-codes: [PTY-403-FORBIDDEN], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
         '404': {description: Not found, x-error-codes: [PTY-404-CUSTOMER-NOT-FOUND], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
         '409': {description: Conflict, x-error-codes: [PTY-409-REQUEST-OPEN-FOR-SALE], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
-        '422': {description: Business rule refused, x-error-codes: [PTY-422-CREDIT-NOT-ENABLED, PTY-422-ROLE-INACTIVE, PTY-422-SALE-AMOUNT-NOT-POSITIVE, PTY-422-WALK-IN-NO-CREDIT-SALE, PTY-422-OVERRIDE-NOT-NEEDED], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+        '422': {description: Business rule refused, x-error-codes: [PTY-422-CREDIT-NOT-ENABLED, PTY-422-ROLE-INACTIVE, PTY-422-SALE-AMOUNT-NOT-POSITIVE, PTY-422-WALK-IN-NO-CREDIT-SALE, PTY-422-OVERRIDE-NOT-NEEDED, PTY-422-OVERRIDE-NOT-REQUIRED], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
         '500': {description: Server error, x-error-codes: [PTY-500-INTERNAL], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
     get:
       operationId: searchCreditOverrideRequests
@@ -675,6 +676,22 @@ paths:
         '401': {description: Unauthenticated, x-error-codes: [PTY-401-UNAUTHENTICATED], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
         '403': {description: Forbidden, x-error-codes: [PTY-403-FORBIDDEN], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
         '500': {description: Server error, x-error-codes: [PTY-500-INTERNAL], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+  /api/v1/pty/lookups/{key}:
+    parameters:
+      - {name: key, in: path, required: true, description: 'one of CUSTOMER_GROUP, ADDRESS_TYPE, CREDIT_OVERRUN_ACTION, CREDIT_CHECK_RESULT, CREDIT_OVERRIDE_STATUS; any other key answers PTY-404-LOOKUP-KEY-UNKNOWN', schema: {type: string, maxLength: 50}}
+    get:
+      operationId: readOwnedLookup
+      summary: API-PTY-038 — read a PTY lookup key
+      tags: [pty-lookups]
+      x-api-id: API-PTY-038
+      x-traces: [REQ-PTY-013, REQ-PTY-038, REQ-PTY-039, REQ-PTY-086, DBF-PTY-014, DBF-PTY-034, DBF-PTY-054, DBF-PTY-063]
+      responses:
+        '200': {description: The active values of the key, content: {application/json: {schema: {allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/LookupOption'}}}}]}}}}
+        '400': {description: Bad request, x-error-codes: [PTY-400-VALIDATION], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+        '401': {description: Unauthenticated, x-error-codes: [PTY-401-UNAUTHENTICATED], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+        '403': {description: Forbidden, x-error-codes: [PTY-403-FORBIDDEN], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+        '404': {description: Not found, x-error-codes: [PTY-404-LOOKUP-KEY-UNKNOWN], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+        '500': {description: Server error, x-error-codes: [PTY-500-INTERNAL], content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
 components:
   securitySchemes:
     bearerAuth:
@@ -788,13 +805,23 @@ components:
         isActiveFl: {type: boolean}
     CustomerSearchHit:
       type: object
-      required: [customerPk, code]
+      required: [customerPk, code, isWalkInFl]
       properties:
         customerPk: {type: integer, format: int64}
         code: {type: string, maxLength: 20}
         nameAr: {type: [string, 'null'], maxLength: 200}
         nameEn: {type: [string, 'null'], maxLength: 200}
         mobile: {type: [string, 'null'], maxLength: 20}
+        isWalkInFl: {type: boolean, description: DBF-PTY-018 — lets a picker hide the walk-in Customer}
+    LookupOption:
+      type: object
+      description: an active value of a PTY lookup key, read through OwnedLookups over MdlLookupApi (ADR-PTY-048)
+      required: [code, labelAr, labelEn]
+      properties:
+        code: {type: string, maxLength: 50}
+        labelAr: {type: string}
+        labelEn: {type: string}
+        sortOrder: {type: [integer, 'null'], format: int32}
     Supplier:
       type: object
       description: ENT-PTY-003 with the identity fields of its Party

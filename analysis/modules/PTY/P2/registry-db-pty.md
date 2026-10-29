@@ -42,7 +42,7 @@ Last XM  : none (next free XM-PTY-001)
 Database sequences : none (identity PKs; business numbers from the given number series)
 
 ### Decisions
-ADR-PTY-018 (physical precision), ADR-PTY-019 (audit principal columns), ADR-PTY-020 (no currency column — SUPERSEDED by ADR-PTY-037), ADR-PTY-021 (tenant scoping without a tenant column — SUPERSEDED by ADR-PTY-035), ADR-PTY-022 (lookup seed against given mdl tables — column list revised by ADR-PTY-035). Applied from the gate-analysis revise : ADR-PTY-035, 036, 037, 040, 042 — all ACCEPTED, non-breaking. Raised by the P2 repair round 1 : ADR-PTY-044 (given-usage rows name only published seams — SRS A9 / contract Part 4; no DB change), ACCEPTED, non-breaking. BLOCKED : none. Next free ADR : ADR-PTY-045.
+ADR-PTY-018 (physical precision), ADR-PTY-019 (audit principal columns), ADR-PTY-020 (no currency column — SUPERSEDED by ADR-PTY-037), ADR-PTY-021 (tenant scoping without a tenant column — SUPERSEDED by ADR-PTY-035), ADR-PTY-022 (lookup seed against given mdl tables — column list revised by ADR-PTY-035). Applied from the gate-analysis revise : ADR-PTY-035, 036, 037, 040, 042 — all ACCEPTED, non-breaking. Raised by the P2 repair round 1 : ADR-PTY-044 (given-usage rows name only published seams — SRS A9 / contract Part 4; no DB change), ACCEPTED, non-breaking. Raised by the gate-analysis revise 2 : ADR-PTY-045 … ADR-PTY-048 (request only under BLOCK_WITH_OVERRIDE, Customer VIEW and credit values, root namespace, OwnedLookups) — no DB change, ACCEPTED, non-breaking. BLOCKED : none. Next free ADR : ADR-PTY-049.
 DEFAULTs : D-P2-01 … D-P2-12.
 Applied from earlier stages : ADR-PTY-012, ADR-PTY-014, ADR-PTY-015, ADR-PTY-016, ADR-PTY-017.
 

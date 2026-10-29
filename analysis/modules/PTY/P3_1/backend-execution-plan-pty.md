@@ -1,10 +1,10 @@
 # BACKEND EXECUTION PLAN — Party / الأطراف (PTY)
 ══════════════════════════════════════════════════════════════════
 Module : PTY   Version : v1   Profile : commerce   Stage : P3.1 (Backend Execution Plan) · pass 1 · track backend · plan exec
-Inputs : srs (REQ 113 · AC 136 · ENT 5 · RULE 34 · SCR-REQ 5), db-script (5 tables · DBF 79 · XM register empty · postgresql16 · identity PKs · TENANT_ID on every table), registry-srs, registry-db, contract (contract-pty.md — CON-PTY-001 … CON-PTY-024), contracts (one published contract of another module — PTY consumes nothing from it), erp-core 1.6.0 usage skill (checklist C1 … C22, F1 … F12)
+Inputs : srs (REQ 114 · AC 140 · ENT 5 · RULE 35 · SCR-REQ 5), db-script (5 tables · DBF 79 · XM register empty · postgresql16 · identity PKs · TENANT_ID on every table), registry-srs, registry-db, contract (contract-pty.md — CON-PTY-001 … CON-PTY-024), contracts (one published contract of another module — PTY consumes nothing from it), erp-core 1.6.0 usage skill (checklist C1 … C22, F1 … F12)
 Governance : FULL — the db-script is present; no entity is PENDING DB
-Counts : API 37 (API-PTY-001 … API-PTY-037) · QR 40 (QR-PTY-001 … QR-PTY-040) · integration edges 0 · Error Catalog rows 37 · ADR raised at P3.1: 10 (ADR-PTY-023 … ADR-PTY-032) · gate-analysis revise: ADR-PTY-035 … ADR-PTY-043 and three CORE-GAP files — all ACCEPTED, non-breaking, 0 BLOCKED · P2 decisions ADR-PTY-018 … ADR-PTY-022 filed from the db-script §5.2 (ADR-PTY-030; 020 and 021 superseded)
-Status : DRAFT — P3.1 pass 1 · gate-analysis revise (findings G1, G3 … G10, G12 … G15, G22 applied) · no question raised
+Counts : API 38 (API-PTY-001 … API-PTY-038) · QR 40 (QR-PTY-001 … QR-PTY-040) · integration edges 0 · Error Catalog rows 39 · ADR raised at P3.1: 10 (ADR-PTY-023 … ADR-PTY-032) · gate-analysis revise: ADR-PTY-035 … ADR-PTY-043 and three CORE-GAP files · P2 repair: ADR-PTY-044 · gate-analysis revise 2: ADR-PTY-045 … ADR-PTY-048 — all ACCEPTED, non-breaking, 0 BLOCKED · P2 decisions ADR-PTY-018 … ADR-PTY-022 filed from the db-script §5.2 (ADR-PTY-030; 020 and 021 superseded)
+Status : DRAFT — P3.1 pass 1 · gate-analysis revise (findings G1, G3 … G10, G12 … G15, G22 applied) · gate-analysis revise 2 (findings G1 … G4, G6 … G10, G12, G13 applied) · no question raised
 ══════════════════════════════════════════════════════════════════
 
 The implementer reads this plan in order: index → DB alignment manifest → decisions → phases in profile order (CORE, DATA-DOM, SVC-API, DOC, SEC-BE, ALIGN-BE, INT-C) → Query Reference Catalog → Error Catalog. The API document `api-spec-pty.yaml` is derived from the `API-*` blocks and the Error Catalog of this plan, never written beside them.
@@ -14,7 +14,7 @@ The implementer reads this plan in order: index → DB alignment manifest → de
 ```
 EXECUTION PLAN INDEX — PTY v1 — backend-execution-plan-pty.md
 Profile: commerce · dialect: postgresql16 · framework: Spring Boot (Java 25) on the given erp-core
-Open ADRs: 0 — decisions/PTY/ (raised here: ADR-PTY-023 … ADR-PTY-032, ADR-PTY-035 … ADR-PTY-043, all ACCEPTED) · open CORE-GAP questions to the core: 3 (CORE-GAP-in-process-caller-authority, CORE-GAP-tenant-base-currency, CORE-GAP-ordinal-within-parent)
+Open ADRs: 0 — decisions/PTY/ (raised here: ADR-PTY-023 … ADR-PTY-032, ADR-PTY-035 … ADR-PTY-043, ADR-PTY-045 … ADR-PTY-048, all ACCEPTED; applied from P2: ADR-PTY-044) · open CORE-GAP questions to the core: 3 (CORE-GAP-in-process-caller-authority, CORE-GAP-tenant-base-currency, CORE-GAP-ordinal-within-parent)
 ```
 
 ### Entity registry
@@ -59,7 +59,7 @@ Open ADRs: 0 — decisions/PTY/ (raised here: ADR-PTY-023 … ADR-PTY-032, ADR-P
 | API-PTY-016 | read credit standing | GET | /api/v1/pty/customer-credits/{customerId} | REQ-PTY-068, 070, 073, 080, 085 |
 | API-PTY-017 | update credit | PUT | /api/v1/pty/customer-credits/{customerId} | REQ-PTY-048, 064, 065, 066, 067, 072, 073, 106, 109, 110 |
 | API-PTY-018 | clear credit | DELETE | /api/v1/pty/customer-credits/{customerId} | REQ-PTY-078, 106, 109 |
-| API-PTY-019 | create Credit override request | POST | /api/v1/pty/credit-overrides | REQ-PTY-072, 089, 091, 092, 093, 104, 105, 110, 113 |
+| API-PTY-019 | create Credit override request | POST | /api/v1/pty/credit-overrides | REQ-PTY-072, 089, 091, 092, 093, 104, 105, 110, 113, 114 |
 | API-PTY-020 | read Credit override request | GET | /api/v1/pty/credit-overrides/{id} | REQ-PTY-103 |
 | API-PTY-021 | approve Credit override request | PATCH | /api/v1/pty/credit-overrides/{id}/approval | REQ-PTY-094, 098, 107, 109, 112 |
 | API-PTY-022 | reject Credit override request | PATCH | /api/v1/pty/credit-overrides/{id}/rejection | REQ-PTY-095, 098, 100, 107, 109, 112 |
@@ -78,6 +78,7 @@ Open ADRs: 0 — decisions/PTY/ (raised here: ADR-PTY-023 … ADR-PTY-032, ADR-P
 | API-PTY-035 | credit check | POST | /api/v1/pty/credit-checks | REQ-PTY-068, 074, 079 … 084, 087, 088, 089, 110 |
 | API-PTY-036 | use Credit override request | PATCH | /api/v1/pty/credit-overrides/{id}/use | REQ-PTY-097, 099, 110, 111, 112 |
 | API-PTY-037 | `b2bCredit` switch-off dependency | GET | /api/v1/pty/flag-dependencies/b2bCredit | REQ-PTY-075, 076, 077 |
+| API-PTY-038 | read a PTY lookup key (OwnedLookups) | GET | /api/v1/pty/lookups/{key} | REQ-PTY-013, 038, 039, 086 |
 
 ### Rule registry
 
@@ -117,6 +118,7 @@ Open ADRs: 0 — decisions/PTY/ (raised here: ADR-PTY-023 … ADR-PTY-032, ADR-P
 | RULE-PTY-032 | Sale amount positive | ENT-PTY-005 | ✓ | API-PTY-019 · PTY-422-SALE-AMOUNT-NOT-POSITIVE · CHK_PTY_CREDIT_OVERRIDE_REQUEST_SALE_AMOUNT |
 | RULE-PTY-033 | No credit override for the walk-in Customer | ENT-PTY-005 | ✓ | API-PTY-019 · PTY-422-WALK-IN-NO-CREDIT-SALE |
 | RULE-PTY-034 | One open Credit override request per sale | ENT-PTY-005 | ✓ | API-PTY-019 · PTY-409-REQUEST-OPEN-FOR-SALE · UQ_PTY_CREDIT_OVERRIDE_REQUEST_OPEN_SOURCE |
+| RULE-PTY-035 | Request only under BLOCK_WITH_OVERRIDE | ENT-PTY-005 | ✓ | API-PTY-019 · PTY-422-OVERRIDE-NOT-REQUIRED (ADR-PTY-045) |
 
 No RULE is DEFERRED: every `Data source` resolves to a column of the db-script (registry-srs "DEFERRED rules : none").
 
@@ -208,7 +210,7 @@ Every operation on each SRS screen's `Operations` line, read verbatim, closed by
 ```
 DB ALIGNMENT  see manifest below — ALIGNED ✓ / issues: 0
 INTEGRATION   0 edges — the XM register is empty (SRS A8 consumes: []); `INT-C`, the last phase, carries no block (R7)
-GIVEN         15 uses — the SRS A9 `given-usage` rows (erp-core); every one goes through the `via` the row names; this plan adds none
+GIVEN         14 uses — the SRS A9 `given-usage` rows (erp-core); every one goes through the `via` the row names; this plan adds none
 TENANCY       TENANT_ID on every table and query (checklist C1, C3); 2 native queries with @TenantUnscoped (QR-PTY-011, 037)
 SECURITY      5 screens × 3 roles (Owner, Seller/Cashier, Warehouse)
 ```
@@ -218,7 +220,7 @@ SECURITY      5 screens × 3 roles (Owner, Seller/Cashier, Warehouse)
 ```yaml name=totals
 DBF: 79
 XM: 1
-API: 37
+API: 38
 QR: 40
 ```
 
@@ -344,7 +346,7 @@ Legend ✓ aligned · ✗ type mismatch (finding). Issues: 0.
 | ADR-PTY-025 | Permissions the SRS leaves open; in-process callers; invitation-handler outcomes — in-process callers and the Address permission revised by ADR-PTY-039 | ACCEPTED (new; revised) | SEC-BE, API-PTY-005, 010 … 015, 027, 033 … 037 |
 | ADR-PTY-026 | Concurrency guards and Address default on a type change | ACCEPTED (new) | every write endpoint |
 | ADR-PTY-027 | Query strategy — Party join, normalised search and matching as native queries | ACCEPTED (new) | QR-PTY-005, 010, 011, 013, 015, 020, 035, 036, 037 |
-| ADR-PTY-028 | Credit computation and derived properties | ACCEPTED (new) | API-PTY-016, 019, 030, 031, 035, 037 |
+| ADR-PTY-028 | Credit computation and derived properties — the WARN bullet withdrawn by ADR-PTY-045 | ACCEPTED (new; revised) | API-PTY-016, 019, 030, 031, 035, 037 |
 | ADR-PTY-029 | Bootstrap — number series, setting key, role grants, walk-in provisioning — series and template revised by ADR-PTY-036 | ACCEPTED (new; revised) | SEC-BE `bootstrap` |
 | ADR-PTY-030 | P2 decisions ADR-PTY-018 … ADR-PTY-022 filed from the db-script §5.2 | ACCEPTED (new) | decisions/PTY/ |
 | ADR-PTY-031 | Typed bodies for the reactivation and set-default PATCH endpoints | ACCEPTED (new) | API-PTY-005, 010, 015 |
@@ -358,6 +360,11 @@ Legend ✓ aligned · ✗ type mismatch (finding). Issues: 0.
 | ADR-PTY-041 | Inactive Customer / Party on credit operations and address writes; open requests on deactivation and while the flag is off | ACCEPTED (gate-analysis revise) | API-PTY-004, 011, 013, 015, 017, 019, 021, 022, 023, 035, 036 |
 | ADR-PTY-042 | One open request per sale; a use bound to its source sale | ACCEPTED (gate-analysis revise) | API-PTY-019, 036, QR-PTY-040 |
 | ADR-PTY-043 | The Party named by PTY-409-EMAIL-TAKEN found through the role searches by email | ACCEPTED (gate-analysis revise) | API-PTY-028 |
+| ADR-PTY-044 | The given-usage rows name only seams the given publishes: tenant re-binding through `TenantRunner`, the manifest through the module api doc, no row for the `modules.common` base class | ACCEPTED (P2 repair round 1) | CORE (Given usage, Transactions), API-PTY-019, 034 |
+| ADR-PTY-045 | A Credit override request is accepted only under BLOCK_WITH_OVERRIDE (revises ADR-PTY-028) | ACCEPTED (gate-analysis revise 2) | RULE-PTY-035, API-PTY-019, Error Catalog |
+| ADR-PTY-046 | Customer VIEW includes reading the Customer's credit values; Customer credit VIEW gates the credit work | ACCEPTED (gate-analysis revise 2) | API-PTY-002, SEC-BE |
+| ADR-PTY-047 | One application root namespace `com.commerce` for every business module; PTY is `com.commerce.pty` | ACCEPTED (gate-analysis revise 2) | CORE (Module layout, manifest, boundary), SEC-BE, DOC |
+| ADR-PTY-048 | PTY serves its own lookup keys through `OwnedLookups` (amends ADR-PTY-034) | ACCEPTED (gate-analysis revise 2) | CORE (Lookups), API-PTY-038, Error Catalog |
 
 BLOCKED : none.
 
@@ -366,10 +373,11 @@ BLOCKED : none.
 
 These architecture policies are declared once for the module. Everything below applies to every endpoint of SVC-API.
 
-**Module layout (Spring Boot, Java 25, on the given erp-core).** The root package is `com.erp.pty`, with one sub-package per aggregate:
+**Module layout (Spring Boot, Java 25, on the given erp-core).** The root package is `com.commerce.pty`: the application root namespace `com.commerce` that every business module uses (ADR-PTY-047, platform summary decision 11), never the given's `com.erp.*` (checklist F8). It has one sub-package per aggregate:
 - `party` (ENT-PTY-001), `customer` (ENT-PTY-002), `supplier` (ENT-PTY-003), `address` (ENT-PTY-004), `creditoverride` (ENT-PTY-005);
 - `credit`: the credit check, credit standing, settings and exposure;
-- `guest`: guest resolution and the invitation subscriber.
+- `guest`: guest resolution and the invitation subscriber;
+- `lookup`: `PtyLookupController` and `PtyLookupService`, which serve PTY's own lookup keys (API-PTY-038, ADR-PTY-048).
 
 Each sub-package holds five kinds of class:
 - `*Controller` — the entry layer: `@RestController`, the request and response DTOs, and the same `@PreAuthorize` as the service method it calls;
@@ -378,7 +386,7 @@ Each sub-package holds five kinds of class:
 - `*Repository` — Spring Data JPA, with queries per the QRC;
 - `*Entity` — the JPA mapping per the DB Alignment Manifest.
 
-Controllers never touch repositories. Services never check a role name, only permission names. The module also holds `com.erp.pty.permission.PtyPermissions` (the one `PermissionContributor`, checklist C13), `com.erp.pty.exception.PtyErrorCodes` (checklist C11), `com.erp.pty.tenant.PtyTenantProvisioningContributor`, and `com.erp.pty.currency.PtyCurrency` (ADR-PTY-037).
+Controllers never touch repositories. Services never check a role name, only permission names. The module also holds `com.commerce.pty.permission.PtyPermissions` (the one `PermissionContributor`, checklist C13), `com.commerce.pty.exception.PtyErrorCodes` (checklist C11), `com.commerce.pty.tenant.PtyTenantProvisioningContributor`, and `com.commerce.pty.currency.PtyCurrency` (ADR-PTY-037).
 
 **Entities (checklist C2).** Every entity extends the given `com.erp.common.domain.AuditableEntity` and declares no tenant field of its own. `AuditableEntity` maps TENANT_ID as Hibernate's `@TenantId`, VERSION as `@Version`, and the four audit columns:
 
@@ -410,11 +418,11 @@ The service owns only what is not a rule: the transaction, the locks, the querie
 - RULE-PTY-024 is an answer computed from a count. The companion defines the predicate `CustomerDomain.carriesCredit()` and QR-PTY-014 counts it.
 - RULE-PTY-030 is the transaction's audit guarantee, enforced by the service and the given audit module.
 
-**Tenancy (checklist C1, C3, C4).** The tenant comes from the given `TenantContext`. Every JPQL, derived and search-builder query runs under the given tenant filter, which means `TENANT_ID = :tenantId` on every PTY table it reads. The QRC writes that predicate in every logical spec.
+**Tenancy (checklist C1, C3, C4).** The given tenant filter binds the request's tenant; PTY code reads no tenant identifier itself. Every JPQL, derived and search-builder query runs under that filter, which means `TENANT_ID = :tenantId` on every PTY table it reads. The QRC writes that predicate in every logical spec. Work that runs outside the request (the after-commit listeners) re-binds the event's tenant through the given's published `com.erp.tenant.TenantRunner` (given row `modules.tenant`, ADR-PTY-044).
 
 The two native queries, QR-PTY-011 and QR-PTY-037, name `TENANT_ID = :tenantId` themselves on every table they read. Their repository methods carry `@TenantUnscoped(reason = "<the native expression>", adr = "ADR-PTY-027")` (`com.erp.tenant.TenantUnscoped`). No other native query or `JdbcTemplate` statement exists in PTY. A record of another tenant reads and writes as not found (PTY-404-PARTY-NOT-FOUND, PTY-404-CUSTOMER-NOT-FOUND, PTY-404-SUPPLIER-NOT-FOUND, PTY-404-ADDRESS-NOT-FOUND or PTY-404-CREDIT-OVERRIDE-NOT-FOUND, by the entity read). PTY never reads `erp.core.tenant.*`.
 
-**Published in-process surface (this module's own, `profile.conventions.module_interface: in_process`).** Package `com.erp.pty.crossmodule` publishes three things.
+**Published in-process surface (this module's own, `profile.conventions.module_interface: in_process`).** Package `com.commerce.pty.crossmodule` publishes three things.
 
 `PtyPartyApi` has these methods: `readCustomer`, `readSupplier`, `listPartyAddresses`, `readAddress`, `defaultPosCustomer`, `resolveGuestCustomer`, `checkCredit`, `createCreditOverrideRequest`, `readCreditOverrideRequest`, `useCreditOverrideRequest`, `b2bCreditSwitchOffDependency`, `globalSearchCustomers`, `registerCustomer` and `registerSupplier`.
 - Each delegates to the same service method as the REST endpoint that honours the same contract item (the `Honours` line of the `API-*` block), so the REST document and the in-process call cannot diverge.
@@ -455,6 +463,7 @@ PTY imports no other business module's package. The dependency points only into 
 - An open-lookup code (CUSTOMER_GROUP, ADDRESS_TYPE) is validated against the active values read through `MdlLookupApi.readActiveValuesByKey` (given row `modules.mdl`).
 - The closed sets the module branches on (CREDIT_CHECK_RESULT, CREDIT_OVERRUN_ACTION, CREDIT_OVERRIDE_STATUS — CON-PTY-008) are matched by code in the companion.
 - Their labels (`{statusAr}` / `{statusEn}` in RULE-PTY-026, `{typeAr}` / `{typeEn}` in RULE-PTY-017) are read through `MdlLookupApi` and never typed into code.
+- **Serving the keys (checklist C6, ADR-PTY-048).** PTY serves its own five keys — CUSTOMER_GROUP, ADDRESS_TYPE, CREDIT_OVERRUN_ACTION, CREDIT_CHECK_RESULT and CREDIT_OVERRIDE_STATUS, seeded with OWNER_MODULE_CODE `PTY` (db-script BLOCK 8a) — to its screens through `com.erp.common.lookup.OwnedLookups.read(key, PTY_LOOKUP_KEYS, PtyErrorCodes.LOOKUP_KEY_UNKNOWN, mdlLookupApi::readActiveValuesByKey)`, with owner PTY (API-PTY-038). `PTY_LOOKUP_KEYS` holds exactly those five keys; any other key answers PTY-404-LOOKUP-KEY-UNKNOWN, so PTY is never a pass-through for another module's keys. Write-time validation keeps `MdlLookupApi.readActiveValuesByKey` (checklist C5).
 
 **Numbering (checklist C9).** Document numbers come from the core sequence module and are never generated in a business module.
 - The Party code (DBF-PTY-007) and the request docNo (DBF-PTY-061) are allocated through `NumberSeriesApi.next(code)` (given row `modules.sequence`) inside the creating transaction.
@@ -484,9 +493,10 @@ PTY imports no other business module's package. The dependency points only into 
   - `PtyInvitationRequestedEvent {customerId, channel EMAIL | SMS, address}`;
   - `PtyCreditOverrideRequestedEvent {creditOverrideRequestId, docNo, customerName}`.
   Each extends the given `DomainEvent`, which carries `tenantId`. Only PTY's own listeners consume them; no other module does (F11).
-- The listeners `PtyInvitationListener` and `PtyApproverNotificationListener` are `@Async(ErpCoreEvents.EXECUTOR)` and `@TransactionalEventListener(phase = AFTER_COMMIT, fallbackExecution = true)`. Each runs on the given `erpCoreEventExecutor`, re-binds the tenant with `TenantContext.runAs(event.getTenantId(), …)`, and opens its own transaction.
+- The listeners `PtyInvitationListener` and `PtyApproverNotificationListener` are `@Async(ErpCoreEvents.EXECUTOR)` and `@TransactionalEventListener(phase = AFTER_COMMIT, fallbackExecution = true)`. Each runs on the given `erpCoreEventExecutor`, re-binds the tenant by running its body through the given's `TenantRunner` for `event.getTenantId()` (ADR-PTY-044), and opens its own transaction.
 - A rollback publishes nothing. A failed issue or dispatch is logged and leaves the committed request as it is.
 - PTY uses no `TransactionSynchronization`.
+- **Lock order (ADR-PTY-026), stated once.** Every write that takes more than one row lock takes them in this order: **role row (Customer QR-PTY-006 or Supplier QR-PTY-016) → Party (QR-PTY-001) → Address (QR-PTY-023, 028, 029) and Credit override requests (QR-PTY-033, 039)**. An endpoint takes only the locks it needs, in that order, and never takes an earlier lock after a later one. The role endpoints (API-PTY-003, 004, 005, 008, 009, 010) lock the role row first and the Party second; the Address endpoints lock the Party first and the Address second; the request endpoints lock only the request row (API-PTY-021, 022, 023, 036) or the Customer and then its requests (API-PTY-004, 019). Two writers therefore never wait on each other in opposite orders.
 - **Invitation redemption (C17, C19).** `PtyCustomerInvitationRedeemedSubscriber implements OutboxSubscriber` (`code() = "pty.customerInvitationRedeemed"`, `module() = "pty"`, `eventTypes() = {"sec.CustomerInvitationRedeemed"}`) handles the redemption that the given `sec` publishes on the outbox (SVC-API-INT).
   - It is idempotent on `OutboxMessage.id()`: a redelivered message finds the Customer already linked and changes nothing.
   - The given runs it in the event's tenant.
@@ -501,32 +511,33 @@ PTY imports no other business module's package. The dependency points only into 
 | modules.sec | `com.erp.sec.crossmodule.SecUserDirectoryApi` | `PtyApproverNotificationListener` (approvers holding PERM_PTY_CREDIT_OVERRIDE_UPDATE), API-PTY-021, 022 (decider identifier), API-PTY-031 (user names) |
 | modules.sec | `com.erp.sec.permission.PermissionContributor` | `PtyPermissions` — the five pages and their permissions; every `@PreAuthorize` (SEC-BE) |
 | modules.cu | `com.erp.cu.crossmodule.SettingsApi` | `CreditFlag` (b2bCredit), API-PTY-024, 025, 035 (credit-overrun setting), `PtyCurrency` (PTY_BASE_CURRENCY_CODE) |
-| modules.mdl | `com.erp.mdl.crossmodule.MdlLookupApi` | RULE-PTY-016, RULE-PTY-018 validation; lookup labels in messages |
+| modules.mdl | `com.erp.mdl.crossmodule.MdlLookupApi` | RULE-PTY-016, RULE-PTY-018 validation; lookup labels in messages; API-PTY-038, which serves PTY's five keys through `OwnedLookups.read(…, mdlLookupApi::readActiveValuesByKey)` (ADR-PTY-048) |
 | modules.sequence | `com.erp.sequence.crossmodule.NumberSeriesApi` | API-PTY-001, 006, 033, 034 (Party code), API-PTY-019 (docNo) |
 | modules.tenant | `com.erp.tenant.TenantProvisioningContributor` | `PtyTenantProvisioningContributor` — walk-in Customer at provisioning (REQ-PTY-044) |
-| modules.tenant | `com.erp.tenant.TenantContext` | the after-commit listeners (`TenantContext.runAs`) |
-| modules.common | `com.erp.common.domain.AuditableEntity` | every PTY entity |
+| modules.tenant | `com.erp.tenant.TenantRunner` | the after-commit listeners `PtyInvitationListener` and `PtyApproverNotificationListener`, which re-bind the event's tenant (ADR-PTY-044) |
 | modules.audit | `com.erp.audit.crossmodule.AuditApi` | `@Audited` on Customer and Credit override request (API-PTY-017, 018, 019, 021, 022, 023, 036); `AuditApi.record` for approve / reject (API-PTY-021, 022); the credit history read (API-PTY-031) |
 | modules.events | `com.erp.events.OutboxPublisher` | API-PTY-004, 009 (`pty.PartyRoleDeactivated`) |
 | modules.events | `com.erp.events.OutboxSubscriber` | `PtyCustomerInvitationRedeemedSubscriber` (`sec.CustomerInvitationRedeemed`) |
 | modules.events | `com.erp.events.DomainEventPublisher` | API-PTY-019, 034 — PTY-internal after-commit events only |
 | modules.notif | `com.erp.notif.crossmodule.NotificationDispatchApi` | `PtyApproverNotificationListener` — template PTY_CREDIT_OVERRIDE_REQUESTED (API-PTY-019) |
-| modules.module | `META-INF/erp/modules/pty.yaml` | the module manifest (below) |
+| modules.module | `docs/api-docs/module/index.md` | the module manifest `META-INF/erp/modules/pty.yaml` (below), in the format the given's module api documents (ADR-PTY-044) |
+
+The table holds the 14 rows of SRS A9, in the same order. The entities extend the given `com.erp.common.domain.AuditableEntity`, and `OwnedLookups` is a class of the same module. `erp-core:modules.common` publishes no extension point, interface or api, so these are build dependencies of PTY's code, not uses through a published seam, and they have no row (ADR-PTY-044, ADR-PTY-048).
 
 No entity or table the given owns is re-created; an operation on a given's entity is a call into the given.
 
 **Module manifest, boundary, CI and migration (checklist C15, C18, C20).**
 - **Manifest (C18).** The PTY jar ships `src/main/resources/META-INF/erp/modules/pty.yaml` with these entries:
-  - `code: pty`, `version: 1.0.0`, `name` (ar «الأطراف» / en "Party"), `package: com.erp.pty`;
+  - `code: pty`, `version: 1.0.0`, `name` (ar «الأطراف» / en "Party"), `package: com.commerce.pty` (ADR-PTY-047);
   - `depends: []`, `optional-depends: []` — no business-module dependency (SRS A8);
   - `permission-modules: [PTY]` — the `PermissionModule` that `PtyPermissions` declares (menu «الأطراف / Party»; also the `OWNER_MODULE_CODE` of the PTY lookup types, db-script BLOCK 8a). Its `PermissionScreen`s are the five pages PTY_CUSTOMER, PTY_SUPPLIER, PTY_CUSTOMER_CREDIT, PTY_CREDIT_OVERRIDE and PTY_CREDIT_SETTINGS.
-  - `api-paths: [/api/v1/pty]` — every API-PTY path sits under it;
+  - `api-paths: [/api/v1/pty/**]` — the sub-tree pattern, as in the library's module example (`/api/v1/leasing/**`); every API-PTY path sits under it;
   - `settings: [PTY_CREDIT_OVERRUN_ACTION, PTY_BASE_CURRENCY_CODE]`;
   - `events.publishes: [pty.PartyRoleDeactivated]`, `events.consumes: [sec.CustomerInvitationRedeemed]`;
   - `migrations: [V1001__pty_party.sql]`;
   - `reports: []`; no `home-cards`.
   - Acceptance: the application starts without `MODULE_MANIFEST_INVALID`, and an unentitled tenant receives 403 `MODULE_NOT_ENTITLED` on `/api/v1/pty/**`.
-- **Boundary (C20).** `PtyModuleBoundaryTest` runs `ModuleBoundaryRules.modulesDependOnlyOnTheirDeclaredDependencies()` in the module's tests. Consumers may import `com.erp.pty.crossmodule` only.
+- **Boundary (C20).** `PtyModuleBoundaryTest` runs `ModuleBoundaryRules.modulesDependOnlyOnTheirDeclaredDependencies()` in the module's tests. Consumers may import `com.commerce.pty.crossmodule` only.
   - Acceptance: the test passes, and fails on a deliberate import of another business module's package.
 - **CI (C20).** The CI workflow gains the job `module-pty` (template `templates/ci/module-matrix.yml`), which builds and tests the PTY module on its own.
   - Acceptance: the job is green on the module alone.
@@ -543,7 +554,7 @@ No entity or table the given owns is re-created; an operation on a given's entit
 | decisions/PTY/CORE-GAP-ordinal-within-parent.md | Is a per-parent ordinal outside F6, or which facility assigns it? | QR-PTY-024 computes `MAX + 1` within one Party under the Party lock, backed by a unique constraint | ADR-PTY-040 |
 <!-- PHASE:CORE:END -->
 
-<!-- PHASE:DATA-DOM:START traces=REQ-PTY-001,REQ-PTY-006,REQ-PTY-024,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-034,REQ-PTY-036,REQ-PTY-039,REQ-PTY-044,REQ-PTY-064,REQ-PTY-091,REQ-PTY-092,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113 -->
+<!-- PHASE:DATA-DOM:START traces=REQ-PTY-001,REQ-PTY-006,REQ-PTY-024,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-034,REQ-PTY-036,REQ-PTY-039,REQ-PTY-044,REQ-PTY-064,REQ-PTY-091,REQ-PTY-092,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113,REQ-PTY-114 -->
 ## PHASE 2 — DATA-DOM
 
 There is one block per entity. Every value is bound from the db-script (tables, columns, constraints, identity clauses) and from the SRS (rules, labels, lookups). The blocks are grouped by kind: four master entities and one transactional entity. The module owns no lookup table; its five lookup keys live in the given mdl tables.
@@ -619,7 +630,7 @@ DEFAULT FIELDS master → nameAr, nameEn, code are presented from ENT-PTY-001 (r
 | DBF-PTY-074 | version | VERSION | BIGINT | NOT NULL, default 0 | yes (AuditableEntity) | — | — (platform column) |
 | DBF-PTY-078 | currencyCode | CURRENCY_CODE | VARCHAR(3) | NOT NULL | yes (system — `PtyCurrency.baseCurrency()` on create, ADR-PTY-037) | CHK_PTY_CUSTOMER_CURRENCY_CODE | العملة / Currency |
 
-DTO MEMBERSHIP  create-request (API-PTY-001) excludes customerPk, code, isWalkInFl, isActiveFl, creditLimit, paymentTermDays, currencyCode, secUserId, audit; carries partyId (DBF-PTY-019) only to add the role to an existing Party. Update-request (API-PTY-003) excludes partyFk, isWalkInFl, isActiveFl, the credit fields (they belong to API-PTY-017), secUserId, audit. Response `Customer` includes customerPk, partyFk, code (business code), nameAr, nameEn, mobile, email, taxRegistrationNo, customerGroupCode, isWalkInFl, isActiveFl (flag), creditLimit, paymentTermDays and currencyCode **only while `b2bCredit` is on** (absent from the JSON otherwise — REQ-PTY-071; currencyCode hidden by the UI while the tenant has one currency), and the audit fields; secUserId is never returned (not promised, CON-PTY-009).
+DTO MEMBERSHIP  create-request (API-PTY-001) excludes customerPk, code, isWalkInFl, isActiveFl, creditLimit, paymentTermDays, currencyCode, secUserId, audit; carries partyId (DBF-PTY-019) only to add the role to an existing Party. Update-request (API-PTY-003) excludes partyFk, isWalkInFl, isActiveFl, the credit fields (they belong to API-PTY-017), secUserId, audit. Response `Customer` includes customerPk, partyFk, code (business code), nameAr, nameEn, mobile, email, taxRegistrationNo, customerGroupCode, isWalkInFl, isActiveFl (flag), creditLimit, paymentTermDays and currencyCode **only while `b2bCredit` is on** (absent from the JSON otherwise — REQ-PTY-071; currencyCode hidden by the UI while the tenant has one currency; readable by every holder of Customer VIEW — ADR-PTY-046), and the audit fields; secUserId is never returned (not promised, CON-PTY-009).
 LOOKUP FIELDS  customerGroupCode │ DBF-PTY-014 │ lookup key `CUSTOMER_GROUP` (open; seeded RETAIL, WHOLESALE) │ values loaded by the client from the given mdl lookup service; PTY validates through `MdlLookupApi` — stores the code, not a numeric FK
 DOMAIN RULES
 - **RULE-PTY-005 — Inactive role refused for new documents, credit operations and address writes.** Scope ENT-PTY-001, ENT-PTY-002, ENT-PTY-003, ENT-PTY-004, ENT-PTY-005. Trigger: on a consuming module's request for a new document · on a credit check · on a creditLimit or paymentTermDays save · on create or use of a Credit override request · on an Address create, update or set-default. Statement: The system shall prevent an inactive Customer or Supplier from being used on a new document; an inactive Customer from a credit check, a creditLimit or paymentTermDays save and the creation or use of a Credit override request; and an inactive Party from an Address create, update or set-default. Reads, credit history, Clear credit, the cancellation of a request and Address deactivation stay allowed. Message — ar: {code} غير نشط ولا يمكن استخدامه في مستند جديد. أعد تنشيطه أو اختر طرفاً آخر. · en: {code} is inactive and cannot be used on a new document. Reactivate it or choose another party. Scope VIEW (forNewDocument = true), API-PTY-011, 013, 015, 017, 019, 035, 036 · DB enforcement app-level · owner layer domain — `CustomerDomain.requireActive` / `SupplierDomain.requireActive` (reads for a new document, credit check, credit save, request create and use) and `PartyDomain.requireActive` (Address create, update, set-default), each with the record's code for the message (ADR-PTY-041).
@@ -714,7 +725,7 @@ OPERATIONS     VIEW, CREATE, UPDATE, DELETE
 REPOSITORY OPS → QR-PTY-022 (FIND_ONE), QR-PTY-023 (FIND_ONE, lock), QR-PTY-024 (AGGREGATE), QR-PTY-025 (SAVE), QR-PTY-026 (UPDATE), QR-PTY-027 (FIND_ALL), QR-PTY-028 (FIND_ONE), QR-PTY-029 (FIND_ONE), QR-PTY-030 (EXISTS)
 <!-- SUB:DATA-DOM-MASTER:END -->
 
-<!-- SUB:DATA-DOM-TRANSACTIONAL:START traces=REQ-PTY-091,REQ-PTY-092,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-103,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113 -->
+<!-- SUB:DATA-DOM-TRANSACTIONAL:START traces=REQ-PTY-091,REQ-PTY-092,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-103,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113,REQ-PTY-114 -->
 ### ENT-PTY-005 — Credit override request / طلب تجاوز حد الائتمان      kind: transactional
 
 BINDINGS   table PTY_CREDIT_OVERRIDE_REQUEST · PK CREDIT_OVERRIDE_REQUEST_PK (DBF-PTY-050) · PK generation `identity` → `BIGINT GENERATED ALWAYS AS IDENTITY` (PK_PTY_CREDIT_OVERRIDE_REQUEST) · FK FK_PTY_CREDIT_OVERRIDE_REQUEST_PTY_CUSTOMER (intra-module, composite TENANT_ID, CUSTOMER_FK) · tenant TENANT_ID (DBF-PTY-072, FK_PTY_CREDIT_OVERRIDE_REQUEST_TENANT, IDX_PTY_CREDIT_OVERRIDE_REQUEST_TENANT) · db-script PTY v1 P2
@@ -758,6 +769,7 @@ DOMAIN RULES
 - **RULE-PTY-032 — Sale amount positive.** Trigger: on create. Statement: The system shall require saleAmount to be greater than 0. Message — ar: مبلغ البيع يجب أن يكون أكبر من صفر. · en: The sale amount must be greater than zero. Scope CREATE · DB enforcement CHK_PTY_CREDIT_OVERRIDE_REQUEST_SALE_AMOUNT · owner layer domain — `CreditOverrideRequestDomain.create`.
 - **RULE-PTY-033 — No credit override for the walk-in Customer.** Trigger: on create. Statement: The system shall prevent creating a Credit override request whose Customer has isWalkInFl true. Message — ar: لا يمكن البيع الآجل للعميل النقدي. سجّل العميل باسمه أولاً. · en: The walk-in customer cannot buy on credit. Register the customer by name first. Scope CREATE · DB enforcement app-level · owner layer domain — `CreditOverrideRequestDomain.create` given the Customer.
 - **RULE-PTY-034 — One open Credit override request per sale.** Trigger: on create. Statement: The system shall prevent a second Credit override request with statusCode PENDING or APPROVED for the same Customer and the same sale document reference. Message — ar: لهذا البيع طلب موافقة مفتوح بالفعل ({docNo}). تابع ذلك الطلب بدلاً من إنشاء طلب جديد. · en: This sale already has an open approval request ({docNo}). Follow that request instead of creating a new one. Scope CREATE · DB enforcement UQ_PTY_CREDIT_OVERRIDE_REQUEST_OPEN_SOURCE (race backstop, translated to this rule) · owner layer domain — `CreditOverrideRequestDomain.create` given the open request QR-PTY-040 finds (its docNo fills the message), under the Customer lock (ADR-PTY-042).
+- **RULE-PTY-035 — Request only under BLOCK_WITH_OVERRIDE.** Trigger: on create. Statement: The system shall prevent creating a Credit override request while the tenant's credit-overrun action is not BLOCK_WITH_OVERRIDE. Message — ar: لا حاجة إلى موافقة: إعداد تجاوز الائتمان هو التنبيه فقط، ويمكن إتمام البيع دون طلب. · en: No approval is needed: the credit-overrun setting is Warn only, so the sale can be completed without a request. Scope CREATE · DB enforcement app-level (the action is the tenant setting PTY_CREDIT_OVERRUN_ACTION, read through `SettingsApi`) · owner layer domain — `CreditOverrideRequestDomain.create` given the overrun action the server-side credit check returns, applied after RULE-PTY-025 (ADR-PTY-045).
 - **RULE-PTY-005** — stated in full under ENT-PTY-002 (refuses the creation and the use for an inactive Customer).
 - **RULE-PTY-023** — stated in full under ENT-PTY-002 (refuses creation, approval, rejection and use while `b2bCredit` is off; cancel stays allowed).
 - **RULE-PTY-030** — stated in full under ENT-PTY-002 (an approval or rejection the audit does not record is rolled back).
@@ -768,14 +780,14 @@ REPOSITORY OPS → QR-PTY-031 (SAVE), QR-PTY-032 (FIND_ONE + join), QR-PTY-033 (
 <!-- SUB:DATA-DOM-TRANSACTIONAL:END -->
 <!-- PHASE:DATA-DOM:END -->
 
-<!-- PHASE:SVC-API:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-003,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-044,REQ-PTY-045,REQ-PTY-046,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-050,REQ-PTY-051,REQ-PTY-052,REQ-PTY-053,REQ-PTY-054,REQ-PTY-055,REQ-PTY-056,REQ-PTY-057,REQ-PTY-058,REQ-PTY-059,REQ-PTY-060,REQ-PTY-061,REQ-PTY-062,REQ-PTY-063,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-074,REQ-PTY-075,REQ-PTY-076,REQ-PTY-077,REQ-PTY-078,REQ-PTY-079,REQ-PTY-080,REQ-PTY-081,REQ-PTY-082,REQ-PTY-083,REQ-PTY-084,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-099,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113 -->
+<!-- PHASE:SVC-API:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-003,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-044,REQ-PTY-045,REQ-PTY-046,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-050,REQ-PTY-051,REQ-PTY-052,REQ-PTY-053,REQ-PTY-054,REQ-PTY-055,REQ-PTY-056,REQ-PTY-057,REQ-PTY-058,REQ-PTY-059,REQ-PTY-060,REQ-PTY-061,REQ-PTY-062,REQ-PTY-063,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-074,REQ-PTY-075,REQ-PTY-076,REQ-PTY-077,REQ-PTY-078,REQ-PTY-079,REQ-PTY-080,REQ-PTY-081,REQ-PTY-082,REQ-PTY-083,REQ-PTY-084,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-099,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113,REQ-PTY-114 -->
 ## PHASE 3 — SVC-API
 
-There are 37 endpoints (≥ 8), grouped CRUD / SEARCH / INT. Every path is an instance of `/api/v1/{module}/{resource}` with module `pty`.
-- **Authority.** Every endpoint verifies its permission before processing. The authority on each block's `Security` line is carried by the controller method and by the service method it calls, as `@PreAuthorize("hasAuthority(T(com.erp.pty.permission.PtyPermissions).<NAME>)")` (checklist C13). An in-process call through `PtyPartyApi` passes the same check (ADR-PTY-039).
+There are 38 endpoints (≥ 8), grouped CRUD / SEARCH / INT. Every path is an instance of `/api/v1/{module}/{resource}` with module `pty`.
+- **Authority.** Every endpoint verifies its permission before processing. The authority on each block's `Security` line is carried by the controller method and by the service method it calls, as `@PreAuthorize("hasAuthority(T(com.commerce.pty.permission.PtyPermissions).<NAME>)")` (checklist C13). An in-process call through `PtyPartyApi` passes the same check (ADR-PTY-039).
 - **Rules.** Every RULE is decided by the entity's Domain companion named in DATA-DOM. The service gathers its facts and orchestrates. Error codes are the Error Catalog's; messages are not repeated here — every code below has its ar and en text in the catalog. Shared response DTOs: `Customer` (as API-PTY-002), `Supplier` (as API-PTY-007), `Address` (as API-PTY-012), `CustomerCredit` (as API-PTY-016), `CreditOverrideRequest` (as API-PTY-020), `Confirmation` `{id, code}`.
 
-<!-- SUB:SVC-API-CRUD:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-003,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-109,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113 -->
+<!-- SUB:SVC-API-CRUD:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-003,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-109,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113,REQ-PTY-114 -->
 ### SVC-API-CRUD — create, read, change, deactivate
 
 <!-- API:API-PTY-001:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-024,REQ-PTY-026,REQ-PTY-027,REQ-PTY-029,REQ-PTY-039,REQ-PTY-040,DBF-PTY-001,DBF-PTY-002,DBF-PTY-003,DBF-PTY-004,DBF-PTY-005,DBF-PTY-006,DBF-PTY-007,DBF-PTY-008,DBF-PTY-013,DBF-PTY-014,DBF-PTY-018,DBF-PTY-019,DBF-PTY-020 -->
@@ -805,7 +817,7 @@ Request      : path id (DBF-PTY-013, Long, required) · query forNewDocument (Bo
 Response     : 200 · `Customer` {customerPk (DBF-PTY-013), partyFk (DBF-PTY-019), code (DBF-PTY-007), nameAr (DBF-PTY-005), nameEn (DBF-PTY-006), mobile (DBF-PTY-002), email (DBF-PTY-003), taxRegistrationNo (DBF-PTY-004), customerGroupCode (DBF-PTY-014), isWalkInFl (DBF-PTY-018), isActiveFl (DBF-PTY-020), creditLimit (DBF-PTY-015), paymentTermDays (DBF-PTY-016) and currencyCode (DBF-PTY-078) — present only while `b2bCredit` is on, absent from the JSON otherwise, createdBy, createdAt, updatedBy, updatedAt (DBF-PTY-021 … DBF-PTY-024)} · not paginated · ApiResponse<Customer>
 Validations  : RULE-PTY-005 (forNewDocument = true and the Customer is inactive) → PTY-422-ROLE-INACTIVE ({code} = Party code)
 Errors       : PTY-400-VALIDATION, PTY-401-UNAUTHENTICATED, PTY-403-FORBIDDEN, PTY-404-CUSTOMER-NOT-FOUND, PTY-422-ROLE-INACTIVE, PTY-500-INTERNAL
-Orchestration : load QR-PTY-005 (absent → PTY-404-CUSTOMER-NOT-FOUND) → forNewDocument: RULE-PTY-005 → `CreditFlag.isOn()` decides whether the credit fields are serialised (REQ-PTY-071) → map. An inactive Customer is returned when forNewDocument is false (REQ-PTY-014).
+Orchestration : load QR-PTY-005 (absent → PTY-404-CUSTOMER-NOT-FOUND) → forNewDocument: RULE-PTY-005 → `CreditFlag.isOn()` decides whether the credit fields are serialised (REQ-PTY-071); while it is on they are serialised to every holder of PERM_PTY_CUSTOMER_VIEW, without PERM_PTY_CUSTOMER_CREDIT_VIEW (ADR-PTY-046, AC-PTY-138) → map. An inactive Customer is returned when forNewDocument is false (REQ-PTY-014).
 Repository   : QR-PTY-005 · FIND_ONE · join PTY_PARTY (ADR-PTY-027) · transaction READ_ONLY
 Concurrency  : NONE — this endpoint neither allocates a unique value nor reads-then-writes
 Security     : SCR-REQ-PTY-001 · PERM_PTY_CUSTOMER_VIEW
@@ -844,15 +856,19 @@ Orchestration :
 1. Lock QR-PTY-006, then `CustomerDomain.deactivate` applies RULE-PTY-010.
 2. If the Customer is already inactive, return the confirmation and publish nothing (idempotent).
 3. Set DBF-PTY-020 (isActiveFl) false (QR-PTY-009).
-4. QR-PTY-039 locks the Customer's PENDING and APPROVED requests. `CreditOverrideRequestDomain.cancelOnCustomerDeactivation` sets each to CANCELLED through QR-PTY-034, expecting its read status, and the `@Audited` listener records it (REQ-PTY-111, ADR-PTY-041).
-5. Lock the Party QR-PTY-001. QR-PTY-021 counts the Party's active roles; on 0, set DBF-PTY-008 (isActiveFl) false (QR-PTY-003, REQ-PTY-028).
+4. Lock the Party QR-PTY-001. QR-PTY-021 counts the Party's active roles; on 0, set DBF-PTY-008 (isActiveFl) false (QR-PTY-003, REQ-PTY-028).
+5. QR-PTY-039 locks the Customer's PENDING and APPROVED requests. `CreditOverrideRequestDomain.cancelOnCustomerDeactivation` sets each to CANCELLED through QR-PTY-034, expecting its read status, and the `@Audited` listener records it (REQ-PTY-111, ADR-PTY-041).
+   Steps 1, 4 and 5 take their locks in the CORE lock order: Customer → Party → requests.
 6. Call `OutboxPublisher.publish("pty.PartyRoleDeactivated", {role CUSTOMER, identifier customerPk, code})` inside the transaction. The given delivers it to the subscribers after commit; a rollback publishes nothing (REQ-PTY-023, ADR-PTY-038).
 Soft delete only (profile delete_semantics `soft`): nothing is removed, and every reference stays readable.
-Repository   : QR-PTY-006, QR-PTY-009, QR-PTY-039, QR-PTY-034, QR-PTY-001, QR-PTY-021, QR-PTY-003 · UPDATE · join NONE · transaction READ_WRITE
+Repository   : QR-PTY-006, QR-PTY-009, QR-PTY-001, QR-PTY-021, QR-PTY-003, QR-PTY-039, QR-PTY-034 · UPDATE · join NONE · transaction READ_WRITE
 Concurrency  :
 - The Party row lock serialises the "last active role" decision. A Customer and a Supplier of one Party deactivated at the same time cannot both read "one other role still active" and leave the Party active.
-- The Customer row lock (QR-PTY-006) serialises a deactivation with a request creation of the same Customer (API-PTY-019 locks it too), so a request is never created for a Customer whose deactivation has committed.
-- An approval or a use racing the cancellation is settled by the request row lock (QR-PTY-039) and the compare-and-set of QR-PTY-034. Whichever commits second finds the other's status: the decision answers PTY-409-REQUEST-NOT-PENDING, the use answers PTY-422-APPROVAL-NOT-COVERING, and the cancellation skips a USED request.
+- The Customer row lock (QR-PTY-006) serialises a deactivation with a request creation of the same Customer (API-PTY-019 locks it too), so a request is never created for a Customer whose deactivation has committed. End state either way: no PENDING or APPROVED request of the Customer remains — the creation that waits answers PTY-422-ROLE-INACTIVE, and a request created first is cancelled by step 5 (TC-PTY-192).
+- An approval or a use racing the cancellation is settled by the request row lock (QR-PTY-039) and the compare-and-set of QR-PTY-034. Whichever commits second finds the other's status, with three outcomes (TC-PTY-193):
+  - an approval that loses answers PTY-409-REQUEST-NOT-PENDING (the request is CANCELLED); one that wins leaves an APPROVED request, which step 5 then cancels;
+  - a use that loses answers PTY-422-APPROVAL-NOT-COVERING (the request is CANCELLED);
+  - a use that wins leaves the request USED, and the cancellation skips it (QR-PTY-039 selects PENDING and APPROVED only).
 Security     : SCR-REQ-PTY-001 · PERM_PTY_CUSTOMER_DELETE
 Localization : confirmation in ar + en
 <!-- API:API-PTY-004:END -->
@@ -1006,7 +1022,7 @@ Validations  : RULE-PTY-005 (the Party is inactive) → PTY-422-ROLE-INACTIVE ·
 Errors       : PTY-400-VALIDATION, PTY-401-UNAUTHENTICATED, PTY-403-FORBIDDEN, PTY-404-PARTY-NOT-FOUND, PTY-404-ADDRESS-NOT-FOUND, PTY-422-ADDRESS-LINE-REQUIRED, PTY-422-ADDRESS-TYPE-INVALID, PTY-422-ROLE-INACTIVE, PTY-500-INTERNAL
 Orchestration : lock Party QR-PTY-001 (404) → lock QR-PTY-023 (Address not of this Party → PTY-404-ADDRESS-NOT-FOUND) → the caller holds the UPDATE of a role the Party holds (ADR-PTY-039) → `PartyDomain.requireActive` (RULE-PTY-005) → `AddressDomain.from` validates → addressTypeCode changed on an active Address: if it was the default of the old type, DBF-PTY-040 (isDefaultFl) false and QR-PTY-029 promotes the most recently updated remaining active Address of the old type (QR-PTY-026); for the new type QR-PTY-030 — none active → DBF-PTY-040 true (RULE-PTY-017, ADR-PTY-026) → write the fields (QR-PTY-026); DBF-PTY-041 stays unchanged (AC-PTY-037).
 Repository   : QR-PTY-001, QR-PTY-023, QR-PTY-029, QR-PTY-030, QR-PTY-026 · UPDATE · join NONE · READ_WRITE
-Concurrency  : Party row lock serialises default decisions of the Party; UQ_PTY_ADDRESS_IS_DEFAULT_FL backstop. The old default is cleared before the new one is set in the same transaction (the partial unique index is checked per statement).
+Concurrency  : Party row lock serialises default decisions of the Party; UQ_PTY_ADDRESS_IS_DEFAULT_FL backstop. The old default is cleared before the new one is set in the same transaction (the partial unique index is checked per statement). A type change racing an Address create (API-PTY-011) or a set-default (API-PTY-015) of the same type waits on the Party lock; whichever runs second reads the first's default, so the type ends with exactly one active default and neither call is refused (TC-PTY-195).
 Security     : SCR-REQ-PTY-001 / SCR-REQ-PTY-002 · hasAnyAuthority(PERM_PTY_CUSTOMER_UPDATE, PERM_PTY_SUPPLIER_UPDATE) and the UPDATE of a role held — either one when the Party holds both (ADR-PTY-039)
 Localization : messages ar + en
 <!-- API:API-PTY-013:END -->
@@ -1103,7 +1119,7 @@ Security     : SCR-REQ-PTY-003 · PERM_PTY_CUSTOMER_CREDIT_UPDATE
 Localization : messages ar + en
 <!-- API:API-PTY-018:END -->
 
-<!-- API:API-PTY-019:START traces=REQ-PTY-072,REQ-PTY-089,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-104,REQ-PTY-105,REQ-PTY-110,REQ-PTY-113,DBF-PTY-020,DBF-PTY-050,DBF-PTY-051,DBF-PTY-052,DBF-PTY-053,DBF-PTY-054,DBF-PTY-055,DBF-PTY-060,DBF-PTY-061,DBF-PTY-062,DBF-PTY-063,DBF-PTY-079 -->
+<!-- API:API-PTY-019:START traces=REQ-PTY-072,REQ-PTY-089,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-104,REQ-PTY-105,REQ-PTY-110,REQ-PTY-113,REQ-PTY-114,DBF-PTY-020,DBF-PTY-050,DBF-PTY-051,DBF-PTY-052,DBF-PTY-053,DBF-PTY-054,DBF-PTY-055,DBF-PTY-060,DBF-PTY-061,DBF-PTY-062,DBF-PTY-063,DBF-PTY-079 -->
 ### API-PTY-019 — create Credit override request
 Entity       : ENT-PTY-005, ENT-PTY-002 · operation CREATE · serves: create (from a sale) (SCR-REQ-PTY-004)
 Honours      : CON-PTY-016, CON-PTY-005, CON-PTY-008
@@ -1111,14 +1127,14 @@ Endpoint     : /api/v1/pty/credit-overrides   verb: POST
 Layers       : CreditOverrideController.create → CreditOverrideService.create ; in-process PtyPartyApi.createCreditOverrideRequest → CreditOverrideService.create
 Request      : body `CreditOverrideCreateRequest` — customerId (DBF-PTY-060, Long, required) · saleAmount (DBF-PTY-051, BigDecimal scale 3, required — RULE-PTY-032) · sourceDocumentRef (DBF-PTY-055, String ≤ 60, required). Excluded: creditOverrideRequestPk, docNo, docDate, statusCode, creditLimitAtRequest, openExposure, creditCheckResultCode, decidedBy, decidedAt, decisionReason, usedDocumentRef, audit.
 Response     : 201 · `CreditOverrideRequest` (as API-PTY-020, statusCode PENDING) · ApiResponse<CreditOverrideRequest>
-Validations  : RULE-PTY-023 → PTY-422-CREDIT-NOT-ENABLED · RULE-PTY-032 → PTY-422-SALE-AMOUNT-NOT-POSITIVE · RULE-PTY-005 (inactive Customer) → PTY-422-ROLE-INACTIVE · RULE-PTY-033 → PTY-422-WALK-IN-NO-CREDIT-SALE · RULE-PTY-034 (an open request of the same sale) → PTY-409-REQUEST-OPEN-FOR-SALE ({docNo} = the open request's number) · RULE-PTY-025 → PTY-422-OVERRIDE-NOT-NEEDED
-Errors       : PTY-400-VALIDATION, PTY-401-UNAUTHENTICATED, PTY-403-FORBIDDEN, PTY-404-CUSTOMER-NOT-FOUND, PTY-409-REQUEST-OPEN-FOR-SALE, PTY-422-CREDIT-NOT-ENABLED, PTY-422-ROLE-INACTIVE, PTY-422-SALE-AMOUNT-NOT-POSITIVE, PTY-422-WALK-IN-NO-CREDIT-SALE, PTY-422-OVERRIDE-NOT-NEEDED, PTY-500-INTERNAL
-Orchestration : load → validate (RULE-PTY-023, RULE-PTY-032, RULE-PTY-005, RULE-PTY-033, RULE-PTY-034, RULE-PTY-025) → persist (QR-PTY-031); sets the system columns DBF-PTY-061, DBF-PTY-062, DBF-PTY-063, DBF-PTY-052, DBF-PTY-053, DBF-PTY-054, DBF-PTY-060 and DBF-PTY-079 — in steps:
+Validations  : RULE-PTY-023 → PTY-422-CREDIT-NOT-ENABLED · RULE-PTY-032 → PTY-422-SALE-AMOUNT-NOT-POSITIVE · RULE-PTY-005 (inactive Customer) → PTY-422-ROLE-INACTIVE · RULE-PTY-033 → PTY-422-WALK-IN-NO-CREDIT-SALE · RULE-PTY-034 (an open request of the same sale) → PTY-409-REQUEST-OPEN-FOR-SALE ({docNo} = the open request's number) · RULE-PTY-025 → PTY-422-OVERRIDE-NOT-NEEDED · RULE-PTY-035 (the tenant's credit-overrun action is not BLOCK_WITH_OVERRIDE) → PTY-422-OVERRIDE-NOT-REQUIRED
+Errors       : PTY-400-VALIDATION, PTY-401-UNAUTHENTICATED, PTY-403-FORBIDDEN, PTY-404-CUSTOMER-NOT-FOUND, PTY-409-REQUEST-OPEN-FOR-SALE, PTY-422-CREDIT-NOT-ENABLED, PTY-422-ROLE-INACTIVE, PTY-422-SALE-AMOUNT-NOT-POSITIVE, PTY-422-WALK-IN-NO-CREDIT-SALE, PTY-422-OVERRIDE-NOT-NEEDED, PTY-422-OVERRIDE-NOT-REQUIRED, PTY-500-INTERNAL
+Orchestration : load → validate (RULE-PTY-023, RULE-PTY-032, RULE-PTY-005, RULE-PTY-033, RULE-PTY-034, RULE-PTY-025, RULE-PTY-035) → persist (QR-PTY-031); sets the system columns DBF-PTY-061, DBF-PTY-062, DBF-PTY-063, DBF-PTY-052, DBF-PTY-053, DBF-PTY-054, DBF-PTY-060 and DBF-PTY-079 — in steps:
 1. `CreditFlag.isOn()`: off → RULE-PTY-023 (REQ-PTY-072).
 2. Lock the Customer QR-PTY-006 (404) and read its Party fields through QR-PTY-005.
 3. QR-PTY-040 looks for an open request of (customerId, sourceDocumentRef).
-4. The server re-runs the credit check of API-PTY-035 for (customerId, saleAmount). It never trusts a caller's result (ADR-PTY-028).
-5. `CreditOverrideRequestDomain.create(request, customer, openRequest, checkResult, flagOn)` applies RULE-PTY-032, RULE-PTY-005 on DBF-PTY-020 (ADR-PTY-041), RULE-PTY-033 on DBF-PTY-018, RULE-PTY-034 (ADR-PTY-042) and RULE-PTY-025 (WITHIN_LIMIT).
+4. The server re-runs the credit check of API-PTY-035 for (customerId, saleAmount). It never trusts a caller's result (ADR-PTY-028). The check's answer carries the result code and the tenant's credit-overrun action, read through `SettingsApi` in this request.
+5. `CreditOverrideRequestDomain.create(request, customer, openRequest, checkResult, flagOn)` applies RULE-PTY-032, RULE-PTY-005 on DBF-PTY-020 (ADR-PTY-041), RULE-PTY-033 on DBF-PTY-018, RULE-PTY-034 (ADR-PTY-042), RULE-PTY-025 (result WITHIN_LIMIT) and, after the server-side check, RULE-PTY-035 (overrun action ≠ BLOCK_WITH_OVERRIDE → PTY-422-OVERRIDE-NOT-REQUIRED, ADR-PTY-045).
 6. Allocate DBF-PTY-061 (docNo) from `NumberSeriesApi` series PTY_CREDIT_OVERRIDE, and set:
    - DBF-PTY-062 (docDate) = now; DBF-PTY-063 (statusCode) PENDING;
    - DBF-PTY-052 (creditLimitAtRequest) = the Customer's creditLimit;
@@ -1127,8 +1143,9 @@ Orchestration : load → validate (RULE-PTY-023, RULE-PTY-032, RULE-PTY-005, RUL
    - DBF-PTY-054 (creditCheckResultCode) = the check's result; DBF-PTY-060 (customerFk) = customerId.
 7. Insert QR-PTY-031 (createdBy = the requester, platform-filled; the `@Audited` listener records the CREATE row).
 8. Publish the PTY-internal `PtyCreditOverrideRequestedEvent {creditOverrideRequestId, docNo, customerName}` through `DomainEventPublisher`.
-9. After commit, `PtyApproverNotificationListener` (`@Async(ErpCoreEvents.EXECUTOR)`, `@TransactionalEventListener(phase = AFTER_COMMIT, fallbackExecution = true)`, under `TenantContext.runAs(event.getTenantId(), …)`) lists the active users holding PERM_PTY_CREDIT_OVERRIDE_UPDATE through `SecUserDirectoryApi`. It dispatches one `DispatchCommand(approverId, "PTY_CREDIT_OVERRIDE_REQUESTED", IN_APP, "PTY", creditOverrideRequestId, "PTY_CREDIT_OVERRIDE_REQUEST", {docNo, name})` per approver through `NotificationDispatchApi`. The template is seeded by the migration (BLOCK 8d, ADR-PTY-036) and reads ar «طلب تجاوز حد الائتمان {docNo} للعميل {name} بانتظار موافقتك.» · en «Credit override request {docNo} for {name} is waiting for your approval.» (REQ-PTY-093, AC-PTY-105). A failed dispatch leaves the committed request as it is.
-Creation is allowed under WARN too; the request is then optional (ADR-PTY-028).
+9. After commit, `PtyApproverNotificationListener` (`@Async(ErpCoreEvents.EXECUTOR)`, `@TransactionalEventListener(phase = AFTER_COMMIT, fallbackExecution = true)`, its body run through the given's `TenantRunner` for `event.getTenantId()` — ADR-PTY-044) lists the active users holding PERM_PTY_CREDIT_OVERRIDE_UPDATE through `SecUserDirectoryApi`. It dispatches one `DispatchCommand(approverId, "PTY_CREDIT_OVERRIDE_REQUESTED", IN_APP, "PTY", creditOverrideRequestId, "PTY_CREDIT_OVERRIDE_REQUEST", {docNo, name})` per approver through `NotificationDispatchApi`. The template is seeded by the migration (BLOCK 8d, ADR-PTY-036) and reads ar «طلب تجاوز حد الائتمان {docNo} للعميل {name} بانتظار موافقتك.» · en «Credit override request {docNo} for {name} is waiting for your approval.» (REQ-PTY-093, AC-PTY-105). A failed dispatch leaves the committed request as it is.
+   **Deep link.** The dispatch carries referenceType `PTY_CREDIT_OVERRIDE_REQUEST` and referenceId = creditOverrideRequestPk (DBF-PTY-050). The frontend maps referenceType `PTY_CREDIT_OVERRIDE_REQUEST` to the route `/pty/credit-overrides/:referenceId` (frontend plan F4, SCR-PTY-004); no other referenceType is dispatched by PTY.
+Creation is refused while the tenant's credit-overrun action is WARN (RULE-PTY-035, ADR-PTY-045, which withdraws the WARN bullet of ADR-PTY-028): a request is accepted only under BLOCK_WITH_OVERRIDE, as REQ-PTY-091 and ADR-PTY-016 state.
 Repository   : QR-PTY-006, QR-PTY-005, QR-PTY-040, QR-PTY-031 · SAVE · join PTY_PARTY on the Customer read (ADR-PTY-027) · READ_WRITE
 Concurrency  : docNo is allocated atomically by `NumberSeriesApi`, with UQ_PTY_CREDIT_OVERRIDE_REQUEST_DOC_NO as the backstop. Two requests for the same sale are serialised by the Customer lock. UQ_PTY_CREDIT_OVERRIDE_REQUEST_OPEN_SOURCE is the backstop, and its violation is answered RULE-PTY-034 after QR-PTY-040 re-reads the holder (ADR-PTY-042). A deactivation of the Customer waits on the same lock (API-PTY-004).
 Security     : SCR-REQ-PTY-004 · PERM_PTY_CREDIT_OVERRIDE_CREATE
@@ -1250,7 +1267,7 @@ Localization : messages ar + en
 <!-- API:API-PTY-025:END -->
 <!-- SUB:SVC-API-CRUD:END -->
 
-<!-- SUB:SVC-API-SEARCH:START traces=REQ-PTY-001,REQ-PTY-013,REQ-PTY-018,REQ-PTY-032,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-069,REQ-PTY-070,REQ-PTY-073,REQ-PTY-077,REQ-PTY-101,REQ-PTY-102,REQ-PTY-108 -->
+<!-- SUB:SVC-API-SEARCH:START traces=REQ-PTY-001,REQ-PTY-013,REQ-PTY-018,REQ-PTY-032,REQ-PTY-038,REQ-PTY-039,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-069,REQ-PTY-070,REQ-PTY-073,REQ-PTY-077,REQ-PTY-086,REQ-PTY-101,REQ-PTY-102,REQ-PTY-108 -->
 ### SVC-API-SEARCH — searches and lists
 
 <!-- API:API-PTY-026:START traces=REQ-PTY-001,REQ-PTY-013,DBF-PTY-002,DBF-PTY-003,DBF-PTY-004,DBF-PTY-005,DBF-PTY-006,DBF-PTY-007,DBF-PTY-013,DBF-PTY-014,DBF-PTY-018,DBF-PTY-020 -->
@@ -1270,20 +1287,20 @@ Security     : SCR-REQ-PTY-001 · PERM_PTY_CUSTOMER_VIEW
 Localization : nameAr / nameEn returned
 <!-- API:API-PTY-026:END -->
 
-<!-- API:API-PTY-027:START traces=REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,DBF-PTY-002,DBF-PTY-003,DBF-PTY-004,DBF-PTY-005,DBF-PTY-006,DBF-PTY-007,DBF-PTY-013,DBF-PTY-020 -->
+<!-- API:API-PTY-027:START traces=REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,DBF-PTY-002,DBF-PTY-003,DBF-PTY-004,DBF-PTY-005,DBF-PTY-006,DBF-PTY-007,DBF-PTY-013,DBF-PTY-018,DBF-PTY-020 -->
 ### API-PTY-027 — Customer global search
 Entity       : ENT-PTY-002, ENT-PTY-001 · operation VIEW · serves: the one global search (no screen of its own)
 Honours      : CON-PTY-020
 Endpoint     : /api/v1/pty/customers/global-search   verb: GET
-Layers       : CustomerController.globalSearch → CustomerQueryService.globalSearch ; in-process PtyPartyApi.globalSearchCustomers → CustomerQueryService.globalSearch
+Layers       : CustomerController.globalSearch → CustomerQueryService.globalSearch ; in-process PtyPartyApi.globalSearchCustomers → CustomerQueryService.globalSearch (each entry tests VIEW first — Security below)
 Request      : query term (String, required)
-Response     : 200 · list (≤ 10) of `CustomerSearchHit` {customerPk (DBF-PTY-013), code (DBF-PTY-007), nameAr (DBF-PTY-005), nameEn (DBF-PTY-006), mobile (DBF-PTY-002)} · not paginated · ApiResponse<List<CustomerSearchHit>>
+Response     : 200 · list (≤ 10) of `CustomerSearchHit` {customerPk (DBF-PTY-013), code (DBF-PTY-007), nameAr (DBF-PTY-005), nameEn (DBF-PTY-006), mobile (DBF-PTY-002), isWalkInFl (DBF-PTY-018 — lets a picker hide the walk-in Customer)} · not paginated · ApiResponse<List<CustomerSearchHit>>
 Validations  : term shorter than 2 characters → empty list (REQ-PTY-041, AC-PTY-049) · caller without PERM_PTY_CUSTOMER_VIEW → empty list, not an error (REQ-PTY-043)
 Errors       : PTY-400-VALIDATION, PTY-401-UNAUTHENTICATED, PTY-500-INTERNAL
-Orchestration : authorise softly (no VIEW → empty list) → length check → QR-PTY-011 (active Customers only; code, nameAr, nameEn, mobile, email, taxRegistrationNo contain the term without letter case; Arabic أ إ آ → ا, ة → ه, ى → ي on both sides — REQ-PTY-042; exact code matches first, then the display name in the request language ascending; LIMIT 10). Suppliers are never returned (ADR-PTY-013).
+Orchestration : entry layer — no VIEW → empty list, without calling the service → service: length check → QR-PTY-011 (active Customers only; code, nameAr, nameEn, mobile, email, taxRegistrationNo contain the term without letter case; Arabic أ إ آ → ا, ة → ه, ى → ي on both sides — REQ-PTY-042; the mobile is compared with spaces and dashes removed from both sides; `%` and `_` in the term match literally; exact code matches first, then the display name in the request language ascending; LIMIT 10). Suppliers are never returned (ADR-PTY-013). The walk-in Customer is active and is returned, marked by isWalkInFl.
 Repository   : QR-PTY-011 · NATIVE (ADR-PTY-027) · join PTY_PARTY · READ_ONLY
 Concurrency  : NONE — this endpoint neither allocates a unique value nor reads-then-writes
-Security     : SCR-REQ-PTY-001 · `@PreAuthorize("isAuthenticated()")` on the controller and service method; `CustomerQueryService.globalSearch` checks `PtyPermissions.PERM_PTY_CUSTOMER_VIEW` in code through `SecurityContextHelper` and answers an empty list without it (REQ-PTY-043) — the one method whose PTY authority is checked in code (ADR-PTY-039)
+Security     : SCR-REQ-PTY-001 · PERM_PTY_CUSTOMER_VIEW. REQ-PTY-043's empty answer is given at the entry layer: `CustomerController.globalSearch` and the in-process delegate `PtyPartyApi.globalSearchCustomers` each test PERM_PTY_CUSTOMER_VIEW through `SecurityContextHelper` and return an empty list without it; otherwise they call `CustomerQueryService.globalSearch`, which carries `@PreAuthorize("hasAuthority(T(com.commerce.pty.permission.PtyPermissions).PERM_PTY_CUSTOMER_VIEW)")` like every other service method (checklist C13, ADR-PTY-039 §3). No service method is exempt.
 Localization : names ar + en
 <!-- API:API-PTY-027:END -->
 
@@ -1371,6 +1388,23 @@ Concurrency  : NONE — this endpoint neither allocates a unique value nor reads
 Security     : SCR-REQ-PTY-004 · PERM_PTY_CREDIT_OVERRIDE_VIEW
 Localization : Customer names ar + en
 <!-- API:API-PTY-032:END -->
+
+<!-- API:API-PTY-038:START traces=REQ-PTY-013,REQ-PTY-038,REQ-PTY-039,REQ-PTY-086,DBF-PTY-014,DBF-PTY-034,DBF-PTY-054,DBF-PTY-063 -->
+### API-PTY-038 — read a PTY lookup key
+Entity       : ENT-PTY-002, ENT-PTY-004, ENT-PTY-005 · operation VIEW · serves: the lookup-backed fields and filters of SCR-REQ-PTY-001 … SCR-REQ-PTY-005 (customer group, address type, credit-overrun action, credit check result, request status)
+Honours      : CON-PTY-006, CON-PTY-007, CON-PTY-008
+Endpoint     : /api/v1/pty/lookups/{key}   verb: GET
+Layers       : PtyLookupController.read → PtyLookupService.read → `com.erp.common.lookup.OwnedLookups.read` over `MdlLookupApi` (ADR-PTY-048)
+Request      : path key (String ≤ 50, required) — one of the five PTY keys of SRS A6: CUSTOMER_GROUP, ADDRESS_TYPE, CREDIT_OVERRUN_ACTION, CREDIT_CHECK_RESULT, CREDIT_OVERRIDE_STATUS
+Response     : 200 · list of `LookupOption` {code, labelAr, labelEn, sortOrder} — the active values of the key, in sortOrder · not paginated · ApiResponse<List<LookupOption>>
+Validations  : key not one of the five PTY keys, or answered 404 by mdl → PTY-404-LOOKUP-KEY-UNKNOWN (OwnedLookups translates mdl's 404 into PTY's code)
+Errors       : PTY-400-VALIDATION, PTY-401-UNAUTHENTICATED, PTY-403-FORBIDDEN, PTY-404-LOOKUP-KEY-UNKNOWN, PTY-500-INTERNAL
+Orchestration : `OwnedLookups.read(key, PTY_LOOKUP_KEYS, PtyErrorCodes.LOOKUP_KEY_UNKNOWN, mdlLookupApi::readActiveValuesByKey)` → map each `LookupOptionView` to `LookupOption` → return the list. `PTY_LOOKUP_KEYS` holds the five keys, all with OWNER_MODULE_CODE `PTY` (db-script BLOCK 8a); PTY is never a pass-through for another module's keys (checklist C6). No PTY table is read.
+Repository   : NONE — no database operation; the values are read through the given `MdlLookupApi` (no QR)
+Concurrency  : NONE — this endpoint neither allocates a unique value nor reads-then-writes
+Security     : SCR-REQ-PTY-001 … SCR-REQ-PTY-005 · `@PreAuthorize("hasAnyAuthority(T(com.commerce.pty.permission.PtyPermissions).PERM_PTY_CUSTOMER_VIEW, …PERM_PTY_SUPPLIER_VIEW, …PERM_PTY_CUSTOMER_CREDIT_VIEW, …PERM_PTY_CREDIT_OVERRIDE_VIEW, …PERM_PTY_CREDIT_SETTINGS_VIEW)")` on the controller and the service method — the VIEW of any PTY page, PTY's own constants only (checklist C13, ADR-PTY-048)
+Localization : labels ar + en from mdl
+<!-- API:API-PTY-038:END -->
 <!-- SUB:SVC-API-SEARCH:END -->
 
 <!-- SUB:SVC-API-INT:START traces=REQ-PTY-001,REQ-PTY-044,REQ-PTY-045,REQ-PTY-046,REQ-PTY-050,REQ-PTY-051,REQ-PTY-052,REQ-PTY-053,REQ-PTY-054,REQ-PTY-055,REQ-PTY-056,REQ-PTY-057,REQ-PTY-058,REQ-PTY-059,REQ-PTY-060,REQ-PTY-061,REQ-PTY-062,REQ-PTY-063,REQ-PTY-068,REQ-PTY-074,REQ-PTY-075,REQ-PTY-076,REQ-PTY-077,REQ-PTY-079,REQ-PTY-080,REQ-PTY-081,REQ-PTY-082,REQ-PTY-083,REQ-PTY-084,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-097,REQ-PTY-099,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112 -->
@@ -1408,9 +1442,9 @@ Errors       : PTY-400-VALIDATION, PTY-401-UNAUTHENTICATED, PTY-403-FORBIDDEN, P
 Orchestration : validate RULE-PTY-019, 001, 003, 004, 015 → normalise: email `lower(trim)`, mobile = remove spaces and dashes, leading "00" → "+" (ADR-PTY-015) → match (RULE-PTY-013 — the walk-in Customer's Party and inactive Parties are never candidates): QR-PTY-036 by email (REQ-PTY-055); none → QR-PTY-037 by normalised mobile — exactly one → matched (REQ-PTY-056), more than one → create (REQ-PTY-061), none → create.
   Matched: lock the Party QR-PTY-001 → QR-PTY-007 its Customer → none: insert a Customer QR-PTY-008 with DBF-PTY-019 (partyFk), DBF-PTY-014 RETAIL, DBF-PTY-018 false, DBF-PTY-020 true, DBF-PTY-078 base currency (REQ-PTY-057) → inactive Customer → `CustomerDomain.requireActiveForGuest`: RULE-PTY-021 (the message reveals nothing — REQ-PTY-062) → the Party's names, contacts and Addresses are left unchanged (REQ-PTY-058) → when the Customer's DBF-PTY-017 (secUserId) is empty, publish the PTY-internal `PtyInvitationRequestedEvent {customerId, channel, address}` addressed to the email **recorded on the Party**, else its recorded mobile (REQ-PTY-059); when it is set, no event and no invitation (REQ-PTY-060).
   Create (REQ-PTY-050): DBF-PTY-007 (code) from `NumberSeriesApi` → `PartyDomain.createGuest` → Party QR-PTY-002 (names, email, mobile, DBF-PTY-008 true) → Customer QR-PTY-008 (RETAIL, DBF-PTY-018 false, DBF-PTY-020 true, DBF-PTY-078 base currency) → Address QR-PTY-024 / QR-PTY-025 with DBF-PTY-034 (addressTypeCode) DELIVERY, DBF-PTY-044 (code) "1", DBF-PTY-040 (isDefaultFl) true, DBF-PTY-041 (partyFk), DBF-PTY-045 (isActiveFl) true and the delivery lines → `PtyInvitationRequestedEvent` to the email, else the mobile (REQ-PTY-051); DBF-PTY-017 stays empty until redemption (AC-PTY-059).
-  After commit: `PtyInvitationListener` (`@Async(ErpCoreEvents.EXECUTOR)`, `@TransactionalEventListener(phase = AFTER_COMMIT, fallbackExecution = true)`) runs under `TenantContext.runAs(event.getTenantId(), …)` and calls `SecCustomerInvitationApi.issue(new IssueInvitation("PTY", "CUSTOMER", customerId, channel, address, …))` in its own transaction. A rollback publishes nothing; a failed issue is logged and leaves the resolved Customer as it is (checklist C4, C17).
+  After commit: `PtyInvitationListener` (`@Async(ErpCoreEvents.EXECUTOR)`, `@TransactionalEventListener(phase = AFTER_COMMIT, fallbackExecution = true)`) runs its body through the given's `TenantRunner` for `event.getTenantId()` (ADR-PTY-044) and calls `SecCustomerInvitationApi.issue(new IssueInvitation("PTY", "CUSTOMER", customerId, channel, address, …))` in its own transaction. A rollback publishes nothing; a failed issue is logged and leaves the resolved Customer as it is (checklist C4, C17).
 Repository   : QR-PTY-036, QR-PTY-037, QR-PTY-001, QR-PTY-007, QR-PTY-002, QR-PTY-008, QR-PTY-024, QR-PTY-025 · FIND_BY_CRITERIA, NATIVE, SAVE · join NONE · READ_WRITE
-Concurrency  : Two orders of one new guest at once both match nothing and both create a Party with the same email: UQ_PTY_PARTY_EMAIL rejects the second insert; the creation runs in a REQUIRES_NEW transaction and the service retries the matching once, which now attaches the order to the first Customer (ADR-PTY-026). Mobile is not unique (SRS D-03), so two mobile-only guests created at once may produce two Parties — the same outcome REQ-PTY-061 prescribes for an ambiguous mobile.
+Concurrency  : Two orders of one new guest at once both match nothing and both create a Party with the same email: UQ_PTY_PARTY_EMAIL rejects the second insert; the creation runs in a REQUIRES_NEW transaction and the service retries the matching once, which now attaches the order to the first Customer (ADR-PTY-026). End state: one Party, one Customer, both callers answered 200 with the same customerId (one with created true, the other false); each call requests its invitation for that Customer, the creation under REQ-PTY-051 and the re-match under REQ-PTY-059, both after commit; the loser receives no error code (TC-PTY-194). Mobile is not unique (SRS D-03), so two mobile-only guests created at once may produce two Parties — the same outcome REQ-PTY-061 prescribes for an ambiguous mobile.
 Security     : SCR-REQ-PTY-001 · PERM_PTY_CUSTOMER_CREATE on the controller and on `GuestCustomerService.resolve`, for REST and in-process callers alike (ADR-PTY-039). The anonymous storefront shopper holds no PTY authority, and the core publishes no mechanism for it. `CORE-GAP-in-process-caller-authority` is OPEN, and until it is answered the call is refused. No v1 caller is blocked, because SFR is wave 2.
 Localization : messages ar + en
 <!-- API:API-PTY-034:END -->
@@ -1425,7 +1459,7 @@ Request      : body `CreditCheckRequest` — customerId (DBF-PTY-013, Long, requ
 Response     : 200 · `CreditCheckResult` {customerId, resultCode (CREDIT_CHECK_RESULT code), creditLimit (DBF-PTY-015), openExposure, projectedExposure, currencyCode (DBF-PTY-078 — the currency of the three amounts), overrunActionCode (CREDIT_OVERRUN_ACTION code — present for OVER_LIMIT, NO_CREDIT, EXPOSURE_UNAVAILABLE), approvalRequired (Boolean)} · ApiResponse<CreditCheckResult>
 Validations  : RULE-PTY-005 (inactive Customer) → PTY-422-ROLE-INACTIVE (REQ-PTY-110, ADR-PTY-041); every other outcome is a result code
 Errors       : PTY-400-VALIDATION, PTY-401-UNAUTHENTICATED, PTY-403-FORBIDDEN, PTY-404-CUSTOMER-NOT-FOUND, PTY-422-ROLE-INACTIVE, PTY-500-INTERNAL
-Orchestration : `CreditFlag.isOn()` off → NOT_APPLICABLE, approvalRequired false (REQ-PTY-074) → load QR-PTY-005 (404) → `CustomerDomain.requireActive` on DBF-PTY-020 (RULE-PTY-005) → openExposure = sum of every registered `CustomerCreditExposureContributor` (0 when none — REQ-PTY-080), each invoked under a 3-second budget; any contributor not answering in time or failing → exposure unavailable (REQ-PTY-084) → overrun action from `SettingsApi` PTY_CREDIT_OVERRUN_ACTION, default BLOCK_WITH_OVERRIDE (REQ-PTY-087) → result: DBF-PTY-015 empty → NO_CREDIT (REQ-PTY-068, REQ-PTY-083; the walk-in Customer, DBF-PTY-018 true, always lands here) · exposure unavailable → EXPOSURE_UNAVAILABLE with openExposure empty · projectedExposure = openExposure + saleAmount ≤ creditLimit → WITHIN_LIMIT (REQ-PTY-081) · otherwise OVER_LIMIT (REQ-PTY-082) → OVER_LIMIT, NO_CREDIT, EXPOSURE_UNAVAILABLE carry the overrun action and approvalRequired = (action = BLOCK_WITH_OVERRIDE) (REQ-PTY-088, REQ-PTY-089). Contributors are in-process beans: the budget is a time limit on a local call, not a network timeout (ADR-PTY-028).
+Orchestration : the order of the checks is fixed: **load the Customer (404) → RULE-PTY-005 → flag**. Load QR-PTY-005 (absent → PTY-404-CUSTOMER-NOT-FOUND) → `CustomerDomain.requireActive` on DBF-PTY-020 (RULE-PTY-005 → PTY-422-ROLE-INACTIVE, whatever the flag — AC-PTY-140) → `CreditFlag.isOn()` off → NOT_APPLICABLE, approvalRequired false (REQ-PTY-074) → openExposure = sum of every registered `CustomerCreditExposureContributor` (0 when none — REQ-PTY-080), each invoked under a 3-second budget; any contributor not answering in time or failing → exposure unavailable (REQ-PTY-084) → overrun action from `SettingsApi` PTY_CREDIT_OVERRUN_ACTION, default BLOCK_WITH_OVERRIDE (REQ-PTY-087) → result: DBF-PTY-015 empty → NO_CREDIT (REQ-PTY-068, REQ-PTY-083; the walk-in Customer, DBF-PTY-018 true, always lands here) · exposure unavailable → EXPOSURE_UNAVAILABLE with openExposure empty · projectedExposure = openExposure + saleAmount ≤ creditLimit → WITHIN_LIMIT (REQ-PTY-081) · otherwise OVER_LIMIT (REQ-PTY-082) → OVER_LIMIT, NO_CREDIT, EXPOSURE_UNAVAILABLE carry the overrun action and approvalRequired = (action = BLOCK_WITH_OVERRIDE) (REQ-PTY-088, REQ-PTY-089). Contributors are in-process beans: the budget is a time limit on a local call, not a network timeout (ADR-PTY-028).
 Repository   : QR-PTY-005 · FIND_ONE · join PTY_PARTY · READ_ONLY
 Concurrency  : NONE — this endpoint neither allocates a unique value nor reads-then-writes (the answer is advisory; the approval it may lead to is decided under its own lock, API-PTY-021)
 Security     : SCR-REQ-PTY-001 · PERM_PTY_CUSTOMER_VIEW on the controller and `CreditCheckService.check`, for REST and in-process callers (the seller performing a sale holds it — ADR-PTY-039)
@@ -1492,34 +1526,36 @@ The subscriber reuses QR-PTY-006 and QR-PTY-009, which API-PTY-003 and API-PTY-0
 <!-- PHASE:DOC:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-019,REQ-PTY-032,REQ-PTY-079,REQ-PTY-091,REQ-PTY-103 -->
 ## PHASE 4 — DOC
 
-- **API document.** `api-spec-pty.yaml` (OpenAPI 3.1.0) is derived from the 37 `API-*` blocks and the Error Catalog of this plan: one operation per block (`x-api-id`, `x-traces`, `operationId` = the block heading), request and response schemas typed from the db-script through the type mapping of CORE, one error response per catalog row the block raises (`x-error-codes`), `x-paginated: true` with `page` / `size` on the five paginated searches, and the bearer-JWT scheme on every operation. The frontend stage binds to it and serves it from a mock; `api-verify` holds the delivered api-docs to it.
+- **API document.** `api-spec-pty.yaml` (OpenAPI 3.1.0) is derived from the 38 `API-*` blocks and the Error Catalog of this plan: one operation per block (`x-api-id`, `x-traces`, `operationId` = the block heading), request and response schemas typed from the db-script through the type mapping of CORE, one error response per catalog row the block raises (`x-error-codes`), `x-paginated: true` with `page` / `size` on the five paginated searches, and the bearer-JWT scheme on every operation. The frontend stage binds to it and serves it from a mock; `api-verify` holds the delivered api-docs to it.
 - **Delivered api-docs.** Each controller method carries springdoc annotations (`@Operation(operationId, summary)`, `@ApiResponse` per status of its `Errors` line, `@Tag(name = "pty-<aggregate>")`) so the published `/v3/api-docs` matches the document operation for operation; the `x-error-codes` extension is emitted by an `OperationCustomizer` reading a `@PtyErrors({...})` annotation that lists the block's codes.
 - **Message bundles (checklist C11).** Every catalog code is a constant of `PtyErrorCodes` and has `messages.properties` (en) / `messages_ar.properties` (ar) keys `pty.error.<CODE>` holding the catalog text verbatim. The confirmations (RULE-PTY-006, RULE-PTY-017), the switch-off answer (RULE-PTY-024) and the invitation-subscriber outcomes (RULE-PTY-013, RULE-PTY-020) use keys `pty.message.<RULE-id>`. The approver notification's text is the seeded template PTY_CREDIT_OVERRIDE_REQUESTED (db-script BLOCK 8d), not a bundle key.
 - **Module README** (`backend/modules/PTY/README.md` in the delivery partition) covers:
   - the published in-process surface (`PtyPartyApi`, `CustomerCreditExposureContributor`) and the outbox event `pty.PartyRoleDeactivated`, with its payload and the subscriber idempotence rule;
   - the CON-PTY item each method honours, and the PTY authority each method requires (ADR-PTY-039);
   - the flag `b2bCredit` behaviour, the setting `PTY_BASE_CURRENCY_CODE`, and the bootstrap rows of SEC-BE;
-  - the module manifest `META-INF/erp/modules/pty.yaml` (CORE).
-- **Javadoc** on `PtyPartyApi` and `CustomerCreditExposureContributor` states, per method, the contract item, the errors (catalog codes) and the 3-second budget of a contributor (REQ-PTY-084).
+  - the module manifest `META-INF/erp/modules/pty.yaml` (CORE), with `package: com.commerce.pty` and the root-namespace rule of ADR-PTY-047.
+- **Javadoc** on `com.commerce.pty.crossmodule.PtyPartyApi` and `com.commerce.pty.crossmodule.CustomerCreditExposureContributor` states, per method, the contract item, the errors (catalog codes) and the 3-second budget of a contributor (REQ-PTY-084).
 <!-- PHASE:DOC:END -->
 
 <!-- PHASE:SEC-BE:START traces=REQ-PTY-002,REQ-PTY-030,REQ-PTY-043,REQ-PTY-090,REQ-PTY-094,REQ-PTY-096,REQ-PTY-102 -->
 ## PHASE 5 — SEC-BE
 
 Security model (profile): permission names are `PERM_<PAGE_CODE>_<ACTION>`, with actions VIEW / CREATE / UPDATE / DELETE. VIEW is the gateway: without it no other permission of the page applies. Permission names are minted only from the SRS access matrix (B4 of each screen).
-- `com.erp.pty.permission.PtyPermissions implements PermissionContributor` declares them as constants (checklist C13).
-- **Every service method** carries `@PreAuthorize("hasAuthority(T(com.erp.pty.permission.PtyPermissions).PERM_…)")` referencing PTY's own constants only, and its controller method carries the same. An in-process call through `PtyPartyApi` is checked by the same annotation, so the calling module's security context must hold the PTY authority (ADR-PTY-039).
+- `com.commerce.pty.permission.PtyPermissions implements PermissionContributor` declares them as constants (checklist C13).
+- **Every service method** carries `@PreAuthorize("hasAuthority(T(com.commerce.pty.permission.PtyPermissions).PERM_…)")` referencing PTY's own constants only, and its controller method carries the same. An in-process call through `PtyPartyApi` is checked by the same annotation, so the calling module's security context must hold the PTY authority (ADR-PTY-039).
 - A refusal maps through `LocalizedException → {code, messageAr, messageEn}` to PTY-403-FORBIDDEN (unauthenticated → PTY-401-UNAUTHENTICATED). No service checks a role name.
-- Two exceptions are named, each with its reason:
-  - API-PTY-027 carries `isAuthenticated()` and checks PERM_PTY_CUSTOMER_VIEW in code, because REQ-PTY-043 answers an empty list rather than a refusal;
-  - the Address endpoints carry `hasAnyAuthority` of the two role permissions and require in code the one of a role the Party holds — either one when it holds both (ADR-PTY-039).
+- No service method is exempt from the annotation. Two endpoints add a check of their own, each with its reason:
+  - API-PTY-027 (global search): REQ-PTY-043 answers an empty list rather than a refusal. That answer is given at the entry layer: `CustomerController.globalSearch` and `PtyPartyApi.globalSearchCustomers` test PERM_PTY_CUSTOMER_VIEW through `SecurityContextHelper` and return an empty list without it; with it, they call `CustomerQueryService.globalSearch`, annotated `hasAuthority(T(…PtyPermissions).PERM_PTY_CUSTOMER_VIEW)` (ADR-PTY-039 §3, revised);
+  - the Address endpoints carry `hasAnyAuthority` of the two role permissions and require in code the one of a role the Party holds — either one when it holds both (ADR-PTY-039 §4).
+- API-PTY-038 (lookup read) carries `hasAnyAuthority` of the five VIEW permissions, because every PTY page reads one of PTY's keys (ADR-PTY-048).
+- **Credit values on the Customer read (ADR-PTY-046).** PERM_PTY_CUSTOMER_VIEW includes reading creditLimit, paymentTermDays and currencyCode on API-PTY-002 while `b2bCredit` is on. PERM_PTY_CUSTOMER_CREDIT_VIEW gates the credit work: the credit standing with exposure (API-PTY-016), the credit list (API-PTY-030) and the credit history (API-PTY-031). Editing stays under PERM_PTY_CUSTOMER_CREDIT_UPDATE.
 - The invitation subscriber runs without a user, as the given outbox runs it. It is not an endpoint and checks no permission.
 
-**SCR-REQ-PTY-001 Customers — page PTY_CUSTOMER.** VIEW: API-PTY-002, 012, 026, 027 (soft), 029, 033, 035 · CREATE: API-PTY-001, 034 · UPDATE: API-PTY-003, 011, 013, 014, 015 (Address actions, by role held) · DELETE: API-PTY-004, 005. Grants (SRS B4): Owner VIEW, CREATE, UPDATE, DELETE · Seller/Cashier VIEW, CREATE, UPDATE · Warehouse none.
-**SCR-REQ-PTY-002 Suppliers — page PTY_SUPPLIER.** VIEW: API-PTY-007, 012, 028, 029 · CREATE: API-PTY-006 · UPDATE: API-PTY-008, 011, 013, 014, 015 · DELETE: API-PTY-009, 010. Grants: Owner all four · Seller/Cashier none · Warehouse VIEW.
-**SCR-REQ-PTY-003 Customer credit — page PTY_CUSTOMER_CREDIT** (flag `b2bCredit`). VIEW: API-PTY-016, 030, 031 · UPDATE: API-PTY-017, 018. Grants: Owner VIEW, UPDATE · Seller/Cashier VIEW · Warehouse none.
-**SCR-REQ-PTY-004 Credit override requests — page PTY_CREDIT_OVERRIDE** (flag `b2bCredit`). VIEW: API-PTY-020, 032 · CREATE: API-PTY-019, 036 · UPDATE: API-PTY-021, 022 (the credit-override permission of POL-PTY-008) · DELETE: API-PTY-023 (cancel own — RULE-PTY-029). Grants: Owner all four · Seller/Cashier VIEW, CREATE, DELETE · Warehouse none. Visibility: without UPDATE a user sees only its own requests (REQ-PTY-102, API-PTY-020, 032).
-**SCR-REQ-PTY-005 Credit control settings — page PTY_CREDIT_SETTINGS** (flag `b2bCredit`). VIEW: API-PTY-024, 037 · UPDATE: API-PTY-025 (REQ-PTY-090). Grants: Owner VIEW, UPDATE · others none.
+**SCR-REQ-PTY-001 Customers — page PTY_CUSTOMER.** VIEW: API-PTY-002, 012, 026, 027 (empty list without it), 029, 033, 035, 038 · CREATE: API-PTY-001, 034 · UPDATE: API-PTY-003, 011, 013, 014, 015 (Address actions, by role held) · DELETE: API-PTY-004, 005. Grants (SRS B4): Owner VIEW, CREATE, UPDATE, DELETE · Seller/Cashier VIEW, CREATE, UPDATE · Warehouse none.
+**SCR-REQ-PTY-002 Suppliers — page PTY_SUPPLIER.** VIEW: API-PTY-007, 012, 028, 029, 038 · CREATE: API-PTY-006 · UPDATE: API-PTY-008, 011, 013, 014, 015 · DELETE: API-PTY-009, 010. Grants: Owner all four · Seller/Cashier none · Warehouse VIEW.
+**SCR-REQ-PTY-003 Customer credit — page PTY_CUSTOMER_CREDIT** (flag `b2bCredit`). VIEW: API-PTY-016, 030, 031, 038 · UPDATE: API-PTY-017, 018. Grants: Owner VIEW, UPDATE · Seller/Cashier VIEW · Warehouse none.
+**SCR-REQ-PTY-004 Credit override requests — page PTY_CREDIT_OVERRIDE** (flag `b2bCredit`). VIEW: API-PTY-020, 032, 038 · CREATE: API-PTY-019, 036 · UPDATE: API-PTY-021, 022 (the credit-override permission of POL-PTY-008) · DELETE: API-PTY-023 (cancel own — RULE-PTY-029). Grants: Owner all four · Seller/Cashier VIEW, CREATE, DELETE · Warehouse none. Visibility: without UPDATE a user sees only its own requests (REQ-PTY-102, API-PTY-020, 032).
+**SCR-REQ-PTY-005 Credit control settings — page PTY_CREDIT_SETTINGS** (flag `b2bCredit`). VIEW: API-PTY-024, 037, 038 · UPDATE: API-PTY-025 (REQ-PTY-090). Grants: Owner VIEW, UPDATE · others none.
 
 **Seed data.** One `SEC_PAGES` row per composite screen, declared through PTY's `PermissionContributor` (given row `modules.sec`): page code, name ar / en, parent "Party / الأطراف" menu — PTY_CUSTOMER (العملاء / Customers), PTY_SUPPLIER (الموردون / Suppliers), PTY_CUSTOMER_CREDIT (ائتمان العملاء / Customer credit), PTY_CREDIT_OVERRIDE (طلبات تجاوز حد الائتمان / Credit override requests), PTY_CREDIT_SETTINGS (إعدادات ضبط الائتمان / Credit control settings); the given derives one permission per action; column names are the given's, not PTY's. The contributor also declares the default grants above to the three preset roles (ADR-PTY-029) — registering a page is not a grant. The three credit pages are hidden from menus while `b2bCredit` is off (REQ-PTY-070) through the page's flag binding on the contributor; their endpoints refuse with PTY-422-CREDIT-NOT-ENABLED where RULE-PTY-023 applies.
 
@@ -1529,7 +1565,7 @@ Security model (profile): permission names are `PERM_<PAGE_CODE>_<ACTION>`, with
 rows:
   - screen: SCR-REQ-PTY-001 Customers
     entity: ENT-PTY-002
-    api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-026, API-PTY-027, API-PTY-029, API-PTY-033, API-PTY-034, API-PTY-035]
+    api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-026, API-PTY-027, API-PTY-029, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-038]
     actions:
       VIEW: {granted: true, permission: PERM_PTY_CUSTOMER_VIEW}
       CREATE: {granted: true, permission: PERM_PTY_CUSTOMER_CREATE}
@@ -1537,7 +1573,7 @@ rows:
       DELETE: {granted: true, permission: PERM_PTY_CUSTOMER_DELETE}
   - screen: SCR-REQ-PTY-002 Suppliers
     entity: ENT-PTY-003
-    api: [API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-028, API-PTY-029]
+    api: [API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-028, API-PTY-029, API-PTY-038]
     actions:
       VIEW: {granted: true, permission: PERM_PTY_SUPPLIER_VIEW}
       CREATE: {granted: true, permission: PERM_PTY_SUPPLIER_CREATE}
@@ -1545,7 +1581,7 @@ rows:
       DELETE: {granted: true, permission: PERM_PTY_SUPPLIER_DELETE}
   - screen: SCR-REQ-PTY-003 Customer credit
     entity: ENT-PTY-002
-    api: [API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-030, API-PTY-031]
+    api: [API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-030, API-PTY-031, API-PTY-038]
     actions:
       VIEW: {granted: true, permission: PERM_PTY_CUSTOMER_CREDIT_VIEW}
       CREATE: {granted: false}
@@ -1553,7 +1589,7 @@ rows:
       DELETE: {granted: false}
   - screen: SCR-REQ-PTY-004 Credit override requests
     entity: ENT-PTY-005
-    api: [API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-032, API-PTY-036]
+    api: [API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-032, API-PTY-036, API-PTY-038]
     actions:
       VIEW: {granted: true, permission: PERM_PTY_CREDIT_OVERRIDE_VIEW}
       CREATE: {granted: true, permission: PERM_PTY_CREDIT_OVERRIDE_CREATE}
@@ -1561,7 +1597,7 @@ rows:
       DELETE: {granted: true, permission: PERM_PTY_CREDIT_OVERRIDE_DELETE}
   - screen: SCR-REQ-PTY-005 Credit control settings
     entity: ENT-PTY-002
-    api: [API-PTY-024, API-PTY-025, API-PTY-037]
+    api: [API-PTY-024, API-PTY-025, API-PTY-037, API-PTY-038]
     actions:
       VIEW: {granted: true, permission: PERM_PTY_CREDIT_SETTINGS_VIEW}
       CREATE: {granted: false}
@@ -1573,11 +1609,11 @@ rows:
 
 ```yaml name=bootstrap
 rows:
-  - {kind: lookup key, name: "CUSTOMER_GROUP", source: "PTY Flyway migration — db-script §4 BLOCK 8a / 8b (idempotent) into the given mdl lookup tables for TENANT_ID = 1, OWNER_MODULE_CODE PTY; values RETAIL, WHOLESALE", note: "read by API-PTY-001, 003 (RULE-PTY-018); new tenants receive it through the given's provisioning copy of mdl seeds"}
-  - {kind: lookup key, name: "ADDRESS_TYPE", source: "PTY Flyway migration — db-script §4 BLOCK 8; values BILLING, DELIVERY", note: "read by API-PTY-011, 013 (RULE-PTY-016), API-PTY-034 (DELIVERY)"}
-  - {kind: lookup key, name: "CREDIT_OVERRUN_ACTION", source: "PTY Flyway migration — db-script §4 BLOCK 8; values WARN, BLOCK_WITH_OVERRIDE", note: "read by API-PTY-025"}
-  - {kind: lookup key, name: "CREDIT_CHECK_RESULT", source: "PTY Flyway migration — db-script §4 BLOCK 8; values WITHIN_LIMIT, OVER_LIMIT, NO_CREDIT, EXPOSURE_UNAVAILABLE, NOT_APPLICABLE", note: "labels for API-PTY-035 results"}
-  - {kind: lookup key, name: "CREDIT_OVERRIDE_STATUS", source: "PTY Flyway migration — db-script §4 BLOCK 8; values PENDING, APPROVED, REJECTED, CANCELLED, USED", note: "labels for RULE-PTY-026 {statusAr}/{statusEn}"}
+  - {kind: lookup key, name: "CUSTOMER_GROUP", source: "PTY Flyway migration — db-script §4 BLOCK 8a / 8b (idempotent) into the given mdl lookup tables for TENANT_ID = 1, OWNER_MODULE_CODE PTY; values RETAIL, WHOLESALE", note: "read by API-PTY-001, 003 (RULE-PTY-018); new tenants receive it through the given's provisioning copy of mdl seeds; served to the screens by API-PTY-038 (OwnedLookups, ADR-PTY-048)"}
+  - {kind: lookup key, name: "ADDRESS_TYPE", source: "PTY Flyway migration — db-script §4 BLOCK 8; values BILLING, DELIVERY", note: "read by API-PTY-011, 013 (RULE-PTY-016), API-PTY-034 (DELIVERY); served to the screens by API-PTY-038 (OwnedLookups, ADR-PTY-048)"}
+  - {kind: lookup key, name: "CREDIT_OVERRUN_ACTION", source: "PTY Flyway migration — db-script §4 BLOCK 8; values WARN, BLOCK_WITH_OVERRIDE", note: "read by API-PTY-025; served to the screens by API-PTY-038 (OwnedLookups, ADR-PTY-048)"}
+  - {kind: lookup key, name: "CREDIT_CHECK_RESULT", source: "PTY Flyway migration — db-script §4 BLOCK 8; values WITHIN_LIMIT, OVER_LIMIT, NO_CREDIT, EXPOSURE_UNAVAILABLE, NOT_APPLICABLE", note: "labels for API-PTY-035 results; served to the screens by API-PTY-038 (OwnedLookups, ADR-PTY-048)"}
+  - {kind: lookup key, name: "CREDIT_OVERRIDE_STATUS", source: "PTY Flyway migration — db-script §4 BLOCK 8; values PENDING, APPROVED, REJECTED, CANCELLED, USED", note: "labels for RULE-PTY-026 {statusAr}/{statusEn}; served to the screens by API-PTY-038 (OwnedLookups, ADR-PTY-048)"}
   - {kind: page, name: "PTY_CUSTOMER", source: "PTY PermissionContributor (com.erp.sec.permission.PermissionContributor) — the given sec writes SEC_PAGES at startup and for every provisioned tenant"}
   - {kind: page, name: "PTY_SUPPLIER", source: "PTY PermissionContributor — given sec SEC_PAGES"}
   - {kind: page, name: "PTY_CUSTOMER_CREDIT", source: "PTY PermissionContributor — given sec SEC_PAGES", note: "menu bound to flag b2bCredit"}
@@ -1700,6 +1736,7 @@ examined_nothing:
 | RULE-PTY-032 | 019 | PTY-422-SALE-AMOUNT-NOT-POSITIVE |
 | RULE-PTY-033 | 019 | PTY-422-WALK-IN-NO-CREDIT-SALE |
 | RULE-PTY-034 | 019 | PTY-409-REQUEST-OPEN-FOR-SALE |
+| RULE-PTY-035 | 019 | PTY-422-OVERRIDE-NOT-REQUIRED |
 
 **Coverage — XM → requires → tests**: none (0 edges).
 <!-- PHASE:ALIGN-BE:END -->
@@ -1723,7 +1760,7 @@ The one place this plan speaks about another module. **PTY v1 has no outbound cr
 These are logical specifications, not executable code. The implementer rewrites every entry with the real entity classes, mapped properties and the project's query strategy: Spring Data JPA derived queries or JPQL, and `@Query(nativeQuery = true)` only where an entry says NATIVE. Tables and columns are the db-script's. Engine defaults apply unless an entry overrides them; `:x` marks a bound parameter; every text "contains" filter escapes `%` and `_` in the value.
 
 **Tenant predicate (checklist C1, C3).** Every logical spec below names `TENANT_ID = :tenantId` on every PTY table it reads or writes:
-- For JPQL, derived and search-builder queries the predicate is added by the given tenant filter (`:tenantId` = `TenantContext.require()`). It is written here so the spec is complete.
+- For JPQL, derived and search-builder queries the predicate is added by the given tenant filter (`:tenantId` = the tenant the given filter binds to the request). It is written here so the spec is complete.
 - For an INSERT, TENANT_ID is set by `AuditableEntity`, and VERSION starts at 0.
 - The two NATIVE entries, QR-PTY-011 and QR-PTY-037, write the predicate themselves. Their repository methods carry `@TenantUnscoped(reason, adr = "ADR-PTY-027")`.
 
@@ -1802,13 +1839,18 @@ Join: required — ADR-PTY-027 · Transaction: READ_ONLY · Locking: NONE · Pag
 Phase: SVC-API · API: API-PTY-027 · Entity: ENT-PTY-002 · Operation: NATIVE
 Intent: at most 10 active Customers whose code, names, mobile, email or tax number contain the term, with Arabic letter forms unified and exact code matches first
 Logical spec:
-- SELECT c.CUSTOMER_PK, p.CODE, p.NAME_AR, p.NAME_EN, p.MOBILE
+- SELECT c.CUSTOMER_PK, c.IS_WALK_IN_FL, p.CODE, p.NAME_AR, p.NAME_EN, p.MOBILE
 - FROM PTY_CUSTOMER c JOIN PTY_PARTY p ON p.TENANT_ID = c.TENANT_ID AND p.PARTY_PK = c.PARTY_FK
 - WHERE c.TENANT_ID = :tenantId AND p.TENANT_ID = :tenantId AND c.IS_ACTIVE_FL
-- AND (LOWER(p.CODE) LIKE :t OR TRANSLATE(p.NAME_AR, 'أإآةى', 'اااهي') LIKE :tAr OR LOWER(p.NAME_EN) LIKE :t OR REGEXP_REPLACE(p.MOBILE, '[ -]', '', 'g') LIKE :tDigits OR LOWER(p.EMAIL) LIKE :t OR LOWER(p.TAX_REGISTRATION_NO) LIKE :t)
+- AND (LOWER(p.CODE) LIKE :t ESCAPE '\' OR TRANSLATE(p.NAME_AR, 'أإآةى', 'اااهي') LIKE :tAr ESCAPE '\' OR LOWER(p.NAME_EN) LIKE :t ESCAPE '\' OR (:tDigits IS NOT NULL AND REGEXP_REPLACE(p.MOBILE, '[ -]', '', 'g') LIKE :tDigits ESCAPE '\') OR LOWER(p.EMAIL) LIKE :t ESCAPE '\' OR LOWER(p.TAX_REGISTRATION_NO) LIKE :t ESCAPE '\')
 - ORDER BY (UPPER(p.CODE) = UPPER(:term)) DESC, <display name of the request language, falling back to the other> ASC
 - LIMIT 10
-- Parameters: :t = '%'||lower(term)||'%', :tAr = '%'||TRANSLATE(term, 'أإآةى', 'اااهي')||'%'. The repository method carries `@TenantUnscoped(reason = "TRANSLATE / REGEXP_REPLACE search across PTY_CUSTOMER and PTY_PARTY, tenant named in the SQL", adr = "ADR-PTY-027")`.
+- Parameters — each is built from the trimmed term `term`, after `esc(x)` has escaped `\`, `%` and `_` in `x` with a leading `\`, so the three characters match literally (`ESCAPE '\'` on every LIKE):
+  - `:term` = term, unescaped — used only by the equality of the ORDER BY;
+  - `:t` = `'%' || esc(lower(term)) || '%'`;
+  - `:tAr` = `'%' || esc(TRANSLATE(term, 'أإآةى', 'اااهي')) || '%'`;
+  - `:tDigits` = `'%' || esc(REGEXP_REPLACE(term, '[ -]', '', 'g')) || '%'` — the term with its spaces and dashes removed, compared with the mobile with its spaces and dashes removed (AC-PTY-139). It is NULL, and the mobile predicate is false, when fewer than 2 characters remain after the removal, so a term of spaces and dashes never matches every mobile.
+- The repository method carries `@TenantUnscoped(reason = "TRANSLATE / REGEXP_REPLACE search across PTY_CUSTOMER and PTY_PARTY, tenant named in the SQL", adr = "ADR-PTY-027")`.
 Join: required — ADR-PTY-027 (native: TRANSLATE / REGEXP_REPLACE expressions, no database extension) · Transaction: READ_ONLY · Locking: NONE · Pagination: NO (LIMIT 10) · Filters: tenant EXACT, term LIKE across six columns · Result: projection CustomerSearchHit · Null: NULL columns never match
 
 **QR-PTY-012 — find the walk-in Customer**
@@ -1895,7 +1937,7 @@ Join: NONE · Transaction: READ_ONLY · Locking: NONE · Pagination: NO · Resul
 Phase: DATA-DOM · API: API-PTY-013, 014, 015 · Entity: ENT-PTY-004 · Operation: FIND_ONE
 Intent: load an Address of the Party in the path for a change
 Logical spec: SELECT * FROM PTY_ADDRESS WHERE TENANT_ID = :tenantId AND ADDRESS_PK = :id AND PARTY_FK = :partyPk FOR UPDATE
-Join: NONE · Transaction: READ_WRITE · Locking: row lock; the Party row is always locked first, so there is no deadlock · Pagination: NO · Result: full entity · Null: not found or of another Party → PTY-404-ADDRESS-NOT-FOUND
+Join: NONE · Transaction: READ_WRITE · Locking: row lock; the Party row is always locked before its Address (CORE lock order: role row → Party → Address and requests), so there is no deadlock · Pagination: NO · Result: full entity · Null: not found or of another Party → PTY-404-ADDRESS-NOT-FOUND
 
 **QR-PTY-024 — next Address ordinal of a Party**
 Phase: DATA-DOM · API: API-PTY-011, 034 · Entity: ENT-PTY-004 · Operation: AGGREGATE
@@ -2008,7 +2050,7 @@ Join: NONE · Transaction: READ_ONLY · Locking: NONE · Pagination: NO · Resul
 Phase: DATA-DOM · API: API-PTY-004 · Entity: ENT-PTY-005 · Operation: FIND_BY_CRITERIA
 Intent: the PENDING and APPROVED requests that a Customer's deactivation cancels (REQ-PTY-111, ADR-PTY-041)
 Logical spec: SELECT * FROM PTY_CREDIT_OVERRIDE_REQUEST WHERE TENANT_ID = :tenantId AND CUSTOMER_FK = :customerPk AND STATUS_CODE IN ('PENDING', 'APPROVED') ORDER BY CREDIT_OVERRIDE_REQUEST_PK FOR UPDATE, served by IDX_PTY_CREDIT_OVERRIDE_REQUEST_CUSTOMER_FK
-Join: NONE · Transaction: READ_WRITE (inside the deactivation, after the Customer lock QR-PTY-006) · Locking: row locks in PK order — an approver or a use holding one of the rows commits first, and the cancellation then finds its new status through QR-PTY-034 · Pagination: NO · Result: full entities · Null: none → nothing to cancel
+Join: NONE · Transaction: READ_WRITE (inside the deactivation, after the Customer lock QR-PTY-006 and the Party lock QR-PTY-001 — the CORE lock order) · Locking: row locks in PK order — an approver or a use holding one of the rows commits first, and the cancellation then finds its new status through QR-PTY-034 · Pagination: NO · Result: full entities · Null: none → nothing to cancel
 
 **QR-PTY-040 — find the open request of a sale**
 Phase: DATA-DOM · API: API-PTY-019 · Entity: ENT-PTY-005 · Operation: FIND_ONE
@@ -2041,6 +2083,7 @@ rows:
   - {code: "PTY-422-CREDIT-LIMIT-NEGATIVE", rule: RULE-PTY-022, api: [API-PTY-017], http: 422, trigger: "a non-empty creditLimit is below 0", messages: {ar: "حد الائتمان يجب أن يكون صفراً أو أكثر.", en: "The credit limit must be zero or more."}}
   - {code: "PTY-422-CREDIT-NOT-ENABLED", rule: RULE-PTY-023, api: [API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-021, API-PTY-022, API-PTY-030, API-PTY-031, API-PTY-036], http: 422, trigger: "credit data is read or written, or a Credit override request is submitted, approved, rejected or used, while b2bCredit is off", messages: {ar: "الائتمان غير مفعّل. فعّل مفتاح b2bCredit من الإعدادات لاستخدام حد الائتمان ومدة السداد.", en: "Credit is not enabled. Turn on b2bCredit in settings to use credit limits and payment terms."}}
   - {code: "PTY-422-OVERRIDE-NOT-NEEDED", rule: RULE-PTY-025, api: [API-PTY-019], http: 422, trigger: "the server-side credit check of the request answers WITHIN_LIMIT", messages: {ar: "لا حاجة إلى موافقة: البيع ضمن حد ائتمان العميل.", en: "No approval is needed: the sale is within the customer's credit limit."}}
+  - {code: "PTY-422-OVERRIDE-NOT-REQUIRED", rule: RULE-PTY-035, api: [API-PTY-019], http: 422, trigger: "a Credit override request is submitted while the tenant's credit-overrun action is not BLOCK_WITH_OVERRIDE (WARN); checked after the server-side credit check", messages: {ar: "لا حاجة إلى موافقة: إعداد تجاوز الائتمان هو التنبيه فقط، ويمكن إتمام البيع دون طلب.", en: "No approval is needed: the credit-overrun setting is Warn only, so the sale can be completed without a request."}, adr: ADR-PTY-045}
   - {code: "PTY-409-REQUEST-NOT-PENDING", rule: RULE-PTY-026, api: [API-PTY-021, API-PTY-022, API-PTY-023], http: 409, trigger: "approve, reject or cancel of a request whose statusCode is not PENDING", messages: {ar: "هذا الطلب لم يعد معلّقاً (الحالة: {statusAr}).", en: "This request is no longer pending (status: {statusEn})."}}
   - {code: "PTY-422-REJECTION-REASON-REQUIRED", rule: RULE-PTY-027, api: [API-PTY-022], http: 422, trigger: "a rejection carries no decisionReason", messages: {ar: "أدخل سبب الرفض.", en: "Enter the reason for the rejection."}}
   - {code: "PTY-409-REQUEST-OPEN-FOR-SALE", rule: RULE-PTY-034, api: [API-PTY-019], http: 409, trigger: "a Credit override request is submitted for a Customer and sale document reference that already have a PENDING or APPROVED request", messages: {ar: "لهذا البيع طلب موافقة مفتوح بالفعل ({docNo}). تابع ذلك الطلب بدلاً من إنشاء طلب جديد.", en: "This sale already has an open approval request ({docNo}). Follow that request instead of creating a new one."}}
@@ -2050,15 +2093,16 @@ rows:
   - {code: "PTY-422-DOC-NO-READ-ONLY", rule: RULE-PTY-031, api: [API-PTY-021, API-PTY-022, API-PTY-036], http: 422, trigger: "a request change carries a docNo different from the stored one", messages: {ar: "رقم الطلب يُنشأ تلقائياً ولا يمكن تعديله.", en: "The request number is assigned by the system and cannot be changed."}}
   - {code: "PTY-422-SALE-AMOUNT-NOT-POSITIVE", rule: RULE-PTY-032, api: [API-PTY-019], http: 422, trigger: "a Credit override request carries a saleAmount of 0 or less", messages: {ar: "مبلغ البيع يجب أن يكون أكبر من صفر.", en: "The sale amount must be greater than zero."}}
   - {code: "PTY-422-WALK-IN-NO-CREDIT-SALE", rule: RULE-PTY-033, api: [API-PTY-019], http: 422, trigger: "a Credit override request is submitted for the walk-in Customer", messages: {ar: "لا يمكن البيع الآجل للعميل النقدي. سجّل العميل باسمه أولاً.", en: "The walk-in customer cannot buy on credit. Register the customer by name first."}}
-  - {code: "PTY-400-VALIDATION", rule: PLATFORM-STD, api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-027, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037], http: 400, trigger: "the request is malformed: unreadable body, wrong type, missing required parameter, length or value outside the declared schema", messages: {ar: "الطلب غير صالح: تحقّق من الحقول المرسلة.", en: "The request is not valid: check the submitted fields."}, adr: ADR-PTY-024}
-  - {code: "PTY-401-UNAUTHENTICATED", rule: PLATFORM-STD, api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-027, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037], http: 401, trigger: "no valid bearer token", messages: {ar: "سجّل الدخول للمتابعة.", en: "Sign in to continue."}, adr: ADR-PTY-024}
-  - {code: "PTY-403-FORBIDDEN", rule: PLATFORM-STD, api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037], http: 403, trigger: "the caller lacks the PERM_* the endpoint requires (platform authorisation layer); API-PTY-027 answers an empty list instead (REQ-PTY-043)", messages: {ar: "ليست لديك صلاحية لتنفيذ هذا الإجراء.", en: "You do not have permission to perform this action."}, adr: ADR-PTY-024}
+  - {code: "PTY-400-VALIDATION", rule: PLATFORM-STD, api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-027, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037, API-PTY-038], http: 400, trigger: "the request is malformed: unreadable body, wrong type, missing required parameter, length or value outside the declared schema", messages: {ar: "الطلب غير صالح: تحقّق من الحقول المرسلة.", en: "The request is not valid: check the submitted fields."}, adr: ADR-PTY-024}
+  - {code: "PTY-401-UNAUTHENTICATED", rule: PLATFORM-STD, api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-027, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037, API-PTY-038], http: 401, trigger: "no valid bearer token", messages: {ar: "سجّل الدخول للمتابعة.", en: "Sign in to continue."}, adr: ADR-PTY-024}
+  - {code: "PTY-403-FORBIDDEN", rule: PLATFORM-STD, api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037, API-PTY-038], http: 403, trigger: "the caller lacks the PERM_* the endpoint requires (platform authorisation layer); API-PTY-027 answers an empty list instead (REQ-PTY-043)", messages: {ar: "ليست لديك صلاحية لتنفيذ هذا الإجراء.", en: "You do not have permission to perform this action."}, adr: ADR-PTY-024}
   - {code: "PTY-404-CUSTOMER-NOT-FOUND", rule: PLATFORM-STD, api: [API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-031, API-PTY-035], http: 404, trigger: "no Customer with the given identifier in the caller's tenant", messages: {ar: "العميل غير موجود.", en: "The customer was not found."}, adr: ADR-PTY-024}
   - {code: "PTY-404-SUPPLIER-NOT-FOUND", rule: PLATFORM-STD, api: [API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010], http: 404, trigger: "no Supplier with the given identifier in the caller's tenant", messages: {ar: "المورّد غير موجود.", en: "The supplier was not found."}, adr: ADR-PTY-024}
   - {code: "PTY-404-PARTY-NOT-FOUND", rule: PLATFORM-STD, api: [API-PTY-001, API-PTY-006, API-PTY-011, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-029], http: 404, trigger: "no Party with the given identifier (partyId) in the caller's tenant", messages: {ar: "الطرف غير موجود.", en: "The party was not found."}, adr: ADR-PTY-024}
   - {code: "PTY-404-ADDRESS-NOT-FOUND", rule: PLATFORM-STD, api: [API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015], http: 404, trigger: "no Address with the given identifier (of the Party in the path); set-default on an inactive Address", messages: {ar: "العنوان غير موجود.", en: "The address was not found."}, adr: ADR-PTY-024}
   - {code: "PTY-404-CREDIT-OVERRIDE-NOT-FOUND", rule: PLATFORM-STD, api: [API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-036], http: 404, trigger: "no Credit override request with the given identifier visible to the caller", messages: {ar: "طلب تجاوز حد الائتمان غير موجود.", en: "The credit override request was not found."}, adr: ADR-PTY-024}
-  - {code: "PTY-500-INTERNAL", rule: PLATFORM-STD, api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-027, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037], http: 500, trigger: "an unexpected server-side failure", messages: {ar: "حدث خطأ غير متوقع. أعد المحاولة.", en: "An unexpected error occurred. Try again."}, adr: ADR-PTY-024}
+  - {code: "PTY-404-LOOKUP-KEY-UNKNOWN", rule: PLATFORM-STD, api: [API-PTY-038], http: 404, trigger: "the requested key is not one of the five PTY lookup keys, or mdl answers 404 for it (OwnedLookups translates mdl's 404 to this code)", messages: {ar: "هذه القائمة ليست من قوائم الأطراف. اختر إحدى قوائم الأطراف.", en: "This list is not one of the party lists. Choose a party list."}, adr: ADR-PTY-048}
+  - {code: "PTY-500-INTERNAL", rule: PLATFORM-STD, api: [API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-027, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037, API-PTY-038], http: 500, trigger: "an unexpected server-side failure", messages: {ar: "حدث خطأ غير متوقع. أعد المحاولة.", en: "An unexpected error occurred. Try again."}, adr: ADR-PTY-024}
 ```
 
 Rules with no catalog row, and why:

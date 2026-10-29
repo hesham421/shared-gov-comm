@@ -2,8 +2,8 @@
 ══════════════════════════════════════════════════════════════════
 Stage    : P4 — Test Plan · pass 2 · track frontend · plan test · lane test-gen
 Module   : PTY   Version : v1   Profile : commerce
-Sources  : _state/current-srs.md (P1 v1 — REQ 109 · AC 123 · RULE 33) · _state/current-registry-srs.md · _state/current-frontend-execution-plan.md (P3.2 — SCR-PTY-001 … 005, UXD-PTY-001, F1–F4, SEC-FE) · _state/current-api-spec.yaml (api-spec-pty.yaml — the mock the screens are served from) · _state/current-backend-execution-plan.md (catalog codes) · _state/current-registry-db.md · _state/current-dependency-graph.md
-Counts   : TC 44 on this track (TC-PTY-122 … TC-PTY-153, TC-PTY-179 … TC-PTY-190 — the sequence continues after the backend plan's revise additions TC-PTY-154 … 178; no id renumbered) · AC covered here 36 · UXD 1/1 (2 TCs) · module AC coverage 136/136 with the backend plan · gate-analysis revise: G1, G17, G18 applied
+Sources  : _state/current-srs.md (P1 v1 — REQ 114 · AC 140 · RULE 35) · _state/current-registry-srs.md · _state/current-frontend-execution-plan.md (P3.2 — SCR-PTY-001 … 005, UXD-PTY-001, F1–F4, SEC-FE) · _state/current-api-spec.yaml (api-spec-pty.yaml — the mock the screens are served from) · _state/current-backend-execution-plan.md (catalog codes) · _state/current-registry-db.md · _state/current-dependency-graph.md
+Counts   : TC 44 on this track = 42 module TCs (TEST-PLAN-FE: UI-FLOWS 36 + INT-FLOW 6) + 2 UXD TCs (INT-UXD) (TC-PTY-122 … TC-PTY-153, TC-PTY-179 … TC-PTY-190 — the sequence continues after the backend plan's revise additions TC-PTY-154 … 178, and the backend plan's revise 2 additions continue at TC-PTY-191; no id renumbered) · AC covered here 36 · UXD 1/1 (2 TCs) · module AC coverage 140/140 with the backend plan · gate-analysis revise: G1, G17, G18 applied
 Framework: `profile.stack.testing` frontend = agnostic — each TC below is the whole contract; the consumer repo chooses how to turn it into a test
 Open ADRs: 0 · cited: ADR-PTY-012, ADR-PTY-024, ADR-PTY-025, ADR-PTY-031, ADR-PTY-033, ADR-PTY-034, ADR-PTY-037, ADR-PTY-039, ADR-PTY-041, ADR-PTY-042, ADR-PTY-043 (all ACCEPTED; no PENDING item — ADR-PTY-043 replaces ADR-PTY-034 §9)
 ══════════════════════════════════════════════════════════════════
@@ -809,7 +809,7 @@ Every refusal asserted by its text is bound in the frontend plan; no plan gap of
 | Measure | Result |
 |---|---|
 | AC covered on this track | 36 — every AC the frontend plan cites (F-N1) |
-| AC covered by the module (both plans) | 136 / 136 ✓ — no gap |
+| AC covered by the module (both plans) | 140 / 140 ✓ — no gap (AC-PTY-137 … AC-PTY-140, added by the gate-analysis revise 2, are covered by backend TC-PTY-191, 196, 197, 198) |
 | REQ covered on this track | 33 (incl. REQ-PTY-070 and REQ-PTY-077, covered here only) |
 | Frontend statements of G17 with a TC | 8 / 8 (F-N10) |
 | SCR covered | 5 / 5 ✓ |

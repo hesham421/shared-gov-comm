@@ -1,6 +1,7 @@
 # ADR-PTY-034 — Frontend binding decisions for PTY v1
 
 Status  : ACCEPTED (non-breaking) · Stage : P3.2 · Module : PTY v1 · Date : 2026-10-29
+Amended by : ADR-PTY-048 — the five lookup keys are read through PTY's own operation API-PTY-038 (`OwnedLookups`), not the shell's mdl lookup client; every other decision of this ADR holds
 
 ## Context
 The P3.2 frontend plan is bound to `api-spec-pty.yaml` (37 operations). The SRS, the PRD and the document leave several frontend choices open. Each is decided below so that the implementer does not have to. None adds a field, rule or permission to the SRS.

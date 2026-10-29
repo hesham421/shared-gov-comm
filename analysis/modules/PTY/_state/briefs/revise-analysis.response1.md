@@ -1,41 +1,25 @@
-All 22 findings (G1–G22) from the analysis gate are now applied to the PTY artifacts. I edited the files in place, as in the earlier repair passes, rather than returning complete-file blocks; `git diff` shows every change. My own consistency script passes, and every ID count matches its header. I did not run the toolkit's `gov.py` gate, so that is still the real test.
+All 13 findings are applied. As in the earlier passes, I edited the files in place rather than returning full-file blocks, so `git diff` shows every change. My own consistency script passes: 114 REQ, 140 AC and 35 RULE; every REQ has an AC and every AC has a TC. The 38 API blocks match the 38 operations in `api-spec-pty.yaml`, and the 39 catalog codes match the error responses exactly. SRS A9, contract Part 4 and the plan's given-usage table carry the same 14 rows. I did not run `gov.py analyze`, so the gate's own checks are still the real test.
 
-**What the checks confirmed**
-- All 136 acceptance criteria and all 113 requirements have at least one test case across the two test plans.
-- The backend test plan has 146 test cases and the frontend plan 44, with no duplicate IDs.
-- 79 database fields, 40 queries, 37 API operations (valid YAML) and 37 error codes.
-- The script flags one difference on API-PTY-001. This is wrong: it is reading the "PTY-002" inside "RULE-PTY-002".
-
-**How each finding was fixed**
-
-| # | Fix |
+| # | What changed |
 |---|---|
-| G1 | "Open that party" now finds the existing party by email in the Customer search, then the Supplier search (new email filter on API-028). The temporary frontend workaround is gone. TC-123 is updated and TC-179 adds the Supplier-only case. Recorded in ADR-043. |
-| G2 / G21 | Every table has TENANT_ID with a foreign key, a leading index and composite uniques. Seeds use tenant 1, and the two number series (P, CO) are seeded. Recorded in ADR-035 and ADR-036; ADR-021 is superseded and ADR-022 and ADR-029 are revised. |
-| G3 | Every query includes TENANT_ID. QR-011 and QR-037 are marked `@TenantUnscoped`. |
-| G4 | The role-deactivated event now goes out through `OutboxPublisher` as "pty.PartyRoleDeactivated". SRS A9, contract Part 4 and TC-072 match (ADR-038). |
-| G5 / G14 | Permission checks moved onto the service methods, and either UPDATE permission is enough. ADR-039 revises ADR-025. CORE-GAP-in-process-caller-authority covers the anonymous shopper. New TCs: 167 and 177. |
-| G6 | The approver notification uses the new template PTY_CREDIT_OVERRIDE_REQUESTED (TC-115). |
-| G7 | Entities extend `AuditableEntity`, and the domain rules sit in companion classes. |
-| G8 | The module manifest `pty.yaml`, a module-boundary test and a CI job are added. |
-| G9 | The listeners run after commit, on the erp-core executor inside `TenantContext.runAs`. The invitation-acceptance outbox subscriber replaces the old invitation handler. |
-| G10 | The address-ordering decision is recorded (ADR-040) and CORE-GAP-ordinal-within-parent is raised. |
-| G11 | CURRENCY_CODE is added to the customer and to the override request (ADR-037, superseding ADR-020). CORE-GAP-tenant-base-currency is raised. |
-| G12 | Inactive customers and parties are covered by REQ-110–112 and a RULE-005 extension. Deactivating cancels their open requests (ADR-041). |
-| G13 | Only one open request is allowed per sale, enforced by a partial unique index and the error PTY-409-REQUEST-OPEN-FOR-SALE. A request can only be used on the sale it was raised for (ADR-042, RULE-034, REQ-113). |
-| G15 | RULE-030 now also covers approve and reject decisions (AC-134, TC-164 and TC-190). |
-| G16 | TC-168–176 test concurrent requests. |
-| G17 | TC-179–190 cover the frontend behaviour that had no test before. |
-| G18 | TC-138's actor is now an Owner, and the open gap F-N4 is removed. |
-| G19 | TC-020 now names the lookup values it needs created on the host (VIP, OFFICE). Checks C10.8/C10.9 examined nothing because every listed value was already seeded; N4 explains this. |
-| G20 | ADR-034 §9 is removed and points to ADR-043. |
-| G22 | `@Audited` is on the customer's credit fields and on the override request. |
+| G1 | New RULE-PTY-035 and error code PTY-422-OVERRIDE-NOT-REQUIRED, raised by API-019 after the server-side credit check. I also added an unwanted-pattern REQ-PTY-114 (best practice, since none existed) with AC-137 and TC-191. The WARN sentence is gone from API-019, and ADR-045 withdraws it from ADR-028. |
+| G2 | Given-usage table: 14 rows matching A9, `TenantRunner`, the module api doc, and no `modules.common` row. Every `TenantContext.runAs` is replaced. ADR-044 is in Decisions, the next free ADR is ADR-049 everywhere, and N7 now cites ADR-039. |
+| G3 | CORE now says PTY serves its five keys through `OwnedLookups.read(...)` with owner PTY. To make that real I added **API-PTY-038 `GET /api/v1/pty/lookups/{key}`** with error code PTY-404-LOOKUP-KEY-UNKNOWN, following CAT's precedent (ADR-CAT-065). The frontend lookup hooks now call it. `OwnedLookups` is not a published seam, so it has no given-usage row of its own; instead the `modules.mdl` row's purpose names it. ADR-048 records this. |
+| G4 | The empty-list answer for users without VIEW is now given at the entry layer, and `globalSearch` carries `hasAuthority(...VIEW)` like every other service method. ADR-039 §3 and SEC-BE no longer list an exception. |
+| G5 | Four barrier TCs, TC-192 to TC-195. N13 now lists 13 guards; the package table and COVERAGE are updated. |
+| G6 | ADR-046: Customer VIEW includes reading the credit values. REQ-002 is reworded, with AC-138 and TC-196. |
+| G7 | `:tDigits` is defined, with `%`/`_`/`\` escaping per parameter, plus AC-139 and TC-197. |
+| G8 | The credit check order is now Customer (404) → inactive (RULE-005) → flag. REQ-074 reads "of an active Customer", with AC-140 and TC-198. |
+| G9 | The lock order is stated once in CORE: role row → Party → Address and requests. API-004 was reordered to follow it. |
+| G10 | `CustomerSearchHit.isWalkInFl` added, and the picker hides the walk-in Customer. A filter on an inactive Customer is reachable by URL only. The notification mapping (`PTY_CREDIT_OVERRIDE_REQUEST` → `/pty/credit-overrides/:referenceId`) is stated in API-019 and F4. |
+| G11 | Test-plan header counts corrected; the frontend header now reads 44 = 42 module + 2 UXD. TC-199 covers the API-020 visibility rule. |
+| G12 | ADR-047 sets the root namespace to **`com.commerce`**, so PTY becomes `com.commerce.pty`. It is recorded as platform summary decision 11, plus a PLATFORM FINDINGS row in `business-policies-pty.md` asking CAT's next pass to apply the same rename. |
+| G13 | `api-paths: [/api/v1/pty/**]`. |
 
-New decision files: ADR-PTY-035 to 043 (all ACCEPTED) and the three CORE-GAP files. Next free IDs: ADR-044, DBF-080, QR-041, REQ-114, AC-137, RULE-035 and TC-191.
+The new decision files are ADR-PTY-045 to 048, all ACCEPTED. I also updated ADR-028, 034, 039 and the in-process-caller CORE-GAP file in place.
 
-**Things to check**
-- **Assumed columns:** the NOTIF_TEMPLATE seed (BLOCK 8d in the DB script) uses column names I took from the conventions. I could not check them against a real schema.
-- **Base currency:** until CORE-GAP-tenant-base-currency is answered, it comes from the setting PTY_BASE_CURRENCY_CODE, with "XXX" if the setting is missing.
-- **Anonymous shopper:** until that gap is answered, the strict permission checks apply. No v1 caller is blocked by this, because the storefront module comes in wave 2.
-- **Line endings:** `backend-execution-plan-pty.md` changed from CRLF to LF to match the other P1–P4 files, so its diff shows every line as changed.
-- **Snapshots:** the `_state/` snapshot files still describe the old design. I left them alone because the pipeline maintains them.
+**Your call:**
+- **Root namespace:** no vendor name exists anywhere in the project, so I used the project id, giving `com.commerce`. If you have a vendor domain, one rename now replaces it; no code has been delivered yet.
+- **API-PTY-038:** the finding only asked for a statement in CORE. A served-keys statement with no endpoint behind it would contradict itself, so I added the endpoint. That brought the API count to 38 and the catalog to 39 rows.
+- **Guest race (TC-194):** the two simultaneous calls each request an invitation, one under REQ-051 for the new Customer and one under REQ-059 for the match. That follows from the existing requirements; tell me if you want only one invitation in that case.
+- **Untouched:** I left the `_state/` snapshots, `platform/contracts/contract-pty.md` and the split packages alone; the pipeline maintains them.

@@ -4,7 +4,7 @@ Status : OPEN (asked of erp-core 1.6.0) · Raised by : PTY v1 (gate-analysis rev
 Decision that depends on it : ADR-PTY-039 · Related : decisions/CAT/CORE-GAP-in-process-authorization.md (CAT v2, same family)
 
 ## The gap
-Checklist C13 puts `@PreAuthorize("hasAuthority(T(…PtyPermissions).PERM_…)")` on every service method of PTY, and ADR-PTY-039 requires in-process callers to hold that authority too. Three kinds of caller of PTY's published surface (`com.erp.pty.crossmodule.PtyPartyApi`) hold no PTY staff permission:
+Checklist C13 puts `@PreAuthorize("hasAuthority(T(…PtyPermissions).PERM_…)")` on every service method of PTY, and ADR-PTY-039 requires in-process callers to hold that authority too. Three kinds of caller of PTY's published surface (`com.commerce.pty.crossmodule.PtyPartyApi` — root namespace per ADR-PTY-047) hold no PTY staff permission:
 1. **The anonymous storefront shopper.** At guest checkout SFR calls `resolveGuestCustomer` (CON-PTY-014, REQ-PTY-050). The shopper has no account yet, so it has no realm and no authority.
 2. **A CUSTOMER-realm shopper.** A token carries `ROLE_CUSTOMER` plus the permissions of the account's CUSTOMER-realm roles (erp-core `sec`). A PTY staff permission granted to every customer would also open the PTY back-office screens to them.
 3. **System jobs of consuming modules** (STL, PUR, TAX). They read a Customer or a Supplier with no user at all.

@@ -5,10 +5,10 @@ Source artifact : analysis/modules/PTY/P3_1/backend-execution-plan-pty.md · API
 ### ID ranges
 | Kind | Range | Count | Next free |
 |---|---|---|---|
-| API | API-PTY-001 … API-PTY-037 | 37 | API-PTY-038 |
+| API | API-PTY-001 … API-PTY-038 | 38 | API-PTY-039 |
 | QR | QR-PTY-001 … QR-PTY-040 | 40 | QR-PTY-041 |
 
-API ids : API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-027, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037
+API ids : API-PTY-001, API-PTY-002, API-PTY-003, API-PTY-004, API-PTY-005, API-PTY-006, API-PTY-007, API-PTY-008, API-PTY-009, API-PTY-010, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-016, API-PTY-017, API-PTY-018, API-PTY-019, API-PTY-020, API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-024, API-PTY-025, API-PTY-026, API-PTY-027, API-PTY-028, API-PTY-029, API-PTY-030, API-PTY-031, API-PTY-032, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037, API-PTY-038
 
 QR ids : QR-PTY-001, QR-PTY-002, QR-PTY-003, QR-PTY-004, QR-PTY-005, QR-PTY-006, QR-PTY-007, QR-PTY-008, QR-PTY-009, QR-PTY-010, QR-PTY-011, QR-PTY-012, QR-PTY-013, QR-PTY-014, QR-PTY-015, QR-PTY-016, QR-PTY-017, QR-PTY-018, QR-PTY-019, QR-PTY-020, QR-PTY-021, QR-PTY-022, QR-PTY-023, QR-PTY-024, QR-PTY-025, QR-PTY-026, QR-PTY-027, QR-PTY-028, QR-PTY-029, QR-PTY-030, QR-PTY-031, QR-PTY-032, QR-PTY-033, QR-PTY-034, QR-PTY-035, QR-PTY-036, QR-PTY-037, QR-PTY-038, QR-PTY-039, QR-PTY-040
 
@@ -41,7 +41,7 @@ QR ids : QR-PTY-001, QR-PTY-002, QR-PTY-003, QR-PTY-004, QR-PTY-005, QR-PTY-006,
 | API-PTY-024 | GET | /api/v1/pty/credit-settings | ENT-PTY-002 · VIEW | PERM_PTY_CREDIT_SETTINGS_VIEW | — (given cu setting) | CON-PTY-008 |
 | API-PTY-025 | PUT | /api/v1/pty/credit-settings | ENT-PTY-002 · UPDATE | PERM_PTY_CREDIT_SETTINGS_UPDATE | — (given cu setting) | CON-PTY-008 |
 | API-PTY-026 | GET | /api/v1/pty/customers | ENT-PTY-002, ENT-PTY-001 · VIEW | PERM_PTY_CUSTOMER_VIEW | QR-PTY-010 | CON-PTY-002, CON-PTY-006 |
-| API-PTY-027 | GET | /api/v1/pty/customers/global-search | ENT-PTY-002, ENT-PTY-001 · VIEW | PERM_PTY_CUSTOMER_VIEW (checked in code — `isAuthenticated()` on the method, ADR-PTY-039) | QR-PTY-011 | CON-PTY-020 |
+| API-PTY-027 | GET | /api/v1/pty/customers/global-search | ENT-PTY-002, ENT-PTY-001 · VIEW | PERM_PTY_CUSTOMER_VIEW (`hasAuthority` on the service method; the entry layer answers an empty list without it — ADR-PTY-039 §3) | QR-PTY-011 | CON-PTY-020 |
 | API-PTY-028 | GET | /api/v1/pty/suppliers | ENT-PTY-003, ENT-PTY-001 · VIEW | PERM_PTY_SUPPLIER_VIEW | QR-PTY-020 | CON-PTY-003 |
 | API-PTY-029 | GET | /api/v1/pty/parties/{partyId}/addresses | ENT-PTY-004 · VIEW | PERM_PTY_CUSTOMER_VIEW / PERM_PTY_SUPPLIER_VIEW | QR-PTY-038, 027 | CON-PTY-011, CON-PTY-004 |
 | API-PTY-030 | GET | /api/v1/pty/customer-credits | ENT-PTY-002, ENT-PTY-001 · VIEW | PERM_PTY_CUSTOMER_CREDIT_VIEW | QR-PTY-013 | CON-PTY-002 |
@@ -52,6 +52,7 @@ QR ids : QR-PTY-001, QR-PTY-002, QR-PTY-003, QR-PTY-004, QR-PTY-005, QR-PTY-006,
 | API-PTY-035 | POST | /api/v1/pty/credit-checks | ENT-PTY-002 · VIEW | PERM_PTY_CUSTOMER_VIEW | QR-PTY-005 | CON-PTY-015, CON-PTY-022, CON-PTY-008 |
 | API-PTY-036 | PATCH | /api/v1/pty/credit-overrides/{id}/use | ENT-PTY-005 · UPDATE | PERM_PTY_CREDIT_OVERRIDE_CREATE | QR-PTY-033, 005, 034 | CON-PTY-018, CON-PTY-005 |
 | API-PTY-037 | GET | /api/v1/pty/flag-dependencies/b2bCredit | ENT-PTY-002 · VIEW | PERM_PTY_CREDIT_SETTINGS_VIEW | QR-PTY-014 | CON-PTY-019 |
+| API-PTY-038 | GET | /api/v1/pty/lookups/{key} | ENT-PTY-002, ENT-PTY-004, ENT-PTY-005 · VIEW | the VIEW of any PTY page (`hasAnyAuthority` of the five VIEW constants — ADR-PTY-048) | — (given mdl through OwnedLookups) | CON-PTY-006, CON-PTY-007, CON-PTY-008 |
 
 ### Contract honoured (CON-PTY → API)
 | CON | Item | Honoured by |
@@ -61,9 +62,9 @@ QR ids : QR-PTY-001, QR-PTY-002, QR-PTY-003, QR-PTY-004, QR-PTY-005, QR-PTY-006,
 | CON-PTY-003 | Supplier (entity) | API-PTY-006 … 010, 028 |
 | CON-PTY-004 | Address (entity) | API-PTY-011 … 015, 029 |
 | CON-PTY-005 | Credit override request (entity) | API-PTY-004 (system cancellation), 019 … 023, 032, 036 |
-| CON-PTY-006 | Customer group lookup | API-PTY-001, 003, 026 |
-| CON-PTY-007 | Address type lookup | API-PTY-011, 013, 034 |
-| CON-PTY-008 | Credit control codes | API-PTY-019, 021, 022, 024, 025, 035 |
+| CON-PTY-006 | Customer group lookup | API-PTY-001, 003, 026, 038 |
+| CON-PTY-007 | Address type lookup | API-PTY-011, 013, 034, 038 |
+| CON-PTY-008 | Credit control codes | API-PTY-019, 021, 022, 024, 025, 035, 038 |
 | CON-PTY-009 | Read Customer | API-PTY-002 |
 | CON-PTY-010 | Read Supplier | API-PTY-007 |
 | CON-PTY-011 | Read Party addresses | API-PTY-029 |
@@ -98,16 +99,17 @@ Seeded by the migration V1001 (TENANT_ID = 1) : 5 lookup keys / 16 values, numbe
 
 ### Integration
 XM : none — the db-script register is `records: []`; this stage mints none. `INT-C` (last phase) carries no block; requires per edge : —.
-Published in-process surface (inbound only) : `com.erp.pty.crossmodule.PtyPartyApi` (callers hold the PTY authority — ADR-PTY-039), `CustomerCreditExposureContributor` (CON-PTY-022), outbox event `pty.PartyRoleDeactivated` (CON-PTY-021, ADR-PTY-038).
+Published in-process surface (inbound only) : `com.commerce.pty.crossmodule.PtyPartyApi` (callers hold the PTY authority — ADR-PTY-039), `CustomerCreditExposureContributor` (CON-PTY-022), outbox event `pty.PartyRoleDeactivated` (CON-PTY-021, ADR-PTY-038).
 Given event consumed : `sec.CustomerInvitationRedeemed` (outbox subscriber `PtyCustomerInvitationRedeemedSubscriber`) — given, no XM edge.
-Module manifest : `META-INF/erp/modules/pty.yaml` · boundary test `PtyModuleBoundaryTest` (ModuleBoundaryRules) · CI job `module-pty`.
+Module manifest : `META-INF/erp/modules/pty.yaml` (`package: com.commerce.pty`, `api-paths: [/api/v1/pty/**]` — ADR-PTY-047) · boundary test `PtyModuleBoundaryTest` (ModuleBoundaryRules) · CI job `module-pty`.
 
 ### Catalog
-Code count : 37 (28 rule rows · 9 PLATFORM-STD rows, ADR-PTY-024) · format `{MOD}-{http}[-{SLUG}]` · statuses used : 400, 401, 403, 404, 409, 422, 500 · new in the gate-analysis revise : PTY-409-REQUEST-OPEN-FOR-SALE (RULE-PTY-034); PTY-422-ROLE-INACTIVE, PTY-422-CREDIT-NOT-ENABLED, PTY-500-AUDIT-NOT-RECORDED raised by more endpoints (ADR-PTY-041).
+Code count : 39 (29 rule rows · 10 PLATFORM-STD rows, ADR-PTY-024) · format `{MOD}-{http}[-{SLUG}]` · statuses used : 400, 401, 403, 404, 409, 422, 500 · new in the gate-analysis revise : PTY-409-REQUEST-OPEN-FOR-SALE (RULE-PTY-034); PTY-422-ROLE-INACTIVE, PTY-422-CREDIT-NOT-ENABLED, PTY-500-AUDIT-NOT-RECORDED raised by more endpoints (ADR-PTY-041).
+New in gate-analysis revise 2 : PTY-422-OVERRIDE-NOT-REQUIRED (RULE-PTY-035, ADR-PTY-045); PTY-404-LOOKUP-KEY-UNKNOWN (PLATFORM-STD, API-PTY-038, ADR-PTY-048).
 Rules without a catalog row (by design, not missing text) : RULE-PTY-006, RULE-PTY-017 (confirmations), RULE-PTY-024 (answer to the flag owner), RULE-PTY-013, RULE-PTY-020 (invitation-subscriber outcomes, recorded through AuditApi), RULE-PTY-014 (idempotent ensure). Rules without a message : none. DEFERRED rules : none.
 
 ### API document
-api-spec-pty.yaml (OpenAPI 3.1.0) · operations 37 = API blocks 37 · error rows answered 37 = catalog rows 37 · paginated operations 5 (API-PTY-026, 028, 030, 031, 032 — `page`, `size`) · security : http bearer JWT, document-level.
+api-spec-pty.yaml (OpenAPI 3.1.0) · operations 38 = API blocks 38 · error rows answered 39 = catalog rows 39 · paginated operations 5 (API-PTY-026, 028, 030, 031, 032 — `page`, `size`) · security : http bearer JWT, document-level.
 
 ### Security
 5 pages (PTY_CUSTOMER, PTY_SUPPLIER, PTY_CUSTOMER_CREDIT, PTY_CREDIT_OVERRIDE, PTY_CREDIT_SETTINGS) · 16 permission names used, each with its role grant in the `bootstrap` block · roles : Owner, Seller/Cashier, Warehouse · every service method carries `@PreAuthorize` with a `PtyPermissions` constant; in-process callers hold it (ADR-PTY-039).
@@ -137,18 +139,24 @@ Verdict : as stamped by the orchestrator from `gov.py analyze` (the plan's `self
 | decisions/PTY/ADR-PTY-041 | Inactive Customer / Party; open requests on deactivation and while the flag is off | ACCEPTED (non-breaking) |
 | decisions/PTY/ADR-PTY-042 | One open request per sale; use bound to the source sale | ACCEPTED (non-breaking) |
 | decisions/PTY/ADR-PTY-043 | The Party of PTY-409-EMAIL-TAKEN found through the role searches by email | ACCEPTED (non-breaking) |
+| decisions/PTY/ADR-PTY-044 | The given-usage rows name only seams the given publishes (P2 repair round 1; applied here: `TenantRunner`, module api doc, no `modules.common` row) | ACCEPTED (non-breaking) |
+| decisions/PTY/ADR-PTY-045 | A Credit override request is accepted only under BLOCK_WITH_OVERRIDE (revises ADR-PTY-028) | ACCEPTED (non-breaking) |
+| decisions/PTY/ADR-PTY-046 | Customer VIEW includes reading the Customer's credit values | ACCEPTED (non-breaking) |
+| decisions/PTY/ADR-PTY-047 | One application root namespace `com.commerce` for every business module | ACCEPTED (non-breaking) |
+| decisions/PTY/ADR-PTY-048 | PTY serves its own lookup keys through OwnedLookups (API-PTY-038; amends ADR-PTY-034) | ACCEPTED (non-breaking) |
 | decisions/PTY/CORE-GAP-in-process-caller-authority | How a caller with no PTY staff permission reaches a PTY service method | OPEN (question to erp-core) |
 | decisions/PTY/CORE-GAP-tenant-base-currency | Which given interface answers a tenant's base currency | OPEN (question to erp-core) |
 | decisions/PTY/CORE-GAP-ordinal-within-parent | Whether a per-parent ordinal is outside F6, or which facility assigns it | OPEN (question to erp-core) |
 
 Filed from the db-script §5.2 (P2, text verbatim) : decisions/PTY/ADR-PTY-018 … ADR-PTY-022 — ACCEPTED (non-breaking).
 
-BLOCKED : none. Next free ADR : ADR-PTY-044.
+BLOCKED : none. Next free ADR : ADR-PTY-049.
 
 ### Traceability
-REQ covered by ≥ 1 API or DBF : 113 / 113 — 111 by `API-*` traces; REQ-PTY-052 and REQ-PTY-054 by DBF-PTY-017 (db-script) and the invitation outbox subscriber of SVC-API-INT · orphan REQ : none.
+REQ covered by ≥ 1 API or DBF : 114 / 114 — 112 by `API-*` traces; REQ-PTY-052 and REQ-PTY-054 by DBF-PTY-017 (db-script) and the invitation outbox subscriber of SVC-API-INT · orphan REQ : none.
 QR reached by ≥ 1 API : 40 / 40 · orphan QR : none.
 
 ### Event
 "P3.1 completed: PTY v1 — API 37 · QR 38 · integration edges 0 · catalog 36 · ADR 10 (023–032), 0 BLOCKED"
 "gate-analysis revise: PTY v1 — API 37 · QR 40 · catalog 37 · DBF 79 · ADR 035–043 · CORE-GAP 3 (OPEN), 0 BLOCKED"
+"gate-analysis revise 2: PTY v1 — API 38 (+API-PTY-038) · QR 40 · catalog 39 (+2) · RULE-PTY-035 · ADR 045–048 · root package com.commerce.pty, 0 BLOCKED"

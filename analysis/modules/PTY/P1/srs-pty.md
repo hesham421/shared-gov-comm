@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : PTY   Version : v1   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved — gate prd-approval, commit dd46f92)
-Counts : REQ 113 · AC 136 · ENT 5 · RULE 34 · SCR-REQ 5 · ADR 4 raised at P1 (ADR-PTY-014…017; inherited: ADR-PTY-011…013) + gate-analysis revise (ADR-PTY-035, 037, 038, 039, 041, 042, 043 applied here)
+Counts : REQ 114 · AC 140 · ENT 5 · RULE 35 · SCR-REQ 5 · ADR 4 raised at P1 (ADR-PTY-014…017; inherited: ADR-PTY-011…013) + gate-analysis revise (ADR-PTY-035, 037, 038, 039, 041, 042, 043 applied here) + P2 repair (ADR-PTY-044) + gate-analysis revise 2 (ADR-PTY-045, 046, 048 applied here)
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -15,7 +15,7 @@ Counts : REQ 113 · AC 136 · ENT 5 · RULE 34 · SCR-REQ 5 · ADR 4 raised at P
 | Feature code | PTY |
 | Version | v1 |
 | Date | 2026-10-29 |
-| Status | DRAFT — P1 pass 1 · gate-analysis revise (findings G1, G4, G11, G12, G13, G15, G19 applied) |
+| Status | DRAFT — P1 pass 1 · gate-analysis revise (findings G1, G4, G11, G12, G13, G15, G19 applied) · gate-analysis revise 2 (findings G1, G3, G6, G7, G8 applied: REQ-PTY-114, RULE-PTY-035, AC-PTY-137 … AC-PTY-140) |
 | Prepared by | SRS engine (claude:opus), lane `analysis` |
 | Profile | commerce (COMMERCE) |
 | Stories covered | 17 / 17 (US-PTY-001 … US-PTY-017) |
@@ -254,17 +254,22 @@ Entities provided by the given and used here without an ENT id (§3.1 GIVEN): Us
 
 ### REQ-PTY-002 — Customer read for consuming modules
   Pattern    : event
-  Statement  : When a consuming module requests a Customer by its identifier, the system shall return the Customer's identifier, Party code, nameAr, nameEn, mobile, email, taxRegistrationNo, customerGroupCode and isActiveFl.
+  Statement  : When a consuming module requests a Customer by its identifier, the system shall return the Customer's identifier, Party code, nameAr, nameEn, mobile, email, taxRegistrationNo, customerGroupCode and isActiveFl, and, while `b2bCredit` is on, its creditLimit, paymentTermDays and currencyCode to every holder of VIEW on page PTY_CUSTOMER.
   Traces     : US-PTY-001
   Entities   : ENT-PTY-001, ENT-PTY-002
-  Rationale  : Every channel reads the same Customer data.
-  Source     : POL-PTY-001; registry §5 (Customer consumers SLS, STL, SFR)
+  Rationale  : Every channel reads the same Customer data; the credit values are part of the Customer the contract promises, while the credit standing and history stay behind the Customer credit permission.
+  Source     : POL-PTY-001; registry §5 (Customer consumers SLS, STL, SFR); ADR-PTY-046
   Priority   : HIGH
 
 #### AC-PTY-003 — [REQ-PTY-002]
   Given  : Customer 5001 has code P-000120, nameEn "Nour Trading", customerGroupCode WHOLESALE and isActiveFl true
   When   : Sales & POS requests Customer 5001
   Then   : the response carries identifier 5001, code P-000120, nameEn "Nour Trading", customerGroupCode WHOLESALE and isActiveFl true
+
+#### AC-PTY-138 — [REQ-PTY-002]
+  Given  : `b2bCredit` is on; Customer 5001 holds creditLimit 50000, paymentTermDays 45 and currencyCode EGP; a user of a custom role holds VIEW on page PTY_CUSTOMER and no permission on page PTY_CUSTOMER_CREDIT
+  When   : the user requests Customer 5001, then requests the credit standing of Customer 5001
+  Then   : the Customer response carries creditLimit 50000, paymentTermDays 45 and currencyCode EGP, and the credit standing request is refused through the platform authorisation layer
 
 ### REQ-PTY-003 — Inactive role refused for new documents
   Pattern    : unwanted
@@ -852,6 +857,11 @@ Entities provided by the given and used here without an ENT id (§3.1 GIVEN): Us
   When   : a Seller/Cashier enters the single character "n" in the global search
   Then   : 0 customer results are returned
 
+#### AC-PTY-139 — [REQ-PTY-041]
+  Given  : active Customer with mobile "+20 100 111 2222"
+  When   : a Seller/Cashier enters "100 111-2222" in the global search
+  Then   : that Customer is returned in the customer results (spaces and dashes are ignored on both sides of the mobile comparison)
+
 ### REQ-PTY-042 — Arabic letter forms in search
   Pattern    : ubiquitous
   Statement  : The system shall compare Arabic search terms with Arabic names treating أ, إ and آ as ا, ة as ه, and ى as ي.
@@ -1307,7 +1317,7 @@ Entities provided by the given and used here without an ENT id (§3.1 GIVEN): Us
 
 ### REQ-PTY-074 — Credit check not applicable while the flag is off
   Pattern    : state
-  Statement  : While `b2bCredit` is off, the system shall answer every credit check with result NOT_APPLICABLE.
+  Statement  : While `b2bCredit` is off, the system shall answer every credit check of an active Customer with result NOT_APPLICABLE.
   Traces     : US-PTY-012, US-PTY-014
   Entities   : ENT-PTY-002
   Rationale  : Sales proceed without credit control when the business does not sell on credit.
@@ -1878,6 +1888,11 @@ Entities provided by the given and used here without an ENT id (§3.1 GIVEN): Us
   When   : the Owner saves creditLimit 20000 on Customer 5002, then chooses "Clear credit" / «مسح الائتمان» on Customer 5002
   Then   : the save is refused with the message of AC-PTY-124 and creditLimit stays 10000; the clear succeeds and Customer 5002 holds creditLimit empty and paymentTermDays empty
 
+#### AC-PTY-140 — [REQ-PTY-110]
+  Given  : `b2bCredit` is off; Customer 5002 (code P-000121) has isActiveFl false
+  When   : Sales & POS requests a credit check for Customer 5002 and sale amount 100
+  Then   : the request is refused with the message of AC-PTY-124 and no result code is returned (the Customer is checked before the flag, so NOT_APPLICABLE is not answered)
+
 ### REQ-PTY-111 — Open requests closed when their Customer is deactivated
   Pattern    : event
   Statement  : When a Customer is deactivated, the system shall set every PENDING or APPROVED Credit override request of that Customer to CANCELLED in the same save.
@@ -1929,6 +1944,20 @@ Entities provided by the given and used here without an ENT id (§3.1 GIVEN): Us
   Given  : `b2bCredit` is on, BLOCK_WITH_OVERRIDE; PENDING request CO-000031 for Customer 5001 and sourceDocumentRef "POS-1-000455"
   When   : a second Credit override request for Customer 5001, sale amount 2000 and sourceDocumentRef "POS-1-000455" is submitted
   Then   : no request is saved and the message ar «لهذا البيع طلب موافقة مفتوح بالفعل (CO-000031). تابع ذلك الطلب بدلاً من إنشاء طلب جديد.» · en «This sale already has an open approval request (CO-000031). Follow that request instead of creating a new one.» is returned
+
+### REQ-PTY-114 — Request refused under WARN
+  Pattern    : unwanted
+  Statement  : If a Credit override request is submitted while the tenant's credit-overrun action is WARN, then the system shall refuse it with the message of RULE-PTY-035.
+  Traces     : US-PTY-015, US-PTY-016
+  Entities   : ENT-PTY-005
+  Rationale  : Under WARN the seller completes the sale (REQ-PTY-088); an approver is never asked to decide a sale that needs no decision.
+  Source     : POL-PTY-008; ADR-PTY-016; ADR-PTY-045; RULE-PTY-035
+  Priority   : HIGH
+
+#### AC-PTY-137 — [REQ-PTY-114]
+  Given  : `b2bCredit` is on; the credit-overrun action is WARN; Customer 5001 has creditLimit 50000 and open exposure 49000
+  When   : a Credit override request for Customer 5001, sale amount 2000 and sourceDocumentRef "POS-1-000500" is submitted
+  Then   : no request is saved and the message ar «لا حاجة إلى موافقة: إعداد تجاوز الائتمان هو التنبيه فقط، ويمكن إتمام البيع دون طلب.» · en «No approval is needed: the credit-overrun setting is Warn only, so the sale can be completed without a request.» is returned
 
 ## A5 — Business rules
 
@@ -2247,6 +2276,15 @@ Rules that read capability flag `b2bCredit` read it through the FeatureFlags API
   Source     : ADR-PTY-042
   Test-Hint  : {docNo} = the open request's number; a REJECTED, CANCELLED or USED request does not block a new one
 
+### RULE-PTY-035 — Request only under BLOCK_WITH_OVERRIDE
+  Scope      : ENT-PTY-005
+  Trigger    : on create
+  Statement  : The system shall prevent creating a Credit override request while the tenant's credit-overrun action is not BLOCK_WITH_OVERRIDE.
+  Message    : ar: لا حاجة إلى موافقة: إعداد تجاوز الائتمان هو التنبيه فقط، ويمكن إتمام البيع دون طلب. · en: No approval is needed: the credit-overrun setting is Warn only, so the sale can be completed without a request.
+  Traces     : REQ-PTY-114, REQ-PTY-091, REQ-PTY-088
+  Data source: ENT-PTY-005.creditCheckResultCode
+  Source     : POL-PTY-008; ADR-PTY-016; ADR-PTY-045 — the credit-overrun action is the tenant setting held in given cu (A9), read with the server-side credit check
+
 ## A6 — Lookups
 
 ```yaml name=lookups
@@ -2300,7 +2338,7 @@ ENT-PTY-005 — Credit override request (`statusCode`, lookup CREDIT_OVERRIDE_ST
  PENDING, APPROVED ── system, on deactivation of the Customer (REQ-PTY-111) ──► CANCELLED
 ```
 
-Initial state: PENDING (REQ-PTY-091). Final states: USED, REJECTED, CANCELLED. Approve, reject and use are refused while `b2bCredit` is off; cancel is not (RULE-PTY-023, REQ-PTY-112). At most one PENDING or APPROVED request exists per Customer and sale document reference (RULE-PTY-034). Module-specific approval flow: single step, traced to US-PTY-015 and US-PTY-016 (ADR-PTY-016); no workflow engine.
+Initial state: PENDING (REQ-PTY-091). Final states: USED, REJECTED, CANCELLED. Approve, reject and use are refused while `b2bCredit` is off; cancel is not (RULE-PTY-023, REQ-PTY-112). At most one PENDING or APPROVED request exists per Customer and sale document reference (RULE-PTY-034). A request is created only while the credit-overrun action is BLOCK_WITH_OVERRIDE (RULE-PTY-035). Module-specific approval flow: single step, traced to US-PTY-015 and US-PTY-016 (ADR-PTY-016); no workflow engine.
 
 ## A8 — Module dependencies
 
@@ -2324,7 +2362,7 @@ Party is DAG #4 with no business-module dependency (KB §5); it reaches only the
 | default Customer for a POS sale | GET | /customers/walk-in | — | walk-in Customer | RULE-PTY-014 | REQ-PTY-045, REQ-PTY-046 |
 | guest order details | POST | /guest-customers | names, email, mobile, delivery address | Customer id | RULE-PTY-019, RULE-PTY-021, RULE-PTY-013 | REQ-PTY-050, REQ-PTY-053, REQ-PTY-055 … REQ-PTY-063 |
 | credit check | POST | /credit-checks | customerId, saleAmount | creditLimit, open exposure, projected exposure, currencyCode, result, credit-overrun action, approval-required | RULE-PTY-005 | REQ-PTY-074, REQ-PTY-079 … REQ-PTY-084, REQ-PTY-088, REQ-PTY-089, REQ-PTY-110 |
-| create Credit override request | POST | /credit-overrides | customerId, saleAmount, sourceDocumentRef | Credit override request | RULE-PTY-005, RULE-PTY-023, RULE-PTY-025, RULE-PTY-032, RULE-PTY-033, RULE-PTY-034 | REQ-PTY-091, REQ-PTY-072, REQ-PTY-104, REQ-PTY-105, REQ-PTY-110, REQ-PTY-113 |
+| create Credit override request | POST | /credit-overrides | customerId, saleAmount, sourceDocumentRef | Credit override request | RULE-PTY-005, RULE-PTY-023, RULE-PTY-025, RULE-PTY-032, RULE-PTY-033, RULE-PTY-034, RULE-PTY-035 | REQ-PTY-091, REQ-PTY-072, REQ-PTY-104, REQ-PTY-105, REQ-PTY-110, REQ-PTY-113, REQ-PTY-114 |
 | read Credit override request | GET | /credit-overrides/{id} | id | Credit override request | — | REQ-PTY-103 |
 | use Credit override request | PATCH | /credit-overrides/{id}/use | id, customerId, saleAmount, usedDocumentRef (= sourceDocumentRef) | Credit override request | RULE-PTY-005, RULE-PTY-023, RULE-PTY-028 | REQ-PTY-097, REQ-PTY-099, REQ-PTY-110, REQ-PTY-112 |
 | `b2bCredit` switch-off dependency | GET | /flag-dependencies/b2bCredit | — | count of Customers carrying credit | RULE-PTY-024 | REQ-PTY-075, REQ-PTY-076 |
@@ -2340,7 +2378,7 @@ rows:
   - {given: erp-core, module: modules.sec, via: com.erp.sec.crossmodule.SecUserDirectoryApi, purpose: "Resolve the CUSTOMER-realm user linked to a Customer and the users holding UPDATE on PTY_CREDIT_OVERRIDE; show user names in credit history and request decisions (REQ-PTY-093, REQ-PTY-108)"}
   - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "PtyPermissions declares permission module PTY with the five PTY screens (SEC_PAGES) and their VIEW / CREATE / UPDATE / DELETE actions; every service method checks its constant (B4, ADR-PTY-039)"}
   - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "Read capability flag b2bCredit through the FeatureFlags API, read / save the tenant's credit-overrun setting and read the tenant base currency PTY_BASE_CURRENCY_CODE (REQ-PTY-070 … REQ-PTY-074, REQ-PTY-086, REQ-PTY-087; ADR-PTY-037)"}
-  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "Load CUSTOMER_GROUP, ADDRESS_TYPE, CREDIT_OVERRUN_ACTION, CREDIT_CHECK_RESULT and CREDIT_OVERRIDE_STATUS values at runtime (A6)"}
+  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "Load CUSTOMER_GROUP, ADDRESS_TYPE, CREDIT_OVERRUN_ACTION, CREDIT_CHECK_RESULT and CREDIT_OVERRIDE_STATUS values at runtime to validate the stored codes, and serve these five PTY keys to PTY's screens through the common helper OwnedLookups.read over this interface (A6; ADR-PTY-048)"}
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "Assign the Party code and the Credit override request docNo from the series PTY_PARTY and PTY_CREDIT_OVERRIDE seeded by the PTY migration (REQ-PTY-006, REQ-PTY-092)"}
   - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "Create the tenant's walk-in Customer when a tenant is provisioned (REQ-PTY-044)"}
   - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantRunner, purpose: "Re-bind the tenant of PTY's after-commit work through the given's published tenant runner on the given event executor (REQ-PTY-051, REQ-PTY-059, REQ-PTY-093; ADR-PTY-044)"}
@@ -2354,7 +2392,7 @@ rows:
 
 No ENT re-creates a given entity: CUSTOMER-realm users stay in given `sec` (Customer holds only `secUserId`), the credit-overrun setting stays in given `cu`, lookup values stay in given `mdl`, number series in given `sequence`, audit events in given `audit`.
 
-The platform columns of A3 (tenantId, version and the audit fields) follow the given's entity base class in `erp-core:modules.common`. That module publishes no extension point, interface or api, so the base class is a build dependency of PTY's code, not a use through a published seam, and it has no `given-usage` row (ADR-PTY-044).
+The platform columns of A3 (tenantId, version and the audit fields) follow the given's entity base class in `erp-core:modules.common`. That module publishes no extension point, interface or api, so the base class is a build dependency of PTY's code, not a use through a published seam, and it has no `given-usage` row (ADR-PTY-044). The same holds for `OwnedLookups`, the `modules.common` helper through which PTY serves its own five lookup keys: the call goes through `MdlLookupApi`, which the `modules.mdl` row names (ADR-PTY-048).
 
 # PART B — SCREEN REQUIREMENTS
 
@@ -2477,7 +2515,7 @@ Address create, update and deactivation require UPDATE on this page. "Make suppl
 | PTY_CUSTOMER_CREDIT | Seller/Cashier | ✓ | — | — | — |
 | PTY_CUSTOMER_CREDIT | Warehouse | — | — | — | — |
 
-The page is absent from every menu while `b2bCredit` is off (REQ-PTY-070).
+The page is absent from every menu while `b2bCredit` is off (REQ-PTY-070). VIEW on PTY_CUSTOMER_CREDIT gates the credit standing (open exposure, available credit), the credit list and the credit history; reading a Customer's creditLimit, paymentTermDays and currencyCode on the Customer read is part of VIEW on PTY_CUSTOMER (REQ-PTY-002, ADR-PTY-046).
 
 ### B5 — API expectations
 | Operation | Verb | Path | Inputs | Outputs | RULEs | Traces (REQ) |
@@ -2497,7 +2535,7 @@ The page is absent from every menu while `b2bCredit` is off (REQ-PTY-070).
   Users        : Owner (approver), Seller/Cashier (requester)
   Navigation   : Party → Credit → Credit override requests; from: a sale whose credit check requires approval, the approver's in-app notification (REQ-PTY-093), Customer credit; to: Customer credit (SCR-REQ-PTY-003)
   Content shape: flat record list with a decision panel
-  Traces       : REQ-PTY-070, REQ-PTY-072, REQ-PTY-089, REQ-PTY-091, REQ-PTY-092, REQ-PTY-093, REQ-PTY-094, REQ-PTY-095, REQ-PTY-096, REQ-PTY-098, REQ-PTY-100, REQ-PTY-101, REQ-PTY-102, REQ-PTY-103, REQ-PTY-104, REQ-PTY-105, REQ-PTY-107, REQ-PTY-109, REQ-PTY-110, REQ-PTY-112, REQ-PTY-113
+  Traces       : REQ-PTY-070, REQ-PTY-072, REQ-PTY-089, REQ-PTY-091, REQ-PTY-092, REQ-PTY-093, REQ-PTY-094, REQ-PTY-095, REQ-PTY-096, REQ-PTY-098, REQ-PTY-100, REQ-PTY-101, REQ-PTY-102, REQ-PTY-103, REQ-PTY-104, REQ-PTY-105, REQ-PTY-107, REQ-PTY-109, REQ-PTY-110, REQ-PTY-112, REQ-PTY-113, REQ-PTY-114
   Composite    : Search + Entry = one screen requirement
 
 ### B2 — Search / list
@@ -2507,7 +2545,7 @@ The page is absent from every menu while `b2bCredit` is off (REQ-PTY-070).
 ### B3 — Input
 - Create (prefilled by the sale, mandatory 3): ENT-PTY-005.customerFk (RULE-PTY-033), ENT-PTY-005.saleAmount (RULE-PTY-032, RULE-PTY-025), ENT-PTY-005.sourceDocumentRef. System-filled: docNo (RULE-PTY-031), docDate, statusCode, creditLimitAtRequest, openExposure, creditCheckResultCode.
 - Decision panel: ENT-PTY-005.decisionReason (mandatory on reject, RULE-PTY-027).
-- Actions: "Request approval" / «طلب موافقة» → REQ-PTY-091 (RULE-PTY-023, RULE-PTY-025, RULE-PTY-032, RULE-PTY-033) · "Approve" / «موافقة» → REQ-PTY-094 (RULE-PTY-026) · "Reject" / «رفض» → REQ-PTY-095 (RULE-PTY-026, RULE-PTY-027) · "Cancel request" / «إلغاء الطلب» → REQ-PTY-096 (RULE-PTY-026, RULE-PTY-029).
+- Actions: "Request approval" / «طلب موافقة» → REQ-PTY-091, REQ-PTY-114 (RULE-PTY-023, RULE-PTY-025, RULE-PTY-032, RULE-PTY-033, RULE-PTY-035) · "Approve" / «موافقة» → REQ-PTY-094 (RULE-PTY-026) · "Reject" / «رفض» → REQ-PTY-095 (RULE-PTY-026, RULE-PTY-027) · "Cancel request" / «إلغاء الطلب» → REQ-PTY-096 (RULE-PTY-026, RULE-PTY-029).
 
 ### B4 — Access
 | Page code | Role | VIEW | CREATE | UPDATE | DELETE |
@@ -2521,7 +2559,7 @@ UPDATE on PTY_CREDIT_OVERRIDE is the credit-override permission named by POL-PTY
 ### B5 — API expectations
 | Operation | Verb | Path | Inputs | Outputs | RULEs | Traces (REQ) |
 |---|---|---|---|---|---|---|
-| create Credit override request | POST | /api/v1/pty/credit-overrides | customerId, saleAmount, sourceDocumentRef | Credit override request | RULE-PTY-005, RULE-PTY-023, RULE-PTY-025, RULE-PTY-031, RULE-PTY-032, RULE-PTY-033, RULE-PTY-034 | REQ-PTY-091, REQ-PTY-092, REQ-PTY-110, REQ-PTY-113 |
+| create Credit override request | POST | /api/v1/pty/credit-overrides | customerId, saleAmount, sourceDocumentRef | Credit override request | RULE-PTY-005, RULE-PTY-023, RULE-PTY-025, RULE-PTY-031, RULE-PTY-032, RULE-PTY-033, RULE-PTY-034, RULE-PTY-035 | REQ-PTY-091, REQ-PTY-092, REQ-PTY-110, REQ-PTY-113, REQ-PTY-114 |
 | search Credit override requests | GET | /api/v1/pty/credit-overrides | filters of B2, paging | Page of Credit override request | — | REQ-PTY-101, REQ-PTY-102 |
 | read Credit override request | GET | /api/v1/pty/credit-overrides/{id} | id | Credit override request | — | REQ-PTY-103 |
 | approve | PATCH | /api/v1/pty/credit-overrides/{id}/approval | id | Credit override request | RULE-PTY-023, RULE-PTY-026, RULE-PTY-030 | REQ-PTY-094, REQ-PTY-107, REQ-PTY-109, REQ-PTY-112 |
@@ -2566,22 +2604,22 @@ Not applicable — one setting per tenant.
 
 | P0.5 | REQ | AC | RULE | ENT | SCR-REQ |
 |---|---|---|---|---|---|
-| US-PTY-001 | REQ-PTY-001, REQ-PTY-002, REQ-PTY-003, REQ-PTY-004, REQ-PTY-010, REQ-PTY-012, REQ-PTY-013, REQ-PTY-014, REQ-PTY-015, REQ-PTY-018, REQ-PTY-023, REQ-PTY-111 | AC-PTY-001, AC-PTY-002, AC-PTY-003, AC-PTY-004, AC-PTY-005, AC-PTY-006, AC-PTY-013, AC-PTY-016, AC-PTY-017, AC-PTY-018, AC-PTY-019, AC-PTY-020, AC-PTY-028, AC-PTY-128, AC-PTY-129, AC-PTY-136 | RULE-PTY-001, RULE-PTY-002, RULE-PTY-005, RULE-PTY-006, RULE-PTY-007, RULE-PTY-010 | ENT-PTY-001, ENT-PTY-002, ENT-PTY-003 | SCR-REQ-PTY-001, SCR-REQ-PTY-002 |
+| US-PTY-001 | REQ-PTY-001, REQ-PTY-002, REQ-PTY-003, REQ-PTY-004, REQ-PTY-010, REQ-PTY-012, REQ-PTY-013, REQ-PTY-014, REQ-PTY-015, REQ-PTY-018, REQ-PTY-023, REQ-PTY-111 | AC-PTY-001, AC-PTY-002, AC-PTY-003, AC-PTY-004, AC-PTY-005, AC-PTY-006, AC-PTY-013, AC-PTY-016, AC-PTY-017, AC-PTY-018, AC-PTY-019, AC-PTY-020, AC-PTY-028, AC-PTY-128, AC-PTY-129, AC-PTY-136, AC-PTY-138 | RULE-PTY-001, RULE-PTY-002, RULE-PTY-005, RULE-PTY-006, RULE-PTY-007, RULE-PTY-010 | ENT-PTY-001, ENT-PTY-002, ENT-PTY-003 | SCR-REQ-PTY-001, SCR-REQ-PTY-002 |
 | US-PTY-002 | REQ-PTY-004, REQ-PTY-005, REQ-PTY-006, REQ-PTY-007, REQ-PTY-008, REQ-PTY-009, REQ-PTY-010, REQ-PTY-011, REQ-PTY-012 | AC-PTY-006, AC-PTY-007, AC-PTY-008, AC-PTY-009, AC-PTY-010, AC-PTY-011, AC-PTY-012, AC-PTY-013, AC-PTY-014, AC-PTY-015, AC-PTY-016, AC-PTY-017 | RULE-PTY-001, RULE-PTY-002, RULE-PTY-003, RULE-PTY-004, RULE-PTY-007 | ENT-PTY-001, ENT-PTY-002, ENT-PTY-003 | SCR-REQ-PTY-001, SCR-REQ-PTY-002 |
 | US-PTY-003 | REQ-PTY-003, REQ-PTY-006, REQ-PTY-008, REQ-PTY-009, REQ-PTY-011, REQ-PTY-016, REQ-PTY-017, REQ-PTY-018, REQ-PTY-019, REQ-PTY-020, REQ-PTY-021, REQ-PTY-022, REQ-PTY-023 | AC-PTY-004, AC-PTY-005, AC-PTY-008, AC-PTY-010, AC-PTY-011, AC-PTY-012, AC-PTY-014, AC-PTY-015, AC-PTY-021, AC-PTY-022, AC-PTY-023, AC-PTY-024, AC-PTY-025, AC-PTY-026, AC-PTY-027, AC-PTY-028, AC-PTY-136 | RULE-PTY-001, RULE-PTY-002, RULE-PTY-003, RULE-PTY-004, RULE-PTY-005, RULE-PTY-006, RULE-PTY-007, RULE-PTY-008 | ENT-PTY-001, ENT-PTY-002, ENT-PTY-003 | SCR-REQ-PTY-001, SCR-REQ-PTY-002 |
 | US-PTY-004 | REQ-PTY-024, REQ-PTY-025, REQ-PTY-026, REQ-PTY-027, REQ-PTY-028, REQ-PTY-029, REQ-PTY-049, REQ-PTY-057 | AC-PTY-029, AC-PTY-030, AC-PTY-031, AC-PTY-032, AC-PTY-033, AC-PTY-034, AC-PTY-035, AC-PTY-057, AC-PTY-065 | RULE-PTY-002, RULE-PTY-009, RULE-PTY-012 | ENT-PTY-001, ENT-PTY-002, ENT-PTY-003 | SCR-REQ-PTY-001, SCR-REQ-PTY-002 |
 | US-PTY-005 | REQ-PTY-030, REQ-PTY-031, REQ-PTY-032, REQ-PTY-033, REQ-PTY-034, REQ-PTY-035, REQ-PTY-036, REQ-PTY-037, REQ-PTY-038, REQ-PTY-110 | AC-PTY-036, AC-PTY-037, AC-PTY-038, AC-PTY-039, AC-PTY-040, AC-PTY-041, AC-PTY-042, AC-PTY-043, AC-PTY-044, AC-PTY-126 | RULE-PTY-005, RULE-PTY-006, RULE-PTY-015, RULE-PTY-016, RULE-PTY-017 | ENT-PTY-001, ENT-PTY-004 | SCR-REQ-PTY-001, SCR-REQ-PTY-002 |
 | US-PTY-006 | REQ-PTY-007, REQ-PTY-013, REQ-PTY-039, REQ-PTY-040 | AC-PTY-009, AC-PTY-018, AC-PTY-045, AC-PTY-046 | RULE-PTY-018 | ENT-PTY-001, ENT-PTY-002 | SCR-REQ-PTY-001 |
-| US-PTY-007 | REQ-PTY-041, REQ-PTY-042, REQ-PTY-043 | AC-PTY-047, AC-PTY-048, AC-PTY-049, AC-PTY-050, AC-PTY-051 | — | ENT-PTY-001, ENT-PTY-002 | — (operation for consuming modules, A8.1) |
+| US-PTY-007 | REQ-PTY-041, REQ-PTY-042, REQ-PTY-043 | AC-PTY-047, AC-PTY-048, AC-PTY-049, AC-PTY-050, AC-PTY-051, AC-PTY-139 | — | ENT-PTY-001, ENT-PTY-002 | — (operation for consuming modules, A8.1) |
 | US-PTY-008 | REQ-PTY-044, REQ-PTY-045, REQ-PTY-046, REQ-PTY-047, REQ-PTY-048, REQ-PTY-049, REQ-PTY-063, REQ-PTY-083, REQ-PTY-105 | AC-PTY-052, AC-PTY-053, AC-PTY-054, AC-PTY-055, AC-PTY-056, AC-PTY-057, AC-PTY-071, AC-PTY-094, AC-PTY-119 | RULE-PTY-010, RULE-PTY-011, RULE-PTY-012, RULE-PTY-013, RULE-PTY-014, RULE-PTY-033 | ENT-PTY-001, ENT-PTY-002, ENT-PTY-003, ENT-PTY-005 | SCR-REQ-PTY-001, SCR-REQ-PTY-003, SCR-REQ-PTY-004 |
 | US-PTY-009 | REQ-PTY-050, REQ-PTY-051, REQ-PTY-052, REQ-PTY-053, REQ-PTY-054 | AC-PTY-058, AC-PTY-059, AC-PTY-060, AC-PTY-061, AC-PTY-062 | RULE-PTY-013, RULE-PTY-019, RULE-PTY-020 | ENT-PTY-001, ENT-PTY-002, ENT-PTY-004 | — (operation for consuming modules, A8.1) |
 | US-PTY-010 | REQ-PTY-052, REQ-PTY-055, REQ-PTY-056, REQ-PTY-057, REQ-PTY-058, REQ-PTY-059, REQ-PTY-060, REQ-PTY-061, REQ-PTY-062, REQ-PTY-063 | AC-PTY-060, AC-PTY-063, AC-PTY-064, AC-PTY-065, AC-PTY-066, AC-PTY-067, AC-PTY-068, AC-PTY-069, AC-PTY-070, AC-PTY-071 | RULE-PTY-013, RULE-PTY-020, RULE-PTY-021 | ENT-PTY-001, ENT-PTY-002, ENT-PTY-004 | — (operation for consuming modules, A8.1) |
 | US-PTY-011 | REQ-PTY-048, REQ-PTY-064, REQ-PTY-065, REQ-PTY-066, REQ-PTY-067, REQ-PTY-068, REQ-PTY-069, REQ-PTY-078, REQ-PTY-110 | AC-PTY-056, AC-PTY-072, AC-PTY-073, AC-PTY-074, AC-PTY-075, AC-PTY-076, AC-PTY-077, AC-PTY-088, AC-PTY-127 | RULE-PTY-005, RULE-PTY-008, RULE-PTY-011, RULE-PTY-022, RULE-PTY-023 | ENT-PTY-001, ENT-PTY-002 | SCR-REQ-PTY-003 |
 | US-PTY-012 | REQ-PTY-070, REQ-PTY-071, REQ-PTY-072, REQ-PTY-073, REQ-PTY-074, REQ-PTY-112 | AC-PTY-078, AC-PTY-079, AC-PTY-080, AC-PTY-081, AC-PTY-082, AC-PTY-083, AC-PTY-130, AC-PTY-131 | RULE-PTY-023 | ENT-PTY-002, ENT-PTY-005 | SCR-REQ-PTY-001, SCR-REQ-PTY-003, SCR-REQ-PTY-004, SCR-REQ-PTY-005 |
 | US-PTY-013 | REQ-PTY-069, REQ-PTY-075, REQ-PTY-076, REQ-PTY-077, REQ-PTY-078 | AC-PTY-077, AC-PTY-084, AC-PTY-085, AC-PTY-086, AC-PTY-087, AC-PTY-088 | RULE-PTY-024 | ENT-PTY-001, ENT-PTY-002 | SCR-REQ-PTY-003 |
-| US-PTY-014 | REQ-PTY-068, REQ-PTY-074, REQ-PTY-079, REQ-PTY-080, REQ-PTY-081, REQ-PTY-082, REQ-PTY-083, REQ-PTY-084, REQ-PTY-085, REQ-PTY-110 | AC-PTY-076, AC-PTY-083, AC-PTY-089, AC-PTY-090, AC-PTY-091, AC-PTY-092, AC-PTY-093, AC-PTY-094, AC-PTY-095, AC-PTY-096, AC-PTY-124, AC-PTY-135 | RULE-PTY-005 | ENT-PTY-001, ENT-PTY-002 | SCR-REQ-PTY-003 |
-| US-PTY-015 | REQ-PTY-086, REQ-PTY-087, REQ-PTY-088, REQ-PTY-089, REQ-PTY-090 | AC-PTY-097, AC-PTY-098, AC-PTY-099, AC-PTY-100, AC-PTY-101 | — | ENT-PTY-002, ENT-PTY-005 | SCR-REQ-PTY-004, SCR-REQ-PTY-005 |
-| US-PTY-016 | REQ-PTY-089, REQ-PTY-091, REQ-PTY-092, REQ-PTY-093, REQ-PTY-094, REQ-PTY-095, REQ-PTY-096, REQ-PTY-097, REQ-PTY-098, REQ-PTY-099, REQ-PTY-100, REQ-PTY-101, REQ-PTY-102, REQ-PTY-103, REQ-PTY-104, REQ-PTY-105, REQ-PTY-107, REQ-PTY-109, REQ-PTY-110, REQ-PTY-111, REQ-PTY-112, REQ-PTY-113 | AC-PTY-100, AC-PTY-102, AC-PTY-103, AC-PTY-104, AC-PTY-105, AC-PTY-106, AC-PTY-107, AC-PTY-108, AC-PTY-109, AC-PTY-110, AC-PTY-111, AC-PTY-112, AC-PTY-113, AC-PTY-114, AC-PTY-115, AC-PTY-116, AC-PTY-117, AC-PTY-118, AC-PTY-119, AC-PTY-121, AC-PTY-125, AC-PTY-128, AC-PTY-129, AC-PTY-130, AC-PTY-131, AC-PTY-132, AC-PTY-133, AC-PTY-134 | RULE-PTY-005, RULE-PTY-023, RULE-PTY-025, RULE-PTY-026, RULE-PTY-027, RULE-PTY-028, RULE-PTY-029, RULE-PTY-030, RULE-PTY-031, RULE-PTY-032, RULE-PTY-033, RULE-PTY-034 | ENT-PTY-002, ENT-PTY-005 | SCR-REQ-PTY-004, SCR-REQ-PTY-005 |
+| US-PTY-014 | REQ-PTY-068, REQ-PTY-074, REQ-PTY-079, REQ-PTY-080, REQ-PTY-081, REQ-PTY-082, REQ-PTY-083, REQ-PTY-084, REQ-PTY-085, REQ-PTY-110 | AC-PTY-076, AC-PTY-083, AC-PTY-089, AC-PTY-090, AC-PTY-091, AC-PTY-092, AC-PTY-093, AC-PTY-094, AC-PTY-095, AC-PTY-096, AC-PTY-124, AC-PTY-135, AC-PTY-140 | RULE-PTY-005 | ENT-PTY-001, ENT-PTY-002 | SCR-REQ-PTY-003 |
+| US-PTY-015 | REQ-PTY-086, REQ-PTY-087, REQ-PTY-088, REQ-PTY-089, REQ-PTY-090, REQ-PTY-114 | AC-PTY-097, AC-PTY-098, AC-PTY-099, AC-PTY-100, AC-PTY-101, AC-PTY-137 | RULE-PTY-035 | ENT-PTY-002, ENT-PTY-005 | SCR-REQ-PTY-004, SCR-REQ-PTY-005 |
+| US-PTY-016 | REQ-PTY-089, REQ-PTY-091, REQ-PTY-092, REQ-PTY-093, REQ-PTY-094, REQ-PTY-095, REQ-PTY-096, REQ-PTY-097, REQ-PTY-098, REQ-PTY-099, REQ-PTY-100, REQ-PTY-101, REQ-PTY-102, REQ-PTY-103, REQ-PTY-104, REQ-PTY-105, REQ-PTY-107, REQ-PTY-109, REQ-PTY-110, REQ-PTY-111, REQ-PTY-112, REQ-PTY-113, REQ-PTY-114 | AC-PTY-100, AC-PTY-102, AC-PTY-103, AC-PTY-104, AC-PTY-105, AC-PTY-106, AC-PTY-107, AC-PTY-108, AC-PTY-109, AC-PTY-110, AC-PTY-111, AC-PTY-112, AC-PTY-113, AC-PTY-114, AC-PTY-115, AC-PTY-116, AC-PTY-117, AC-PTY-118, AC-PTY-119, AC-PTY-121, AC-PTY-125, AC-PTY-128, AC-PTY-129, AC-PTY-130, AC-PTY-131, AC-PTY-132, AC-PTY-133, AC-PTY-134, AC-PTY-137 | RULE-PTY-005, RULE-PTY-023, RULE-PTY-025, RULE-PTY-026, RULE-PTY-027, RULE-PTY-028, RULE-PTY-029, RULE-PTY-030, RULE-PTY-031, RULE-PTY-032, RULE-PTY-033, RULE-PTY-034, RULE-PTY-035 | ENT-PTY-002, ENT-PTY-005 | SCR-REQ-PTY-004, SCR-REQ-PTY-005 |
 | US-PTY-017 | REQ-PTY-106, REQ-PTY-107, REQ-PTY-108, REQ-PTY-109 | AC-PTY-120, AC-PTY-121, AC-PTY-122, AC-PTY-123, AC-PTY-134 | RULE-PTY-030 | ENT-PTY-002, ENT-PTY-005 | SCR-REQ-PTY-003, SCR-REQ-PTY-004 |
 
 Checks: every story → ≥ 1 REQ; every REQ → ≥ 1 AC; every RULE traces to ≥ 1 REQ (A5); every SCR-REQ traces to ≥ 1 REQ (B1). REQs without a screen are operations for consuming modules (A8.1) or platform behaviour (global search, provisioning, audit).
@@ -2614,6 +2652,9 @@ Checks: every story → ≥ 1 REQ; every REQ → ≥ 1 AC; every RULE traces to 
 | ADR-PTY-042 | One open request per sale (RULE-PTY-034, REQ-PTY-113); a use is bound to the source sale (RULE-PTY-028) | gate-analysis G13 | ACCEPTED — non-breaking |
 | ADR-PTY-043 | Supplier search by email (REQ-PTY-018, SCR-REQ-PTY-002 B2) so a RULE-PTY-002 refusal reaches a Supplier-only Party | RULE-PTY-002; gate-analysis G1 | ACCEPTED — non-breaking |
 | ADR-PTY-044 | A9 `given-usage` rows name only seams the given publishes: tenant re-binding through `TenantRunner`, the module manifest through the module api doc; the entity base class of `modules.common` has no row | C-GIVEN-2; P2 repair round 1 | ACCEPTED — non-breaking |
+| ADR-PTY-045 | A Credit override request is accepted only under BLOCK_WITH_OVERRIDE (RULE-PTY-035, REQ-PTY-114, AC-PTY-137); revises ADR-PTY-028 | REQ-PTY-091; ADR-PTY-016; gate-analysis revise 2 G1 | ACCEPTED — non-breaking |
+| ADR-PTY-046 | Customer VIEW includes reading creditLimit, paymentTermDays and currencyCode on the Customer read; Customer credit VIEW gates the credit standing, list and history (REQ-PTY-002, AC-PTY-138, SCR-REQ-PTY-003 B4) | CON-PTY-009; gate-analysis revise 2 G6 | ACCEPTED — non-breaking |
+| ADR-PTY-048 | PTY serves its own five lookup keys through `OwnedLookups` over `MdlLookupApi`; the `modules.mdl` row of A9 names the use, and `OwnedLookups` has no row of its own | erp-core checklist C6; gate-analysis revise 2 G3 | ACCEPTED — non-breaking |
 
 ## Access summary
 

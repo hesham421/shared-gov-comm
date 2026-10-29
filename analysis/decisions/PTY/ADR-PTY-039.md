@@ -2,14 +2,18 @@
 
 Status  : ACCEPTED (non-breaking) · Stage : gate-analysis revise (G5, G14) · Module : PTY v1 · Date : 2026-10-29
 Revises : ADR-PTY-025 (in-process callers; address permission) · Depends on : CORE-GAP-in-process-caller-authority (OPEN)
+Revised : gate-analysis revise 2 (G4) — §3 no longer carries an exception: the global search's service method carries `hasAuthority`, and the empty answer is given at the entry layer. Package names follow ADR-PTY-047 (`com.commerce.pty`).
 
 ## Context
 The P3.1 plan carried `@PreAuthorize` on the controllers only. ADR-PTY-025 let an in-process caller of `PtyPartyApi` run under its own module's checks, with no PTY permission. Checklist C13 requires `@PreAuthorize("hasAuthority(T(…PtyPermissions).PERM_…)")` on every service method, referencing PTY's own constants. The SRS also leaves open which permission an Address write needs when the Party holds both roles.
 
 ## Decision
-1. **One contributor, one constant class.** `com.erp.pty.permission.PtyPermissions implements PermissionContributor` declares permission module PTY with its five screens and the 16 `PERM_PTY_*` constants. Every `@PreAuthorize` references those constants and no other module's.
+1. **One contributor, one constant class.** `com.commerce.pty.permission.PtyPermissions implements PermissionContributor` declares permission module PTY with its five screens and the 16 `PERM_PTY_*` constants. Every `@PreAuthorize` references those constants and no other module's.
 2. **Service methods.** Every public method of a `Pty*Service` carries the authority of the endpoint it serves (backend plan SEC-BE). The controller carries the same annotation, so a refusal happens before the body is read. `PtyPartyApi` delegates to the same service methods, so **an in-process caller's security context must hold the PTY authority** — ADR-PTY-025's exemption is withdrawn. The cashier on a sale holds PERM_PTY_CUSTOMER_VIEW and PERM_PTY_CREDIT_OVERRIDE_CREATE (preset Seller/Cashier), which covers CON-PTY-009, 013, 015, 016 and 018.
-3. **The global search.** API-PTY-027 must answer an empty list, not a refusal, to a user without VIEW (REQ-PTY-043). It carries `@PreAuthorize("isAuthenticated()")` and checks `PtyPermissions.PERM_PTY_CUSTOMER_VIEW` in code through `SecurityContextHelper`. This is the one method whose PTY authority is checked in code rather than in the annotation, and the backend plan names it.
+3. **The global search.** API-PTY-027 must answer an empty list, not a refusal, to a user without VIEW (REQ-PTY-043). That answer is given at the entry layer, so no service method is exempt from checklist C13:
+   - `CustomerController.globalSearch` and the in-process delegate `PtyPartyApi.globalSearchCustomers` each test PERM_PTY_CUSTOMER_VIEW through `SecurityContextHelper` and return an empty list without it;
+   - with it, they call `CustomerQueryService.globalSearch`, which carries `@PreAuthorize("hasAuthority(T(com.commerce.pty.permission.PtyPermissions).PERM_PTY_CUSTOMER_VIEW)")` like every other service method.
+   (Before revise 2 this method carried `isAuthenticated()` and was named an exception; that exception is withdrawn.)
 4. **Address writes (G14).** API-PTY-011, 013, 014 and 015 carry `@PreAuthorize("hasAnyAuthority(T(…PtyPermissions).PERM_PTY_CUSTOMER_UPDATE, T(…PtyPermissions).PERM_PTY_SUPPLIER_UPDATE)")`. The service then requires the caller to hold the UPDATE of a role the Party holds. When the Party holds both roles, **either UPDATE is enough**. A caller whose UPDATE belongs to a role the Party does not hold gets PTY-403-FORBIDDEN. Reads (API-PTY-012, 029) follow the same rule with VIEW.
 5. **Callers with no PTY authority.** Three kinds of caller hold no PTY authority:
    - the anonymous storefront shopper of guest checkout (CON-PTY-014);

@@ -2,10 +2,10 @@
 ══════════════════════════════════════════════════════════════════
 Stage    : P4 — Test Plan · pass 2 · track backend · plan test · lane test-gen
 Module   : PTY   Version : v1   Profile : commerce
-Sources  : _state/current-srs.md (P1 v1 — REQ 109 · AC 123 · RULE 33) · _state/current-registry-srs.md · _state/current-registry-db.md (XM register `records: []`) · _state/current-backend-execution-plan.md (P3.1 — API 37 · Error Catalog 36 rows) · _state/current-frontend-execution-plan.md (P3.2 — read for the track split only) · _state/current-api-spec.yaml (api-spec-pty.yaml, OpenAPI 3.1.0, 37 operations) · _state/current-dependency-graph.md (PTY tier 1, no outbound edge)
-Counts   : TC 146 on this track (TC-PTY-001 … TC-PTY-121, TC-PTY-154 … TC-PTY-178 — the revise additions follow the frontend plan's TC-PTY-122 … 153, no id renumbered) · AC covered here 134/136 (AC-PTY-078, AC-PTY-087 by the frontend plan) · module AC coverage 136/136 · XM 0 · INT-XM absent · gate-analysis revise: G16, G19 and the new ACs applied
+Sources  : _state/current-srs.md (P1 v1 — REQ 114 · AC 140 · RULE 35) · _state/current-registry-srs.md · _state/current-registry-db.md (XM register `records: []`) · _state/current-backend-execution-plan.md (P3.1 — API 38 · Error Catalog 39 rows) · _state/current-frontend-execution-plan.md (P3.2 — read for the track split only) · _state/current-api-spec.yaml (api-spec-pty.yaml, OpenAPI 3.1.0, 38 operations) · _state/current-dependency-graph.md (PTY tier 1, no outbound edge)
+Counts   : TC 156 on this track (TC-PTY-001 … TC-PTY-121, TC-PTY-154 … TC-PTY-178, TC-PTY-191 … TC-PTY-200 — the revise additions follow the frontend plan's TC-PTY-122 … 153 and TC-PTY-179 … 190, no id renumbered) · AC covered here 138/140 (AC-PTY-078, AC-PTY-087 by the frontend plan) · module AC coverage 140/140 · XM 0 · INT-XM absent · gate-analysis revise: G16, G19 and the new ACs applied · gate-analysis revise 2: G1, G2 (N7), G5, G6, G7, G8, G11 and API-PTY-038 applied (N16)
 Framework: `profile.stack.testing` backend = agnostic — each TC below is the whole contract; the consumer repo chooses how to turn it into a test
-Open ADRs: 0 · cited: ADR-PTY-016, ADR-PTY-024, ADR-PTY-025, ADR-PTY-026, ADR-PTY-028, ADR-PTY-031, ADR-PTY-035, ADR-PTY-036, ADR-PTY-037, ADR-PTY-038, ADR-PTY-039, ADR-PTY-040, ADR-PTY-041, ADR-PTY-042, ADR-PTY-043 (all ACCEPTED)
+Open ADRs: 0 · cited: ADR-PTY-016, ADR-PTY-024, ADR-PTY-025, ADR-PTY-026, ADR-PTY-028, ADR-PTY-031, ADR-PTY-035, ADR-PTY-036, ADR-PTY-037, ADR-PTY-038, ADR-PTY-039, ADR-PTY-040, ADR-PTY-041, ADR-PTY-042, ADR-PTY-043, ADR-PTY-045, ADR-PTY-046, ADR-PTY-048 (all ACCEPTED)
 ══════════════════════════════════════════════════════════════════
 
 Every TC binds one `API-*` of api-spec-pty.yaml (or, where the plan has no endpoint, the in-process handler the backend plan names); the request and response shapes, statuses and error bodies are read there by `x-api-id`, never restated here. Rule messages are copied from the SRS character for character and asserted in both languages; the server returns them as `LocalizedException → {code, messageAr, messageEn}`.
@@ -29,7 +29,7 @@ This run writes only the two test plans; the choices below are recorded here for
   - Events, audit records, invitations, notifications and number series are observed at the given seam the backend plan names: `OutboxPublisher` for `pty.PartyRoleDeactivated`, the `@Audited` rows of entity types PTY_CUSTOMER and PTY_CREDIT_OVERRIDE_REQUEST, `AuditApi.record` business actions, `SecCustomerInvitationApi.issue`, `NotificationDispatchApi.dispatch`, and `NumberSeriesApi`.
   - The redemption of a CUSTOMER-realm invitation has no endpoint. TC-PTY-027 and TC-PTY-088 deliver a `sec.CustomerInvitationRedeemed` outbox message to `PtyCustomerInvitationRedeemedSubscriber` (backend plan CORE, SVC-API-INT).
 - **N6 — AC-PTY-104 "a later update carrying docNo".** The request has no update endpoint; the change endpoints that carry `docNo` are API-PTY-021, 022, 036 (RULE-PTY-031). TC-PTY-041 uses API-PTY-021.
-- **N7 — Consumer callers.** "Sales & POS / Purchasing / Settlements / Pricing requests …" is executed as a REST call by a principal holding the endpoint's permission (in-process callers run under their own caller's context — ADR-PTY-025). For AC-PTY-117 that principal is the request's requester (REQ-PTY-102 visibility).
+- **N7 — Consumer callers.** "Sales & POS / Purchasing / Settlements / Pricing requests …" is executed as a REST call by a principal holding the endpoint's permission (an in-process caller's security context must hold the PTY authority of the method it calls — ADR-PTY-039, which withdrew ADR-PTY-025's exemption). For AC-PTY-117 that principal is the request's requester (REQ-PTY-102 visibility).
 - **N8 — Flag state not stated.** AC-PTY-090, 091, 095, 099, 100, 103, 118 run with `b2bCredit` on: with it off the credit check answers NOT_APPLICABLE and the request is refused by RULE-PTY-023 before the rule the AC targets.
 - **N9 — PUT bodies.** API-PTY-003, 008, 013, 017 replace the editable set; fields the AC does not name are sent as currently stored.
 - **N10 — Exposure.** Open exposure comes from registered `CustomerCreditExposureContributor` beans (ADR-PTY-028); a TC fixes it with test contributors reporting the AC's amounts.
@@ -44,22 +44,27 @@ This run writes only the two test plans; the choices below are recorded here for
   - the Party-lock serialisation of role deactivations: TC-PTY-173;
   - the Party-lock serialisation of Address ordinals and defaults: TC-PTY-174;
   - audit chaining of credit edits: TC-PTY-175;
-  - the open-request race: TC-PTY-176.
+  - the open-request race: TC-PTY-176;
+  - a Customer deactivation racing a request creation (Customer lock, QR-PTY-039 cancellation): TC-PTY-192;
+  - a Customer deactivation racing an approval and a use (QR-PTY-039 plus the compare-and-set of QR-PTY-034, three outcomes): TC-PTY-193;
+  - the guest email race of API-PTY-034 (REQUIRES_NEW plus one re-match; TC-PTY-172 covers API-PTY-001 only): TC-PTY-194;
+  - an Address type change under the Party lock, racing an Address create of the same type: TC-PTY-195.
   Each derives from the AC whose outcome the guard protects, so an AC can carry a second TC.
 - **N14 — Tenancy and authority (gate-analysis G2, G3, G5, G14).**
   - TC-PTY-178 runs with two tenants (`@MultiTenantOnly`): a record of another tenant is not found.
   - TC-PTY-177 calls `PtyPartyApi` under a context without the PTY authority (ADR-PTY-039).
   - TC-PTY-167 asserts that either role's UPDATE is enough for the Address of a two-role Party.
 - **N15 — Revise additions.** TC-PTY-154 … 166 cover AC-PTY-124 … 136, the ACs the gate-analysis revise added to the SRS.
+- **N16 — Revise 2 additions.** TC-PTY-191 covers AC-PTY-137 (RULE-PTY-035, a request refused under WARN — ADR-PTY-045). TC-PTY-192 … 195 are the four guards of N13 added by G5. TC-PTY-196 covers AC-PTY-138 (Customer VIEW reads the credit values — ADR-PTY-046). TC-PTY-197 covers AC-PTY-139 (a term with spaces and dashes; `%` matched literally). TC-PTY-198 covers AC-PTY-140 (the Customer is checked before the flag). TC-PTY-199 covers the visibility of API-PTY-020 (another user's request answers 404). TC-PTY-200 covers API-PTY-038 (OwnedLookups — ADR-PTY-048); its VIP host data is the state TC-PTY-020 uses, so no value is required in opposite states.
 
-<!-- PHASE:TEST-PLAN-BE:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-003,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-044,REQ-PTY-045,REQ-PTY-046,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-050,REQ-PTY-051,REQ-PTY-052,REQ-PTY-053,REQ-PTY-054,REQ-PTY-055,REQ-PTY-056,REQ-PTY-057,REQ-PTY-058,REQ-PTY-059,REQ-PTY-060,REQ-PTY-061,REQ-PTY-062,REQ-PTY-063,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-074,REQ-PTY-075,REQ-PTY-076,REQ-PTY-078,REQ-PTY-079,REQ-PTY-080,REQ-PTY-081,REQ-PTY-082,REQ-PTY-083,REQ-PTY-084,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-099,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113,AC-PTY-001,AC-PTY-002,AC-PTY-003,AC-PTY-004,AC-PTY-005,AC-PTY-006,AC-PTY-007,AC-PTY-008,AC-PTY-009,AC-PTY-010,AC-PTY-011,AC-PTY-012,AC-PTY-013,AC-PTY-014,AC-PTY-015,AC-PTY-016,AC-PTY-017,AC-PTY-018,AC-PTY-019,AC-PTY-020,AC-PTY-021,AC-PTY-022,AC-PTY-023,AC-PTY-024,AC-PTY-025,AC-PTY-026,AC-PTY-027,AC-PTY-028,AC-PTY-029,AC-PTY-030,AC-PTY-031,AC-PTY-032,AC-PTY-033,AC-PTY-034,AC-PTY-035,AC-PTY-036,AC-PTY-037,AC-PTY-038,AC-PTY-039,AC-PTY-040,AC-PTY-041,AC-PTY-042,AC-PTY-043,AC-PTY-044,AC-PTY-045,AC-PTY-046,AC-PTY-047,AC-PTY-048,AC-PTY-049,AC-PTY-050,AC-PTY-051,AC-PTY-052,AC-PTY-053,AC-PTY-054,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-058,AC-PTY-059,AC-PTY-060,AC-PTY-061,AC-PTY-062,AC-PTY-063,AC-PTY-064,AC-PTY-065,AC-PTY-066,AC-PTY-067,AC-PTY-068,AC-PTY-069,AC-PTY-070,AC-PTY-071,AC-PTY-072,AC-PTY-073,AC-PTY-074,AC-PTY-075,AC-PTY-076,AC-PTY-077,AC-PTY-079,AC-PTY-080,AC-PTY-081,AC-PTY-082,AC-PTY-083,AC-PTY-084,AC-PTY-085,AC-PTY-086,AC-PTY-088,AC-PTY-089,AC-PTY-090,AC-PTY-091,AC-PTY-092,AC-PTY-093,AC-PTY-094,AC-PTY-095,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-099,AC-PTY-100,AC-PTY-101,AC-PTY-102,AC-PTY-103,AC-PTY-104,AC-PTY-105,AC-PTY-106,AC-PTY-107,AC-PTY-108,AC-PTY-109,AC-PTY-110,AC-PTY-111,AC-PTY-112,AC-PTY-113,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-118,AC-PTY-119,AC-PTY-120,AC-PTY-121,AC-PTY-122,AC-PTY-123,AC-PTY-124,AC-PTY-125,AC-PTY-126,AC-PTY-127,AC-PTY-128,AC-PTY-129,AC-PTY-130,AC-PTY-131,AC-PTY-132,AC-PTY-133,AC-PTY-134,AC-PTY-135,AC-PTY-136 -->
+<!-- PHASE:TEST-PLAN-BE:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-003,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-044,REQ-PTY-045,REQ-PTY-046,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-050,REQ-PTY-051,REQ-PTY-052,REQ-PTY-053,REQ-PTY-054,REQ-PTY-055,REQ-PTY-056,REQ-PTY-057,REQ-PTY-058,REQ-PTY-059,REQ-PTY-060,REQ-PTY-061,REQ-PTY-062,REQ-PTY-063,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-074,REQ-PTY-075,REQ-PTY-076,REQ-PTY-078,REQ-PTY-079,REQ-PTY-080,REQ-PTY-081,REQ-PTY-082,REQ-PTY-083,REQ-PTY-084,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-099,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113,REQ-PTY-114,AC-PTY-001,AC-PTY-002,AC-PTY-003,AC-PTY-004,AC-PTY-005,AC-PTY-006,AC-PTY-007,AC-PTY-008,AC-PTY-009,AC-PTY-010,AC-PTY-011,AC-PTY-012,AC-PTY-013,AC-PTY-014,AC-PTY-015,AC-PTY-016,AC-PTY-017,AC-PTY-018,AC-PTY-019,AC-PTY-020,AC-PTY-021,AC-PTY-022,AC-PTY-023,AC-PTY-024,AC-PTY-025,AC-PTY-026,AC-PTY-027,AC-PTY-028,AC-PTY-029,AC-PTY-030,AC-PTY-031,AC-PTY-032,AC-PTY-033,AC-PTY-034,AC-PTY-035,AC-PTY-036,AC-PTY-037,AC-PTY-038,AC-PTY-039,AC-PTY-040,AC-PTY-041,AC-PTY-042,AC-PTY-043,AC-PTY-044,AC-PTY-045,AC-PTY-046,AC-PTY-047,AC-PTY-048,AC-PTY-049,AC-PTY-050,AC-PTY-051,AC-PTY-052,AC-PTY-053,AC-PTY-054,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-058,AC-PTY-059,AC-PTY-060,AC-PTY-061,AC-PTY-062,AC-PTY-063,AC-PTY-064,AC-PTY-065,AC-PTY-066,AC-PTY-067,AC-PTY-068,AC-PTY-069,AC-PTY-070,AC-PTY-071,AC-PTY-072,AC-PTY-073,AC-PTY-074,AC-PTY-075,AC-PTY-076,AC-PTY-077,AC-PTY-079,AC-PTY-080,AC-PTY-081,AC-PTY-082,AC-PTY-083,AC-PTY-084,AC-PTY-085,AC-PTY-086,AC-PTY-088,AC-PTY-089,AC-PTY-090,AC-PTY-091,AC-PTY-092,AC-PTY-093,AC-PTY-094,AC-PTY-095,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-099,AC-PTY-100,AC-PTY-101,AC-PTY-102,AC-PTY-103,AC-PTY-104,AC-PTY-105,AC-PTY-106,AC-PTY-107,AC-PTY-108,AC-PTY-109,AC-PTY-110,AC-PTY-111,AC-PTY-112,AC-PTY-113,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-118,AC-PTY-119,AC-PTY-120,AC-PTY-121,AC-PTY-122,AC-PTY-123,AC-PTY-124,AC-PTY-125,AC-PTY-126,AC-PTY-127,AC-PTY-128,AC-PTY-129,AC-PTY-130,AC-PTY-131,AC-PTY-132,AC-PTY-133,AC-PTY-134,AC-PTY-135,AC-PTY-136,AC-PTY-137,AC-PTY-138,AC-PTY-139,AC-PTY-140 -->
 ## TEST-PLAN-BE — module scenarios
 
-146 TCs (> 12), split in two:
-- RULE-SCENARIOS — violations, boundaries, state transitions and the barrier-synchronised concurrency guards: 74 TCs;
-- API-SCENARIOS — happy paths, permission, paging and empty results: 72 TCs.
+156 TCs (> 12), split in two:
+- RULE-SCENARIOS — violations, boundaries, state transitions and the barrier-synchronised concurrency guards: 80 TCs;
+- API-SCENARIOS — happy paths, permission, paging and empty results: 76 TCs.
 
-<!-- SUB:RULE-SCENARIOS:START traces=REQ-PTY-002,REQ-PTY-003,REQ-PTY-006,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-022,REQ-PTY-024,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-034,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-044,REQ-PTY-046,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-053,REQ-PTY-054,REQ-PTY-062,REQ-PTY-066,REQ-PTY-067,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-074,REQ-PTY-076,REQ-PTY-081,REQ-PTY-082,REQ-PTY-084,REQ-PTY-091,REQ-PTY-092,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-099,REQ-PTY-100,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-109,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113,AC-PTY-003,AC-PTY-004,AC-PTY-005,AC-PTY-008,AC-PTY-012,AC-PTY-013,AC-PTY-014,AC-PTY-015,AC-PTY-017,AC-PTY-027,AC-PTY-029,AC-PTY-032,AC-PTY-033,AC-PTY-034,AC-PTY-035,AC-PTY-040,AC-PTY-042,AC-PTY-043,AC-PTY-044,AC-PTY-045,AC-PTY-046,AC-PTY-049,AC-PTY-052,AC-PTY-054,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-061,AC-PTY-062,AC-PTY-070,AC-PTY-074,AC-PTY-075,AC-PTY-079,AC-PTY-080,AC-PTY-081,AC-PTY-082,AC-PTY-083,AC-PTY-085,AC-PTY-092,AC-PTY-093,AC-PTY-095,AC-PTY-103,AC-PTY-104,AC-PTY-106,AC-PTY-107,AC-PTY-108,AC-PTY-109,AC-PTY-110,AC-PTY-111,AC-PTY-112,AC-PTY-113,AC-PTY-114,AC-PTY-118,AC-PTY-119,AC-PTY-120,AC-PTY-123,AC-PTY-124,AC-PTY-125,AC-PTY-126,AC-PTY-127,AC-PTY-128,AC-PTY-129,AC-PTY-130,AC-PTY-131,AC-PTY-132,AC-PTY-133,AC-PTY-134 -->
+<!-- SUB:RULE-SCENARIOS:START traces=REQ-PTY-002,REQ-PTY-003,REQ-PTY-006,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-022,REQ-PTY-024,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-034,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-044,REQ-PTY-046,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-050,REQ-PTY-053,REQ-PTY-054,REQ-PTY-055,REQ-PTY-062,REQ-PTY-066,REQ-PTY-067,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-074,REQ-PTY-076,REQ-PTY-081,REQ-PTY-082,REQ-PTY-084,REQ-PTY-091,REQ-PTY-092,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-099,REQ-PTY-100,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-109,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113,REQ-PTY-114,AC-PTY-003,AC-PTY-004,AC-PTY-005,AC-PTY-008,AC-PTY-012,AC-PTY-013,AC-PTY-014,AC-PTY-015,AC-PTY-017,AC-PTY-027,AC-PTY-029,AC-PTY-032,AC-PTY-033,AC-PTY-034,AC-PTY-035,AC-PTY-036,AC-PTY-040,AC-PTY-042,AC-PTY-043,AC-PTY-044,AC-PTY-045,AC-PTY-046,AC-PTY-049,AC-PTY-052,AC-PTY-054,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-061,AC-PTY-062,AC-PTY-063,AC-PTY-070,AC-PTY-074,AC-PTY-075,AC-PTY-079,AC-PTY-080,AC-PTY-081,AC-PTY-082,AC-PTY-083,AC-PTY-085,AC-PTY-092,AC-PTY-093,AC-PTY-095,AC-PTY-103,AC-PTY-104,AC-PTY-106,AC-PTY-107,AC-PTY-108,AC-PTY-109,AC-PTY-110,AC-PTY-111,AC-PTY-112,AC-PTY-113,AC-PTY-114,AC-PTY-118,AC-PTY-119,AC-PTY-120,AC-PTY-123,AC-PTY-124,AC-PTY-125,AC-PTY-126,AC-PTY-127,AC-PTY-128,AC-PTY-129,AC-PTY-130,AC-PTY-131,AC-PTY-132,AC-PTY-133,AC-PTY-134,AC-PTY-137,AC-PTY-140 -->
 ### RULE-SCENARIOS — violations, boundaries, state transitions
 
 <!-- TC:TC-PTY-001:START traces=AC-PTY-004,REQ-PTY-003,API-PTY-002 -->
@@ -1097,9 +1102,96 @@ Steps        : 1. as the T2 principal, GET /api/v1/pty/customers/5001
 Expected     : 404 · code PTY-404-CUSTOMER-NOT-FOUND · messageAr «العميل غير موجود.» · messageEn «The customer was not found.»
 Test data    : customerId 5001 (AC); tenants test-local
 <!-- TC:TC-PTY-178:END -->
+<!-- TC:TC-PTY-191:START traces=AC-PTY-137,REQ-PTY-114,API-PTY-019 -->
+### TC-PTY-191 — Credit override request refused under WARN
+Derived from : AC-PTY-137  (REQ-PTY-114)
+Exercises    : API-PTY-019 POST /api/v1/pty/credit-overrides
+Rule / code  : RULE-PTY-035 → PTY-422-OVERRIDE-NOT-REQUIRED (ADR-PTY-045)
+Package      : SVC-API-CRUD
+Scenario     : VIOLATION · data class INVALID · language ALL
+Preconditions: `b2bCredit` on; the tenant setting PTY_CREDIT_OVERRUN_ACTION is WARN; Customer 5001 with creditLimit 50000; a test contributor reports 49000 (the server-side check answers OVER_LIMIT); caller (Sales & POS principal) holds PERM_PTY_CREDIT_OVERRIDE_CREATE; the request count and the PTY_CREDIT_OVERRIDE series value are recorded; `NotificationDispatchApi` calls captured
+Host data    : none
+Steps        : 1. POST /api/v1/pty/credit-overrides with customerId 5001, saleAmount 2000, sourceDocumentRef "POS-1-000500"
+Expected     : 422 · code PTY-422-OVERRIDE-NOT-REQUIRED · messageAr «لا حاجة إلى موافقة: إعداد تجاوز الائتمان هو التنبيه فقط، ويمكن إتمام البيع دون طلب.» · messageEn «No approval is needed: the credit-overrun setting is Warn only, so the sale can be completed without a request.» · request count unchanged; no number drawn from PTY_CREDIT_OVERRIDE; no notification dispatched
+Test data    : WARN, customer 5001, 50000, 49000, 2000, "POS-1-000500" (AC)
+<!-- TC:TC-PTY-191:END -->
+
+<!-- TC:TC-PTY-192:START traces=AC-PTY-128,REQ-PTY-111,API-PTY-004,API-PTY-019 -->
+### TC-PTY-192 — Deactivation racing a request creation leaves no open request
+Derived from : AC-PTY-128  (REQ-PTY-111)
+Exercises    : API-PTY-004 DELETE /api/v1/pty/customers/{id} · API-PTY-019 POST /api/v1/pty/credit-overrides (in parallel)
+Rule / code  : RULE-PTY-005 → PTY-422-ROLE-INACTIVE (guard: the Customer row lock QR-PTY-006 taken by both, and the cancellation of open requests by QR-PTY-039 — ADR-PTY-041)
+Package      : SVC-API-CRUD
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: `b2bCredit` on, BLOCK_WITH_OVERRIDE; active Customer 5001 of Party P-000120 with creditLimit 50000 and a test contributor reporting 49000; no request for sourceDocumentRef "POS-1-000510"; an Owner session holding PERM_PTY_CUSTOMER_DELETE and PERM_PTY_CREDIT_OVERRIDE_VIEW, _UPDATE; a Seller/Cashier session holding PERM_PTY_CREDIT_OVERRIDE_CREATE
+Host data    : none
+Steps        : 1. two threads, released together by a barrier: the Owner sends DELETE /api/v1/pty/customers/5001; the Seller/Cashier sends POST /api/v1/pty/credit-overrides with customerId 5001, saleAmount 2000, sourceDocumentRef "POS-1-000510" · 2. as the Owner, GET /api/v1/pty/credit-overrides?customerId=5001
+Expected     : the deactivation → 200 in every interleaving. The creation ends in exactly one of two ways: (a) it waited and lost → 422 · code PTY-422-ROLE-INACTIVE · messageAr «P-000120 غير نشط ولا يمكن استخدامه في مستند جديد. أعد تنشيطه أو اختر طرفاً آخر.» · messageEn «P-000120 is inactive and cannot be used on a new document. Reactivate it or choose another party.», and no request for "POS-1-000510" exists; or (b) it committed first → 201, and the deactivation cancelled it. Single end state (step 2): Customer 5001 is inactive and none of its requests is PENDING or APPROVED
+Test data    : customer 5001, P-000120, "POS-1-000510" (test-local reference)
+<!-- TC:TC-PTY-192:END -->
+
+<!-- TC:TC-PTY-193:START traces=AC-PTY-129,REQ-PTY-111,API-PTY-004,API-PTY-021,API-PTY-036 -->
+### TC-PTY-193 — An approval and a use racing the Customer's deactivation
+Derived from : AC-PTY-129  (REQ-PTY-111)
+Exercises    : API-PTY-004 DELETE /api/v1/pty/customers/{id} · API-PTY-021 PATCH …/approval · API-PTY-036 PATCH …/use (in parallel)
+Rule / code  : RULE-PTY-026 → PTY-409-REQUEST-NOT-PENDING · RULE-PTY-028 → PTY-422-APPROVAL-NOT-COVERING (guard: QR-PTY-039 row locks in PK order and the compare-and-set of QR-PTY-034)
+Package      : SVC-API-CRUD
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: `b2bCredit` on; active Customer 5001; PENDING request CO-000053 and APPROVED request CO-000054 (saleAmount 2000, sourceDocumentRef "POS-1-000520"), both for Customer 5001; an Owner session O1 holding PERM_PTY_CUSTOMER_DELETE; an Owner session O2 holding PERM_PTY_CREDIT_OVERRIDE_UPDATE and _VIEW; a Sales & POS session holding PERM_PTY_CREDIT_OVERRIDE_CREATE; CREDIT_OVERRIDE_STATUS labels as seeded
+Host data    : none
+Steps        : 1. three threads, released together by a barrier: O1 sends DELETE /api/v1/pty/customers/5001; O2 sends PATCH …/{id of CO-000053}/approval; the Sales & POS session sends PATCH …/{id of CO-000054}/use with customerId 5001, saleAmount 1500, usedDocumentRef "POS-1-000520" · 2. GET CO-000053 and CO-000054
+Expected     : the deactivation → 200. The three outcomes the backend plan states (API-PTY-004 Concurrency):
+- the approval either loses → 409 · code PTY-409-REQUEST-NOT-PENDING · messageAr «هذا الطلب لم يعد معلّقاً (الحالة: ملغى).» · messageEn «This request is no longer pending (status: Cancelled).», or wins → 200 and the deactivation then cancels it; CO-000053 ends CANCELLED either way;
+- the use either loses → 422 · code PTY-422-APPROVAL-NOT-COVERING · messageAr «الموافقة CO-000054 لا تغطي هذا البيع. تحقّق من العميل والمبلغ، أو اطلب موافقة جديدة.» · messageEn «Approval CO-000054 does not cover this sale. Check the customer and the amount, or request a new approval.», and CO-000054 ends CANCELLED;
+- or the use wins → 200, and CO-000054 ends USED with usedDocumentRef "POS-1-000520" (the cancellation skips a USED request).
+Never: a request both cancelled and used, or an APPROVED request left after the deactivation committed
+Test data    : CO-000053, CO-000054, "POS-1-000520" (test-local)
+<!-- TC:TC-PTY-193:END -->
+
+<!-- TC:TC-PTY-194:START traces=AC-PTY-063,REQ-PTY-055,REQ-PTY-050,API-PTY-034 -->
+### TC-PTY-194 — Two guest orders with one new email at once attach to one Customer
+Derived from : AC-PTY-063  (REQ-PTY-055)
+Exercises    : API-PTY-034 POST /api/v1/pty/guest-customers (twice, in parallel)
+Rule / code  : — (guard: UQ_PTY_PARTY_EMAIL, the REQUIRES_NEW creation and one re-match — ADR-PTY-026)
+Package      : SVC-API-INT
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: no active Party holds "race.guest@example.com"; two storefront sessions holding PERM_PTY_CUSTOMER_CREATE; `SecCustomerInvitationApi` calls captured; Party and Customer counts recorded
+Host data    : none
+Steps        : 1. two threads, released together by a barrier, send POST /api/v1/pty/guest-customers with nameEn "Race Guest", email "race.guest@example.com", deliveryAddress {line1 "1 Race St"} · 2. wait for both commits
+Expected     : both calls → 200 with the same data.customerId; one carries data.created true, the other data.created false · Party +1, Customer +1, one DELIVERY Address · no error code is returned to either call (the loser's REQUIRES_NEW creation rolls back and its re-match attaches the order) · after commit, each call has requested its CUSTOMER-realm invitation for that Customer, addressed to "race.guest@example.com" (REQ-PTY-051, REQ-PTY-059)
+Test data    : "race.guest@example.com", "Race Guest", "1 Race St" (test-local)
+<!-- TC:TC-PTY-194:END -->
+
+<!-- TC:TC-PTY-195:START traces=AC-PTY-036,REQ-PTY-030,REQ-PTY-031,REQ-PTY-034,API-PTY-011,API-PTY-013 -->
+### TC-PTY-195 — An Address type change racing an Address create of the same type
+Derived from : AC-PTY-036  (REQ-PTY-030)
+Exercises    : API-PTY-013 PUT /api/v1/pty/parties/{partyId}/addresses/{id} · API-PTY-011 POST /api/v1/pty/parties/{partyId}/addresses (in parallel)
+Rule / code  : RULE-PTY-017 → — (guard: the Party row lock QR-PTY-001; UQ_PTY_ADDRESS_IS_DEFAULT_FL backstop — ADR-PTY-026)
+Package      : DATA-DOM-MASTER
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: Party P-000120 (holding a Customer) with active DELIVERY Addresses "1" (default) and "2", and no BILLING Address; the Owner holds PERM_PTY_CUSTOMER_UPDATE
+Host data    : none
+Steps        : 1. two threads, released together by a barrier: PUT …/addresses/{id of "2"} with the stored fields and addressTypeCode BILLING; POST …/addresses with addressTypeCode BILLING and line1 "5 Nile St" · 2. GET /api/v1/pty/parties/{identifier of P-000120}/addresses
+Expected     : the PUT → 200 and the POST → 201 (neither is refused) · step 2 → exactly one active BILLING Address has isDefaultFl true (whichever of the two ran first), Address "1" is still the DELIVERY default, and the two BILLING Addresses carry distinct codes
+Test data    : Party P-000120, BILLING, DELIVERY (seeded), "5 Nile St" (AC-PTY-036 Party; line test-local)
+<!-- TC:TC-PTY-195:END -->
+
+<!-- TC:TC-PTY-198:START traces=AC-PTY-140,REQ-PTY-110,REQ-PTY-074,API-PTY-035 -->
+### TC-PTY-198 — Flag off and an inactive Customer: the credit check refuses before answering NOT_APPLICABLE
+Derived from : AC-PTY-140  (REQ-PTY-110)
+Exercises    : API-PTY-035 POST /api/v1/pty/credit-checks
+Rule / code  : RULE-PTY-005 → PTY-422-ROLE-INACTIVE · PLATFORM-STD → PTY-404-CUSTOMER-NOT-FOUND (order: load the Customer → RULE-PTY-005 → flag)
+Package      : SVC-API-INT
+Scenario     : VIOLATION · data class EDGE · language ALL
+Preconditions: `b2bCredit` off; Customer 5002 of Party P-000121 with isActiveFl false; no Customer 999999 in the tenant; caller (Sales & POS principal) holds PERM_PTY_CUSTOMER_VIEW
+Host data    : none
+Steps        : 1. POST /api/v1/pty/credit-checks with customerId 5002 and saleAmount 100 · 2. POST /api/v1/pty/credit-checks with customerId 999999 and saleAmount 100
+Expected     : step 1 → 422 · code PTY-422-ROLE-INACTIVE · messageAr «P-000121 غير نشط ولا يمكن استخدامه في مستند جديد. أعد تنشيطه أو اختر طرفاً آخر.» · messageEn «P-000121 is inactive and cannot be used on a new document. Reactivate it or choose another party.» · no resultCode (not NOT_APPLICABLE) · step 2 → 404 · code PTY-404-CUSTOMER-NOT-FOUND · messageAr «العميل غير موجود.» · messageEn «The customer was not found.»
+Test data    : customerId 5002, P-000121, saleAmount 100 (AC); 999999 test-local
+<!-- TC:TC-PTY-198:END -->
 <!-- SUB:RULE-SCENARIOS:END -->
 
-<!-- SUB:API-SCENARIOS:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-004,REQ-PTY-005,REQ-PTY-007,REQ-PTY-008,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-023,REQ-PTY-025,REQ-PTY-026,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-035,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-045,REQ-PTY-046,REQ-PTY-050,REQ-PTY-051,REQ-PTY-052,REQ-PTY-055,REQ-PTY-056,REQ-PTY-057,REQ-PTY-058,REQ-PTY-059,REQ-PTY-060,REQ-PTY-061,REQ-PTY-063,REQ-PTY-064,REQ-PTY-065,REQ-PTY-068,REQ-PTY-069,REQ-PTY-075,REQ-PTY-076,REQ-PTY-078,REQ-PTY-079,REQ-PTY-080,REQ-PTY-083,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-093,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,AC-PTY-001,AC-PTY-002,AC-PTY-003,AC-PTY-006,AC-PTY-007,AC-PTY-009,AC-PTY-010,AC-PTY-011,AC-PTY-016,AC-PTY-018,AC-PTY-019,AC-PTY-020,AC-PTY-021,AC-PTY-022,AC-PTY-023,AC-PTY-024,AC-PTY-025,AC-PTY-026,AC-PTY-028,AC-PTY-030,AC-PTY-031,AC-PTY-036,AC-PTY-037,AC-PTY-038,AC-PTY-039,AC-PTY-041,AC-PTY-047,AC-PTY-048,AC-PTY-050,AC-PTY-051,AC-PTY-053,AC-PTY-054,AC-PTY-058,AC-PTY-059,AC-PTY-060,AC-PTY-063,AC-PTY-064,AC-PTY-065,AC-PTY-066,AC-PTY-067,AC-PTY-068,AC-PTY-069,AC-PTY-071,AC-PTY-072,AC-PTY-073,AC-PTY-076,AC-PTY-077,AC-PTY-084,AC-PTY-086,AC-PTY-088,AC-PTY-089,AC-PTY-090,AC-PTY-091,AC-PTY-094,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-099,AC-PTY-100,AC-PTY-101,AC-PTY-102,AC-PTY-105,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-120,AC-PTY-121,AC-PTY-122,AC-PTY-135,AC-PTY-136 -->
+<!-- SUB:API-SCENARIOS:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-004,REQ-PTY-005,REQ-PTY-007,REQ-PTY-008,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-023,REQ-PTY-025,REQ-PTY-026,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-035,REQ-PTY-039,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-045,REQ-PTY-046,REQ-PTY-050,REQ-PTY-051,REQ-PTY-052,REQ-PTY-055,REQ-PTY-056,REQ-PTY-057,REQ-PTY-058,REQ-PTY-059,REQ-PTY-060,REQ-PTY-061,REQ-PTY-063,REQ-PTY-064,REQ-PTY-065,REQ-PTY-068,REQ-PTY-069,REQ-PTY-075,REQ-PTY-076,REQ-PTY-078,REQ-PTY-079,REQ-PTY-080,REQ-PTY-083,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-093,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,AC-PTY-001,AC-PTY-002,AC-PTY-003,AC-PTY-006,AC-PTY-007,AC-PTY-009,AC-PTY-010,AC-PTY-011,AC-PTY-016,AC-PTY-018,AC-PTY-019,AC-PTY-020,AC-PTY-021,AC-PTY-022,AC-PTY-023,AC-PTY-024,AC-PTY-025,AC-PTY-026,AC-PTY-028,AC-PTY-030,AC-PTY-031,AC-PTY-036,AC-PTY-037,AC-PTY-038,AC-PTY-039,AC-PTY-041,AC-PTY-045,AC-PTY-047,AC-PTY-048,AC-PTY-050,AC-PTY-051,AC-PTY-053,AC-PTY-054,AC-PTY-058,AC-PTY-059,AC-PTY-060,AC-PTY-063,AC-PTY-064,AC-PTY-065,AC-PTY-066,AC-PTY-067,AC-PTY-068,AC-PTY-069,AC-PTY-071,AC-PTY-072,AC-PTY-073,AC-PTY-076,AC-PTY-077,AC-PTY-084,AC-PTY-086,AC-PTY-088,AC-PTY-089,AC-PTY-090,AC-PTY-091,AC-PTY-094,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-099,AC-PTY-100,AC-PTY-101,AC-PTY-102,AC-PTY-105,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-120,AC-PTY-121,AC-PTY-122,AC-PTY-135,AC-PTY-136,AC-PTY-138,AC-PTY-139 -->
 ### API-SCENARIOS — endpoint behaviour, permission, paging
 
 <!-- TC:TC-PTY-054:START traces=AC-PTY-001,REQ-PTY-001,API-PTY-026 -->
@@ -2109,6 +2201,61 @@ Steps        : 1. under the first context, call `PtyPartyApi.readCustomer(5001, 
 Expected     : step 1 → `LocalizedException` with code PTY-403-FORBIDDEN · step 2 → the Customer 5001 (code P-000120)
 Test data    : customerId 5001 (AC)
 <!-- TC:TC-PTY-177:END -->
+<!-- TC:TC-PTY-196:START traces=AC-PTY-138,REQ-PTY-002,API-PTY-002,API-PTY-016 -->
+### TC-PTY-196 — Customer VIEW without Customer credit VIEW reads the credit values, not the standing
+Derived from : AC-PTY-138  (REQ-PTY-002)
+Exercises    : API-PTY-002 GET /api/v1/pty/customers/{id} · API-PTY-016 GET /api/v1/pty/customer-credits/{customerId}
+Rule / code  : PLATFORM-STD → PTY-403-FORBIDDEN (ADR-PTY-046)
+Package      : SEC-BE
+Scenario     : PERMISSION · data class VALID · language ALL
+Preconditions: `b2bCredit` on; Customer 5001 with creditLimit 50000, paymentTermDays 45 and currencyCode EGP; user U3 of a custom role holding PERM_PTY_CUSTOMER_VIEW only (no permission on PTY_CUSTOMER_CREDIT)
+Host data    : none
+Steps        : 1. as U3, GET /api/v1/pty/customers/5001 · 2. as U3, GET /api/v1/pty/customer-credits/5001
+Expected     : step 1 → 200 · data.creditLimit 50000 · data.paymentTermDays 45 · data.currencyCode EGP · step 2 → 403 · code PTY-403-FORBIDDEN · messageAr «ليست لديك صلاحية لتنفيذ هذا الإجراء.» · messageEn «You do not have permission to perform this action.»
+Test data    : values of the AC; U3 test-local
+<!-- TC:TC-PTY-196:END -->
+
+<!-- TC:TC-PTY-197:START traces=AC-PTY-139,REQ-PTY-041,API-PTY-027 -->
+### TC-PTY-197 — Global search term with spaces and dashes matches a mobile; `%` matches literally
+Derived from : AC-PTY-139  (REQ-PTY-041)
+Exercises    : API-PTY-027 GET /api/v1/pty/customers/global-search
+Rule / code  : — (QR-PTY-011 parameters `:tDigits` and the escaping of `%` / `_`)
+Package      : SVC-API-SEARCH
+Scenario     : HAPPY · data class EDGE · language ALL
+Preconditions: an active Customer `<customerId>` with mobile "+20 100 111 2222"; no Customer whose code, names, mobile, email or tax number contains "%%"; a Seller/Cashier holding PERM_PTY_CUSTOMER_VIEW
+Host data    : none
+Steps        : 1. GET /api/v1/pty/customers/global-search?term=100 111-2222 · 2. GET /api/v1/pty/customers/global-search?term=%25%25 (the term "%%")
+Expected     : step 1 → 200 · that Customer is in data, with isWalkInFl false · step 2 → 200 · data is an empty list (the two `%` match only a literal "%%", never every row)
+Test data    : mobile "+20 100 111 2222", term "100 111-2222" (AC); "%%" test-local
+<!-- TC:TC-PTY-197:END -->
+
+<!-- TC:TC-PTY-199:START traces=AC-PTY-116,REQ-PTY-102,REQ-PTY-103,API-PTY-020 -->
+### TC-PTY-199 — A requester without UPDATE cannot read another user's request
+Derived from : AC-PTY-116  (REQ-PTY-102)
+Exercises    : API-PTY-020 GET /api/v1/pty/credit-overrides/{id}
+Rule / code  : PLATFORM-STD → PTY-404-CREDIT-OVERRIDE-NOT-FOUND (visibility — REQ-PTY-102 applied to reads, ADR-PTY-039)
+Package      : SEC-BE
+Scenario     : PERMISSION · data class INVALID · language ALL
+Preconditions: Seller/Cashier S1 created CO-000035 and Seller/Cashier S2 created CO-000036; both hold PERM_PTY_CREDIT_OVERRIDE_VIEW and neither holds PERM_PTY_CREDIT_OVERRIDE_UPDATE
+Host data    : none
+Steps        : 1. as S1, GET /api/v1/pty/credit-overrides/{id of CO-000036} · 2. as S1, GET /api/v1/pty/credit-overrides/{id of CO-000035}
+Expected     : step 1 → 404 · code PTY-404-CREDIT-OVERRIDE-NOT-FOUND · messageAr «طلب تجاوز حد الائتمان غير موجود.» · messageEn «The credit override request was not found.» (the request's existence is not revealed) · step 2 → 200, data.docNo CO-000035
+Test data    : values of the AC
+<!-- TC:TC-PTY-199:END -->
+
+<!-- TC:TC-PTY-200:START traces=AC-PTY-045,REQ-PTY-039,API-PTY-038 -->
+### TC-PTY-200 — PTY serves its own lookup key with the active values only
+Derived from : AC-PTY-045  (REQ-PTY-039)
+Exercises    : API-PTY-038 GET /api/v1/pty/lookups/{key}
+Rule / code  : PLATFORM-STD → PTY-404-LOOKUP-KEY-UNKNOWN (OwnedLookups — ADR-PTY-048)
+Package      : SVC-API-SEARCH
+Scenario     : HAPPY · data class VALID · language ALL
+Preconditions: lookup CUSTOMER_GROUP holds RETAIL and WHOLESALE active (seeded) and VIP inactive; a Seller/Cashier holding PERM_PTY_CUSTOMER_VIEW
+Host data    : CUSTOMER_GROUP VIP — created active by the given mdl call POST /api/v1/mdl/lookup-types/{id}/values ({id} = the CUSTOMER_GROUP type found by POST /api/v1/mdl/lookup-types/search), then made inactive by DELETE /api/v1/mdl/lookup-values/{id} ({id} = the VIP value) — the same state as TC-PTY-020 (N4)
+Steps        : 1. GET /api/v1/pty/lookups/CUSTOMER_GROUP · 2. GET /api/v1/pty/lookups/CAT_BRAND (a key another module owns)
+Expected     : step 1 → 200 · data holds exactly RETAIL (labelAr «تجزئة», labelEn "Retail") and WHOLESALE (labelAr «جملة», labelEn "Wholesale"), in sortOrder; VIP is absent · step 2 → 404 · code PTY-404-LOOKUP-KEY-UNKNOWN · messageAr «هذه القائمة ليست من قوائم الأطراف. اختر إحدى قوائم الأطراف.» · messageEn «This list is not one of the party lists. Choose a party list.»
+Test data    : RETAIL, WHOLESALE, VIP (SRS A6 `values`); CAT_BRAND test-local
+<!-- TC:TC-PTY-200:END -->
 <!-- SUB:API-SCENARIOS:END -->
 <!-- PHASE:TEST-PLAN-BE:END -->
 
@@ -2155,7 +2302,7 @@ Test data    : customerId 5001 (AC)
 | AC-PTY-033 | REQ-PTY-028 | TC-PTY-012 (+ TC-PTY-173 concurrent role deactivations) | STATE | DATA-DOM-MASTER |
 | AC-PTY-034 | REQ-PTY-029 | TC-PTY-013 | STATE | DATA-DOM-MASTER |
 | AC-PTY-035 | REQ-PTY-029 | TC-PTY-014 | VIOLATION | SVC-API-CRUD |
-| AC-PTY-036 | REQ-PTY-030 | TC-PTY-075 (+ TC-PTY-167 either role's UPDATE) | HAPPY | SVC-API-CRUD |
+| AC-PTY-036 | REQ-PTY-030 | TC-PTY-075 (+ TC-PTY-167 either role's UPDATE; TC-PTY-195 type change vs create) | HAPPY | SVC-API-CRUD |
 | AC-PTY-037 | REQ-PTY-031 | TC-PTY-076 | HAPPY | SVC-API-CRUD |
 | AC-PTY-038 | REQ-PTY-032 | TC-PTY-077 | HAPPY | SVC-API-SEARCH |
 | AC-PTY-039 | REQ-PTY-033 | TC-PTY-078 | HAPPY | SVC-API-CRUD |
@@ -2164,7 +2311,7 @@ Test data    : customerId 5001 (AC)
 | AC-PTY-042 | REQ-PTY-036 | TC-PTY-016 | STATE | DATA-DOM-MASTER |
 | AC-PTY-043 | REQ-PTY-037 | TC-PTY-017 | VIOLATION | SVC-API-CRUD |
 | AC-PTY-044 | REQ-PTY-038 | TC-PTY-018 | VIOLATION | SVC-API-CRUD |
-| AC-PTY-045 | REQ-PTY-039 | TC-PTY-019 | STATE | DATA-DOM-MASTER |
+| AC-PTY-045 | REQ-PTY-039 | TC-PTY-019 (+ TC-PTY-200 lookup read) | STATE | DATA-DOM-MASTER |
 | AC-PTY-046 | REQ-PTY-040 | TC-PTY-020 | VIOLATION | SVC-API-CRUD |
 | AC-PTY-047 | REQ-PTY-041 | TC-PTY-080 | HAPPY | SVC-API-SEARCH |
 | AC-PTY-048 | REQ-PTY-041 | TC-PTY-081 | HAPPY | SVC-API-SEARCH |
@@ -2182,7 +2329,7 @@ Test data    : customerId 5001 (AC)
 | AC-PTY-060 | REQ-PTY-052 | TC-PTY-088 | HAPPY | SVC-API-INT |
 | AC-PTY-061 | REQ-PTY-053 | TC-PTY-026 | VIOLATION | SVC-API-INT |
 | AC-PTY-062 | REQ-PTY-054 | TC-PTY-027 | VIOLATION | SVC-API-INT |
-| AC-PTY-063 | REQ-PTY-055 | TC-PTY-089 | HAPPY | SVC-API-INT |
+| AC-PTY-063 | REQ-PTY-055 | TC-PTY-089 (+ TC-PTY-194 guest email race) | HAPPY | SVC-API-INT |
 | AC-PTY-064 | REQ-PTY-056 | TC-PTY-090 | HAPPY | SVC-API-INT |
 | AC-PTY-065 | REQ-PTY-057 | TC-PTY-091 | HAPPY | SVC-API-INT |
 | AC-PTY-066 | REQ-PTY-058 | TC-PTY-092 | HAPPY | SVC-API-INT |
@@ -2235,7 +2382,7 @@ Test data    : customerId 5001 (AC)
 | AC-PTY-113 | REQ-PTY-099 | TC-PTY-049 (+ TC-PTY-170 double use) | VIOLATION | SVC-API-INT |
 | AC-PTY-114 | REQ-PTY-100 | TC-PTY-050 (+ frontend TC-PTY-140) | VIOLATION | SVC-API-CRUD |
 | AC-PTY-115 | REQ-PTY-101 | TC-PTY-116 (+ frontend TC-PTY-141) | HAPPY | SVC-API-SEARCH |
-| AC-PTY-116 | REQ-PTY-102 | TC-PTY-117 (+ frontend TC-PTY-142) | PERMISSION | SEC-BE |
+| AC-PTY-116 | REQ-PTY-102 | TC-PTY-117 (+ TC-PTY-199 read visibility; frontend TC-PTY-142) | PERMISSION | SEC-BE |
 | AC-PTY-117 | REQ-PTY-103 | TC-PTY-118 (+ frontend TC-PTY-143) | HAPPY | SVC-API-CRUD |
 | AC-PTY-118 | REQ-PTY-104 | TC-PTY-051 | VIOLATION | SVC-API-CRUD |
 | AC-PTY-119 | REQ-PTY-105 | TC-PTY-052 | VIOLATION | SVC-API-CRUD |
@@ -2247,8 +2394,8 @@ Test data    : customerId 5001 (AC)
 | AC-PTY-125 | REQ-PTY-110 | TC-PTY-155 | VIOLATION | SVC-API-CRUD |
 | AC-PTY-126 | REQ-PTY-110 | TC-PTY-156 | VIOLATION | SVC-API-CRUD |
 | AC-PTY-127 | REQ-PTY-110 | TC-PTY-157 | VIOLATION | SVC-API-CRUD |
-| AC-PTY-128 | REQ-PTY-111 | TC-PTY-158 | STATE | DATA-DOM-TRANSACTIONAL |
-| AC-PTY-129 | REQ-PTY-111 | TC-PTY-159 | VIOLATION | SVC-API-INT |
+| AC-PTY-128 | REQ-PTY-111 | TC-PTY-158 (+ TC-PTY-192 deactivation vs creation) | STATE | DATA-DOM-TRANSACTIONAL |
+| AC-PTY-129 | REQ-PTY-111 | TC-PTY-159 (+ TC-PTY-193 deactivation vs approval and use) | VIOLATION | SVC-API-INT |
 | AC-PTY-130 | REQ-PTY-112 | TC-PTY-160 | VIOLATION | SVC-API-CRUD |
 | AC-PTY-131 | REQ-PTY-112 | TC-PTY-161 | STATE | DATA-DOM-TRANSACTIONAL |
 | AC-PTY-132 | REQ-PTY-113 | TC-PTY-162 (+ TC-PTY-176 open-request race; frontend TC-PTY-189) | VIOLATION | SVC-API-CRUD |
@@ -2256,48 +2403,53 @@ Test data    : customerId 5001 (AC)
 | AC-PTY-134 | REQ-PTY-109 | TC-PTY-164 (+ frontend TC-PTY-190) | VIOLATION | SVC-API-CRUD |
 | AC-PTY-135 | REQ-PTY-079 | TC-PTY-165 | HAPPY | SVC-API-INT |
 | AC-PTY-136 | REQ-PTY-018 | TC-PTY-166 | HAPPY | SVC-API-SEARCH |
+| AC-PTY-137 | REQ-PTY-114 | TC-PTY-191 | VIOLATION | SVC-API-CRUD |
+| AC-PTY-138 | REQ-PTY-002 | TC-PTY-196 | PERMISSION | SEC-BE |
+| AC-PTY-139 | REQ-PTY-041 | TC-PTY-197 | HAPPY | SVC-API-SEARCH |
+| AC-PTY-140 | REQ-PTY-110 | TC-PTY-198 | VIOLATION | SVC-API-INT |
 
 ### API → TC
 
 | API | Operation | TC |
 |---|---|---|
 | API-PTY-001 | create Customer | TC-PTY-003, 004, 005, 006, 057, 058, 059, 060, 074, 172 |
-| API-PTY-002 | read Customer | TC-PTY-001, 010, 019, 023, 031, 034, 055, 056, 064, 086, 092, 177, 178 |
+| API-PTY-002 | read Customer | TC-PTY-001, 010, 019, 023, 031, 034, 055, 056, 064, 086, 092, 177, 178, 196 |
 | API-PTY-003 | update Customer | TC-PTY-008, 019, 020, 062 |
-| API-PTY-004 | deactivate Customer | TC-PTY-012, 023, 064, 072, 158, 173 |
+| API-PTY-004 | deactivate Customer | TC-PTY-012, 023, 064, 072, 158, 173, 192, 193 |
 | API-PTY-005 | reactivate Customer | TC-PTY-013, 014, 065 |
 | API-PTY-006 | create Supplier | TC-PTY-007, 011, 025, 061, 066, 073 |
 | API-PTY-007 | read Supplier | TC-PTY-002, 069, 070 |
 | API-PTY-008 | update Supplier | TC-PTY-009, 010, 067 |
 | API-PTY-009 | deactivate Supplier | TC-PTY-070, 173 |
 | API-PTY-010 | reactivate Supplier | TC-PTY-071 |
-| API-PTY-011 | create Address | TC-PTY-015, 017, 018, 075, 156, 167, 174 |
+| API-PTY-011 | create Address | TC-PTY-015, 017, 018, 075, 156, 167, 174, 195 |
 | API-PTY-012 | read Address | TC-PTY-078 |
-| API-PTY-013 | update Address | TC-PTY-076 |
+| API-PTY-013 | update Address | TC-PTY-076, 195 |
 | API-PTY-014 | deactivate Address | TC-PTY-016, 078 |
 | API-PTY-015 | set default Address | TC-PTY-079 |
-| API-PTY-016 | read credit standing | TC-PTY-034, 053, 108 |
+| API-PTY-016 | read credit standing | TC-PTY-034, 053, 108, 196 |
 | API-PTY-017 | update credit | TC-PTY-024, 029, 030, 032, 053, 097, 098, 119, 157, 175 |
 | API-PTY-018 | clear credit | TC-PTY-103, 157 |
-| API-PTY-019 | create Credit override request | TC-PTY-033, 040, 041, 051, 052, 114, 115, 155, 162, 165, 176 |
-| API-PTY-020 | read Credit override request | TC-PTY-041, 118, 158, 164 |
-| API-PTY-021 | approve | TC-PTY-041, 042, 047, 120, 160, 164, 168, 169 |
+| API-PTY-019 | create Credit override request | TC-PTY-033, 040, 041, 051, 052, 114, 115, 155, 162, 165, 176, 191, 192 |
+| API-PTY-020 | read Credit override request | TC-PTY-041, 118, 158, 164, 199 |
+| API-PTY-021 | approve | TC-PTY-041, 042, 047, 120, 160, 164, 168, 169, 193 |
 | API-PTY-022 | reject | TC-PTY-043, 050 |
 | API-PTY-023 | cancel | TC-PTY-044, 045, 161, 169 |
 | API-PTY-024 | read credit settings | TC-PTY-109, 110, 113 |
 | API-PTY-025 | update credit settings | TC-PTY-109, 113 |
 | API-PTY-026 | search Customers | TC-PTY-054, 055, 063, 065 |
-| API-PTY-027 | Customer global search | TC-PTY-021, 080, 081, 082, 083 |
+| API-PTY-027 | Customer global search | TC-PTY-021, 080, 081, 082, 083, 197 |
 | API-PTY-028 | search Suppliers | TC-PTY-068, 166 |
 | API-PTY-029 | list Party addresses | TC-PTY-016, 077, 078, 079, 086, 092 |
 | API-PTY-030 | search Customer credit | TC-PTY-100 |
 | API-PTY-031 | read credit history | TC-PTY-121 |
 | API-PTY-032 | search Credit override requests | TC-PTY-116, 117 |
 | API-PTY-033 | walk-in Customer | TC-PTY-022, 084, 085, 171 |
-| API-PTY-034 | guest order customer resolution | TC-PTY-026, 028, 055, 086, 087, 089, 090, 091, 092, 093, 094, 095, 096 |
-| API-PTY-035 | credit check | TC-PTY-035, 037, 038, 039, 099, 104, 105, 106, 107, 109, 110, 111, 112, 154, 165 |
-| API-PTY-036 | use Credit override request | TC-PTY-046, 048, 049, 159, 163, 170 |
+| API-PTY-034 | guest order customer resolution | TC-PTY-026, 028, 055, 086, 087, 089, 090, 091, 092, 093, 094, 095, 096, 194 |
+| API-PTY-035 | credit check | TC-PTY-035, 037, 038, 039, 099, 104, 105, 106, 107, 109, 110, 111, 112, 154, 165, 198 |
+| API-PTY-036 | use Credit override request | TC-PTY-046, 048, 049, 159, 163, 170, 193 |
 | API-PTY-037 | `b2bCredit` switch-off dependency | TC-PTY-036, 101, 102, 103 |
+| API-PTY-038 | read a PTY lookup key | TC-PTY-200 |
 | — (outbox subscriber `PtyCustomerInvitationRedeemedSubscriber`) | redemption of a CUSTOMER-realm invitation | TC-PTY-027, 088 |
 
 ### RULE / code → TC
@@ -2308,7 +2460,7 @@ Test data    : customerId 5001 (AC)
 | RULE-PTY-002 | PTY-409-EMAIL-TAKEN | TC-PTY-005, 014, 172 |
 | RULE-PTY-003 | PTY-422-EMAIL-FORMAT | TC-PTY-006 |
 | RULE-PTY-004 | PTY-422-MOBILE-FORMAT | TC-PTY-007 |
-| RULE-PTY-005 | PTY-422-ROLE-INACTIVE | TC-PTY-001, 002, 154, 155, 156, 157 |
+| RULE-PTY-005 | PTY-422-ROLE-INACTIVE | TC-PTY-001, 002, 154, 155, 156, 157, 192, 198 |
 | RULE-PTY-006 | confirmation (no code) | TC-PTY-064, 070, 072, 078 |
 | RULE-PTY-007 | PTY-422-CODE-READ-ONLY (assignment: TC-PTY-003) | TC-PTY-008 |
 | RULE-PTY-008 | PTY-422-PAYMENT-TERMS-RANGE | TC-PTY-009, 030 |
@@ -2329,17 +2481,20 @@ Test data    : customerId 5001 (AC)
 | RULE-PTY-023 | PTY-422-CREDIT-NOT-ENABLED | TC-PTY-032, 033, 160 (cancel allowed: TC-PTY-161) |
 | RULE-PTY-024 | answer message (no code) | TC-PTY-036 |
 | RULE-PTY-025 | PTY-422-OVERRIDE-NOT-NEEDED | TC-PTY-051 |
-| RULE-PTY-026 | PTY-409-REQUEST-NOT-PENDING | TC-PTY-047, 168, 169 |
+| RULE-PTY-026 | PTY-409-REQUEST-NOT-PENDING | TC-PTY-047, 168, 169, 193 |
 | RULE-PTY-027 | PTY-422-REJECTION-REASON-REQUIRED | TC-PTY-050 |
-| RULE-PTY-028 | PTY-422-APPROVAL-NOT-COVERING | TC-PTY-048, 049, 159, 163, 170 |
+| RULE-PTY-028 | PTY-422-APPROVAL-NOT-COVERING | TC-PTY-048, 049, 159, 163, 170, 193 |
 | RULE-PTY-029 | PTY-403-NOT-REQUESTER | TC-PTY-045 |
 | RULE-PTY-030 | PTY-500-AUDIT-NOT-RECORDED | TC-PTY-053, 164 (recorded: TC-PTY-119, 120, 175) |
 | RULE-PTY-031 | PTY-422-DOC-NO-READ-ONLY | TC-PTY-041 |
 | RULE-PTY-032 | PTY-422-SALE-AMOUNT-NOT-POSITIVE | TC-PTY-040 |
 | RULE-PTY-033 | PTY-422-WALK-IN-NO-CREDIT-SALE | TC-PTY-052 |
 | RULE-PTY-034 | PTY-409-REQUEST-OPEN-FOR-SALE | TC-PTY-162, 176 |
-| PLATFORM-STD (ADR-PTY-024) | PTY-403-FORBIDDEN | TC-PTY-113, 167, 177 |
-| PLATFORM-STD (ADR-PTY-024) | PTY-404-CUSTOMER-NOT-FOUND (other tenant) | TC-PTY-178 |
+| RULE-PTY-035 | PTY-422-OVERRIDE-NOT-REQUIRED | TC-PTY-191 |
+| PLATFORM-STD (ADR-PTY-024) | PTY-403-FORBIDDEN | TC-PTY-113, 167, 177, 196 |
+| PLATFORM-STD (ADR-PTY-024) | PTY-404-CUSTOMER-NOT-FOUND (other tenant; unknown Customer) | TC-PTY-178, 198 |
+| PLATFORM-STD (ADR-PTY-024) | PTY-404-CREDIT-OVERRIDE-NOT-FOUND (another user's request) | TC-PTY-199 |
+| PLATFORM-STD (ADR-PTY-048) | PTY-404-LOOKUP-KEY-UNKNOWN | TC-PTY-200 |
 
 ### XM → TC
 
@@ -2350,27 +2505,27 @@ None — PTY v1 declares no `XM-*` edge (registry-db `xm-register: records: []`;
 | Package (backend plan unit) | TC | Count |
 |---|---|---|
 | CORE | TC-PTY-003, 034 | 2 |
-| DATA-DOM-MASTER | TC-PTY-010, 012, 013, 015, 016, 019, 022, 173, 174 | 9 |
+| DATA-DOM-MASTER | TC-PTY-010, 012, 013, 015, 016, 019, 022, 173, 174, 195 | 10 |
 | DATA-DOM-TRANSACTIONAL | TC-PTY-041, 042, 043, 044, 046, 158, 161 | 7 |
-| SVC-API-CRUD | TC-PTY-001, 002, 004, 005, 006, 007, 008, 009, 011, 014, 017, 018, 020, 023, 024, 025, 029, 030, 031, 032, 033, 040, 045, 047, 050, 051, 052, 053, 055, 056, 057, 058, 059, 060, 061, 062, 064, 065, 066, 067, 069, 070, 071, 072, 073, 074, 075, 076, 078, 079, 097, 098, 103, 108, 109, 114, 115, 118, 119, 120, 155, 156, 157, 160, 162, 164, 168, 169, 172, 175, 176, 178 | 72 |
-| SVC-API-SEARCH | TC-PTY-021, 054, 063, 068, 077, 080, 081, 082, 100, 116, 121, 166 | 12 |
-| SVC-API-INT | TC-PTY-026, 027, 028, 035, 036, 037, 038, 039, 048, 049, 084, 085, 086, 087, 088, 089, 090, 091, 092, 093, 094, 095, 096, 099, 101, 102, 104, 105, 106, 107, 110, 111, 112, 154, 159, 163, 165, 170, 171 | 39 |
-| SEC-BE | TC-PTY-083, 113, 117, 167, 177 | 5 |
+| SVC-API-CRUD | TC-PTY-001, 002, 004, 005, 006, 007, 008, 009, 011, 014, 017, 018, 020, 023, 024, 025, 029, 030, 031, 032, 033, 040, 045, 047, 050, 051, 052, 053, 055, 056, 057, 058, 059, 060, 061, 062, 064, 065, 066, 067, 069, 070, 071, 072, 073, 074, 075, 076, 078, 079, 097, 098, 103, 108, 109, 114, 115, 118, 119, 120, 155, 156, 157, 160, 162, 164, 168, 169, 172, 175, 176, 178, 191, 192, 193 | 75 |
+| SVC-API-SEARCH | TC-PTY-021, 054, 063, 068, 077, 080, 081, 082, 100, 116, 121, 166, 197, 200 | 14 |
+| SVC-API-INT | TC-PTY-026, 027, 028, 035, 036, 037, 038, 039, 048, 049, 084, 085, 086, 087, 088, 089, 090, 091, 092, 093, 094, 095, 096, 099, 101, 102, 104, 105, 106, 107, 110, 111, 112, 154, 159, 163, 165, 170, 171, 194, 198 | 41 |
+| SEC-BE | TC-PTY-083, 113, 117, 167, 177, 196, 199 | 7 |
 | DOC · ALIGN-BE · INT-C | none — no AC asserts documentation, alignment or an integration edge (N2); recorded, not dropped | 0 |
 
 ## COVERAGE
 
 | Measure | Result |
 |---|---|
-| AC covered on this track | 134 / 136 — AC-PTY-078 and AC-PTY-087 by frontend TC-PTY-129 and TC-PTY-151 (N1) |
-| AC covered by the module (both plans) | 136 / 136 ✓ — no gap |
-| REQ covered on this track | 111 / 113 — REQ-PTY-070 and REQ-PTY-077 by the frontend plan; REQ-PTY-052 and REQ-PTY-054 through the outbox subscriber (TC-PTY-088, TC-PTY-027) |
-| REQ covered by the module | 113 / 113 ✓ |
-| Concurrency guards with a barrier-synchronised TC | 9 / 9 (N13) |
-| API covered | 37 / 37 ✓ |
-| RULE covered | 34 / 34 ✓ (28 catalog codes asserted with their ar + en text; RULE-006, 013, 014, 017, 020, 024 by their confirmation, filter, ensure, outcome or answer) |
+| AC covered on this track | 138 / 140 — AC-PTY-078 and AC-PTY-087 by frontend TC-PTY-129 and TC-PTY-151 (N1) |
+| AC covered by the module (both plans) | 140 / 140 ✓ — no gap |
+| REQ covered on this track | 112 / 114 — REQ-PTY-070 and REQ-PTY-077 by the frontend plan; REQ-PTY-052 and REQ-PTY-054 through the outbox subscriber (TC-PTY-088, TC-PTY-027) |
+| REQ covered by the module | 114 / 114 ✓ |
+| Concurrency guards with a barrier-synchronised TC | 13 / 13 (N13) |
+| API covered | 38 / 38 ✓ |
+| RULE covered | 35 / 35 ✓ (29 catalog codes asserted with their ar + en text; RULE-006, 013, 014, 017, 020, 024 by their confirmation, filter, ensure, outcome or answer) |
 | XM edges covered | 0 / 0 — no edge; `INT-XM` absent |
 | Backend plan units with ≥ 1 TC | 7 / 10 — DOC, ALIGN-BE, INT-C carry none (N2) |
-| TC / AC on this track | 146 / 134 ≈ 1.09 (guard ~2×: not exceeded) |
-| Host data | 1 value (CUSTOMER_GROUP VIP inactive — TC-PTY-020, created and deactivated by the named mdl calls); 1 value held absent (ADDRESS_TYPE OFFICE — TC-PTY-018); both listed in SRS A6 `values`, so C10.8 / C10.9 examine them (N4); no catalogue value is required in opposite states by two TCs |
+| TC / AC on this track | 156 / 138 ≈ 1.13 (guard ~2×: not exceeded) |
+| Host data | 1 value (CUSTOMER_GROUP VIP inactive — TC-PTY-020 and TC-PTY-200, created and deactivated by the named mdl calls); 1 value held absent (ADDRESS_TYPE OFFICE — TC-PTY-018); both listed in SRS A6 `values`, so C10.8 / C10.9 examine them (N4); no catalogue value is required in opposite states by two TCs |
 

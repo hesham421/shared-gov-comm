@@ -1,6 +1,7 @@
 # ADR-PTY-028 — Credit computation and derived properties
 
 Status  : ACCEPTED (non-breaking) · Stage : P3.1 · Module : PTY v1 · Date : 2026-10-29
+Revised by : ADR-PTY-045 — the WARN bullet is withdrawn; a request is accepted only under BLOCK_WITH_OVERRIDE (RULE-PTY-035)
 
 ## Context
 Several values the SRS returns have no column: open exposure, projected exposure, available credit, credit check result, approval-required, the credit-overrun action, carries-credit, and credit history. The SRS does not say:
@@ -20,7 +21,7 @@ Several values the SRS returns have no column: open exposure, projected exposure
 
   OVER_LIMIT, NO_CREDIT and EXPOSURE_UNAVAILABLE carry the overrun action (default BLOCK_WITH_OVERRIDE), and approvalRequired = (action = BLOCK_WITH_OVERRIDE).
 - **Creating a request recomputes the check on the server** and ignores any result the caller holds. The request stores the recomputed result, the limit at request and the open exposure. If the recomputed result is WITHIN_LIMIT, creation is refused with RULE-PTY-025.
-- **A request may be created under WARN.** No rule forbids it and it harms nothing: approval is simply not required then.
+- ~~A request may be created under WARN.~~ Withdrawn by ADR-PTY-045: creation under WARN is refused with RULE-PTY-035 (PTY-422-OVERRIDE-NOT-REQUIRED), as REQ-PTY-091, REQ-PTY-114 and ADR-PTY-016 state.
 - **Available credit** = credit limit − open exposure. It is empty when either value is empty.
 - **carriesCredit** = credit limit or payment terms is non-empty. It is used by the credit list filter and the switch-off count.
 - **The walk-in Customer is not listed on the Customer credit list**, because it can never carry credit (RULE-PTY-011). Inactive Customers are listed, so that their credit can be cleared before the flag is switched off.
