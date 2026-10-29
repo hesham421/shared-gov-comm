@@ -19,7 +19,8 @@
     "api-verify": "api_verify"
   },
   "plans": {
-    "backend/exec": "P3_1/backend-execution-plan-pty.md"
+    "backend/exec": "P3_1/backend-execution-plan-pty.md",
+    "frontend/exec": "P3_2/frontend-execution-plan-pty.md"
   },
   "packages": {
     "backend/exec": "../../../backend/modules/PTY/packages/backend-execution",
@@ -43,7 +44,7 @@
       "req-ac": 100.0,
       "req-api": 98.2,
       "req-ux": 37.6,
-      "ac-tc": 0.0
+      "ac-tc": 100.0
     }
   },
   "created_at": "2026-10-29T05:39:42+00:00"
