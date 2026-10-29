@@ -49,7 +49,7 @@ The factory folder (called `commerce` on Windows) is a checkout of the factory, 
 this repo checked out inside it as `governance-shared/` (git-ignored there).
 
 ```bash
-git clone https://github.com/hesham421/factory.git commerce
+git clone -b commerce https://github.com/hesham421/factory.git commerce   # branch `commerce` = this folder's exact history (tree == factory main)
 cd commerce
 git clone https://github.com/hesham421/shared-gov-comm.git governance-shared   # branch: master
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
@@ -61,7 +61,8 @@ export GOV_RUNNER_RESEARCH_CMD="bash governance-tools/runner/claude_research.sh 
 export PYTHONUTF8=1
 # `claude` and `node` must be on PATH, because the relay uses them
 
-.venv/bin/python governance-tools/gov.py upgrade-project   # FIRST: the pin names a Windows-only merge commit (11725df)
+git pull --no-rebase https://github.com/hesham421/factory.git main   # take any newer factory fixes
+.venv/bin/python governance-tools/gov.py upgrade-project   # FIRST: re-pin to the commit now checked out
 .venv/bin/python governance-tools/gov.py lint              # expect 0 critical · 0 major · 0 minor
 .venv/bin/python governance-tools/gov.py plan-order --pass 1
 ```
@@ -119,4 +120,5 @@ These come from the operator brief, plus decisions Hesham made during the run.
 ## 5. Left behind on Windows (not pushed, not needed)
 
 - INV P1's partial `srs-inv.md` and its brief (untracked). P1 runs again from scratch.
-- The commerce folder's local merge commits. Its tree equals factory main, so cloning factory is enough.
+- Nothing else. The commerce folder's history, including its local merge commits, is pushed to
+  `github.com/hesham421/factory` as branch `commerce` (`11725df`, the commit the pin names). Its tree equals factory `main`.
