@@ -1,0 +1,275 @@
+{
+  "module": "PTY",
+  "version": 1,
+  "scope": "all",
+  "counts": {
+    "CRITICAL": 0,
+    "MAJOR": 0,
+    "MINOR": 6
+  },
+  "clean": true,
+  "blocking": [
+    "CRITICAL",
+    "MAJOR"
+  ],
+  "contracts": [
+    "C0",
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C7",
+    "C8",
+    "C9",
+    "C10",
+    "C13",
+    "C-GIVEN",
+    "C-GIVEN-P0",
+    "C14",
+    "C12"
+  ],
+  "skipped": [],
+  "coverage": {
+    "C0.1": 18,
+    "C1.4": 9,
+    "C2.2": 10,
+    "C3.7": 9,
+    "C3.8": 9,
+    "C4.4": 17,
+    "C4.7": 1,
+    "C5.2": 113,
+    "C5.3": 113,
+    "C5.4": 113,
+    "C5.5": 136,
+    "C5.6": 34,
+    "C5.8": 288,
+    "C5.13": 283,
+    "C5.14": 136,
+    "C5.15": 5,
+    "C5.16": 17,
+    "C5.17": 1,
+    "C6.2": 79,
+    "C6.3": 0,
+    "C6.5": 79,
+    "C6.6": 5,
+    "C6.10": 0,
+    "C6.11": 1,
+    "C6.12": 0,
+    "C6.13": 1,
+    "C6.14": 1,
+    "C6.15": 0,
+    "C7.2": 49,
+    "C7.3": 37,
+    "C7.4": 77,
+    "C7.5": 0,
+    "C7.5b": 0,
+    "C7.6": 113,
+    "C7.22": 40,
+    "C7.21": 21,
+    "C7.23": 35,
+    "C7.20": 35,
+    "C7.19": 17,
+    "C7.18": 4,
+    "C7.24": 0,
+    "C7.25": 1,
+    "C7.26": 0,
+    "C7.27": 0,
+    "C7.28": 0,
+    "C7.29": 74,
+    "C7.30": 37,
+    "C7.31": 37,
+    "C9.2": 26,
+    "C9.3": 1,
+    "C9.4": 5,
+    "C9.5": 37,
+    "C9.6": 1,
+    "C9.7": 5,
+    "C9.8": 6,
+    "C9.15": 5,
+    "C9.17": 5,
+    "C9.16": 2,
+    "C9.24": 16,
+    "C9.22": 5,
+    "C9.23": 6,
+    "C10.1": 190,
+    "C10.2": 136,
+    "C10.7": 28,
+    "C10.8": 2,
+    "C10.9": 2,
+    "C10.10": 190,
+    "C10.11": 31,
+    "C13.5": 24,
+    "C-GIVEN-1": 10,
+    "C-GIVEN-2": 14,
+    "C-GIVEN-3": 27
+  },
+  "vacuous": [
+    "C6.10",
+    "C6.12",
+    "C6.15",
+    "C6.3",
+    "C7.24",
+    "C7.26",
+    "C7.27",
+    "C7.28",
+    "C7.5",
+    "C7.5b"
+  ],
+  "metrics": [
+    {
+      "id": "us-req",
+      "from": "US",
+      "to": [
+        "REQ"
+      ],
+      "total": 17,
+      "covered": 17,
+      "pct": 100.0
+    },
+    {
+      "id": "req-ac",
+      "from": "REQ",
+      "to": [
+        "AC"
+      ],
+      "total": 113,
+      "covered": 113,
+      "pct": 100.0
+    },
+    {
+      "id": "req-api",
+      "from": "REQ",
+      "to": [
+        "API"
+      ],
+      "total": 113,
+      "covered": 111,
+      "pct": 98.2
+    },
+    {
+      "id": "req-ux",
+      "from": "REQ",
+      "to": [
+        "SCR",
+        "UXD"
+      ],
+      "total": 113,
+      "covered": 41,
+      "pct": 36.3
+    },
+    {
+      "id": "ac-tc",
+      "from": "AC",
+      "to": [
+        "TC"
+      ],
+      "total": 136,
+      "covered": 136,
+      "pct": 100.0
+    }
+  ],
+  "findings": [
+    {
+      "severity": "MINOR",
+      "clause": "C5.13",
+      "check": "ambiguity",
+      "message": "`AC-PTY-123` uses 'could' \u2014 a word two implementers read two ways; state the measure, the set or the rule instead",
+      "artifact": "srs",
+      "line": 1842
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-PTY-011` `Then: the purchase document receives the new Supplier's identifier and code` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 358
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-PTY-040` `Then: the new Address has isDefaultFl true` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 742
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-PTY-076` `Then: the result is NO_CREDIT` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 1228
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-PTY-079` `Then: the response carries no creditLimit and no paymentTermDays fields` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 1270
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-PTY-083` `Then: the result is NOT_APPLICABLE` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 1317
+    }
+  ],
+  "provenance": {
+    "rules": {
+      "contracts": "1e9a4cbe6e0e656cd905e87ef41fdd715519f455a4d19dba41e3592b43b3a281",
+      "checker": "8025e2b6657415dad65398e6f8d1a4dc2f4fe946781406a8271ccc55e4b3fa6e",
+      "policy": "112e8c4fa0a38302452c7bdcb67071fb9d5aba0f2ad9e40514ebbdde34c06cbb"
+    },
+    "resolvable": [
+      "api-spec",
+      "backend-execution-plan",
+      "backend-test-plan",
+      "business-policies",
+      "contract",
+      "db-script",
+      "domain-profile",
+      "flow-diagram",
+      "frontend-execution-plan",
+      "frontend-test-plan",
+      "module-registry",
+      "platform-summary",
+      "prd",
+      "project-registry",
+      "registry-db",
+      "registry-exec-be",
+      "registry-exec-fe",
+      "registry-srs",
+      "srs",
+      "ui-ux-spec"
+    ],
+    "inputs": {
+      "api-spec": "f41f43b47d1b3f15f2df80d53fd9f39366994a1c4bb08dc63802d3f330d7d9f5",
+      "backend-execution-plan": "f38b63869254eba3274a1b0784232378fa22e3f1f7b033d537e1f915c6081f16",
+      "backend-test-plan": "f124a2f9765e5bac2a34e72e825f72a2284d5622a8d9c785f942b911af686feb",
+      "business-policies": "7a637be9350dcf2f8758668fdc27a5d7d99f18d983fbc00a046d6cb1e5df7bef",
+      "contract": "7dd794c50c44c72942f70c172724923f0f66fa227b5802dfcfe55f8676265a89",
+      "db-script": "4691b3301e727e50b8c313c16290c42bb1272efa18e4a7a38d06b7e0229a4914",
+      "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
+      "flow-diagram": "dfedbb69c34a374f2d5b0e379812c1e136d1d8b3bd8f763aaf83fe4f6850cb46",
+      "frontend-execution-plan": "1bd10617f3cdc07829f8a16934ea03befd8c71e030a8d7d5b927700789460f39",
+      "frontend-test-plan": "0f124fcdcffbc40a4277a55fa581c6562cdd29e96bcad92ef3132d2258181ccd",
+      "module-registry": "f6f92473b350de01ecc92284dc11a1c5328b767882823836a96609a02268956a",
+      "platform-summary": "d3b1c682f6fbc8c4811b0e0df2fcc73cf939e64b826e03955de168291bf171fb",
+      "prd": "fe7912f29b423794d7f2026f4a9bde60eb7882e7bfd7476385a0fbe84ea76492",
+      "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
+      "registry-db": "4312069b46ea707a720833f0f357fad81104aa61e7495f4973a94d22522160d4",
+      "registry-exec-be": "0b122699ff45b1a35983e2db759ff9325e7042f4d0f1b6a9aeeb5cb885204bdc",
+      "registry-exec-fe": "ed78e1666bc09d196c984b528ca1f64ff47928ea8e184cc3ea0ca96e6e69f664",
+      "registry-srs": "4ad37432a6512d3118c4e07eb0092a8d6830542b3da01d63ad9a78bdfe29e687",
+      "srs": "2422a56be502b42178e7d0213ee8512ea96f152941c6ca6f5b4a5a0b8f0628ca",
+      "ui-ux-spec": "8afa8f2cad60dfd3a1935cfa06b496fb4afb630e9ddc3484663df54f254ada8d"
+    },
+    "at": "2026-10-29T09:53:05+00:00"
+  }
+}
