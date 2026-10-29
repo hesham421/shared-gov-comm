@@ -1,0 +1,110 @@
+{
+  "module": "PTY",
+  "version": 1,
+  "scope": "stage:P1.5",
+  "counts": {
+    "CRITICAL": 0,
+    "MAJOR": 0,
+    "MINOR": 0
+  },
+  "clean": true,
+  "blocking": [
+    "CRITICAL",
+    "MAJOR"
+  ],
+  "contracts": [
+    "C0",
+    "C13",
+    "C12"
+  ],
+  "skipped": [],
+  "coverage": {
+    "C0.1": 8,
+    "C13.5": 24
+  },
+  "vacuous": [],
+  "metrics": [
+    {
+      "id": "us-req",
+      "from": "US",
+      "to": [
+        "REQ"
+      ],
+      "total": 17,
+      "covered": 17,
+      "pct": 100.0
+    },
+    {
+      "id": "req-ac",
+      "from": "REQ",
+      "to": [
+        "AC"
+      ],
+      "total": 109,
+      "covered": 109,
+      "pct": 100.0
+    },
+    {
+      "id": "req-api",
+      "from": "REQ",
+      "to": [
+        "API"
+      ],
+      "total": 109,
+      "covered": 0,
+      "pct": 0.0
+    },
+    {
+      "id": "req-ux",
+      "from": "REQ",
+      "to": [
+        "SCR",
+        "UXD"
+      ],
+      "total": 109,
+      "covered": 0,
+      "pct": 0.0
+    },
+    {
+      "id": "ac-tc",
+      "from": "AC",
+      "to": [
+        "TC"
+      ],
+      "total": 123,
+      "covered": 0,
+      "pct": 0.0
+    }
+  ],
+  "findings": [],
+  "provenance": {
+    "rules": {
+      "contracts": "1e9a4cbe6e0e656cd905e87ef41fdd715519f455a4d19dba41e3592b43b3a281",
+      "checker": "8025e2b6657415dad65398e6f8d1a4dc2f4fe946781406a8271ccc55e4b3fa6e",
+      "policy": "112e8c4fa0a38302452c7bdcb67071fb9d5aba0f2ad9e40514ebbdde34c06cbb"
+    },
+    "resolvable": [
+      "business-policies",
+      "contract",
+      "domain-profile",
+      "module-registry",
+      "platform-summary",
+      "prd",
+      "project-registry",
+      "registry-srs",
+      "srs"
+    ],
+    "inputs": {
+      "business-policies": "7a637be9350dcf2f8758668fdc27a5d7d99f18d983fbc00a046d6cb1e5df7bef",
+      "contract": "ce3d2129a484613f3f6132750fe762038a3ecabe95977870fa37bf542109847f",
+      "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
+      "module-registry": "f6f92473b350de01ecc92284dc11a1c5328b767882823836a96609a02268956a",
+      "platform-summary": "d3b1c682f6fbc8c4811b0e0df2fcc73cf939e64b826e03955de168291bf171fb",
+      "prd": "fe7912f29b423794d7f2026f4a9bde60eb7882e7bfd7476385a0fbe84ea76492",
+      "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
+      "registry-srs": "2c83b04e1abadec95275fd700e14ffa79a53a1827ead72d7522c6e6922fa47bc",
+      "srs": "6af582880dded3b31036d883e027316f4a4655b8e6c3849232c08970ab5cf557"
+    },
+    "at": "2026-10-29T06:17:01+00:00"
+  }
+}
