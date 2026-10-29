@@ -1,0 +1,58 @@
+{
+  "unit": "SVC-API-INT",
+  "kind": "SUB",
+  "tests": [
+    "TC-CAT-010",
+    "TC-CAT-011",
+    "TC-CAT-017",
+    "TC-CAT-018",
+    "TC-CAT-019",
+    "TC-CAT-020",
+    "TC-CAT-052",
+    "TC-CAT-053",
+    "TC-CAT-217",
+    "TC-CAT-226",
+    "TC-CAT-233",
+    "TC-CAT-234",
+    "TC-CAT-075",
+    "TC-CAT-082",
+    "TC-CAT-083",
+    "TC-CAT-084",
+    "TC-CAT-112",
+    "TC-CAT-231"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "mdl",
+        "cu",
+        "sequence",
+        "file",
+        "events",
+        "report",
+        "sec",
+        "tenant"
+      ],
+      "extension_points": [
+        "com.erp.report.ReportProvider",
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.tenant.TenantProvisioningContributor"
+      ],
+      "interfaces": [
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.file.crossmodule.FileDocumentLookupApi",
+        "com.erp.file.crossmodule.FilePrivateStoreApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.report.crossmodule.PrintApi"
+      ],
+      "api": [
+        "docs/api-docs/file/index.md"
+      ]
+    }
+  ]
+}

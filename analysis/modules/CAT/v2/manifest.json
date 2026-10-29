@@ -36,10 +36,11 @@
   "status": {
     "archived": false,
     "split": {
-      "backend/exec": false,
-      "backend/test": false,
+      "backend/exec": true,
+      "backend/test": true,
       "frontend/exec": false,
-      "frontend/test": false
+      "frontend/test": false,
+      "integration": []
     },
     "coverage": {
       "us-req": 100.0,

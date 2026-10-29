@@ -1,0 +1,13 @@
+{
+  "module": "CAT",
+  "track": "backend",
+  "plan": "test",
+  "version": 2,
+  "verify": "sha256",
+  "source": "analysis/modules/CAT/v2/P4/backend-test-plan-cat.md",
+  "checked": 171,
+  "missing": [],
+  "mismatched": [],
+  "ok": true,
+  "at": "2026-10-29T05:38:18+00:00"
+}

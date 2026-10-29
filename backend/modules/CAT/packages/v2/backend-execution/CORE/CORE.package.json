@@ -1,0 +1,51 @@
+{
+  "unit": "CORE",
+  "kind": "PHASE",
+  "tests": [
+    "TC-CAT-004",
+    "TC-CAT-005",
+    "TC-CAT-037",
+    "TC-CAT-069",
+    "TC-CAT-071",
+    "TC-CAT-072",
+    "TC-CAT-079",
+    "TC-CAT-080",
+    "TC-CAT-081",
+    "TC-CAT-191",
+    "TC-CAT-193"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "mdl",
+        "cu",
+        "sequence",
+        "file",
+        "events",
+        "report",
+        "sec",
+        "tenant"
+      ],
+      "extension_points": [
+        "com.erp.report.ReportProvider",
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.tenant.TenantProvisioningContributor"
+      ],
+      "interfaces": [
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.file.crossmodule.FileDocumentLookupApi",
+        "com.erp.file.crossmodule.FilePrivateStoreApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.report.crossmodule.PrintApi"
+      ],
+      "api": [
+        "docs/api-docs/file/index.md"
+      ]
+    }
+  ]
+}
