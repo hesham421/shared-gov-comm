@@ -9,7 +9,13 @@
         2
       ],
       "current_version": 2,
-      "delivery": {}
+      "delivery": {
+        "backend": {
+          "version": 2,
+          "exec": "backend/modules/CAT/packages/v2/backend-execution",
+          "test": "backend/modules/CAT/packages/v2/backend-test"
+        }
+      }
     }
   }
 }
