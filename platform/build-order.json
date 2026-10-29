@@ -179,7 +179,7 @@
       "INS": "waiting"
     },
     "2": {
-      "CAT": "failed",
+      "CAT": "done",
       "PTY": "ready",
       "INV": "ready",
       "PRC": "ready",
