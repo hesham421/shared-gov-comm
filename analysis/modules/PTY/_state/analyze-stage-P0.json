@@ -1,0 +1,105 @@
+{
+  "module": "PTY",
+  "version": 1,
+  "scope": "stage:P0",
+  "counts": {
+    "CRITICAL": 0,
+    "MAJOR": 0,
+    "MINOR": 0
+  },
+  "clean": true,
+  "blocking": [
+    "CRITICAL",
+    "MAJOR"
+  ],
+  "contracts": [
+    "C0",
+    "C3",
+    "C-GIVEN-P0",
+    "C12"
+  ],
+  "skipped": [],
+  "coverage": {
+    "C0.1": 4,
+    "C3.7": 9,
+    "C3.8": 9,
+    "C-GIVEN-3": 27
+  },
+  "vacuous": [],
+  "metrics": [
+    {
+      "id": "us-req",
+      "from": "US",
+      "to": [
+        "REQ"
+      ],
+      "total": 0,
+      "covered": 0,
+      "pct": null
+    },
+    {
+      "id": "req-ac",
+      "from": "REQ",
+      "to": [
+        "AC"
+      ],
+      "total": 0,
+      "covered": 0,
+      "pct": null
+    },
+    {
+      "id": "req-api",
+      "from": "REQ",
+      "to": [
+        "API"
+      ],
+      "total": 0,
+      "covered": 0,
+      "pct": null
+    },
+    {
+      "id": "req-ux",
+      "from": "REQ",
+      "to": [
+        "SCR",
+        "UXD"
+      ],
+      "total": 0,
+      "covered": 0,
+      "pct": null
+    },
+    {
+      "id": "ac-tc",
+      "from": "AC",
+      "to": [
+        "TC"
+      ],
+      "total": 0,
+      "covered": 0,
+      "pct": null
+    }
+  ],
+  "findings": [],
+  "provenance": {
+    "rules": {
+      "contracts": "1e9a4cbe6e0e656cd905e87ef41fdd715519f455a4d19dba41e3592b43b3a281",
+      "checker": "8025e2b6657415dad65398e6f8d1a4dc2f4fe946781406a8271ccc55e4b3fa6e",
+      "policy": "112e8c4fa0a38302452c7bdcb67071fb9d5aba0f2ad9e40514ebbdde34c06cbb"
+    },
+    "resolvable": [
+      "business-policies",
+      "domain-profile",
+      "module-registry",
+      "platform-summary",
+      "project-registry"
+    ],
+    "inputs": {
+      "business-policies": "7a637be9350dcf2f8758668fdc27a5d7d99f18d983fbc00a046d6cb1e5df7bef",
+      "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
+      "module-registry": "f6f92473b350de01ecc92284dc11a1c5328b767882823836a96609a02268956a",
+      "platform-summary": "d3b1c682f6fbc8c4811b0e0df2fcc73cf939e64b826e03955de168291bf171fb",
+      "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877"
+    },
+    "at": "2026-10-29T05:49:43+00:00"
+  }
+}
