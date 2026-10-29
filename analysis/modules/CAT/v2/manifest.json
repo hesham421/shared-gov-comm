@@ -38,8 +38,8 @@
     "split": {
       "backend/exec": true,
       "backend/test": true,
-      "frontend/exec": false,
-      "frontend/test": false,
+      "frontend/exec": true,
+      "frontend/test": true,
       "integration": []
     },
     "coverage": {

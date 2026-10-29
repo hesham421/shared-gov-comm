@@ -1,0 +1,42 @@
+{
+  "unit": "F2-SCR-CAT-006",
+  "kind": "SUB",
+  "tests": [
+    "TC-CAT-171",
+    "TC-CAT-172"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "mdl",
+        "cu",
+        "sequence",
+        "file",
+        "events",
+        "report",
+        "sec",
+        "tenant"
+      ],
+      "extension_points": [
+        "com.erp.report.ReportProvider",
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.tenant.TenantProvisioningContributor"
+      ],
+      "interfaces": [
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.file.crossmodule.FileDocumentLookupApi",
+        "com.erp.file.crossmodule.FilePrivateStoreApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.report.crossmodule.PrintApi"
+      ],
+      "api": [
+        "docs/api-docs/file/index.md"
+      ]
+    }
+  ]
+}

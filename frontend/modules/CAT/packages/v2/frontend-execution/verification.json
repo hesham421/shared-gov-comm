@@ -1,0 +1,13 @@
+{
+  "module": "CAT",
+  "track": "frontend",
+  "plan": "exec",
+  "version": 2,
+  "verify": "sha256",
+  "source": "analysis/modules/CAT/v2/P3_2/frontend-execution-plan-cat.md",
+  "checked": 26,
+  "missing": [],
+  "mismatched": [],
+  "ok": true,
+  "at": "2026-10-29T05:38:32+00:00"
+}
