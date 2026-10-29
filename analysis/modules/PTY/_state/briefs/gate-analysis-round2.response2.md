@@ -1,103 +1,83 @@
-I'm checking the round-1 findings against the library checklist. I confirmed all eleven and found one more checklist violation: F8, a `com.erp.*` package in the application. Here is the merged result.
+I'm confirming the round-1 findings against the installed erp-core 1.6.0 checklist and `conventions.md` §Error codes, then returning the merged scorecard.
+
+DECISION: G1 confirmed as MAJOR. `conventions.md` §Error codes rule 3 says `GlobalExceptionHandler` owns `VALIDATION_ERROR`, `ACCESS_DENIED`, `NOT_FOUND`, `CONCURRENT_MODIFICATION` and `DATA_INTEGRITY_VIOLATION`, and the module may not register a second advice or re-map a `LocalizedException`. The PTY-prefixed platform rows for 400, 401, 403 and 500 cannot be emitted as written. The fix also has to cover optimistic-lock failures, because the plan has `@Version` but no catalog row for them. The PTY-404 rows stay: a service throws them as `LocalizedException(Status.NOT_FOUND, PtyErrorCodes.X)`.
+
+DECISION: G2 confirmed as MAJOR, no ADR. Only the capability-flag owner can enforce AC-PTY-085, and the platform-findings register has no row for that owner.
+
+DECISION: G3 confirmed as MAJOR. The NUMERIC(18,3) overflow or over-scale input is a counter-case that no requirement states, which makes it a silent path under §3.5 P1.
+
+DECISION: G4 and G5 stay MINOR. I add nothing new: the lock orders I checked (API-PTY-004, 017, 019, 036) are consistent. The scores and extra checks stand.
 
 ```json
 {
   "gate": "analysis",
   "module": "PTY",
   "version": 1,
-  "scores": { "unambiguous": 2, "verifiable": 2, "complete": 2, "consistent": 1, "singular": 2, "feasible": 2, "traceable": 2 },
+  "scores": { "unambiguous": 2, "verifiable": 2, "complete": 2, "consistent": 2, "singular": 3, "feasible": 2, "traceable": 3 },
   "extra_checks": [
-    {"id": "CM-1", "result": "PASS"},
-    {"id": "CM-2", "result": "PASS"},
-    {"id": "CM-3", "result": "PASS"},
-    {"id": "CM-4", "result": "PASS"},
-    {"id": "CM-5", "result": "PASS"},
-    {"id": "CM-6", "result": "PASS"},
-    {"id": "CM-7", "result": "PASS"},
-    {"id": "CM-8", "result": "PASS"},
-    {"id": "CM-9", "result": "PASS"},
+    {"id": "CM-1", "result": "PASS"}, {"id": "CM-2", "result": "PASS"}, {"id": "CM-3", "result": "PASS"},
+    {"id": "CM-4", "result": "PASS"}, {"id": "CM-5", "result": "PASS"}, {"id": "CM-6", "result": "PASS"},
+    {"id": "CM-7", "result": "PASS"}, {"id": "CM-8", "result": "PASS"}, {"id": "CM-9", "result": "PASS"},
     {"id": "CM-10", "result": "PASS"}
   ],
   "analyze_confirmed": [
-    {"finding": "C5.13 AC-PTY-123", "confirmed": false, "note": "False positive. 'could' appears only inside the quoted RULE-PTY-030 message text."},
-    {"finding": "C5.14 AC-PTY-011", "confirmed": true, "note": "Restate the Then as 'the purchase document receives supplierPk and code, both non-empty'."},
-    {"finding": "C5.14 AC-PTY-040", "confirmed": false, "note": "False positive. isDefaultFl true is an enumerable outcome, asserted by TC-PTY-015."},
-    {"finding": "C5.14 AC-PTY-076", "confirmed": false, "note": "False positive. NO_CREDIT is a closed-lookup value, asserted by TC-PTY-099."},
-    {"finding": "C5.14 AC-PTY-079", "confirmed": false, "note": "False positive. The absence of two named JSON members is testable (TC-PTY-031)."},
-    {"finding": "C5.14 AC-PTY-083", "confirmed": false, "note": "False positive. NOT_APPLICABLE is a closed-lookup value (TC-PTY-035)."},
-    {"finding": "coverage: 10 clauses examined nothing", "confirmed": true, "note": "C6.10, C6.12, C6.15, C6.3, C7.5, C7.5b, C7.26, C7.27 and C7.28 are empty by nature, because the XM register is empty and PTY consumes nothing. C7.24 (contract-honoured) examined nothing although every API block carries an Honours line for PTY's own CON items. The orchestrator should confirm that C7.24 only reads consumed contracts and did not fail to find its subject."}
+    {"finding": "C5.13 AC-PTY-123", "confirmed": false, "note": "False positive: 'could' is inside the quoted fixed RULE-PTY-030 message, not in the criterion's own wording."},
+    {"finding": "C5.14 AC-PTY-011", "confirmed": true, "note": "Minor wording only: the Then names the returned identifier and code. TC-PTY-061 and TC-PTY-147 assert it."},
+    {"finding": "C5.14 AC-PTY-040", "confirmed": false, "note": "False positive: isDefaultFl = true is exact and failable (TC-PTY-015)."},
+    {"finding": "C5.14 AC-PTY-076", "confirmed": false, "note": "False positive: NO_CREDIT is a closed-lookup code (TC-PTY-099)."},
+    {"finding": "C5.14 AC-PTY-079", "confirmed": false, "note": "False positive: the absence of two named members is checkable (TC-PTY-031)."},
+    {"finding": "C5.14 AC-PTY-083", "confirmed": false, "note": "False positive: NOT_APPLICABLE is a closed-lookup code (TC-PTY-035)."},
+    {"finding": "coverage: C6.10 C6.12 C6.15 C6.3 C7.5 C7.5b C7.26 C7.27 C7.28", "confirmed": true, "note": "Empty by nature: SRS A8 has consumes: [] and the XM register is empty."},
+    {"finding": "coverage: C7.24 contract-honoured", "confirmed": true, "note": "Empty by nature: PTY consumes no contract. Its Honours lines are covered by C13.5 (24 examined)."}
   ],
   "findings": [
-    {"id": "G1", "severity": "MAJOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "consistent — upstream wins (GOVERNANCE-CORE §1)",
-     "problem": "API-PTY-019 ('Creation is allowed under WARN too') and ADR-PTY-028 contradict three upstream statements. REQ-PTY-091 reads 'While the credit-overrun action is BLOCK_WITH_OVERRIDE, when a user requests approval…'. ADR-PTY-016 says 'A request is accepted only under BLOCK_WITH_OVERRIDE'. REQ-PTY-088 says that under WARN no request is needed. The silent path (a request created under WARN) has no rule, no catalog code and no test case.",
-     "fix": "Follow the upstream. Add RULE-PTY-035 'Request only under BLOCK_WITH_OVERRIDE' with catalog row PTY-422-OVERRIDE-NOT-REQUIRED. Raise it in API-PTY-019 after the server-side check and add it to the api-spec 422 codes. Add an AC (WARN, OVER_LIMIT → refused) and a backend TC. Remove the WARN sentence from API-PTY-019 and ADR-PTY-028 through a new ADR that revises ADR-PTY-028.", "adr": true},
-    {"id": "G2", "severity": "MAJOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "consistent — C-GIVEN-2 / ADR-PTY-044 (upstream A9 wins)",
-     "problem": "The plan says its given-usage table 'cites the SRS A9 rows and adds none', but it diverges from the current A9 in four places. (1) It lists modules.tenant as `TenantContext` and its listeners use `TenantContext.runAs`, while A9 now names `TenantRunner`. Checklist C4 does permit runAs; the defect is the drift from upstream. (2) It lists modules.module as `META-INF/erp/modules/pty.yaml` instead of `docs/api-docs/module/index.md`. (3) It keeps the modules.common row and says '15 uses', while A9 has 14 rows. (4) ADR-PTY-044 is missing from the Decisions table, and registry-exec-be says 'Next free ADR: ADR-PTY-044' although ADR-PTY-044 exists. Separately, backend test-plan note N7 still cites the withdrawn ADR-PTY-025 exemption.",
-     "fix": "Align the plan's given-usage table to A9 (14 rows, TenantRunner, the module api doc; no common row) and change the CORE listener text to TenantRunner. Add ADR-PTY-044 to Decisions and set next free ADR to ADR-PTY-045 in registry-exec-be. Change N7 to ADR-PTY-039.", "adr": false},
-    {"id": "G3", "severity": "MAJOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "\"The module serves only its own lookup keys through `OwnedLookups.read(...)`\" (checklist C6)",
-     "problem": "PTY owns five lookup keys, seeded with OWNER_MODULE_CODE 'PTY'. The plan states no `OwnedLookups.read(...)` use. The frontend's lookup reads (F2 LOOKUP hooks) therefore have no stated serving mechanism on the owner side.",
-     "fix": "In CORE (Lookups), state that PTY serves CUSTOMER_GROUP, ADDRESS_TYPE, CREDIT_OVERRUN_ACTION, CREDIT_CHECK_RESULT and CREDIT_OVERRIDE_STATUS through `OwnedLookups.read(...)` with owner PTY. Validation keeps `MdlLookupApi.readActiveValuesByKey` (C5). Add the given-usage row in SRS A9 and contract Part 4 if `OwnedLookups` is a published seam of modules.mdl or modules.common; otherwise record the reason in an ADR.", "adr": false},
-    {"id": "G4", "severity": "MAJOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "\"every service method has `@PreAuthorize(\"hasAuthority(T(…<Module>Permissions).PERM_…)\")`\" (checklist C13)",
-     "problem": "`CustomerQueryService.globalSearch` (API-PTY-027) carries `isAuthenticated()` and checks VIEW in code. ADR-PTY-039 §3 accepts this as an exception, but the checklist line allows none.",
-     "fix": "Keep REQ-PTY-043 behaviour (an empty list, not a 403) at the entry layer. The controller and the `PtyPartyApi.globalSearchCustomers` delegate each test PERM_PTY_CUSTOMER_VIEW through `SecurityContextHelper` and return an empty list without it. Otherwise they call a service method annotated `hasAuthority(T(…PtyPermissions).PERM_PTY_CUSTOMER_VIEW)`. Revise ADR-PTY-039 §3 and SEC-BE to remove the exception.", "adr": false},
-    {"id": "G5", "severity": "MAJOR", "section": "tests", "artifact": "backend-test-plan", "line": null, "clause": "P1 — a stated guard with no test case (N13 claims 9/9)",
-     "problem": "Four guards the plan states have no barrier-synchronised TC. (a) API-PTY-004 versus API-PTY-019, serialised by the Customer lock. (b) API-PTY-004 versus an approval or a use (QR-PTY-039 plus compare-and-set, with three spelled-out outcomes). (c) The guest email race in API-PTY-034 (REQUIRES_NEW plus one re-match); TC-PTY-172 covers API-PTY-001 only. (d) The Address type change under the Party lock (API-PTY-013 versus API-PTY-011 or 015 on the same type).",
-     "fix": "Add four barrier TCs derived from AC-PTY-128, AC-PTY-129, AC-PTY-063 and AC-PTY-036. Each asserts the single end state and the loser's catalog code. Update N13, the Package table and COVERAGE.", "adr": false},
-    {"id": "G12", "severity": "MAJOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "\"A copy of a core class, a `com.erp.*` package in the application, an edit to a core migration\" (checklist F8)",
-     "problem": "The module root package is `com.erp.pty` (CORE module layout, manifest `package: com.erp.pty`, `com.erp.pty.crossmodule.PtyPartyApi`, `PtyPermissions`). `com.erp.*` is the core's namespace (core-manifest: com.erp.sec, com.erp.mdl, …). The library's own module example uses an application namespace (`package: com.acme.rental.leasing`). The same pattern appears in CAT v2 (`com.erp.cat`), so it is a rule-level defect.",
-     "fix": "Choose one application root namespace for all business modules, for example `com.<vendor>.commerce`. Record it once in the profile or domain profile and in an ADR. Rename PTY's package to `<root>.pty` (CORE layout, manifest, PtyPartyApi, Javadoc/README, test-plan references), and keep the boundary rule `<root>.pty.crossmodule`. File a platform finding so that CAT's next pass applies the same rename.", "adr": true},
-    {"id": "G6", "severity": "MINOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "P2 closure — who may not read a record",
-     "problem": "API-PTY-002 serialises creditLimit, paymentTermDays and currencyCode to any holder of PERM_PTY_CUSTOMER_VIEW while the flag is on. A custom role without PERM_PTY_CUSTOMER_CREDIT_VIEW therefore reads credit data, which SCR-REQ-PTY-003 B4 gates. No requirement settles this either way.",
-     "fix": "Record in an ADR that Customer VIEW includes reading the credit values, because consumers rely on CON-PTY-009. This is the best-practice choice, since editing stays gated. Add an AC and a TC.", "adr": true},
-    {"id": "G7", "severity": "MINOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "unambiguous — QR-PTY-011",
-     "problem": "QR-PTY-011 uses the parameter `:tDigits`, but the query defines only `:t` and `:tAr`.",
-     "fix": "Define `:tDigits = '%'||REGEXP_REPLACE(term,'[ -]','','g')||'%'`, state the %/_ escaping for each form, and add an AC for a term containing spaces.", "adr": false},
-    {"id": "G8", "severity": "MINOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "P1 — order of checks",
-     "problem": "API-PTY-035 returns NOT_APPLICABLE before it loads the Customer. With the flag off, an unknown or inactive Customer gets 200, and no AC fixes this order.",
-     "fix": "State the order 'load the Customer (404) → RULE-PTY-005 → flag' and add an AC and a TC for the combination of flag off and an inactive Customer.", "adr": false},
-    {"id": "G9", "severity": "MINOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "consistent — ADR-PTY-026 / QR-PTY-023",
-     "problem": "The plan states the lock order 'Party first, then the child row', but the role endpoints (API-PTY-003, 004, 005, 008, 009, 010) lock the role row first and the Party second.",
-     "fix": "State the order once in CORE as 'role row → Party → Address and requests', or reorder the role endpoints.", "adr": false},
-    {"id": "G10", "severity": "MINOR", "section": "frontend", "artifact": "frontend-execution-plan", "line": null, "clause": "P3 — read-binding seams",
-     "problem": "(1) The Customer picker of SCR-PTY-004 offers active Customers only and carries no isWalkInFl. The walk-in Customer is therefore offered and only refused after submit, and an inactive Customer's requests cannot be filtered from the picker. (2) The notification deep link has no upstream owner: the dispatch passes only referenceId and referenceType.",
-     "fix": "(1) Add isWalkInFl to `CustomerSearchHit` and have the picker hide the walk-in Customer. State that a customerId filter for an inactive Customer is reachable by URL only. (2) State the referenceType → route mapping in API-PTY-019 and F4, or drop the deep-link claim.", "adr": false},
-    {"id": "G11", "severity": "MINOR", "section": "tests", "artifact": "frontend-test-plan", "line": null, "clause": "traceable — stale counts; P1 coverage",
-     "problem": "The test-plan headers cite REQ 109 · AC 123 · RULE 33 and a 36-row catalog; the current figures are 113, 136, 34 and 37. The frontend plan says 44 TCs in its header and 42 in its section text. The API-PTY-020 visibility rule (another user's request answers 404) has no TC.",
-     "fix": "Correct the counts. Add a backend TC: a requester without UPDATE reads another user's request → PTY-404-CREDIT-OVERRIDE-NOT-FOUND.", "adr": false},
-    {"id": "G13", "severity": "MINOR", "section": "backend", "artifact": "backend-execution-plan", "line": null, "clause": "\"every endpoint is under its `api-paths`\" (checklist C18)",
-     "problem": "The manifest declares `api-paths: [/api/v1/pty]`. The library example uses a sub-tree pattern (`/api/v1/leasing/**`), so the bare prefix may match only the exact path.",
-     "fix": "Declare `api-paths: [/api/v1/pty/**]` in the manifest bullet of CORE.", "adr": false}
+    {"id": "G1", "severity": "MAJOR", "section": "backend", "artifact": "backend-execution-plan", "line": null,
+     "clause": "given conventions §Error codes rule 3 (checklist C11): 'never registers a second @ControllerAdvice for the shared codes (GlobalExceptionHandler owns VALIDATION_ERROR, ACCESS_DENIED, NOT_FOUND, CONCURRENT_MODIFICATION, DATA_INTEGRITY_VIOLATION, …)'",
+     "problem": "The Error Catalog defines PTY-400-VALIDATION, PTY-401-UNAUTHENTICATED, PTY-403-FORBIDDEN and PTY-500-INTERNAL as PTY codes. SEC-BE maps an @PreAuthorize refusal to PTY-403-FORBIDDEN. The given handler answers bean-validation, authentication, access-denied and unexpected failures with its own shared codes, and the module may neither re-map them nor add a second advice. The @Version optimistic-lock failure (CONCURRENT_MODIFICATION) has no catalog row at all. As a result, the api-spec ErrorResponse pattern '^PTY-', the frontend STD routing and TCs such as TC-PTY-113, 167, 177 and 196 assert codes the platform will not emit.",
+     "fix": "Keep as PTY catalog rows only the codes a PTY Domain or service throws: the rule rows, PTY-404-*-NOT-FOUND, PTY-404-LOOKUP-KEY-UNKNOWN, and PTY-403-FORBIDDEN only where the service throws it itself (the Address role check of ADR-PTY-039 §4). For framework-level 400, 401, 403, 409 (concurrent modification) and 500, state that GlobalExceptionHandler answers with its shared codes. Relax the ErrorResponse code pattern to allow them, and re-key the frontend STD routing and the affected TCs on those codes. Amend ADR-PTY-024.",
+     "adr": true},
+    {"id": "G2", "severity": "MAJOR", "section": "backend", "artifact": "srs", "line": null,
+     "clause": "§7 platform findings / complete / verifiable",
+     "problem": "REQ-PTY-076 and AC-PTY-085 assert that 'b2bCredit stays on'. PTY only answers the dependency question (API-PTY-037, TC-PTY-036). The capability-flag owner (OI-05, still OPEN) is the one that must refuse, and no platform-findings row records that obligation.",
+     "fix": "Add an OPEN platform-findings row. Owner: the capability-flag owner (OI-05) or erp-core cu. Obligation: call API-PTY-037 or PtyPartyApi.b2bCreditSwitchOffDependency before switching b2bCredit off, and refuse with the RULE-PTY-024 message. Evidence: CON-PTY-019, AC-PTY-085. Reword the Then of AC-PTY-085 to PTY's observable result: dependentCustomerCount 4, switchOffAllowed false, the message and the next action returned.",
+     "adr": false},
+    {"id": "G3", "severity": "MAJOR", "section": "backend", "artifact": "api-spec", "line": null,
+     "clause": "complete (P1 counter-case) / feasible",
+     "problem": "creditLimit, saleAmount and the contributors' amounts are unbounded `number` values, while the columns are NUMERIC(18,3). An input of 10^15 or more, or one with more than 3 decimals, has no stated outcome: it ends as an undefined 500 or as silent rounding. No TC covers it.",
+     "fix": "Add maximum 999999999999999.999 and at most 3 decimals to the credit and request amount schemas. State in API-PTY-017, 019, 035 and 036 that a larger value or a higher scale is refused as validation (the given shared code, per G1). Add one BOUNDARY TC per input kind, with a limit-value case and a one-above case.",
+     "adr": false},
+    {"id": "G4", "severity": "MINOR", "section": "backend", "artifact": "business-policies", "line": null,
+     "clause": "§7 platform findings",
+     "problem": "The three OPEN CORE-GAP questions to erp-core are not rows of the PLATFORM FINDINGS register.",
+     "fix": "Add three OPEN rows. Owner: erp-core. Evidence: each CORE-GAP file and the ADR that depends on it (ADR-PTY-037, 039, 040).",
+     "adr": false},
+    {"id": "G5", "severity": "MINOR", "section": "backend", "artifact": "srs", "line": null,
+     "clause": "complete (P2 closure: who may not)",
+     "problem": "An Owner holding both PERM_PTY_CREDIT_OVERRIDE_CREATE and _UPDATE can approve a request they raised. No rule states whether this self-approval is allowed.",
+     "fix": "Decide it in an ADR. If segregation is chosen, add a rule, a catalog row and a TC. Otherwise state explicitly that self-approval by an Owner is permitted in v1.",
+     "adr": true}
   ],
   "adrs_reviewed": [
-    {"id": "ADR-PTY-001…013", "status_ok": true, "note": "Dialogue ADRs, consistent with the artifacts."},
-    {"id": "ADR-PTY-014…017", "status_ok": true, "note": "ACCEPTED and followed. ADR-PTY-016's 'only under BLOCK_WITH_OVERRIDE' is the upstream that G1 restores."},
-    {"id": "ADR-PTY-018…022", "status_ok": true, "note": "Filed by ADR-PTY-030. 020 and 021 are correctly SUPERSEDED."},
-    {"id": "ADR-PTY-023", "status_ok": true, "note": "Its third bullet is superseded by ADR-PTY-030."},
-    {"id": "ADR-PTY-024", "status_ok": true, "note": "Status mapping and PLATFORM-STD rows are consistent."},
-    {"id": "ADR-PTY-025", "status_ok": true, "note": "Correctly marked revised by ADR-PTY-039, but test-plan N7 still follows the withdrawn exemption (G2)."},
-    {"id": "ADR-PTY-026", "status_ok": true, "note": "The lock-order statement is inaccurate (G9)."},
-    {"id": "ADR-PTY-027", "status_ok": true, "note": "The QR-PTY-011 parameter is undefined (G7)."},
-    {"id": "ADR-PTY-028", "status_ok": false, "note": "'A request may be created under WARN' contradicts REQ-PTY-091 and ADR-PTY-016 (G1); a revising ADR is needed."},
-    {"id": "ADR-PTY-029…034", "status_ok": true, "note": "029 is revised by 036, and 034 §9 by 043, both correctly."},
-    {"id": "ADR-PTY-035…038, 040…043", "status_ok": true, "note": "ACCEPTED, traces correct and followed downstream."},
-    {"id": "ADR-PTY-039", "status_ok": false, "note": "The §3 isAuthenticated() exception violates checklist C13 (G4)."},
-    {"id": "ADR-PTY-044", "status_ok": true, "note": "Correct, but not carried into the backend plan or registry-exec-be (G2)."},
-    {"id": "CORE-GAP-in-process-caller-authority / tenant-base-currency / ordinal-within-parent", "status_ok": true, "note": "OPEN, not blocking, each with its interim and impact stated. No platform-findings rows were supplied, so the orchestrator should confirm all three are mirrored as OPEN platform findings owned by erp-core. Also missing is a platform finding for the application root-package rule (G12), owned by the profile and affecting CAT."}
+    {"id": "ADR-PTY-024", "status_ok": false, "note": "Must be amended per G1: framework-level codes belong to the given GlobalExceptionHandler."},
+    {"id": "ADR-PTY-035", "status_ok": true, "note": "Satisfies C1 and C2. SUPERSEDES ADR-PTY-021 correctly."},
+    {"id": "ADR-PTY-036", "status_ok": true, "note": "Satisfies C8 and C9."},
+    {"id": "ADR-PTY-037", "status_ok": true, "note": "Satisfies CM-8. The CORE-GAP is OPEN and the stopgap is declared."},
+    {"id": "ADR-PTY-038", "status_ok": true, "note": "Satisfies C19 and F11."},
+    {"id": "ADR-PTY-039", "status_ok": true, "note": "Satisfies C13. The CORE-GAP is tracked; see G4."},
+    {"id": "ADR-PTY-040", "status_ok": true, "note": "The F6 question is raised as a CORE-GAP and guarded by the Party lock."},
+    {"id": "ADR-PTY-045", "status_ok": true, "note": "Closes the WARN path. RULE-PTY-035, AC-PTY-137 and TC-PTY-191 are consistent."},
+    {"id": "ADR-PTY-046", "status_ok": true, "note": "Consistent. Only TC-PTY-196's 403 code is affected by G1."},
+    {"id": "ADR-PTY-047", "status_ok": true, "note": "Satisfies F8."},
+    {"id": "ADR-PTY-048", "status_ok": true, "note": "Satisfies C6. Platform finding row 2 is legitimate."},
+    {"id": "ADR-PTY-020", "status_ok": true, "note": "SUPERSEDED by ADR-PTY-037."},
+    {"id": "ADR-PTY-021", "status_ok": true, "note": "SUPERSEDED by ADR-PTY-035."},
+    {"id": "ADR-PTY-023", "status_ok": true, "note": "Its third bullet is superseded by ADR-PTY-030. No downstream artifact ignores it."},
+    {"id": "CORE-GAP-in-process-caller-authority", "status_ok": true, "note": "OPEN, not BLOCKED. No v1 caller is blocked."},
+    {"id": "CORE-GAP-tenant-base-currency", "status_ok": true, "note": "OPEN, not BLOCKED."},
+    {"id": "CORE-GAP-ordinal-within-parent", "status_ok": true, "note": "OPEN, not BLOCKED."}
   ],
   "verdict": "REVISE"
 }
 ```
-
-DECISION: Round-1 findings G1–G11 stand
-Every round-1 finding was re-checked against the artifacts and the installed checklist (`.claude/skills/erp-core-usage@1.6.0/templates/checklist.md`). G3 is confirmed word for word against C6, and G4 against C13. G2 stays MAJOR, but its rationale is corrected: checklist C4 does allow `TenantContext.runAs`. The defect is the divergence from the upstream SRS A9 and ADR-PTY-044, not a checklist breach.
-
-DECISION: Add G12 — checklist F8, `com.erp.*` package in the application
-`com.erp.pty` uses the core's namespace; the library's own module example uses `com.acme.rental.leasing`. Under §3.6 a checklist violation is MAJOR. CAT shows the same pattern, so the fix is one platform-wide root-namespace rule, recorded by an ADR and a platform finding.
-
-DECISION: Add G13 — `api-paths` pattern
-This is MINOR and aligns the manifest with the library example (`/api/v1/pty/**`).
-
-DECISION: Scores and verdict
-Consistent stays at 1 (G1, G2). Every other attribute is 2, and every extra check passes. There is no CRITICAL finding and no BLOCKED ADR, and the analysis lane can apply every MAJOR fix, so the verdict is REVISE.
 
 <!-- CONVERGED -->
