@@ -3,7 +3,7 @@
 Module : PTY   Version : v1   Profile : commerce   Stage : P1.5
 Inputs : srs (analysis/modules/PTY/P1/srs-pty.md, P1 commit f0653ef), registry-srs
 Counts : CON 24 (ENTITY 5 · LOOKUP 3 · OPERATION 14 · EVENT 1 · EXTENSION POINT 1) · new ADR 0
-Status : DRAFT — P1.5 pass 1
+Status : DRAFT — P1.5 pass 1 · gate-analysis revise (ADR-PTY-037, 038, 039, 041, 042 — additive items and error meanings; no consumer is built yet) · gate-analysis revise 2 (ADR-PTY-045, 046, 048 — one error meaning on CON-PTY-016, one output field on CON-PTY-020, the check order of CON-PTY-015; all additive)
 ══════════════════════════════════════════════════════════════════
 
 ## 0 — Scope of this promise
@@ -17,7 +17,8 @@ it never implements. The backend stage (P3.1) chooses paths and verbs and states
 | Identifiers | Every entity identifier is a BIGINT identity key the database assigns (`stack.db.pk_generation = identity`). A consumer's HARD-FK column to a PTY entity is `BIGINT`, copied verbatim. No other identifier type exists in v1. |
 | Business keys | Party `code` (from given `sequence`, read-only after first save — RULE-PTY-007) is the business key Customer and Supplier present; Credit override request `docNo` (from given `sequence`, read-only — RULE-PTY-031). |
 | Capability flag | Credit items read `b2bCredit` through the FeatureFlags API only; while it is off, credit fields are omitted and credit operations answer as stated per item (REQ-PTY-070 … REQ-PTY-074). |
-| Currency | Every amount is in the tenant's base currency (SRS A2 scope exception: no multi-currency party balances). |
+| Currency | Every amount is in the tenant's base currency (SRS A2 scope exception: no multi-currency party balances). Each credit amount carries the code of that currency (`currencyCode`, ISO 4217 — ADR-PTY-037); a consumer converts its own amounts into it before a credit check, a request or a use. |
+| Authority | Every operation item is served by a PTY service method that checks its own PTY permission; an in-process caller's security context must hold it (ADR-PTY-039). |
 | Errors | Named by meaning; each carries the bilingual message of the cited RULE. Access refusals come from the platform authorisation layer ("forbidden"). |
 | Not promised | Party create/update by consumers other than registration in place, Customer/Supplier search and maintenance screens, address maintenance, Customer credit maintenance, credit history, credit-overrun setting, approve / reject / cancel of Credit override requests, CUSTOMER-realm invitation handling — these are internal to PTY (SCR-REQ-PTY-001 … SCR-REQ-PTY-005). |
 
@@ -49,7 +50,7 @@ Traces    : ENT-PTY-001, REQ-PTY-001, REQ-PTY-006, REQ-PTY-024
 ### CON-PTY-002 — العميل / Customer (ar / en)
 
 Entity    : ENT-PTY-002 — key columns: code (business key, presented from ENT-PTY-001.code), customerPk (identifier — the HARD-FK target for SLS, STL, SFR) · identifier type: BIGINT
-Promised  : one Customer record per Party, with the same identifier for back-office, point of sale and storefront (REQ-PTY-001); partyFk never changes; customerGroupCode always present (REQ-PTY-039); isWalkInFl marks the tenant's single walk-in Customer (RULE-PTY-014); a deactivated Customer stays readable by every existing reference (REQ-PTY-014).
+Promised  : one Customer record per Party, with the same identifier for back-office, point of sale and storefront (REQ-PTY-001); partyFk never changes; customerGroupCode always present (REQ-PTY-039); isWalkInFl marks the tenant's single walk-in Customer (RULE-PTY-014); currencyCode names the currency of the Customer's credit amounts (ADR-PTY-037); a deactivated Customer stays readable by every existing reference (REQ-PTY-014).
 Traces    : ENT-PTY-002, REQ-PTY-001, REQ-PTY-002, REQ-PTY-014, REQ-PTY-039
 
 ### CON-PTY-003 — المورّد / Supplier (ar / en)
@@ -67,8 +68,8 @@ Traces    : ENT-PTY-004, REQ-PTY-030, REQ-PTY-032, REQ-PTY-033, REQ-PTY-034
 ### CON-PTY-005 — طلب تجاوز حد الائتمان / Credit override request (ar / en)
 
 Entity    : ENT-PTY-005 — key columns: docNo (business key, text ≤ 20, from given `sequence`, read-only), creditOverrideRequestPk (identifier — the reference SLS and SFR store against a credit sale) · identifier type: BIGINT
-Promised  : one request per credit sale above the limit, status lifecycle PENDING → APPROVED → USED, PENDING → REJECTED, PENDING → CANCELLED (SRS A7); the sale is held by text reference (sourceDocumentRef, usedDocumentRef — ADR-PTY-016), so the consumer passes its own document reference and PTY stores no key into the consumer. Exists only while `b2bCredit` is on (RULE-PTY-023).
-Traces    : ENT-PTY-005, REQ-PTY-091, REQ-PTY-092, REQ-PTY-097, REQ-PTY-103
+Promised  : one open request (PENDING or APPROVED) per Customer and credit sale above the limit (RULE-PTY-034), status lifecycle PENDING → APPROVED → USED, PENDING → REJECTED, PENDING → CANCELLED, and PENDING or APPROVED → CANCELLED when the Customer is deactivated (SRS A7, REQ-PTY-111); the sale is held by text reference (sourceDocumentRef, usedDocumentRef — ADR-PTY-016), so the consumer passes its own document reference and PTY stores no key into the consumer; a use must carry the reference the request was raised for (ADR-PTY-042); amounts carry currencyCode. Exists only while `b2bCredit` is on (RULE-PTY-023).
+Traces    : ENT-PTY-005, REQ-PTY-091, REQ-PTY-092, REQ-PTY-097, REQ-PTY-103, REQ-PTY-111, REQ-PTY-113
 
 ---
 
@@ -104,9 +105,9 @@ Traces    : ENT-PTY-005, REQ-PTY-074, REQ-PTY-081, REQ-PTY-082, REQ-PTY-083, REQ
 
 ### CON-PTY-009 — قراءة العميل / Read Customer (ar / en)
 
-Signature : readCustomer(customerId: BIGINT, forNewDocument: flag) → Customer { customerPk, partyFk, code, nameAr, nameEn, mobile, email, taxRegistrationNo, customerGroupCode, isWalkInFl, isActiveFl, creditLimit, paymentTermDays } · errors: not found; inactive for a new document (RULE-PTY-005, when forNewDocument is set); forbidden
+Signature : readCustomer(customerId: BIGINT, forNewDocument: flag) → Customer { customerPk, partyFk, code, nameAr, nameEn, mobile, email, taxRegistrationNo, customerGroupCode, isWalkInFl, isActiveFl, creditLimit, paymentTermDays, currencyCode } · errors: not found; inactive for a new document (RULE-PTY-005, when forNewDocument is set); forbidden
 Entity    : ENT-PTY-002
-Notes     : creditLimit and paymentTermDays are present only while `b2bCredit` is on and are omitted otherwise (REQ-PTY-071). An inactive Customer is returned when forNewDocument is not set (existing references stay readable, REQ-PTY-014). partyFk is part of the Customer entity returned (SRS A8.1 output "Customer") and is the input of CON-PTY-011.
+Notes     : creditLimit, paymentTermDays and currencyCode are present only while `b2bCredit` is on and are omitted otherwise (REQ-PTY-071). An inactive Customer is returned when forNewDocument is not set (existing references stay readable, REQ-PTY-014). partyFk is part of the Customer entity returned (SRS A8.1 output "Customer") and is the input of CON-PTY-011. The three credit values are returned to every caller holding Customer VIEW; the credit standing with exposure is not part of this item (ADR-PTY-046).
 Traces    : REQ-PTY-002, REQ-PTY-003, REQ-PTY-014, REQ-PTY-071
 
 ### CON-PTY-010 — قراءة المورّد / Read Supplier (ar / en)
@@ -144,30 +145,30 @@ Traces    : REQ-PTY-050, REQ-PTY-053, REQ-PTY-055, REQ-PTY-056, REQ-PTY-057, REQ
 
 ### CON-PTY-015 — فحص الائتمان / Credit check (ar / en)
 
-Signature : checkCredit(customerId: BIGINT, saleAmount: decimal) → CreditCheck { resultCode (CREDIT_CHECK_RESULT), creditLimit, openExposure, projectedExposure, overrunActionCode (CREDIT_OVERRUN_ACTION), approvalRequired: flag } · errors: Customer not found; forbidden
+Signature : checkCredit(customerId: BIGINT, saleAmount: decimal) → CreditCheck { resultCode (CREDIT_CHECK_RESULT), creditLimit, openExposure, projectedExposure, currencyCode, overrunActionCode (CREDIT_OVERRUN_ACTION), approvalRequired: flag } · errors: Customer not found; Customer inactive (RULE-PTY-005, REQ-PTY-110); forbidden
 Entity    : ENT-PTY-002
-Notes     : `b2bCredit` off → NOT_APPLICABLE. Empty creditLimit → NO_CREDIT. projectedExposure = openExposure + saleAmount; ≤ creditLimit → WITHIN_LIMIT, > creditLimit → OVER_LIMIT. A contributor not answering within 3 s → EXPOSURE_UNAVAILABLE with openExposure empty. OVER_LIMIT, NO_CREDIT and EXPOSURE_UNAVAILABLE carry the tenant's overrun action (default BLOCK_WITH_OVERRIDE) and approvalRequired = yes under BLOCK_WITH_OVERRIDE, no under WARN.
-Traces    : REQ-PTY-068, REQ-PTY-074, REQ-PTY-079, REQ-PTY-080, REQ-PTY-081, REQ-PTY-082, REQ-PTY-083, REQ-PTY-084, REQ-PTY-087, REQ-PTY-088, REQ-PTY-089
+Notes     : The Customer is checked first, whatever the flag: not found, then inactive (RULE-PTY-005). For an active Customer, `b2bCredit` off → NOT_APPLICABLE. Empty creditLimit → NO_CREDIT. projectedExposure = openExposure + saleAmount; ≤ creditLimit → WITHIN_LIMIT, > creditLimit → OVER_LIMIT. A contributor not answering within 3 s → EXPOSURE_UNAVAILABLE with openExposure empty. OVER_LIMIT, NO_CREDIT and EXPOSURE_UNAVAILABLE carry the tenant's overrun action (default BLOCK_WITH_OVERRIDE) and approvalRequired = yes under BLOCK_WITH_OVERRIDE, no under WARN.
+Traces    : REQ-PTY-068, REQ-PTY-074, REQ-PTY-079, REQ-PTY-080, REQ-PTY-081, REQ-PTY-082, REQ-PTY-083, REQ-PTY-084, REQ-PTY-087, REQ-PTY-088, REQ-PTY-089, REQ-PTY-110
 
 ### CON-PTY-016 — طلب موافقة على تجاوز الائتمان / Create Credit override request (ar / en)
 
-Signature : createCreditOverrideRequest(customerId: BIGINT, saleAmount: decimal, sourceDocumentRef: text ≤ 60) → CreditOverrideRequest (as CON-PTY-017, statusCode PENDING) · errors: credit not enabled (RULE-PTY-023); sale within the limit — no approval needed (RULE-PTY-025); sale amount not greater than zero (RULE-PTY-032); walk-in Customer cannot buy on credit (RULE-PTY-033); Customer not found; forbidden
+Signature : createCreditOverrideRequest(customerId: BIGINT, saleAmount: decimal, sourceDocumentRef: text ≤ 60) → CreditOverrideRequest (as CON-PTY-017, statusCode PENDING) · errors: credit not enabled (RULE-PTY-023); sale within the limit — no approval needed (RULE-PTY-025); sale amount not greater than zero (RULE-PTY-032); walk-in Customer cannot buy on credit (RULE-PTY-033); Customer inactive (RULE-PTY-005); this sale already has an open request — names its docNo (RULE-PTY-034); the overrun action is Warn only, so no approval is required (RULE-PTY-035); Customer not found; forbidden
 Entity    : ENT-PTY-005
-Notes     : raised by the consumer when CON-PTY-015 answered approvalRequired = yes. PTY fills docNo, docDate, creditLimitAtRequest, openExposure, creditCheckResultCode and the requester, and notifies the approvers.
-Traces    : REQ-PTY-072, REQ-PTY-089, REQ-PTY-091, REQ-PTY-092, REQ-PTY-093, REQ-PTY-104, REQ-PTY-105
+Notes     : raised by the consumer when CON-PTY-015 answered approvalRequired = yes; accepted only while the tenant's credit-overrun action is BLOCK_WITH_OVERRIDE (ADR-PTY-045). PTY fills docNo, docDate, creditLimitAtRequest, openExposure, creditCheckResultCode and the requester, and notifies the approvers.
+Traces    : REQ-PTY-072, REQ-PTY-089, REQ-PTY-091, REQ-PTY-092, REQ-PTY-093, REQ-PTY-104, REQ-PTY-105, REQ-PTY-110, REQ-PTY-113, REQ-PTY-114
 
 ### CON-PTY-017 — قراءة طلب تجاوز الائتمان / Read Credit override request (ar / en)
 
-Signature : readCreditOverrideRequest(creditOverrideRequestId: BIGINT) → CreditOverrideRequest { creditOverrideRequestPk, docNo, docDate, statusCode (CREDIT_OVERRIDE_STATUS), customerFk, saleAmount, decidedBy, decidedAt, decisionReason } · errors: not found; forbidden
+Signature : readCreditOverrideRequest(creditOverrideRequestId: BIGINT) → CreditOverrideRequest { creditOverrideRequestPk, docNo, docDate, statusCode (CREDIT_OVERRIDE_STATUS), customerFk, saleAmount, currencyCode, sourceDocumentRef, decidedBy, decidedAt, decisionReason } · errors: not found; forbidden
 Entity    : ENT-PTY-005
 Traces    : REQ-PTY-103
 
 ### CON-PTY-018 — استخدام الموافقة / Use Credit override request (ar / en)
 
-Signature : useCreditOverrideRequest(creditOverrideRequestId: BIGINT, customerId: BIGINT, saleAmount: decimal, usedDocumentRef: text ≤ 60) → CreditOverrideRequest (statusCode USED) · errors: approval does not cover this sale — not APPROVED, another Customer, or a larger amount (RULE-PTY-028); not found; forbidden
+Signature : useCreditOverrideRequest(creditOverrideRequestId: BIGINT, customerId: BIGINT, saleAmount: decimal, usedDocumentRef: text ≤ 60) → CreditOverrideRequest (statusCode USED) · errors: approval does not cover this sale — not APPROVED, another Customer, another sale reference than sourceDocumentRef, or a larger amount (RULE-PTY-028); Customer inactive (RULE-PTY-005); credit not enabled (RULE-PTY-023); not found; forbidden
 Entity    : ENT-PTY-005
-Notes     : one approval covers one sale; a second use is refused (AC-PTY-113).
-Traces    : REQ-PTY-097, REQ-PTY-099
+Notes     : one approval covers one sale — the sale it was requested for (usedDocumentRef equals sourceDocumentRef, ADR-PTY-042); a second use is refused (AC-PTY-113); an approval of a Customer deactivated meanwhile is CANCELLED and refused (AC-PTY-129).
+Traces    : REQ-PTY-097, REQ-PTY-099, REQ-PTY-110, REQ-PTY-111, REQ-PTY-112
 
 ### CON-PTY-019 — اعتماد إيقاف الائتمان / `b2bCredit` switch-off dependency (ar / en)
 
@@ -178,21 +179,21 @@ Traces    : REQ-PTY-075, REQ-PTY-076, REQ-PTY-077
 
 ### CON-PTY-020 — البحث الشامل عن العملاء / Customer global search (ar / en)
 
-Signature : globalSearchCustomers(term: text) → list of at most 10 Customer { customerPk, code, nameAr, nameEn, mobile } · errors: none — a term under 2 characters or a user without VIEW on PTY_CUSTOMER yields an empty list
+Signature : globalSearchCustomers(term: text) → list of at most 10 Customer { customerPk, code, nameAr, nameEn, mobile, isWalkInFl } · errors: none — a term under 2 characters or a user without VIEW on PTY_CUSTOMER yields an empty list
 Entity    : ENT-PTY-002
-Notes     : active Customers only; matches code, nameAr, nameEn, mobile, email or taxRegistrationNo without letter case and with Arabic letter forms unified; exact code matches first, then name ascending. Suppliers are not returned (ADR-PTY-013).
+Notes     : active Customers only; matches code, nameAr, nameEn, mobile, email or taxRegistrationNo without letter case and with Arabic letter forms unified; exact code matches first, then name ascending. Suppliers are not returned (ADR-PTY-013). The walk-in Customer is returned and marked by isWalkInFl, so a picker can hide it. Spaces and dashes are ignored in the mobile comparison.
 Traces    : REQ-PTY-041, REQ-PTY-042, REQ-PTY-043
 
 ### CON-PTY-021 — حدث إيقاف صفة الطرف / Party role deactivated event (ar / en)
 
-Signature : event partyRoleDeactivated → { role: CUSTOMER | SUPPLIER, identifier: BIGINT (customerPk or supplierPk), code } — published through given `events` · errors: —
+Signature : event `pty.PartyRoleDeactivated` → { role: CUSTOMER | SUPPLIER, identifier: BIGINT (customerPk or supplierPk), code } — published through the given outbox (`OutboxPublisher`) inside the deactivation transaction, delivered after commit, at least once · errors: —
 Entity    : ENT-PTY-002, ENT-PTY-003
-Notes     : prevent new use + notify; no cascade (RULE-PTY-006). Consumers keep their existing documents unchanged.
+Notes     : prevent new use + notify; no cascade (RULE-PTY-006). Consumers keep their existing documents unchanged. A consumer subscribes with an `OutboxSubscriber` for type `pty.PartyRoleDeactivated` and must be idempotent on `OutboxMessage.id()`; a module enabled later receives the past events by replay (ADR-PTY-038).
 Traces    : REQ-PTY-023
 
 ### CON-PTY-022 — نقطة امتداد مديونية العميل / Customer credit exposure extension point (ar / en)
 
-Signature : contributor CustomerCreditExposureContributor.openExposure(customerId: BIGINT) → amount: decimal (tenant base currency) · errors: no answer within 3 s → the credit check answers EXPOSURE_UNAVAILABLE
+Signature : contributor CustomerCreditExposureContributor.openExposure(customerId: BIGINT) → amount: decimal (in the Customer's currencyCode — the tenant base currency, ADR-PTY-037) · errors: no answer within 3 s → the credit check answers EXPOSURE_UNAVAILABLE
 Entity    : ENT-PTY-002
 Notes     : declared by PTY, implemented by downstream modules (STL receivables, SLS open orders); PTY sums every registered contributor's amount, 0 when none is registered (ADR-PTY-017). Registering a contributor creates no dependency from PTY on the contributor.
 Traces    : REQ-PTY-080, REQ-PTY-084
@@ -217,16 +218,20 @@ Traces    : REQ-PTY-008, REQ-PTY-009, REQ-PTY-010, REQ-PTY-011, REQ-PTY-016, REQ
 
 ```yaml name=given-usage
 rows:
-  - {given: erp-core, module: modules.sec, via: com.erp.sec.crossmodule.SecCustomerInvitationApi, purpose: "Request the CUSTOMER-realm invitation for a Customer created from or matched to a guest order, and learn its acceptance to set secUserId (REQ-PTY-051, REQ-PTY-052, REQ-PTY-059)"}
+  - {given: erp-core, module: modules.sec, via: com.erp.sec.crossmodule.SecCustomerInvitationApi, purpose: "Issue the CUSTOMER-realm invitation for a Customer created from or matched to a guest order, with PTY's template, from PTY's after-commit listener (REQ-PTY-051, REQ-PTY-059)"}
   - {given: erp-core, module: modules.sec, via: com.erp.sec.crossmodule.SecUserDirectoryApi, purpose: "Resolve the CUSTOMER-realm user linked to a Customer and the users holding UPDATE on PTY_CREDIT_OVERRIDE; show user names in credit history and request decisions (REQ-PTY-093, REQ-PTY-108)"}
-  - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "Declare the five PTY pages (SEC_PAGES) with their VIEW / CREATE / UPDATE / DELETE actions (B4)"}
-  - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "Read capability flag b2bCredit through the FeatureFlags API and read / save the tenant's credit-overrun setting (REQ-PTY-070 … REQ-PTY-074, REQ-PTY-086, REQ-PTY-087)"}
-  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "Load CUSTOMER_GROUP, ADDRESS_TYPE, CREDIT_OVERRUN_ACTION, CREDIT_CHECK_RESULT and CREDIT_OVERRIDE_STATUS values at runtime (A6)"}
-  - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "Assign the Party code and the Credit override request docNo (REQ-PTY-006, REQ-PTY-092)"}
+  - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "PtyPermissions declares permission module PTY with the five PTY screens (SEC_PAGES) and their VIEW / CREATE / UPDATE / DELETE actions; every service method checks its constant (B4, ADR-PTY-039)"}
+  - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "Read capability flag b2bCredit through the FeatureFlags API, read / save the tenant's credit-overrun setting and read the tenant base currency PTY_BASE_CURRENCY_CODE (REQ-PTY-070 … REQ-PTY-074, REQ-PTY-086, REQ-PTY-087; ADR-PTY-037)"}
+  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "Load CUSTOMER_GROUP, ADDRESS_TYPE, CREDIT_OVERRUN_ACTION, CREDIT_CHECK_RESULT and CREDIT_OVERRIDE_STATUS values at runtime to validate the stored codes, and serve these five PTY keys to PTY's screens through the common helper OwnedLookups.read over this interface (A6; ADR-PTY-048)"}
+  - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "Assign the Party code and the Credit override request docNo from the series PTY_PARTY and PTY_CREDIT_OVERRIDE seeded by the PTY migration (REQ-PTY-006, REQ-PTY-092)"}
   - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "Create the tenant's walk-in Customer when a tenant is provisioned (REQ-PTY-044)"}
-  - {given: erp-core, module: modules.audit, via: com.erp.audit.crossmodule.AuditApi, purpose: "Record credit-limit, payment-term and override-decision changes and read them back as credit history (REQ-PTY-106 … REQ-PTY-109)"}
-  - {given: erp-core, module: modules.events, via: com.erp.events.DomainEventPublisher, purpose: "Publish the party-role-deactivated event to consuming modules (REQ-PTY-023)"}
-  - {given: erp-core, module: modules.notif, via: com.erp.notif.crossmodule.NotificationDispatchApi, purpose: "Send the in-app notification of a new Credit override request to its approvers (REQ-PTY-093)"}
+  - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantRunner, purpose: "Re-bind the tenant of PTY's after-commit work through the given's published tenant runner on the given event executor (REQ-PTY-051, REQ-PTY-059, REQ-PTY-093; ADR-PTY-044)"}
+  - {given: erp-core, module: modules.audit, via: com.erp.audit.crossmodule.AuditApi, purpose: "Record credit-limit and payment-term changes through the @Audited listener of Customer, record approve / reject decisions as business actions, and read the credit history back (REQ-PTY-106 … REQ-PTY-109)"}
+  - {given: erp-core, module: modules.events, via: com.erp.events.OutboxPublisher, purpose: "Publish pty.PartyRoleDeactivated to consuming modules inside the deactivation transaction (REQ-PTY-023, ADR-PTY-038)"}
+  - {given: erp-core, module: modules.events, via: com.erp.events.OutboxSubscriber, purpose: "Consume sec.CustomerInvitationRedeemed, idempotent on OutboxMessage.id(), to set secUserId (REQ-PTY-052, REQ-PTY-054)"}
+  - {given: erp-core, module: modules.events, via: com.erp.events.DomainEventPublisher, purpose: "Publish PTY's own in-process events that only PTY's after-commit listeners consume — invitation issue and approver notification — never an event for another module (REQ-PTY-051, REQ-PTY-059, REQ-PTY-093)"}
+  - {given: erp-core, module: modules.notif, via: com.erp.notif.crossmodule.NotificationDispatchApi, purpose: "Dispatch template PTY_CREDIT_OVERRIDE_REQUESTED, seeded by the PTY migration, to each approver of a new Credit override request (REQ-PTY-093, ADR-PTY-036)"}
+  - {given: erp-core, module: modules.module, via: docs/api-docs/module/index.md, purpose: "Declare PTY to the given module catalogue with the module manifest META-INF/erp/modules/pty.yaml in the format the given's module api documents: code, package, permission module, api-paths, settings, events and migration (ADR-PTY-044)"}
 ```
 
 No contract item re-creates a given entity: CUSTOMER-realm users stay in given `sec` (the
