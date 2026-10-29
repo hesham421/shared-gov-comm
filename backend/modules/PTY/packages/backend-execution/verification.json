@@ -1,0 +1,13 @@
+{
+  "module": "PTY",
+  "track": "backend",
+  "plan": "exec",
+  "version": 1,
+  "verify": "sha256",
+  "source": "analysis/modules/PTY/P3_1/backend-execution-plan-pty.md",
+  "checked": 47,
+  "missing": [],
+  "mismatched": [],
+  "ok": true,
+  "at": "2026-10-29T10:21:38+00:00"
+}

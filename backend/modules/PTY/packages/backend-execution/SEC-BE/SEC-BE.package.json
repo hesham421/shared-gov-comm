@@ -1,0 +1,51 @@
+{
+  "unit": "SEC-BE",
+  "kind": "PHASE",
+  "tests": [
+    "TC-PTY-083",
+    "TC-PTY-113",
+    "TC-PTY-117",
+    "TC-PTY-167",
+    "TC-PTY-177",
+    "TC-PTY-196",
+    "TC-PTY-199"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "sec",
+        "cu",
+        "mdl",
+        "sequence",
+        "tenant",
+        "audit",
+        "events",
+        "notif",
+        "module"
+      ],
+      "extension_points": [
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.tenant.TenantProvisioningContributor",
+        "com.erp.events.OutboxSubscriber"
+      ],
+      "interfaces": [
+        "com.erp.sec.crossmodule.SecCustomerInvitationApi",
+        "com.erp.sec.crossmodule.SecUserDirectoryApi",
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.tenant.TenantRunner",
+        "com.erp.audit.crossmodule.AuditApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.events.DomainEventPublisher",
+        "com.erp.notif.crossmodule.NotificationDispatchApi"
+      ],
+      "api": [
+        "docs/api-docs/module/index.md"
+      ]
+    }
+  ]
+}

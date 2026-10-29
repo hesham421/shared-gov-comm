@@ -1,0 +1,54 @@
+{
+  "unit": "DATA-DOM-MASTER",
+  "kind": "SUB",
+  "tests": [
+    "TC-PTY-010",
+    "TC-PTY-012",
+    "TC-PTY-013",
+    "TC-PTY-015",
+    "TC-PTY-016",
+    "TC-PTY-019",
+    "TC-PTY-022",
+    "TC-PTY-173",
+    "TC-PTY-174",
+    "TC-PTY-195"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "sec",
+        "cu",
+        "mdl",
+        "sequence",
+        "tenant",
+        "audit",
+        "events",
+        "notif",
+        "module"
+      ],
+      "extension_points": [
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.tenant.TenantProvisioningContributor",
+        "com.erp.events.OutboxSubscriber"
+      ],
+      "interfaces": [
+        "com.erp.sec.crossmodule.SecCustomerInvitationApi",
+        "com.erp.sec.crossmodule.SecUserDirectoryApi",
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.tenant.TenantRunner",
+        "com.erp.audit.crossmodule.AuditApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.events.DomainEventPublisher",
+        "com.erp.notif.crossmodule.NotificationDispatchApi"
+      ],
+      "api": [
+        "docs/api-docs/module/index.md"
+      ]
+    }
+  ]
+}

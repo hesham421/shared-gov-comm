@@ -1,0 +1,85 @@
+{
+  "unit": "SVC-API-INT",
+  "kind": "SUB",
+  "tests": [
+    "TC-PTY-026",
+    "TC-PTY-027",
+    "TC-PTY-028",
+    "TC-PTY-035",
+    "TC-PTY-036",
+    "TC-PTY-037",
+    "TC-PTY-038",
+    "TC-PTY-039",
+    "TC-PTY-048",
+    "TC-PTY-049",
+    "TC-PTY-154",
+    "TC-PTY-159",
+    "TC-PTY-163",
+    "TC-PTY-170",
+    "TC-PTY-171",
+    "TC-PTY-194",
+    "TC-PTY-198",
+    "TC-PTY-084",
+    "TC-PTY-085",
+    "TC-PTY-086",
+    "TC-PTY-087",
+    "TC-PTY-088",
+    "TC-PTY-089",
+    "TC-PTY-090",
+    "TC-PTY-091",
+    "TC-PTY-092",
+    "TC-PTY-093",
+    "TC-PTY-094",
+    "TC-PTY-095",
+    "TC-PTY-096",
+    "TC-PTY-099",
+    "TC-PTY-101",
+    "TC-PTY-102",
+    "TC-PTY-104",
+    "TC-PTY-105",
+    "TC-PTY-106",
+    "TC-PTY-107",
+    "TC-PTY-110",
+    "TC-PTY-111",
+    "TC-PTY-112",
+    "TC-PTY-165"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "sec",
+        "cu",
+        "mdl",
+        "sequence",
+        "tenant",
+        "audit",
+        "events",
+        "notif",
+        "module"
+      ],
+      "extension_points": [
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.tenant.TenantProvisioningContributor",
+        "com.erp.events.OutboxSubscriber"
+      ],
+      "interfaces": [
+        "com.erp.sec.crossmodule.SecCustomerInvitationApi",
+        "com.erp.sec.crossmodule.SecUserDirectoryApi",
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.tenant.TenantRunner",
+        "com.erp.audit.crossmodule.AuditApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.events.DomainEventPublisher",
+        "com.erp.notif.crossmodule.NotificationDispatchApi"
+      ],
+      "api": [
+        "docs/api-docs/module/index.md"
+      ]
+    }
+  ]
+}

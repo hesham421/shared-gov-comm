@@ -1,0 +1,58 @@
+{
+  "unit": "SVC-API-SEARCH",
+  "kind": "SUB",
+  "tests": [
+    "TC-PTY-021",
+    "TC-PTY-054",
+    "TC-PTY-063",
+    "TC-PTY-068",
+    "TC-PTY-077",
+    "TC-PTY-080",
+    "TC-PTY-081",
+    "TC-PTY-082",
+    "TC-PTY-100",
+    "TC-PTY-116",
+    "TC-PTY-121",
+    "TC-PTY-166",
+    "TC-PTY-197",
+    "TC-PTY-200"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "sec",
+        "cu",
+        "mdl",
+        "sequence",
+        "tenant",
+        "audit",
+        "events",
+        "notif",
+        "module"
+      ],
+      "extension_points": [
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.tenant.TenantProvisioningContributor",
+        "com.erp.events.OutboxSubscriber"
+      ],
+      "interfaces": [
+        "com.erp.sec.crossmodule.SecCustomerInvitationApi",
+        "com.erp.sec.crossmodule.SecUserDirectoryApi",
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.tenant.TenantRunner",
+        "com.erp.audit.crossmodule.AuditApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.events.DomainEventPublisher",
+        "com.erp.notif.crossmodule.NotificationDispatchApi"
+      ],
+      "api": [
+        "docs/api-docs/module/index.md"
+      ]
+    }
+  ]
+}
