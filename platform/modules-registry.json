@@ -30,7 +30,13 @@
         1
       ],
       "current_version": 1,
-      "delivery": {}
+      "delivery": {
+        "backend": {
+          "version": 1,
+          "exec": "backend/modules/PTY/packages/backend-execution",
+          "test": "backend/modules/PTY/packages/backend-test"
+        }
+      }
     }
   }
 }
