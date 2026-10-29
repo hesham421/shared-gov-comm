@@ -1,6 +1,6 @@
 # ADR-PTY-021 — Tenant scoping without a tenant column
 
-Status  : ACCEPTED (non-breaking) · Stage : P2 · Module : PTY v1 · Date : 2026-10-29
+Status  : SUPERSEDED by ADR-PTY-035 (gate-analysis revise, G2; was ACCEPTED, non-breaking) · Stage : P2 · Module : PTY v1 · Date : 2026-10-29
 Filed   : verbatim from the db-script §5.2 (analysis/modules/PTY/P2/db-script-pty.md) by the P3.1 repair, ADR-PTY-030
 
 ## Context

@@ -3,9 +3,9 @@
 Stage    : P4 — Test Plan · pass 2 · track frontend · plan test · lane test-gen
 Module   : PTY   Version : v1   Profile : commerce
 Sources  : _state/current-srs.md (P1 v1 — REQ 109 · AC 123 · RULE 33) · _state/current-registry-srs.md · _state/current-frontend-execution-plan.md (P3.2 — SCR-PTY-001 … 005, UXD-PTY-001, F1–F4, SEC-FE) · _state/current-api-spec.yaml (api-spec-pty.yaml — the mock the screens are served from) · _state/current-backend-execution-plan.md (catalog codes) · _state/current-registry-db.md · _state/current-dependency-graph.md
-Counts   : TC 32 on this track (TC-PTY-122 … TC-PTY-153 — the sequence continues the backend plan's TC-PTY-001 … 121) · AC covered here 30 · UXD 1/1 (2 TCs) · module AC coverage 123/123 with the backend plan
+Counts   : TC 44 on this track (TC-PTY-122 … TC-PTY-153, TC-PTY-179 … TC-PTY-190 — the sequence continues after the backend plan's revise additions TC-PTY-154 … 178; no id renumbered) · AC covered here 36 · UXD 1/1 (2 TCs) · module AC coverage 136/136 with the backend plan · gate-analysis revise: G1, G17, G18 applied
 Framework: `profile.stack.testing` frontend = agnostic — each TC below is the whole contract; the consumer repo chooses how to turn it into a test
-Open ADRs: 0 · cited: ADR-PTY-012, ADR-PTY-024, ADR-PTY-025, ADR-PTY-031, ADR-PTY-033, ADR-PTY-034 (all ACCEPTED; ADR-PTY-034 carries the PENDING interim of the RULE-PTY-002 action)
+Open ADRs: 0 · cited: ADR-PTY-012, ADR-PTY-024, ADR-PTY-025, ADR-PTY-031, ADR-PTY-033, ADR-PTY-034, ADR-PTY-037, ADR-PTY-039, ADR-PTY-041, ADR-PTY-042, ADR-PTY-043 (all ACCEPTED; no PENDING item — ADR-PTY-043 replaces ADR-PTY-034 §9)
 ══════════════════════════════════════════════════════════════════
 
 Every TC binds one `SCR-*` the frontend plan places and its route. Server responses are those of api-spec-pty.yaml (the frontend executor's mock until the backend is delivered); a TC that names a response states the AC's values it must carry. A refusal asserted by its text is one whose code the frontend plan routes with `text: RULE-PTY-<seq> message (SRS)` (msg-bound list at the end); the text is copied from the SRS in both languages.
@@ -16,20 +16,39 @@ This run writes only the two test plans; the choices below are recorded here for
 
 - **F-N1 — Scope of this track.** The frontend TCs cover the 30 ACs the frontend plan's F1–F4 / SEC-FE blocks cite, plus UXD-PTY-001. Every other AC is covered by the backend plan (its operations are consumer-only or have no screen-specific behaviour). AC-PTY-078 and AC-PTY-087 are covered on this track only.
 - **F-N2 — Package rule.** Client validators, mandatory marks and form initial values → the `F3-SCR-*` SUB of the screen; refusal routing, invalidation and the outcome of a mutation → `F2-SCR-*`; routes, menus, route guards (no VIEW → the unauthorized page, menu entry not rendered), composition and navigation → `F4-SCR-*`; permission-hidden affordances inside a screen the user can open → `SEC-FE`; the UXD field → the F4 SUB of the screen that renders it (F4-SCR-PTY-004). AC-PTY-101's actor holds no permission on PTY_CREDIT_SETTINGS (F-N7), so TC-PTY-134 asserts the route guard and the menu entry of F4-SCR-PTY-005 ("Guard: … no VIEW → the unauthorized page"; menu entry PERM_PTY_CREDIT_SETTINGS_VIEW) and is that unit's acceptance. `F1-SCR-PTY-001 … 005` (types only) and `ALIGN-FE` receive no TC — recorded in COVERAGE, not dropped.
-- **F-N3 — AC-PTY-013 action.** The AC's action opens Party P-000120; `ErrorResponse` carries no structured party code, so the frontend plan's interim (PENDING ADR-PTY-034) opens the Customer search on the entered email. TC-PTY-123 asserts that interim; the message text itself names P-000120.
-- **F-N4 — AC-PTY-109 reachability (plan gap for the gate).** Under the backend visibility rule (REQ-PTY-102 applied to reads, ADR-PTY-025) a Seller/Cashier without UPDATE reading another's request gets PTY-404-CREDIT-OVERRIDE-NOT-FOUND, so on the delivered backend S2 cannot load the detail that carries "Cancel request". TC-PTY-138 asserts the plan's routing of PTY-403-NOT-REQUESTER (text bound to RULE-PTY-029) with the detail served by the mock; the server refusal itself is backend TC-PTY-045.
+- **F-N3 — AC-PTY-013 action.** The AC's action opens Party P-000120. The frontend plan's EMAIL-HOLDER-QUERY finds the Party by email through the Customer search and then the Supplier search (ADR-PTY-043), keeping the row whose normalised email equals the entered one.
+  - TC-PTY-123 asserts the Customer path.
+  - TC-PTY-179 asserts the Supplier-only path that the former interim missed.
+  - The message text itself names the Party code.
+- **F-N4 — removed (gate-analysis G18).** TC-PTY-138's actor is now an Owner holding VIEW, UPDATE and DELETE on PTY_CREDIT_OVERRIDE. On the delivered backend that actor can load any request, so the precondition is reachable without the mock, and the server's refusal PTY-403-NOT-REQUESTER (RULE-PTY-029) is what the screen shows.
 - **F-N5 — AC-PTY-111 reachability.** The decision panel exists only while PENDING; the approval of a REJECTED request is reached when the Detail was loaded while PENDING and the request was rejected meanwhile — the request is REJECTED when the approval reaches the server, as the AC states.
 - **F-N6 — Consumer actors.** AC-PTY-117 ("Sales & POS requests CO-000031") is exercised on screen as the Owner opening the request's Detail; AC-PTY-010 / AC-PTY-011 run the exported Quick register inside a test host standing in for the sale / purchase document — the host's own screen is the other module's behaviour (C10.5); the TC asserts only that the PTY sub-view returns `{id, code}` and does not navigate.
 - **F-N7 — AC-PTY-101 actor.** A Seller/Cashier holds no permission on PTY_CREDIT_SETTINGS (SRS B4): the access-denied response on screen is the unauthorized page, with no Save offered.
 - **F-N8 — AC-PTY-087 entry.** The switch-off refusal of AC-PTY-085 is shown by the capability-flag owner (OI-05 open; API-PTY-037 has no PTY route — ADR-PTY-034); TC-PTY-151 starts from the route the next action opens.
-- **F-N9 — Host data.** None on this track: every lookup value a case names is seeded (CUSTOMER_GROUP RETAIL, WHOLESALE; CREDIT_OVERRUN_ACTION and CREDIT_OVERRIDE_STATUS are closed).
+- **F-N9 — Host data.** None on this track: every lookup value a case names is seeded (CUSTOMER_GROUP RETAIL, WHOLESALE; ADDRESS_TYPE BILLING, DELIVERY; CREDIT_OVERRUN_ACTION and CREDIT_OVERRIDE_STATUS are closed).
+- **F-N10 — Frontend statements without a TC before the revise (gate-analysis G17).** The new TCs and the statements they cover:
 
-<!-- PHASE:TEST-PLAN-FE:START traces=REQ-PTY-005,REQ-PTY-008,REQ-PTY-010,REQ-PTY-016,REQ-PTY-024,REQ-PTY-026,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-069,REQ-PTY-070,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-090,REQ-PTY-091,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-108,REQ-PTY-109,AC-PTY-007,AC-PTY-010,AC-PTY-011,AC-PTY-013,AC-PTY-021,AC-PTY-029,AC-PTY-031,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-077,AC-PTY-078,AC-PTY-082,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-101,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-122,AC-PTY-123 -->
+  | TC | Statement covered | Package |
+  |---|---|---|
+  | TC-PTY-180 | the ordered save and partial failure | F2-SCR-PTY-001 |
+  | TC-PTY-181 | commands disabled while dirty, and the leave prompt | F3-SCR-PTY-001 |
+  | TC-PTY-182 | the flag switched off mid-session | F2-SCR-PTY-003 |
+  | TC-PTY-183 | the empty state | F2-SCR-PTY-001 |
+  | TC-PTY-184 | the not-found state | F2-SCR-PTY-004 |
+  | TC-PTY-185 | the error state with Retry | F2-SCR-PTY-004 |
+  | TC-PTY-186, 187 | the flag guard on SCR-PTY-004 and SCR-PTY-005 | F4-SCR-PTY-004, F4-SCR-PTY-005 |
+  | TC-PTY-188 | the Warehouse read-only view | SEC-FE |
+
+  SCR-PTY-003's flag guard is TC-PTY-129 and TC-PTY-182. TC-PTY-189 and 190 show the two backend refusals added by the revise: RULE-PTY-034, and RULE-PTY-030 on decisions.
+
+<!-- PHASE:TEST-PLAN-FE:START traces=REQ-PTY-005,REQ-PTY-008,REQ-PTY-010,REQ-PTY-013,REQ-PTY-016,REQ-PTY-018,REQ-PTY-024,REQ-PTY-026,REQ-PTY-030,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-069,REQ-PTY-070,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-090,REQ-PTY-091,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-108,REQ-PTY-109,REQ-PTY-113,AC-PTY-007,AC-PTY-010,AC-PTY-011,AC-PTY-013,AC-PTY-018,AC-PTY-021,AC-PTY-023,AC-PTY-029,AC-PTY-031,AC-PTY-036,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-077,AC-PTY-078,AC-PTY-080,AC-PTY-082,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-101,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-122,AC-PTY-123,AC-PTY-132,AC-PTY-134,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
 ## TEST-PLAN-FE — module scenarios
 
-30 TCs (> 8): split into UI-FLOWS (per-screen behaviour — 24 TCs) and INT-FLOW (flows that cross screens, a host document or the flag lifecycle — 6 TCs).
+42 TCs (> 8), split in two:
+- UI-FLOWS — per-screen behaviour: 36 TCs, 12 of them added by the gate-analysis revise (TC-PTY-179 … 190);
+- INT-FLOW — flows that cross screens, a host document or the flag lifecycle: 6 TCs.
 
-<!-- SUB:UI-FLOWS:START traces=REQ-PTY-005,REQ-PTY-010,REQ-PTY-016,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-069,REQ-PTY-070,REQ-PTY-078,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-090,REQ-PTY-091,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-108,REQ-PTY-109,AC-PTY-007,AC-PTY-013,AC-PTY-021,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-077,AC-PTY-078,AC-PTY-088,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-101,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-122,AC-PTY-123,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
+<!-- SUB:UI-FLOWS:START traces=REQ-PTY-005,REQ-PTY-010,REQ-PTY-013,REQ-PTY-016,REQ-PTY-018,REQ-PTY-030,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-069,REQ-PTY-070,REQ-PTY-072,REQ-PTY-078,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-090,REQ-PTY-091,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-108,REQ-PTY-109,REQ-PTY-113,AC-PTY-007,AC-PTY-013,AC-PTY-018,AC-PTY-021,AC-PTY-023,AC-PTY-036,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-077,AC-PTY-078,AC-PTY-080,AC-PTY-088,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-101,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-122,AC-PTY-123,AC-PTY-132,AC-PTY-134,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
 ### UI-FLOWS — per-screen behaviour
 
 <!-- TC:TC-PTY-122:START traces=AC-PTY-007,REQ-PTY-005,SCR-PTY-001 -->
@@ -55,8 +74,8 @@ Package      : F2-SCR-PTY-001
 Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: a session holding PERM_PTY_CUSTOMER_VIEW and _CREATE; active Party P-000120 holds email "nour@example.com"; the mock answers API-PTY-001 with 409 PTY-409-EMAIL-TAKEN and the RULE-PTY-002 text filled with P-000120
 Host data    : none
-Steps        : 1. open /pty/customers/new · 2. enter a name `<nameEn>` and email "Nour@Example.com" · 3. Save «حفظ» · 4. choose "Open that customer" «فتح ذلك العميل»
-Expected     : step 3 → no navigation; inline on email: ar «هذا البريد الإلكتروني مسجّل لطرف نشط آخر (P-000120). افتح ذلك الطرف بدلاً من إنشاء طرف جديد.» · en «This email is already registered to another active party (P-000120). Open that party instead of creating a new one.»; the typed values are kept; no address call is sent · step 4 → /pty/customers?email=Nour@Example.com&isActive=true listing P-000120 (interim of PENDING ADR-PTY-034 — F-N3)
+Steps        : 1. open /pty/customers/new · 2. enter a name `<nameEn>` and email "Nour@Example.com" · 3. Save «حفظ» · 4. choose "Open that party" «فتح ذلك الطرف»
+Expected     : step 3 → no navigation; inline on email: ar «هذا البريد الإلكتروني مسجّل لطرف نشط آخر (P-000120). افتح ذلك الطرف بدلاً من إنشاء طرف جديد.» · en «This email is already registered to another active party (P-000120). Open that party instead of creating a new one.»; the typed values are kept; no address call is sent · step 4 → one API-PTY-026 request with email "Nour@Example.com" and isActive=true; the mock returns Customer 5001 of P-000120 (email "nour@example.com"); the route becomes /pty/customers/5001 (EMAIL-HOLDER-QUERY, ADR-PTY-043 — F-N3)
 Test data    : email "Nour@Example.com", code P-000120 (AC); `<nameEn>` placeholder
 <!-- TC:TC-PTY-123:END -->
 
@@ -263,11 +282,11 @@ Exercises    : SCR-PTY-004 /pty/credit-overrides/:requestId
 Rule / code  : RULE-PTY-029 → PTY-403-NOT-REQUESTER
 Package      : F2-SCR-PTY-004
 Scenario     : VIOLATION · data class INVALID · language ALL
-Preconditions: `b2bCredit` on; a Seller/Cashier S2 session holding PERM_PTY_CREDIT_OVERRIDE_VIEW and _DELETE; PENDING request CO-000033 created by S1, its Detail served by the mock (F-N4); the mock answers API-PTY-023 with 403 PTY-403-NOT-REQUESTER
+Preconditions: `b2bCredit` on; an Owner session holding PERM_PTY_CREDIT_OVERRIDE_VIEW, _UPDATE and _DELETE (so the Detail of any request loads on the delivered backend — REQ-PTY-102); PENDING request CO-000033 created by Seller/Cashier S1; the server (or the mock) answers API-PTY-023 with 403 PTY-403-NOT-REQUESTER
 Host data    : none
-Steps        : 1. open the Detail of CO-000033 · 2. "Cancel request" «إلغاء الطلب» and confirm
+Steps        : 1. as the Owner, open the Detail of CO-000033 · 2. "Cancel request" «إلغاء الطلب» and confirm
 Expected     : a banner on the decision panel — not the unauthorized page: ar «لا يلغي هذا الطلب إلا من قدّمه.» · en «Only the requester can cancel this request.» · the Detail still shows status Pending «معلّق»
-Test data    : CO-000033, S1, S2 (AC)
+Test data    : CO-000033, S1 (AC); the Owner stands for "a user other than the requester" (F-N4 removed)
 <!-- TC:TC-PTY-138:END -->
 
 <!-- TC:TC-PTY-139:START traces=AC-PTY-111,REQ-PTY-098,SCR-PTY-004 -->
@@ -367,6 +386,178 @@ Steps        : 1. open /pty/customer-credits/5001 · 2. enter credit limit 70000
 Expected     : a form banner: ar «تعذّر تسجيل التغيير في سجل التدقيق، لذا لم يُحفظ. أعد المحاولة.» · en «The change could not be recorded in the audit history, so it was not saved. Try again.» · the form keeps 70000 for retry; the shown standing still reads `<previous creditLimit>`
 Test data    : customerId 5001, 70000 (AC); `<previous creditLimit>` placeholder
 <!-- TC:TC-PTY-145:END -->
+
+<!-- TC:TC-PTY-179:START traces=AC-PTY-013,REQ-PTY-010,SCR-PTY-002 -->
+### TC-PTY-179 — Duplicate email held by a Supplier-only Party opens that Supplier
+Derived from : AC-PTY-013  (REQ-PTY-010)
+Exercises    : SCR-PTY-002 /pty/suppliers/new
+Rule / code  : RULE-PTY-002 → PTY-409-EMAIL-TAKEN
+Package      : F2-SCR-PTY-002
+Scenario     : VIOLATION · data class INVALID · language ALL
+Preconditions: an Owner session holding PERM_PTY_SUPPLIER_VIEW, _CREATE and PERM_PTY_CUSTOMER_VIEW; active Party P-000204 holds email "delta@example.com" and only the Supplier role (Supplier 7004). The mock answers API-PTY-006 with 409 PTY-409-EMAIL-TAKEN (text filled with P-000204), API-PTY-026 with an empty page, and API-PTY-028 with Supplier 7004 (email "delta@example.com").
+Host data    : none
+Steps        : 1. open /pty/suppliers/new · 2. enter a name `<nameEn>` and email "Delta@Example.com" · 3. Save «حفظ» · 4. choose "Open that party" «فتح ذلك الطرف»
+Expected     : step 3 → inline on email: ar «هذا البريد الإلكتروني مسجّل لطرف نشط آخر (P-000204). افتح ذلك الطرف بدلاً من إنشاء طرف جديد.» · en «This email is already registered to another active party (P-000204). Open that party instead of creating a new one.» · step 4 → one API-PTY-026 request with email "Delta@Example.com" and isActive=true, then one API-PTY-028 request with the same filter; the route becomes /pty/suppliers/7004 (ADR-PTY-043)
+Test data    : P-000204, Supplier 7004, "Delta@Example.com" (AC-PTY-013 / AC-PTY-136 data); `<nameEn>` placeholder
+<!-- TC:TC-PTY-179:END -->
+
+<!-- TC:TC-PTY-180:START traces=AC-PTY-036,REQ-PTY-030,SCR-PTY-001 -->
+### TC-PTY-180 — One Save: the record call first, address calls after it, a failing line kept unsent
+Derived from : AC-PTY-036  (REQ-PTY-030)
+Exercises    : SCR-PTY-001 /pty/customers/new (CUSTOMER-SAVE + ADDRESSES-SYNC)
+Rule / code  : RULE-PTY-016 → PTY-422-ADDRESS-TYPE-INVALID
+Package      : F2-SCR-PTY-001
+Scenario     : VIOLATION · data class EDGE · language ALL
+Preconditions: an Owner session holding PERM_PTY_CUSTOMER_VIEW, _CREATE and _UPDATE. The mock answers API-PTY-001 with 201 (customerPk `<customerPk>`, partyFk `<partyFk>`). It answers the first API-PTY-011 call with 201 and the second with 422 PTY-422-ADDRESS-TYPE-INVALID (the type was deactivated meanwhile).
+Host data    : none
+Steps        : 1. open /pty/customers/new · 2. enter nameEn `<nameEn>` · 3. add two address lines (DELIVERY "12 Tahrir St" / BILLING "5 Nile St") in the drawer, each confirmed · 4. Save «حفظ»
+Expected     : 
+- The requests run strictly in order: API-PTY-001 first, then API-PTY-011 for line 1, then API-PTY-011 for line 2. No address call starts before the API-PTY-001 response.
+- The route is replaced by /pty/customers/`<customerPk>`.
+- Line 1 shows as saved. Line 2 stays in the draft marked unsent, with an inline message on its address type: ar «اختر نوع عنوان من القائمة.» · en «Choose an address type from the list.»
+- No API-PTY-015 call is made, because the first line of a type becomes default on the server.
+Test data    : DELIVERY, "12 Tahrir St" (AC-PTY-036); other values placeholders
+<!-- TC:TC-PTY-180:END -->
+
+<!-- TC:TC-PTY-181:START traces=AC-PTY-055,REQ-PTY-047,SCR-PTY-001 -->
+### TC-PTY-181 — Commands disabled while the form is dirty; leaving asks to confirm
+Derived from : AC-PTY-055  (REQ-PTY-047)
+Exercises    : SCR-PTY-001 /pty/customers/:customerId
+Rule / code  : — (dirty tracking — ADR-PTY-034 §5)
+Package      : F3-SCR-PTY-001
+Scenario     : STATE · data class VALID · language ALL
+Preconditions: an Owner session holding PERM_PTY_CUSTOMER_VIEW, _UPDATE, _DELETE and PERM_PTY_SUPPLIER_CREATE; Customer 5001 loaded from the mock
+Host data    : none
+Steps        : 1. open /pty/customers/5001 · 2. change the mobile without saving · 3. inspect Deactivate «إيقاف» and Make supplier «إضافة كمورّد» · 4. navigate to /pty/customers · 5. cancel the prompt · 6. Save «حفظ» (mock 200) · 7. inspect the commands again
+Expected     : step 3 → both commands disabled · step 4 → the prompt ar «لديك تغييرات غير محفوظة. هل تريد المغادرة؟» / en "You have unsaved changes. Leave anyway?" is shown · step 5 → the route stays /pty/customers/5001 with the typed mobile kept · step 7 → both commands enabled again
+Test data    : customerId 5001; the mobile value is a placeholder
+<!-- TC:TC-PTY-181:END -->
+
+<!-- TC:TC-PTY-182:START traces=AC-PTY-080,REQ-PTY-072,SCR-PTY-003 -->
+### TC-PTY-182 — Flag switched off mid-session: the credit save is refused and the credit screens close
+Derived from : AC-PTY-080  (REQ-PTY-072)
+Exercises    : SCR-PTY-003 /pty/customer-credits/:customerId
+Rule / code  : RULE-PTY-023 → PTY-422-CREDIT-NOT-ENABLED
+Package      : F2-SCR-PTY-003
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: an Owner session holding PERM_PTY_CUSTOMER_CREDIT_VIEW and _UPDATE. `b2bCredit` is on when /pty/customer-credits/5001 is opened. The flag is then switched off: the mock's app-config answers false from now on, and the mock answers API-PTY-017 with 422 PTY-422-CREDIT-NOT-ENABLED.
+Host data    : none
+Steps        : 1. on the open screen, enter creditLimit 1000 · 2. Save «حفظ» · 3. open the Party menu · 4. deep-link to /pty/customer-credits/5001
+Expected     : step 2 → form banner ar «الائتمان غير مفعّل. فعّل مفتاح b2bCredit من الإعدادات لاستخدام حد الائتمان ومدة السداد.» · en «Credit is not enabled. Turn on b2bCredit in settings to use credit limits and payment terms.» and the application configuration is re-read · step 3 → no Credit «الائتمان» group · step 4 → the route is not mounted (not-found / home)
+Test data    : customerId 5001, creditLimit 1000 (AC)
+<!-- TC:TC-PTY-182:END -->
+
+<!-- TC:TC-PTY-183:START traces=AC-PTY-018,REQ-PTY-013,SCR-PTY-001 -->
+### TC-PTY-183 — Customer search with no match shows the empty state
+Derived from : AC-PTY-018  (REQ-PTY-013)
+Exercises    : SCR-PTY-001 /pty/customers
+Rule / code  : — 
+Package      : F2-SCR-PTY-001
+Scenario     : HAPPY · data class EDGE · language ALL
+Preconditions: an Owner session holding PERM_PTY_CUSTOMER_VIEW and _CREATE; the mock answers API-PTY-026 with an empty page (totalElements 0)
+Host data    : none
+Steps        : 1. open /pty/customers?customerGroupCode=WHOLESALE&isActive=true
+Expected     : the list shows ar «لا يوجد عملاء مطابقون» / en "No matching customers" with the action "New customer" «عميل جديد»; no error banner
+Test data    : WHOLESALE (seeded), filters of AC-PTY-018
+<!-- TC:TC-PTY-183:END -->
+
+<!-- TC:TC-PTY-184:START traces=AC-PTY-117,REQ-PTY-103,SCR-PTY-004 -->
+### TC-PTY-184 — An unknown request opens the not-found state
+Derived from : AC-PTY-117  (REQ-PTY-103)
+Exercises    : SCR-PTY-004 /pty/credit-overrides/:requestId
+Rule / code  : PLATFORM-STD → PTY-404-CREDIT-OVERRIDE-NOT-FOUND
+Package      : F2-SCR-PTY-004
+Scenario     : VIOLATION · data class EDGE · language ALL
+Preconditions: `b2bCredit` on; an Owner session holding PERM_PTY_CREDIT_OVERRIDE_VIEW; the mock answers API-PTY-020 for id 999999 with 404 PTY-404-CREDIT-OVERRIDE-NOT-FOUND
+Host data    : none
+Steps        : 1. open /pty/credit-overrides/999999
+Expected     : the not-found state ar «الطلب غير موجود» / en "Request not found" is shown; no decision panel and no unauthorized page
+Test data    : requestId 999999 (test-local)
+<!-- TC:TC-PTY-184:END -->
+
+<!-- TC:TC-PTY-185:START traces=AC-PTY-115,REQ-PTY-101,SCR-PTY-004 -->
+### TC-PTY-185 — A server failure on the request list shows the error state with Retry
+Derived from : AC-PTY-115  (REQ-PTY-101)
+Exercises    : SCR-PTY-004 /pty/credit-overrides
+Rule / code  : PLATFORM-STD → PTY-500-INTERNAL
+Package      : F2-SCR-PTY-004
+Scenario     : VIOLATION · data class EDGE · language ALL
+Preconditions: `b2bCredit` on; an Owner session holding PERM_PTY_CREDIT_OVERRIDE_VIEW and _UPDATE; the mock answers the first API-PTY-032 call with 500 PTY-500-INTERNAL and the second with the three requests of AC-PTY-115
+Host data    : none
+Steps        : 1. open /pty/credit-overrides · 2. choose "Retry" «إعادة المحاولة»
+Expected     : step 1 → the error state ar «تعذّر تحميل البيانات» / en "The data could not be loaded" with Retry · step 2 → rows CO-000036, CO-000035, CO-000031 in that order
+Test data    : values of AC-PTY-115
+<!-- TC:TC-PTY-185:END -->
+
+<!-- TC:TC-PTY-186:START traces=AC-PTY-078,REQ-PTY-070,SCR-PTY-004 -->
+### TC-PTY-186 — Credit override routes not mounted while the flag is off
+Derived from : AC-PTY-078  (REQ-PTY-070)
+Exercises    : SCR-PTY-004 /pty/credit-overrides, /pty/credit-overrides/new, /pty/credit-overrides/:requestId
+Rule / code  : — (route guard `RequireFlag('b2bCredit')`)
+Package      : F4-SCR-PTY-004
+Scenario     : STATE · data class VALID · language ALL
+Preconditions: `b2bCredit` off; an Owner session holding every PTY permission
+Host data    : none
+Steps        : 1. deep-link to each of the three routes
+Expected     : each route is not mounted (not-found / home); no API-PTY-019, 020 or 032 request is sent
+Test data    : none beyond the AC
+<!-- TC:TC-PTY-186:END -->
+
+<!-- TC:TC-PTY-187:START traces=AC-PTY-078,REQ-PTY-070,SCR-PTY-005 -->
+### TC-PTY-187 — Credit control settings route not mounted while the flag is off
+Derived from : AC-PTY-078  (REQ-PTY-070)
+Exercises    : SCR-PTY-005 /pty/credit-settings
+Rule / code  : — (route guard `RequireFlag('b2bCredit')`)
+Package      : F4-SCR-PTY-005
+Scenario     : STATE · data class VALID · language ALL
+Preconditions: `b2bCredit` off; an Owner session holding every PTY permission
+Host data    : none
+Steps        : 1. deep-link to /pty/credit-settings
+Expected     : the route is not mounted (not-found / home); no API-PTY-024 request is sent
+Test data    : none beyond the AC
+<!-- TC:TC-PTY-187:END -->
+
+<!-- TC:TC-PTY-188:START traces=AC-PTY-023,REQ-PTY-018,SCR-PTY-002 -->
+### TC-PTY-188 — A Warehouse user sees Suppliers read-only
+Derived from : AC-PTY-023  (REQ-PTY-018)
+Exercises    : SCR-PTY-002 /pty/suppliers, /pty/suppliers/:supplierId
+Rule / code  : — 
+Package      : SEC-FE
+Scenario     : PERMISSION · data class VALID · language ALL
+Preconditions: a Warehouse session holding PERM_PTY_SUPPLIER_VIEW only; the mock answers API-PTY-028 with Suppliers P-000201 and P-000202 and API-PTY-007 with Supplier 7002
+Host data    : none
+Steps        : 1. open /pty/suppliers with name "Delta" and active = yes · 2. open Supplier 7002 · 3. deep-link to /pty/suppliers/new
+Expected     : step 1 → rows P-000201 and P-000202; no "New supplier" «مورّد جديد» · step 2 → every control read-only; no Save, Deactivate, Reactivate or Make customer; the Addresses pane has no Add, Remove or Make default · step 3 → the unauthorized page
+Test data    : values of AC-PTY-023
+<!-- TC:TC-PTY-188:END -->
+
+<!-- TC:TC-PTY-189:START traces=AC-PTY-132,REQ-PTY-113,SCR-PTY-004 -->
+### TC-PTY-189 — A second request for the same sale refused on the form
+Derived from : AC-PTY-132  (REQ-PTY-113)
+Exercises    : SCR-PTY-004 /pty/credit-overrides/new
+Rule / code  : RULE-PTY-034 → PTY-409-REQUEST-OPEN-FOR-SALE
+Package      : F2-SCR-PTY-004
+Scenario     : VIOLATION · data class INVALID · language ALL
+Preconditions: `b2bCredit` on, BLOCK_WITH_OVERRIDE; a Seller/Cashier session holding PERM_PTY_CREDIT_OVERRIDE_VIEW, _CREATE and PERM_PTY_CUSTOMER_VIEW; the mock answers API-PTY-019 with 409 PTY-409-REQUEST-OPEN-FOR-SALE (text filled with CO-000031)
+Host data    : none
+Steps        : 1. open /pty/credit-overrides/new?customerId=5001&saleAmount=2000&sourceDocumentRef=POS-1-000455 · 2. "Request approval" «طلب موافقة»
+Expected     : form banner ar «لهذا البيع طلب موافقة مفتوح بالفعل (CO-000031). تابع ذلك الطلب بدلاً من إنشاء طلب جديد.» · en «This sale already has an open approval request (CO-000031). Follow that request instead of creating a new one.» · no navigation; the action "show this sale's requests" opens /pty/credit-overrides?customerId=5001&statusCode=PENDING
+Test data    : values of the AC
+<!-- TC:TC-PTY-189:END -->
+
+<!-- TC:TC-PTY-190:START traces=AC-PTY-134,REQ-PTY-109,SCR-PTY-004 -->
+### TC-PTY-190 — An approval the audit cannot record is shown and the request stays pending
+Derived from : AC-PTY-134  (REQ-PTY-109)
+Exercises    : SCR-PTY-004 /pty/credit-overrides/:requestId
+Rule / code  : RULE-PTY-030 → PTY-500-AUDIT-NOT-RECORDED
+Package      : F2-SCR-PTY-004
+Scenario     : VIOLATION · data class EDGE · language ALL
+Preconditions: `b2bCredit` on; an Owner session holding PERM_PTY_CREDIT_OVERRIDE_VIEW and _UPDATE; PENDING request CO-000031; the mock answers API-PTY-021 with 500 PTY-500-AUDIT-NOT-RECORDED and the refetch of API-PTY-020 with PENDING
+Host data    : none
+Steps        : 1. open the Detail of CO-000031 · 2. Approve «موافقة» and confirm
+Expected     : a banner on the decision panel — not the generic error page: ar «تعذّر تسجيل التغيير في سجل التدقيق، لذا لم يُحفظ. أعد المحاولة.» · en «The change could not be recorded in the audit history, so it was not saved. Try again.» · the request is re-read and still shows Pending «معلّق» with the decision panel
+Test data    : CO-000031 (AC)
+<!-- TC:TC-PTY-190:END -->
 <!-- SUB:UI-FLOWS:END -->
 
 <!-- SUB:INT-FLOW:START traces=REQ-PTY-008,REQ-PTY-024,REQ-PTY-026,REQ-PTY-073,REQ-PTY-077,AC-PTY-010,AC-PTY-011,AC-PTY-029,AC-PTY-031,AC-PTY-082,AC-PTY-087,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003 -->
@@ -501,15 +692,19 @@ Test data    : CO-000031 (AC-PTY-117); `<deciderId>` placeholder
 | AC-PTY-007 | REQ-PTY-005 | TC-PTY-122 | HAPPY | F3-SCR-PTY-001 | TC-PTY-058 |
 | AC-PTY-010 | REQ-PTY-008 | TC-PTY-146 | HAPPY | F2-SCR-PTY-001 | TC-PTY-060 |
 | AC-PTY-011 | REQ-PTY-008 | TC-PTY-147 | HAPPY | F2-SCR-PTY-002 | TC-PTY-061 |
-| AC-PTY-013 | REQ-PTY-010 | TC-PTY-123 | VIOLATION | F2-SCR-PTY-001 | TC-PTY-005 |
+| AC-PTY-013 | REQ-PTY-010 | TC-PTY-123 (+ TC-PTY-179 Supplier-only Party) | VIOLATION | F2-SCR-PTY-001, F2-SCR-PTY-002 | TC-PTY-005 |
+| AC-PTY-018 | REQ-PTY-013 | TC-PTY-183 (empty state) | HAPPY | F2-SCR-PTY-001 | TC-PTY-063 |
+| AC-PTY-023 | REQ-PTY-018 | TC-PTY-188 (Warehouse read-only) | PERMISSION | SEC-FE | TC-PTY-068 |
+| AC-PTY-036 | REQ-PTY-030 | TC-PTY-180 (ordered save, partial failure) | VIOLATION | F2-SCR-PTY-001 | TC-PTY-075 |
 | AC-PTY-021 | REQ-PTY-016 | TC-PTY-124 | HAPPY | F3-SCR-PTY-002 | TC-PTY-066 |
 | AC-PTY-029 | REQ-PTY-024 | TC-PTY-148 | HAPPY | F2-SCR-PTY-002 | TC-PTY-010 |
 | AC-PTY-031 | REQ-PTY-026 | TC-PTY-149 | HAPPY | F4-SCR-PTY-002 | TC-PTY-074 |
-| AC-PTY-055 | REQ-PTY-047 | TC-PTY-125 | VIOLATION | F2-SCR-PTY-001 | TC-PTY-023 |
+| AC-PTY-055 | REQ-PTY-047 | TC-PTY-125 (+ TC-PTY-181 commands disabled while dirty) | VIOLATION | F2-SCR-PTY-001, F3-SCR-PTY-001 | TC-PTY-023 |
 | AC-PTY-056 | REQ-PTY-048 | TC-PTY-126 | VIOLATION | F3-SCR-PTY-003 | TC-PTY-024 |
 | AC-PTY-057 | REQ-PTY-049 | TC-PTY-127 | VIOLATION | F2-SCR-PTY-001 | TC-PTY-025 |
 | AC-PTY-077 | REQ-PTY-069 | TC-PTY-128 | HAPPY | F2-SCR-PTY-003 | TC-PTY-100 |
-| AC-PTY-078 | REQ-PTY-070 | TC-PTY-129 | STATE | F4-SCR-PTY-001 | — (frontend only) |
+| AC-PTY-078 | REQ-PTY-070 | TC-PTY-129 (+ TC-PTY-186, 187 flag guard on SCR-PTY-004, 005) | STATE | F4-SCR-PTY-001, F4-SCR-PTY-004, F4-SCR-PTY-005 | — (frontend only) |
+| AC-PTY-080 | REQ-PTY-072 | TC-PTY-182 (flag off mid-session) | STATE | F2-SCR-PTY-003 | TC-PTY-032 |
 | AC-PTY-082 | REQ-PTY-073 | TC-PTY-150 | STATE | F2-SCR-PTY-001 | TC-PTY-034 |
 | AC-PTY-087 | REQ-PTY-077 | TC-PTY-151 | HAPPY | F4-SCR-PTY-003 | — (frontend only) |
 | AC-PTY-088 | REQ-PTY-078 | TC-PTY-130 | HAPPY | F2-SCR-PTY-003 | TC-PTY-103 |
@@ -523,23 +718,25 @@ Test data    : CO-000031 (AC-PTY-117); `<deciderId>` placeholder
 | AC-PTY-109 | REQ-PTY-096 | TC-PTY-138 | VIOLATION | F2-SCR-PTY-004 | TC-PTY-045 |
 | AC-PTY-111 | REQ-PTY-098 | TC-PTY-139 | VIOLATION | F2-SCR-PTY-004 | TC-PTY-047 |
 | AC-PTY-114 | REQ-PTY-100 | TC-PTY-140 | VIOLATION | F3-SCR-PTY-004 | TC-PTY-050 |
-| AC-PTY-115 | REQ-PTY-101 | TC-PTY-141 | HAPPY | F2-SCR-PTY-004 | TC-PTY-116 |
+| AC-PTY-115 | REQ-PTY-101 | TC-PTY-141 (+ TC-PTY-185 error state) | HAPPY | F2-SCR-PTY-004 | TC-PTY-116 |
 | AC-PTY-116 | REQ-PTY-102 | TC-PTY-142 | PERMISSION | SEC-FE | TC-PTY-117 |
-| AC-PTY-117 | REQ-PTY-103 | TC-PTY-143 (+ TC-PTY-152, 153 via UXD-PTY-001) | HAPPY | F4-SCR-PTY-004 | TC-PTY-118 |
+| AC-PTY-117 | REQ-PTY-103 | TC-PTY-143 (+ TC-PTY-152, 153 via UXD-PTY-001; TC-PTY-184 not-found state) | HAPPY | F4-SCR-PTY-004 | TC-PTY-118 |
 | AC-PTY-122 | REQ-PTY-108 | TC-PTY-144 | HAPPY | F4-SCR-PTY-003 | TC-PTY-121 |
 | AC-PTY-123 | REQ-PTY-109 | TC-PTY-145 | VIOLATION | F2-SCR-PTY-003 | TC-PTY-053 |
+| AC-PTY-132 | REQ-PTY-113 | TC-PTY-189 | VIOLATION | F2-SCR-PTY-004 | TC-PTY-162 |
+| AC-PTY-134 | REQ-PTY-109 | TC-PTY-190 | VIOLATION | F2-SCR-PTY-004 | TC-PTY-164 |
 
-The remaining 93 ACs are covered by the backend plan only (its AC → TC table); none is uncovered.
+The remaining 100 ACs are covered by the backend plan only (its AC → TC table); none is uncovered.
 
 ### SCR → TC
 
 | SCR | Route(s) exercised | TC |
 |---|---|---|
-| SCR-PTY-001 Customers | /pty/customers, /pty/customers/new, /pty/customers/:customerId, Quick register | TC-PTY-122, 123, 125, 127, 129, 146, 148, 149, 150 |
-| SCR-PTY-002 Suppliers | /pty/suppliers/new, /pty/suppliers/:supplierId, Quick register | TC-PTY-124, 147, 148, 149 |
-| SCR-PTY-003 Customer credit | /pty/customer-credits, /pty/customer-credits/:customerId | TC-PTY-126, 128, 130, 131, 144, 145, 151 |
-| SCR-PTY-004 Credit override requests | /pty/credit-overrides, /new, /:requestId | TC-PTY-135, 136, 137, 138, 139, 140, 141, 142, 143, 152, 153 |
-| SCR-PTY-005 Credit control settings | /pty/credit-settings | TC-PTY-132, 133, 134 |
+| SCR-PTY-001 Customers | /pty/customers, /pty/customers/new, /pty/customers/:customerId, Quick register | TC-PTY-122, 123, 125, 127, 129, 146, 148, 149, 150, 180, 181, 183 |
+| SCR-PTY-002 Suppliers | /pty/suppliers, /pty/suppliers/new, /pty/suppliers/:supplierId, Quick register | TC-PTY-124, 147, 148, 149, 179, 188 |
+| SCR-PTY-003 Customer credit | /pty/customer-credits, /pty/customer-credits/:customerId | TC-PTY-126, 128, 130, 131, 144, 145, 151, 182 |
+| SCR-PTY-004 Credit override requests | /pty/credit-overrides, /new, /:requestId | TC-PTY-135, 136, 137, 138, 139, 140, 141, 142, 143, 152, 153, 184, 185, 186, 189, 190 |
+| SCR-PTY-005 Credit control settings | /pty/credit-settings | TC-PTY-132, 133, 134, 187 |
 
 ### RULE / code → TC (refusals asserted on screen)
 
@@ -552,7 +749,12 @@ The remaining 93 ACs are covered by the backend plan only (its AC → TC table);
 | RULE-PTY-026 | PTY-409-REQUEST-NOT-PENDING | TC-PTY-139 |
 | RULE-PTY-027 | PTY-422-REJECTION-REASON-REQUIRED (client validator first) | TC-PTY-140 |
 | RULE-PTY-029 | PTY-403-NOT-REQUESTER | TC-PTY-138 |
-| RULE-PTY-030 | PTY-500-AUDIT-NOT-RECORDED | TC-PTY-145 |
+| RULE-PTY-030 | PTY-500-AUDIT-NOT-RECORDED | TC-PTY-145, 190 |
+| RULE-PTY-002 | PTY-409-EMAIL-TAKEN (Supplier-only Party) | TC-PTY-179 |
+| RULE-PTY-016 | PTY-422-ADDRESS-TYPE-INVALID (partial failure of the ordered save) | TC-PTY-180 |
+| RULE-PTY-023 | PTY-422-CREDIT-NOT-ENABLED (flag off mid-session) | TC-PTY-182 |
+| RULE-PTY-034 | PTY-409-REQUEST-OPEN-FOR-SALE | TC-PTY-189 |
+| PLATFORM-STD | PTY-404-CREDIT-OVERRIDE-NOT-FOUND, PTY-500-INTERNAL (states) | TC-PTY-184, 185 |
 
 ### UXD → TC
 
@@ -564,12 +766,12 @@ The remaining 93 ACs are covered by the backend plan only (its AC → TC table);
 
 | Package (frontend plan unit) | TC | Count |
 |---|---|---|
-| F2-SCR-PTY-001 | TC-PTY-123, 125, 127, 146, 150 | 5 |
-| F2-SCR-PTY-002 | TC-PTY-147, 148 | 2 |
-| F2-SCR-PTY-003 | TC-PTY-128, 130, 131, 145 | 4 |
-| F2-SCR-PTY-004 | TC-PTY-135, 136, 137, 138, 139, 141 | 6 |
+| F2-SCR-PTY-001 | TC-PTY-123, 125, 127, 146, 150, 180, 183 | 7 |
+| F2-SCR-PTY-002 | TC-PTY-147, 148, 179 | 3 |
+| F2-SCR-PTY-003 | TC-PTY-128, 130, 131, 145, 182 | 5 |
+| F2-SCR-PTY-004 | TC-PTY-135, 136, 137, 138, 139, 141, 184, 185, 189, 190 | 10 |
 | F2-SCR-PTY-005 | TC-PTY-132 | 1 |
-| F3-SCR-PTY-001 | TC-PTY-122 | 1 |
+| F3-SCR-PTY-001 | TC-PTY-122, 181 | 2 |
 | F3-SCR-PTY-002 | TC-PTY-124 | 1 |
 | F3-SCR-PTY-003 | TC-PTY-126 | 1 |
 | F3-SCR-PTY-004 | TC-PTY-140 | 1 |
@@ -577,9 +779,9 @@ The remaining 93 ACs are covered by the backend plan only (its AC → TC table);
 | F4-SCR-PTY-001 | TC-PTY-129 | 1 |
 | F4-SCR-PTY-002 | TC-PTY-149 | 1 |
 | F4-SCR-PTY-003 | TC-PTY-144, 151 | 2 |
-| F4-SCR-PTY-004 | TC-PTY-143, 152, 153 | 3 |
-| F4-SCR-PTY-005 | TC-PTY-134 | 1 |
-| SEC-FE | TC-PTY-142 | 1 |
+| F4-SCR-PTY-004 | TC-PTY-143, 152, 153, 186 | 4 |
+| F4-SCR-PTY-005 | TC-PTY-134, 187 | 2 |
+| SEC-FE | TC-PTY-142, 188 | 2 |
 | F1-SCR-PTY-001 … 005 · ALIGN-FE | none — types-only units and the alignment phase (F-N2); recorded, not dropped | 0 |
 
 ### msg-bound — refusal texts asserted on screen and their binding in the frontend plan
@@ -594,6 +796,11 @@ The remaining 93 ACs are covered by the backend plan only (its AC → TC table);
 | TC-PTY-139 | PTY-409-REQUEST-NOT-PENDING | F2 SCR-PTY-004 OVERRIDE-APPROVE — "banner on the decision panel and refetch of the request, text: RULE-PTY-026 message (SRS)" |
 | TC-PTY-140 | PTY-422-REJECTION-REASON-REQUIRED | F3 SCR-PTY-004 RejectForm → RULE-PTY-027; F2 OVERRIDE-REJECT — "inline on decisionReason, text: RULE-PTY-027 message (SRS)" |
 | TC-PTY-145 | PTY-500-AUDIT-NOT-RECORDED | F2 SCR-PTY-003 CREDIT-SAVE — "form banner, form kept for retry, text: RULE-PTY-030 message (SRS)" |
+| TC-PTY-179 | PTY-409-EMAIL-TAKEN | F2 SCR-PTY-002 SUPPLIER-SAVE — "inline on email, text: RULE-PTY-002 message (SRS), with the action open that party (EMAIL-HOLDER-QUERY, ADR-PTY-043)" |
+| TC-PTY-180 | PTY-422-ADDRESS-TYPE-INVALID | F2 ADDRESSES-SYNC — "inline on addressTypeCode of the failing line, text: RULE-PTY-016 message (SRS)" |
+| TC-PTY-182 | PTY-422-CREDIT-NOT-ENABLED | F2 SCR-PTY-003 CREDIT-SAVE — "form banner, text: RULE-PTY-023 message (SRS), refetch app-config" |
+| TC-PTY-189 | PTY-409-REQUEST-OPEN-FOR-SALE | F2 SCR-PTY-004 OVERRIDE-CREATE — "form banner, text: RULE-PTY-034 message (SRS)" |
+| TC-PTY-190 | PTY-500-AUDIT-NOT-RECORDED | F2 SCR-PTY-004 OVERRIDE-APPROVE — "banner on the decision panel, the request is re-read (still PENDING), text: RULE-PTY-030 message (SRS)" |
 
 Every refusal asserted by its text is bound in the frontend plan; no plan gap of this kind.
 
@@ -601,12 +808,13 @@ Every refusal asserted by its text is bound in the frontend plan; no plan gap of
 
 | Measure | Result |
 |---|---|
-| AC covered on this track | 30 — every AC the frontend plan cites (F-N1) |
-| AC covered by the module (both plans) | 123 / 123 ✓ — no gap |
-| REQ covered on this track | 29 (incl. REQ-PTY-070 and REQ-PTY-077, covered here only) |
+| AC covered on this track | 36 — every AC the frontend plan cites (F-N1) |
+| AC covered by the module (both plans) | 136 / 136 ✓ — no gap |
+| REQ covered on this track | 33 (incl. REQ-PTY-070 and REQ-PTY-077, covered here only) |
+| Frontend statements of G17 with a TC | 8 / 8 (F-N10) |
 | SCR covered | 5 / 5 ✓ |
 | UXD covered | 1 / 1 ✓ (rendered + owner failure) |
 | Frontend plan units with ≥ 1 TC | 16 / 22 — F1-SCR-PTY-001 … 005 and ALIGN-FE carry none (F-N2) |
-| TC / AC on this track | 30 module TCs / 30 ACs = 1.0 (+ 2 UXD TCs); guard ~2× not exceeded |
+| TC / AC on this track | 42 module TCs / 36 ACs ≈ 1.17 (+ 2 UXD TCs); guard ~2× not exceeded |
 | Host data | none (F-N9) |
-| Open plan gap recorded for the gate | F-N4 (AC-PTY-109 detail not loadable by S2 under ADR-PTY-025 visibility) |
+| Open plan gap recorded for the gate | none — F-N4 removed: TC-PTY-138's actor (an Owner) loads the request on the delivered backend |

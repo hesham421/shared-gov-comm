@@ -23,11 +23,11 @@ The P3.2 frontend plan is bound to `api-spec-pty.yaml` (37 operations). The SRS,
 
 8. **Credit history placement.** The credit history of SCR-PTY-003 is an inline read-only pane beneath the credit fields, paged with the body, with no save and no scroll region of its own.
 
-9. **PENDING — the conflicting party of RULE-PTY-002.** RULE-PTY-002's message offers an action that opens the Party named by `{code}` (AC-PTY-013). `ErrorResponse` carries `code`, `messageAr`, `messageEn` only — the conflicting party's code is not a structured value, and the frontend does not parse it out of the message. Interim behaviour: the action "Open that customer" «فتح ذلك العميل» opens the Customer search filtered on the entered email and active status (`/pty/customers?email=…&isActive=true`), which finds the conflicting Party's Customer because email is unique among active Parties (RULE-PTY-002). A Party that holds only the Supplier role is not found this way. The gap belongs to the backend plan the document was derived from: PTY-409-EMAIL-TAKEN should carry the conflicting party's code (or the Supplier search an email filter). When it does, the action opens that Party directly; no frontend design changes.
+9. **Removed (gate-analysis revise, G1 / G20).** The former PENDING interim for the Party named by RULE-PTY-002 is superseded by ADR-PTY-043: API-PTY-028 gains an email filter, and the action "Open that party" «فتح ذلك الطرف» finds the Party through the Customer search and then the Supplier search by email. This ADR holds no open item.
 
 ## Consequences
 - The plan's API binding, F2 hooks, F4 routes and the ALIGN-FE operations coverage follow these decisions.
-- Decision 9 is the only open item; it is non-breaking (the message and a working interim action are shown) and is handed to the backend plan's next round.
+- No decision of this ADR is open; the RULE-PTY-002 action is decided in ADR-PTY-043.
 
 ## Traces
 SCR-PTY-001, SCR-PTY-002, SCR-PTY-003, SCR-PTY-004, UXD-PTY-001 · REQ-PTY-002, REQ-PTY-007, REQ-PTY-008, REQ-PTY-013, REQ-PTY-030, REQ-PTY-031, REQ-PTY-033, REQ-PTY-035, REQ-PTY-073, REQ-PTY-103, REQ-PTY-108 · AC-PTY-007, AC-PTY-010, AC-PTY-011, AC-PTY-013, AC-PTY-021, AC-PTY-055, AC-PTY-057, AC-PTY-109 · API-PTY-001, API-PTY-006, API-PTY-011, API-PTY-012, API-PTY-013, API-PTY-014, API-PTY-015, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037 · RULE-PTY-002

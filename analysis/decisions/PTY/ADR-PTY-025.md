@@ -1,6 +1,6 @@
 # ADR-PTY-025 — Permissions the SRS leaves open; in-process callers; invitation-handler outcomes
 
-Status  : ACCEPTED (non-breaking) · Stage : P3.1 · Module : PTY v1 · Date : 2026-10-29
+Status  : ACCEPTED (non-breaking) — in-process callers and the Address permission revised by ADR-PTY-039; the invitation outcomes by the backend plan CORE (outbox subscriber) · Stage : P3.1 · Module : PTY v1 · Date : 2026-10-29
 
 ## Context
 The SRS access matrices (B4) give permissions per screen and action. Several endpoints are not covered:

@@ -5,7 +5,7 @@ Track    : frontend · Plan : exec · Lane : analysis
 Bound to : api-spec-pty.yaml (OpenAPI 3.1.0, 37 operations, base path /api/v1/pty) — the API document derived from the P3.1 backend plan; served by the frontend executor's mock server until the backend is delivered
 Design   : ui-ux-spec-pty.md (SCR-PTY-001 … 005, UXD-PTY-001) · flow-diagram-pty.md
 Stack    : react-ts-vite · routing react-router · server state tanstack-query · forms react-hook-form · validation zod · client state zustand · one lazy chunk per composite screen
-Decisions: ADR-PTY-033 · ADR-PTY-034 (raised here) · ADR-PTY-012, ADR-PTY-024, ADR-PTY-031 (cited)
+Decisions: ADR-PTY-033 · ADR-PTY-034 (raised here; §9 removed) · ADR-PTY-012, ADR-PTY-024, ADR-PTY-031, ADR-PTY-037, ADR-PTY-039, ADR-PTY-041, ADR-PTY-042, ADR-PTY-043 (cited) — gate-analysis revise (G1, G20 and the backend changes the screens follow)
 ══════════════════════════════════════════════════════════════════
 
 Reading order for the implementer: the API binding below, then F1 → F2 → F3 → F4 → SEC-FE → ALIGN-FE. Shapes (paths, methods, parameters, request and response schemas, paging, envelope, error bodies) are read in api-spec-pty.yaml by `x-api-id`; this plan cites the `API-*` id and never restates a shape. A route, component, permission or field not traceable to a block of this plan is not built — a gap is an ADR.
@@ -123,7 +123,11 @@ bindings:
   - {req: REQ-PTY-106, api: [API-PTY-017, API-PTY-018]}
   - {req: REQ-PTY-107, api: [API-PTY-021, API-PTY-022]}
   - {req: REQ-PTY-108, api: [API-PTY-031]}
-  - {req: REQ-PTY-109, api: [API-PTY-017, API-PTY-018]}
+  - {req: REQ-PTY-109, api: [API-PTY-017, API-PTY-018, API-PTY-021, API-PTY-022]}
+  - {req: REQ-PTY-110, api: [API-PTY-011, API-PTY-013, API-PTY-015, API-PTY-017, API-PTY-019, API-PTY-035, API-PTY-036]}
+  - {req: REQ-PTY-111, api: [API-PTY-004, API-PTY-036]}
+  - {req: REQ-PTY-112, api: [API-PTY-021, API-PTY-022, API-PTY-023, API-PTY-036]}
+  - {req: REQ-PTY-113, api: [API-PTY-019]}
 unmapped: []
 codes:
   - {code: "PTY-422-NAME-REQUIRED", rule: RULE-PTY-001}
@@ -146,6 +150,7 @@ codes:
   - {code: "PTY-422-CREDIT-NOT-ENABLED", rule: RULE-PTY-023}
   - {code: "PTY-422-OVERRIDE-NOT-NEEDED", rule: RULE-PTY-025}
   - {code: "PTY-409-REQUEST-NOT-PENDING", rule: RULE-PTY-026}
+  - {code: "PTY-409-REQUEST-OPEN-FOR-SALE", rule: RULE-PTY-034}
   - {code: "PTY-422-REJECTION-REASON-REQUIRED", rule: RULE-PTY-027}
   - {code: "PTY-422-APPROVAL-NOT-COVERING", rule: RULE-PTY-028}
   - {code: "PTY-403-NOT-REQUESTER", rule: RULE-PTY-029}
@@ -158,7 +163,8 @@ codes:
 Reconciliation against the SRS (once):
 - Every REQ that needs an operation has one. REQ-PTY-052 and REQ-PTY-054 need no HTTP operation: they are served by the in-process invitation handler (registry-exec-be Traceability; ADR-PTY-025) and have no frontend surface.
 - Every operation maps to a REQ (each `x-traces` above). Six operations are bound to no PTY screen because their callers are other modules or the flag owner (SRS A8.1): API-PTY-012, API-PTY-033, API-PTY-034, API-PTY-035, API-PTY-036, API-PTY-037 — recorded in ADR-PTY-034 and in the ALIGN-FE operations coverage table. They are not used by this plan; nothing is unmapped.
-- Values the document does not carry are not invented: the conflicting party's code in PTY-409-EMAIL-TAKEN (RULE-PTY-002 offers an action that opens that Party) is not a structured field of `ErrorResponse` — **PENDING ADR-PTY-034** (interim: the action opens the Customer search on the entered email).
+- Values the document does not carry are not invented. RULE-PTY-002 offers an action that opens the conflicting Party, and the error body (`ErrorResponse`) does not carry that Party. The Party is found through the document's role searches instead: API-PTY-026, then API-PTY-028 (which now has an `email` filter), each with the entered email and `isActive=true`. The action keeps only the row whose normalised email equals the entered one (ADR-PTY-043, which supersedes ADR-PTY-034 §9). No interim remains.
+- `currencyCode` (ADR-PTY-037) is carried by the credit types and is not rendered while the tenant has one currency; amounts are formatted in it.
 - Reads the screens need that are not operations of this document — lookup values (given `mdl`), the `b2bCredit` flag (given application configuration), the session's permissions (given `sec`), the deciding user's name (given `sec`, UXD-PTY-001) — are hooks of kind `lookup` / `init`, never `read` (ADR-PTY-034).
 
 <!-- PHASE:F1:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,AC-PTY-007,AC-PTY-010,AC-PTY-011,AC-PTY-013,AC-PTY-021,AC-PTY-029,AC-PTY-031,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-077,AC-PTY-078,AC-PTY-082,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-101,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-122,AC-PTY-123,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-024,API-PTY-025,API-PTY-026,API-PTY-027,API-PTY-028,API-PTY-029,API-PTY-030,API-PTY-031,API-PTY-032,UXD-PTY-001,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
@@ -184,7 +190,8 @@ Shared (all screens):
 | `CustomerFormValues` | frontend | the editable subset of `CustomerUpdateRequest` (no `code` — RULE-PTY-007; no credit field — ADR-PTY-033) + `addresses: AddressDraft[]` |
 | `AddressDraft` | frontend | `AddressRequest` + `isDefaultFl` + `key` (addressPk, or a client key for a new line) + `op: 'unchanged' \| 'new' \| 'changed' \| 'removed'` + `markDefault: boolean` |
 | `QuickRegisterResult` | frontend | `{ id: Customer.customerPk; code: Customer.code }` — what the in-place registration returns to the host (REQ-PTY-008) |
-| `CustomerCreditView` | frontend | `Pick<Customer, 'creditLimit' \| 'paymentTermDays'>` — read-only display only, rendered when the flag is on and the fields are present (REQ-PTY-071, ADR-PTY-033) |
+| `CustomerCreditView` | frontend | `Pick<Customer, 'creditLimit' \| 'paymentTermDays' \| 'currencyCode'>` — read-only display only, rendered when the flag is on and the fields are present (REQ-PTY-071, ADR-PTY-033); `currencyCode` formats the amount and is not shown while the tenant has one currency (ADR-PTY-037) |
+| `EmailHolderLookup` | frontend | `{ email }` — the RULE-PTY-002 action's input (ADR-PTY-043) |
 <!-- SUB:F1-SCR-PTY-001:END -->
 
 <!-- SUB:F1-SCR-PTY-002:START traces=REQ-PTY-006,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,AC-PTY-011,AC-PTY-021,AC-PTY-029,AC-PTY-031,API-PTY-001,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-028,API-PTY-029,SCR-PTY-002 -->
@@ -195,7 +202,8 @@ Shared (all screens):
 | `Supplier`, `SupplierRow`, `SupplierCreateRequest`, `SupplierUpdateRequest`, `ActivationRequest`, `Confirmation` | generated | API-PTY-006, 007, 008, 009, 010, 028 |
 | `Customer`, `CustomerCreateRequest` | generated | API-PTY-001 (Make customer sends `{partyId}` only) |
 | `Address`, `AddressRequest`, `DefaultAddressRequest` | generated | API-PTY-011, 013, 014, 015, 029 |
-| `SupplierSearchFilter` | frontend | the query parameters of API-PTY-028 (`code`, `name`, `mobile`, `taxRegistrationNo`, `isActive`, `page`, `size`, `sort`) |
+| `SupplierSearchFilter` | frontend | the query parameters of API-PTY-028 (`code`, `name`, `mobile`, `email`, `taxRegistrationNo`, `isActive`, `page`, `size`, `sort`) |
+| `EmailHolderLookup` | frontend | `{ email }` — the RULE-PTY-002 action's input; reads API-PTY-026 then API-PTY-028 and keeps the row whose normalised email equals it (ADR-PTY-043); shared with SCR-PTY-001 |
 | `SupplierFormValues` | frontend | the editable subset of `SupplierUpdateRequest` (no `code`) + `addresses: AddressDraft[]` |
 | `AddressDraft`, `QuickRegisterResult` | frontend | shared with SCR-PTY-001 (`QuickRegisterResult.id` = `Supplier.supplierPk`) |
 <!-- SUB:F1-SCR-PTY-002:END -->
@@ -234,7 +242,7 @@ Shared (all screens):
 <!-- SUB:F1-SCR-PTY-005:END -->
 <!-- PHASE:F1:END -->
 
-<!-- PHASE:F2:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,AC-PTY-007,AC-PTY-010,AC-PTY-011,AC-PTY-013,AC-PTY-021,AC-PTY-029,AC-PTY-031,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-077,AC-PTY-078,AC-PTY-082,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-101,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-122,AC-PTY-123,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-024,API-PTY-025,API-PTY-026,API-PTY-027,API-PTY-028,API-PTY-029,API-PTY-030,API-PTY-031,API-PTY-032,UXD-PTY-001,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
+<!-- PHASE:F2:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,REQ-PTY-110,REQ-PTY-112,REQ-PTY-113,AC-PTY-007,AC-PTY-010,AC-PTY-011,AC-PTY-013,AC-PTY-018,AC-PTY-021,AC-PTY-029,AC-PTY-031,AC-PTY-036,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-077,AC-PTY-078,AC-PTY-080,AC-PTY-082,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-101,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-122,AC-PTY-123,AC-PTY-132,AC-PTY-134,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-024,API-PTY-025,API-PTY-026,API-PTY-027,API-PTY-028,API-PTY-029,API-PTY-030,API-PTY-031,API-PTY-032,UXD-PTY-001,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
 ## F2 — Data Hooks
 
 What each screen reads and mutates. Hook code is the implementer's; this phase fixes the operation each hook calls (by `API-*` id of api-spec-pty.yaml — method, path and schemas are read there, never restated), its cache key, error routing, loading and invalidation.
@@ -267,13 +275,21 @@ Kind read · key `["pty","parties",partyFk,"addresses"]` · enabled once `partyF
 
 #### ADDRESSES-SYNC — API-PTY-011, API-PTY-013, API-PTY-014, API-PTY-015     traces=API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,REQ-PTY-030,REQ-PTY-031,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038
 Kind mutation · called only by a screen's SAVE, after the record call succeeded, with the record's `partyFk` · sends the draft's changes **sequentially** in this order: removed lines → API-PTY-014; changed lines → API-PTY-013; new lines → API-PTY-011; lines marked default that are not already the default → API-PTY-015 with `{"isDefaultFl": true}` (ADR-PTY-031). A new line that is the first of its type is not sent to API-PTY-015 — the server makes it the default (REQ-PTY-034). Not sent at all when no line changed. Stops at the first failure; the remaining lines stay in the draft marked unsent.
-Errors: `PTY-422-ADDRESS-LINE-REQUIRED` → inline on line1 of the failing line (its drawer reopens), text: RULE-PTY-015 message (SRS) · `PTY-422-ADDRESS-TYPE-INVALID` → inline on addressTypeCode of the failing line, text: RULE-PTY-016 message (SRS) · `PTY-404-ADDRESS-NOT-FOUND` / `PTY-404-PARTY-NOT-FOUND` → form banner + refetch of the addresses, text: catalogue code · STD.
+Errors: `PTY-422-ADDRESS-LINE-REQUIRED` → inline on line1 of the failing line (its drawer reopens), text: RULE-PTY-015 message (SRS) · `PTY-422-ADDRESS-TYPE-INVALID` → inline on addressTypeCode of the failing line, text: RULE-PTY-016 message (SRS) · `PTY-422-ROLE-INACTIVE` (the Party has no active role — ADR-PTY-041) → form banner, the remaining lines stay in the draft marked unsent, text: RULE-PTY-005 message (SRS) · `PTY-404-ADDRESS-NOT-FOUND` / `PTY-404-PARTY-NOT-FOUND` → form banner + refetch of the addresses, text: catalogue code · STD.
 Success: the confirmation texts the responses carry (RULE-PTY-006 on deactivation, RULE-PTY-017 on a new default) are shown once as a toast. Invalidation: `["pty","parties",partyFk,"addresses"]`.
+
+#### EMAIL-HOLDER-QUERY — API-PTY-026, API-PTY-028     traces=API-PTY-026,API-PTY-028,REQ-PTY-010,REQ-PTY-013,REQ-PTY-018
+Kind read. It runs only when the user chooses "Open that party" «فتح ذلك الطرف» on a PTY-409-EMAIL-TAKEN refusal (ADR-PTY-043).
+1. Read API-PTY-026 with `{email: <entered email>, isActive: true, page: 0, size: 20}`.
+2. Keep the row whose `email`, trimmed and lower-cased, equals the entered one. Found → navigate to `/pty/customers/:customerPk`.
+3. Otherwise, when the session holds PERM_PTY_SUPPLIER_VIEW, read API-PTY-028 with the same filter and keep the matching row. Found → navigate to `/pty/suppliers/:supplierPk`.
+4. Neither found (the user may not see the role the Party holds) → the action is withdrawn; the message, which names the Party code, stays.
+Keys `["pty","customers","search",{…}]` and `["pty","suppliers","search",{…}]`, the same cache entries as the search screens. Errors: STD (a failure leaves the refusal shown, with no navigation). Loading: LOCAL, on the action.
 
 #### USER-LABEL-LOOKUP — UXD-PTY-001     traces=UXD-PTY-001,REQ-PTY-094,REQ-PTY-103
 Kind lookup · the given `sec` user read (ADR-PTY-034) · key `["sec","users",userId]` · long-lived · one call per distinct identifier · on failure the field reads «—» (never the raw identifier, never an error page).
 
-<!-- SUB:F2-SCR-PTY-001:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-047,REQ-PTY-049,REQ-PTY-070,REQ-PTY-071,REQ-PTY-073,AC-PTY-007,AC-PTY-010,AC-PTY-013,AC-PTY-055,AC-PTY-057,AC-PTY-078,AC-PTY-082,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-026,API-PTY-029,SCR-PTY-001 -->
+<!-- SUB:F2-SCR-PTY-001:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-047,REQ-PTY-049,REQ-PTY-070,REQ-PTY-071,REQ-PTY-073,REQ-PTY-110,AC-PTY-007,AC-PTY-010,AC-PTY-013,AC-PTY-018,AC-PTY-036,AC-PTY-055,AC-PTY-057,AC-PTY-078,AC-PTY-082,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-026,API-PTY-029,SCR-PTY-001 -->
 ### F2 · SCR-PTY-001 — Customers
 
 ```yaml name=screen-hooks
@@ -300,6 +316,13 @@ hooks:
     errors: "STD; PTY-404-PARTY-NOT-FOUND → not-found state, text: catalogue PTY-404-PARTY-NOT-FOUND"
     loading: LOCAL
     invalidation: "—"
+  - hook: EMAIL-HOLDER-QUERY
+    kind: read
+    api: [API-PTY-026, API-PTY-028]
+    cache_key: "[pty, customers, search, {email, isActive}] then [pty, suppliers, search, {email, isActive}]"
+    errors: "STD; a failure leaves the RULE-PTY-002 refusal shown without navigation"
+    loading: LOCAL
+    invalidation: "—"
   - hook: CUSTOMER_GROUP-LOOKUP
     kind: lookup
     cache_key: "[mdl, lookups, CUSTOMER_GROUP]"
@@ -315,7 +338,7 @@ hooks:
   - hook: CUSTOMER-SAVE
     kind: mutation
     api: [API-PTY-001, API-PTY-003, API-PTY-011, API-PTY-013, API-PTY-014, API-PTY-015]
-    errors: "STD; PTY-422-NAME-REQUIRED → inline on the name group, text: RULE-PTY-001 message (SRS); PTY-409-EMAIL-TAKEN → inline on email, text: RULE-PTY-002 message (SRS), with the action open that customer (PENDING ADR-PTY-034); PTY-422-EMAIL-FORMAT → inline on email, text: RULE-PTY-003 message (SRS); PTY-422-MOBILE-FORMAT → inline on mobile, text: RULE-PTY-004 message (SRS); PTY-422-CUSTOMER-GROUP-INVALID → inline on customerGroupCode, text: RULE-PTY-018 message (SRS); PTY-422-CODE-READ-ONLY → form banner, text: RULE-PTY-007 message (SRS); PTY-404-CUSTOMER-NOT-FOUND → not-found state; address codes as ADDRESSES-SYNC"
+    errors: "STD; PTY-422-NAME-REQUIRED → inline on the name group, text: RULE-PTY-001 message (SRS); PTY-409-EMAIL-TAKEN → inline on email, text: RULE-PTY-002 message (SRS), with the action open that party (EMAIL-HOLDER-QUERY, ADR-PTY-043); PTY-422-EMAIL-FORMAT → inline on email, text: RULE-PTY-003 message (SRS); PTY-422-MOBILE-FORMAT → inline on mobile, text: RULE-PTY-004 message (SRS); PTY-422-CUSTOMER-GROUP-INVALID → inline on customerGroupCode, text: RULE-PTY-018 message (SRS); PTY-422-CODE-READ-ONLY → form banner, text: RULE-PTY-007 message (SRS); PTY-404-CUSTOMER-NOT-FOUND → not-found state; address codes as ADDRESSES-SYNC, PTY-422-ROLE-INACTIVE → form banner, text: RULE-PTY-005 message (SRS)"
     loading: LOCAL
     invalidation: "[pty, customers] · [pty, suppliers] · [pty, customer-credits] · [pty, parties, partyFk, addresses]"
   - hook: CUSTOMER-QUICK-REGISTER
@@ -356,7 +379,7 @@ Kind read query, `forNewDocument` not sent (false) — the back-office opens ina
 Kind mutation, the screen's **one** Save. It owns ordered calls:
 1. the record call — new: API-PTY-001 without `partyId` (body from the form; `customerGroupCode` sent as chosen); existing: API-PTY-003 without `code`, sent only when the header changed;
 2. ADDRESSES-SYNC with the `partyFk` the record call returned (or the loaded one) — sent **only after** call 1 succeeded (or was skipped as unchanged), and **not sent at all** when the address set is unchanged.
-A refusal of call 1 sends nothing else; the form and the address draft stay as typed. If call 2 fails after call 1 succeeded, the record is saved: a new Customer moves to `/pty/customers/:customerId` (replace) keeping the unsent lines in the draft, and the error is shown on the failing line. RULE-PTY-002 action: "Open that customer" «فتح ذلك العميل» navigates to `/pty/customers?email=<entered email>&isActive=true` — PENDING ADR-PTY-034 (a structured party code is not in `ErrorResponse`).
+A refusal of call 1 sends nothing else; the form and the address draft stay as typed. If call 2 fails after call 1 succeeded, the record is saved: a new Customer moves to `/pty/customers/:customerId` (replace) keeping the unsent lines in the draft, and the error is shown on the failing line. RULE-PTY-002 action: "Open that party" «فتح ذلك الطرف» runs EMAIL-HOLDER-QUERY and opens the Customer, or else the Supplier, that holds the entered email (ADR-PTY-043).
 
 #### SCR-PTY-001 · CUSTOMER-QUICK-REGISTER — API-PTY-001     traces=API-PTY-001,REQ-PTY-005,REQ-PTY-008,AC-PTY-007,AC-PTY-010
 Kind mutation used by the in-place Quick register only. Sends names, mobile, email; `customerGroupCode` omitted (server default RETAIL, REQ-PTY-007). On success returns `QuickRegisterResult {id, code}` to the host through its callback; the host's screen stays open.
@@ -368,11 +391,11 @@ Kind mutation (commands). Deactivate shows the response's confirmation text (RUL
 Kind mutation (command). Body `{partyId: partyFk}` only — no Party field is asked (REQ-PTY-025). On success navigates to `/pty/suppliers/:supplierPk` of the response.
 
 #### SCR-PTY-001 · CUSTOMER-SCREEN-INIT and CUSTOMER-FACADE
-INIT: permissions PERM_PTY_CUSTOMER_VIEW / _CREATE / _UPDATE / _DELETE, PERM_PTY_SUPPLIER_CREATE (Make supplier), PERM_PTY_CUSTOMER_CREDIT_VIEW (Edit credit); `b2bCredit`; lookups CUSTOMER_GROUP, ADDRESS_TYPE; the Customer by id when the route carries `:customerId`.
+INIT: permissions PERM_PTY_CUSTOMER_VIEW / _CREATE / _UPDATE / _DELETE, PERM_PTY_SUPPLIER_CREATE (Make supplier), PERM_PTY_SUPPLIER_VIEW (the Supplier step of EMAIL-HOLDER-QUERY), PERM_PTY_CUSTOMER_CREDIT_VIEW (Edit credit); `b2bCredit`; lookups CUSTOMER_GROUP, ADDRESS_TYPE; the Customer by id when the route carries `:customerId`.
 FACADE: owns the search filter (from the route), the selected Customer, the address draft (`AddressDraft[]` built from PARTY-ADDRESSES-QUERY), `isDirty`, derived `isBusy`; exposes `search(filter)`, `save()`, `deactivate()`, `reactivate()`, `makeSupplier()`, `quickRegister(values)`, `addLine/updateLine/removeLine/markDefault` (draft only). Commands are rejected by the facade while `isDirty` (ADR-PTY-034).
 <!-- SUB:F2-SCR-PTY-001:END -->
 
-<!-- SUB:F2-SCR-PTY-002:START traces=REQ-PTY-006,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,AC-PTY-011,AC-PTY-021,AC-PTY-029,AC-PTY-031,API-PTY-001,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-028,API-PTY-029,SCR-PTY-002 -->
+<!-- SUB:F2-SCR-PTY-002:START traces=REQ-PTY-006,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-110,AC-PTY-011,AC-PTY-013,AC-PTY-021,AC-PTY-029,AC-PTY-031,API-PTY-001,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-028,API-PTY-029,SCR-PTY-002 -->
 ### F2 · SCR-PTY-002 — Suppliers
 
 ```yaml name=screen-hooks
@@ -381,7 +404,7 @@ hooks:
   - hook: SUPPLIER-SEARCH-QUERY
     kind: read
     api: [API-PTY-028]
-    cache_key: "[pty, suppliers, search, {code, name, mobile, taxRegistrationNo, isActive, page, size, sort}]"
+    cache_key: "[pty, suppliers, search, {code, name, mobile, email, taxRegistrationNo, isActive, page, size, sort}]"
     errors: "STD"
     loading: LOCAL
     invalidation: "—"
@@ -399,6 +422,13 @@ hooks:
     errors: "STD; PTY-404-PARTY-NOT-FOUND → not-found state, text: catalogue PTY-404-PARTY-NOT-FOUND"
     loading: LOCAL
     invalidation: "—"
+  - hook: EMAIL-HOLDER-QUERY
+    kind: read
+    api: [API-PTY-026, API-PTY-028]
+    cache_key: "[pty, customers, search, {email, isActive}] then [pty, suppliers, search, {email, isActive}]"
+    errors: "STD; a failure leaves the RULE-PTY-002 refusal shown without navigation"
+    loading: LOCAL
+    invalidation: "—"
   - hook: ADDRESS_TYPE-LOOKUP
     kind: lookup
     cache_key: "[mdl, lookups, ADDRESS_TYPE]"
@@ -410,7 +440,7 @@ hooks:
   - hook: SUPPLIER-SAVE
     kind: mutation
     api: [API-PTY-006, API-PTY-008, API-PTY-011, API-PTY-013, API-PTY-014, API-PTY-015]
-    errors: "STD; PTY-422-NAME-REQUIRED → inline on the name group, text: RULE-PTY-001 message (SRS); PTY-409-EMAIL-TAKEN → inline on email, text: RULE-PTY-002 message (SRS), with the action open that customer (PENDING ADR-PTY-034); PTY-422-EMAIL-FORMAT → inline on email, text: RULE-PTY-003 message (SRS); PTY-422-MOBILE-FORMAT → inline on mobile, text: RULE-PTY-004 message (SRS); PTY-422-PAYMENT-TERMS-RANGE → inline on paymentTermDays, text: RULE-PTY-008 message (SRS); PTY-422-CODE-READ-ONLY → form banner, text: RULE-PTY-007 message (SRS); PTY-404-SUPPLIER-NOT-FOUND → not-found state; address codes as ADDRESSES-SYNC"
+    errors: "STD; PTY-422-NAME-REQUIRED → inline on the name group, text: RULE-PTY-001 message (SRS); PTY-409-EMAIL-TAKEN → inline on email, text: RULE-PTY-002 message (SRS), with the action open that party (EMAIL-HOLDER-QUERY, ADR-PTY-043); PTY-422-EMAIL-FORMAT → inline on email, text: RULE-PTY-003 message (SRS); PTY-422-MOBILE-FORMAT → inline on mobile, text: RULE-PTY-004 message (SRS); PTY-422-PAYMENT-TERMS-RANGE → inline on paymentTermDays, text: RULE-PTY-008 message (SRS); PTY-422-CODE-READ-ONLY → form banner, text: RULE-PTY-007 message (SRS); PTY-404-SUPPLIER-NOT-FOUND → not-found state; address codes as ADDRESSES-SYNC, PTY-422-ROLE-INACTIVE → form banner, text: RULE-PTY-005 message (SRS)"
     loading: LOCAL
     invalidation: "[pty, suppliers] · [pty, customers] · [pty, customer-credits] · [pty, parties, partyFk, addresses]"
   - hook: SUPPLIER-QUICK-REGISTER
@@ -442,7 +472,7 @@ hooks:
 ```
 
 #### SCR-PTY-002 · SUPPLIER-SEARCH-QUERY — API-PTY-028     traces=API-PTY-028,REQ-PTY-018
-Kind read query; key = the whole `SupplierSearchFilter`; default `{page: 0, size: 20}`.
+Kind read query; key = the whole `SupplierSearchFilter`; default `{page: 0, size: 20}`. The `email` filter (ADR-PTY-043) is also read by EMAIL-HOLDER-QUERY.
 
 #### SCR-PTY-002 · SUPPLIER-QUERY — API-PTY-007     traces=API-PTY-007,REQ-PTY-017,REQ-PTY-024
 Kind read query, `forNewDocument` not sent. Gives `partyFk` to the address hooks.
@@ -460,10 +490,10 @@ Kind mutation (commands). Deactivation toast = the response's RULE-PTY-006 text;
 Kind mutation (command). Body `{partyId: partyFk}` only; the server sets customer group RETAIL. On success navigates to `/pty/customers/:customerPk`.
 
 #### SCR-PTY-002 · SUPPLIER-SCREEN-INIT and SUPPLIER-FACADE
-INIT: PERM_PTY_SUPPLIER_VIEW / _CREATE / _UPDATE / _DELETE, PERM_PTY_CUSTOMER_CREATE (Make customer); lookup ADDRESS_TYPE; the Supplier by id when the route carries `:supplierId`. FACADE: as CUSTOMER-FACADE for Suppliers (filter, selection, address draft, `isDirty`, commands rejected while dirty).
+INIT: PERM_PTY_SUPPLIER_VIEW / _CREATE / _UPDATE / _DELETE, PERM_PTY_CUSTOMER_CREATE (Make customer), PERM_PTY_CUSTOMER_VIEW (the Customer step of EMAIL-HOLDER-QUERY); lookup ADDRESS_TYPE; the Supplier by id when the route carries `:supplierId`. FACADE: as CUSTOMER-FACADE for Suppliers (filter, selection, address draft, `isDirty`, commands rejected while dirty).
 <!-- SUB:F2-SCR-PTY-002:END -->
 
-<!-- SUB:F2-SCR-PTY-003:START traces=REQ-PTY-048,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-106,REQ-PTY-108,REQ-PTY-109,AC-PTY-056,AC-PTY-077,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-122,AC-PTY-123,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-030,API-PTY-031,SCR-PTY-003 -->
+<!-- SUB:F2-SCR-PTY-003:START traces=REQ-PTY-048,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-106,REQ-PTY-108,REQ-PTY-109,REQ-PTY-110,AC-PTY-056,AC-PTY-077,AC-PTY-080,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-122,AC-PTY-123,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-030,API-PTY-031,SCR-PTY-003 -->
 ### F2 · SCR-PTY-003 — Customer credit
 
 ```yaml name=screen-hooks
@@ -501,7 +531,7 @@ hooks:
   - hook: CREDIT-SAVE
     kind: mutation
     api: [API-PTY-017]
-    errors: "STD; PTY-422-CREDIT-LIMIT-NEGATIVE → inline on creditLimit, text: RULE-PTY-022 message (SRS); PTY-422-PAYMENT-TERMS-RANGE → inline on paymentTermDays, text: RULE-PTY-008 message (SRS); PTY-422-WALK-IN-CREDIT → form banner, text: RULE-PTY-011 message (SRS); PTY-422-CREDIT-NOT-ENABLED → form banner, text: RULE-PTY-023 message (SRS), refetch app-config; PTY-500-AUDIT-NOT-RECORDED → form banner, form kept for retry, text: RULE-PTY-030 message (SRS); PTY-404-CUSTOMER-NOT-FOUND → not-found state"
+    errors: "STD; PTY-422-CREDIT-LIMIT-NEGATIVE → inline on creditLimit, text: RULE-PTY-022 message (SRS); PTY-422-PAYMENT-TERMS-RANGE → inline on paymentTermDays, text: RULE-PTY-008 message (SRS); PTY-422-WALK-IN-CREDIT → form banner, text: RULE-PTY-011 message (SRS); PTY-422-ROLE-INACTIVE → form banner, the form is kept, text: RULE-PTY-005 message (SRS); PTY-422-CREDIT-NOT-ENABLED → form banner, text: RULE-PTY-023 message (SRS), refetch app-config; PTY-500-AUDIT-NOT-RECORDED → form banner, form kept for retry, text: RULE-PTY-030 message (SRS); PTY-404-CUSTOMER-NOT-FOUND → not-found state"
     loading: LOCAL
     invalidation: "[pty, customer-credits] · [pty, customers, customerId]"
   - hook: CREDIT-CLEAR
@@ -533,7 +563,7 @@ Kind mutation (command, with confirmation «سيُمسح حد الائتمان �
 INIT: `b2bCredit` (the route is not mounted while off); PERM_PTY_CUSTOMER_CREDIT_VIEW / _UPDATE, PERM_PTY_CREDIT_OVERRIDE_VIEW and PERM_PTY_CREDIT_SETTINGS_VIEW (links); lookup CUSTOMER_GROUP; the standing by id when the route carries `:customerId`. FACADE: filter, selection, history page, `isDirty`; `save()`, `clearCredit()` (rejected while dirty).
 <!-- SUB:F2-SCR-PTY-003:END -->
 
-<!-- SUB:F2-SCR-PTY-004:START traces=REQ-PTY-041,REQ-PTY-070,REQ-PTY-072,REQ-PTY-089,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-107,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,API-PTY-002,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-027,API-PTY-032,UXD-PTY-001,SCR-PTY-004 -->
+<!-- SUB:F2-SCR-PTY-004:START traces=REQ-PTY-041,REQ-PTY-070,REQ-PTY-072,REQ-PTY-089,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-107,REQ-PTY-110,REQ-PTY-112,REQ-PTY-113,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-132,AC-PTY-134,API-PTY-002,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-027,API-PTY-032,UXD-PTY-001,SCR-PTY-004 -->
 ### F2 · SCR-PTY-004 — Credit override requests
 
 ```yaml name=screen-hooks
@@ -587,19 +617,19 @@ hooks:
   - hook: OVERRIDE-CREATE
     kind: mutation
     api: [API-PTY-019]
-    errors: "STD; PTY-422-SALE-AMOUNT-NOT-POSITIVE → inline on saleAmount, text: RULE-PTY-032 message (SRS); PTY-422-WALK-IN-NO-CREDIT-SALE → inline on the Customer picker, text: RULE-PTY-033 message (SRS); PTY-422-OVERRIDE-NOT-NEEDED → form banner, text: RULE-PTY-025 message (SRS); PTY-422-CREDIT-NOT-ENABLED → form banner, text: RULE-PTY-023 message (SRS); PTY-404-CUSTOMER-NOT-FOUND → inline on the Customer picker, text: catalogue PTY-404-CUSTOMER-NOT-FOUND"
+    errors: "STD; PTY-422-SALE-AMOUNT-NOT-POSITIVE → inline on saleAmount, text: RULE-PTY-032 message (SRS); PTY-422-WALK-IN-NO-CREDIT-SALE → inline on the Customer picker, text: RULE-PTY-033 message (SRS); PTY-422-ROLE-INACTIVE → inline on the Customer picker, text: RULE-PTY-005 message (SRS); PTY-409-REQUEST-OPEN-FOR-SALE → form banner, text: RULE-PTY-034 message (SRS), with the action show this sale's requests (`/pty/credit-overrides?customerId=<customerId>&statusCode=PENDING`); PTY-422-OVERRIDE-NOT-NEEDED → form banner, text: RULE-PTY-025 message (SRS); PTY-422-CREDIT-NOT-ENABLED → form banner, text: RULE-PTY-023 message (SRS); PTY-404-CUSTOMER-NOT-FOUND → inline on the Customer picker, text: catalogue PTY-404-CUSTOMER-NOT-FOUND"
     loading: LOCAL
     invalidation: "[pty, credit-overrides]"
   - hook: OVERRIDE-APPROVE
     kind: mutation
     api: [API-PTY-021]
-    errors: "STD; PTY-409-REQUEST-NOT-PENDING → banner on the decision panel and refetch of the request, text: RULE-PTY-026 message (SRS); PTY-422-DOC-NO-READ-ONLY → banner, text: RULE-PTY-031 message (SRS); PTY-404-CREDIT-OVERRIDE-NOT-FOUND → not-found state"
+    errors: "STD; PTY-409-REQUEST-NOT-PENDING → banner on the decision panel and refetch of the request, text: RULE-PTY-026 message (SRS); PTY-422-DOC-NO-READ-ONLY → banner, text: RULE-PTY-031 message (SRS); PTY-422-CREDIT-NOT-ENABLED → banner on the decision panel and refetch of app-config, text: RULE-PTY-023 message (SRS); PTY-500-AUDIT-NOT-RECORDED → banner on the decision panel, the request is re-read (still PENDING), text: RULE-PTY-030 message (SRS); PTY-404-CREDIT-OVERRIDE-NOT-FOUND → not-found state"
     loading: LOCAL
     invalidation: "[pty, credit-overrides]"
   - hook: OVERRIDE-REJECT
     kind: mutation
     api: [API-PTY-022]
-    errors: "STD; PTY-422-REJECTION-REASON-REQUIRED → inline on decisionReason, text: RULE-PTY-027 message (SRS); PTY-409-REQUEST-NOT-PENDING → banner on the decision panel and refetch, text: RULE-PTY-026 message (SRS); PTY-422-DOC-NO-READ-ONLY → banner, text: RULE-PTY-031 message (SRS); PTY-404-CREDIT-OVERRIDE-NOT-FOUND → not-found state"
+    errors: "STD; PTY-422-REJECTION-REASON-REQUIRED → inline on decisionReason, text: RULE-PTY-027 message (SRS); PTY-409-REQUEST-NOT-PENDING → banner on the decision panel and refetch, text: RULE-PTY-026 message (SRS); PTY-422-DOC-NO-READ-ONLY → banner, text: RULE-PTY-031 message (SRS); PTY-422-CREDIT-NOT-ENABLED → banner on the decision panel and refetch of app-config, text: RULE-PTY-023 message (SRS); PTY-500-AUDIT-NOT-RECORDED → banner on the decision panel, the reason is kept for retry, text: RULE-PTY-030 message (SRS); PTY-404-CREDIT-OVERRIDE-NOT-FOUND → not-found state"
     loading: LOCAL
     invalidation: "[pty, credit-overrides]"
   - hook: OVERRIDE-CANCEL
@@ -766,7 +796,7 @@ Without PERM_PTY_CREDIT_SETTINGS_UPDATE the radio group is read-only and there i
 <!-- SUB:F3-SCR-PTY-005:END -->
 <!-- PHASE:F3:END -->
 
-<!-- PHASE:F4:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,AC-PTY-007,AC-PTY-010,AC-PTY-011,AC-PTY-013,AC-PTY-021,AC-PTY-029,AC-PTY-031,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-077,AC-PTY-078,AC-PTY-082,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-101,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-122,AC-PTY-123,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-024,API-PTY-025,API-PTY-026,API-PTY-027,API-PTY-028,API-PTY-029,API-PTY-030,API-PTY-031,API-PTY-032,UXD-PTY-001,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
+<!-- PHASE:F4:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,REQ-PTY-110,REQ-PTY-112,REQ-PTY-113,AC-PTY-007,AC-PTY-010,AC-PTY-011,AC-PTY-013,AC-PTY-021,AC-PTY-029,AC-PTY-031,AC-PTY-055,AC-PTY-056,AC-PTY-057,AC-PTY-077,AC-PTY-078,AC-PTY-082,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-097,AC-PTY-098,AC-PTY-101,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,AC-PTY-122,AC-PTY-123,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-024,API-PTY-025,API-PTY-026,API-PTY-027,API-PTY-028,API-PTY-029,API-PTY-030,API-PTY-031,API-PTY-032,UXD-PTY-001,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
 ## F4 — Screens & Routes
 
 Routes are registered by the PTY module's route file under the shell's layout; each composite screen is one lazy chunk. Every route element is wrapped by `RequirePermission(<PERM>)`; credit routes are also wrapped by `RequireFlag('b2bCredit')` (not mounted while off — REQ-PTY-070; mounted on the next screen load once on — REQ-PTY-073). Pages call their facade only.
@@ -775,7 +805,7 @@ Menu (Party «الأطراف»): Customers «العملاء» (PERM_PTY_CUSTOMER
 
 Second-level and line drawers: a drawer's open state is a nested route (going back closes it, dismissing closes only it, a deep link opens it). The layout route renders the first level and an `<Outlet/>` for the drawer as **siblings**; the drawer is portalled at the layout level, never inside the first level's element. A drawer carries no scroll region of its own (its content scrolls with the drawer body). A drawer **returns a value**: Confirm writes the line into the page's form state through the facade, Cancel discards the drawer's local draft; no drawer calls the API.
 
-<!-- SUB:F4-SCR-PTY-001:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-047,REQ-PTY-049,REQ-PTY-070,REQ-PTY-071,REQ-PTY-073,AC-PTY-007,AC-PTY-010,AC-PTY-013,AC-PTY-055,AC-PTY-057,AC-PTY-078,AC-PTY-082,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-026,API-PTY-029,SCR-PTY-001 -->
+<!-- SUB:F4-SCR-PTY-001:START traces=REQ-PTY-001,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-047,REQ-PTY-049,REQ-PTY-070,REQ-PTY-071,REQ-PTY-073,REQ-PTY-110,AC-PTY-007,AC-PTY-010,AC-PTY-013,AC-PTY-055,AC-PTY-057,AC-PTY-078,AC-PTY-082,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-026,API-PTY-029,SCR-PTY-001 -->
 ### CUSTOMER-SCREEN — SCR-PTY-001            traces=REQ-PTY-004,REQ-PTY-008,REQ-PTY-012,REQ-PTY-013,REQ-PTY-030,API-PTY-001,API-PTY-003,API-PTY-026,API-PTY-029
 Chunk        : `pty-customers`
 Routes       :
@@ -792,10 +822,10 @@ Facade       : CUSTOMER-FACADE (F2) · pages do not call queries directly
 Cross-module : none
 Composition  : `container page`. `CustomerEntryLayout` holds the form provider and renders, as siblings, `CustomerEntryView` (header group, Advanced group, read-only credit group, record footer, the inline `AddressPane`) and the drawer `<Outlet/>`. `AddressPane` is inline beneath the header: one row per line (type, label, line 1, city, default mark) with Add / open / Remove / Make default — all edit the draft only. `AddressLineDrawer` is the one-line drawer: opened from the route, returns the line to the form state, no save. `CustomerQuickRegister` (exported from `src/modules/pty/public`) is the Quick register sub-view: props `{ onRegistered(result: QuickRegisterResult), onCancel() }`; the host owns its container and open state (ADR-PTY-034); it has no address pane.
 Saves        : ONE — `Save` «حفظ» runs CUSTOMER-SAVE: record call first, ADDRESSES-SYNC only after it succeeded, skipped when the address set is unchanged (F2). Commands (Deactivate, Reactivate, Make supplier) are separate confirmed calls, disabled while the form is dirty.
-Navigation   : row click → `/pty/customers/:customerId` · New customer → `/pty/customers/new` · "Edit credit" «تعديل الائتمان» (flag on, PERM_PTY_CUSTOMER_CREDIT_VIEW) → `/pty/customer-credits/:customerId` · after Make supplier → `/pty/suppliers/:supplierPk` · RULE-PTY-002 action → `/pty/customers?email=<entered email>&isActive=true` · after a first save → replace with `/pty/customers/:customerId`.
+Navigation   : row click → `/pty/customers/:customerId` · New customer → `/pty/customers/new` · "Edit credit" «تعديل الائتمان» (flag on, PERM_PTY_CUSTOMER_CREDIT_VIEW) → `/pty/customer-credits/:customerId` · after Make supplier → `/pty/suppliers/:supplierPk` · RULE-PTY-002 action "Open that party" «فتح ذلك الطرف» → `/pty/customers/:customerPk` of the Customer holding the email, else `/pty/suppliers/:supplierPk` of the Supplier holding it (EMAIL-HOLDER-QUERY, ADR-PTY-043) · after a first save → replace with `/pty/customers/:customerId`.
 <!-- SUB:F4-SCR-PTY-001:END -->
 
-<!-- SUB:F4-SCR-PTY-002:START traces=REQ-PTY-006,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,AC-PTY-011,AC-PTY-021,AC-PTY-029,AC-PTY-031,API-PTY-001,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-028,API-PTY-029,SCR-PTY-002 -->
+<!-- SUB:F4-SCR-PTY-002:START traces=REQ-PTY-006,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-110,AC-PTY-011,AC-PTY-021,AC-PTY-029,AC-PTY-031,API-PTY-001,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-028,API-PTY-029,SCR-PTY-002 -->
 ### SUPPLIER-SCREEN — SCR-PTY-002            traces=REQ-PTY-008,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-030,API-PTY-006,API-PTY-008,API-PTY-028,API-PTY-029
 Chunk        : `pty-suppliers`
 Routes       :
@@ -812,10 +842,10 @@ Facade       : SUPPLIER-FACADE (F2)
 Cross-module : none
 Composition  : `container page`; same structure as SCR-PTY-001 — `SupplierEntryLayout` renders `SupplierEntryView` (with the inline `AddressPane`) and the drawer `<Outlet/>` as siblings; `AddressLineDrawer` and `AddressPane` are the shared components. `SupplierQuickRegister` is exported from `src/modules/pty/public` for purchase documents (props as `CustomerQuickRegister`).
 Saves        : ONE — `Save` runs SUPPLIER-SAVE (record call, then ADDRESSES-SYNC only after success and only when the set changed). Commands (Deactivate, Reactivate, Make customer) are separate confirmed calls, disabled while dirty.
-Navigation   : row click → `/pty/suppliers/:supplierId` · New supplier → `/pty/suppliers/new` · after Make customer → `/pty/customers/:customerPk` · after a first save → replace with `/pty/suppliers/:supplierId`.
+Navigation   : row click → `/pty/suppliers/:supplierId` · New supplier → `/pty/suppliers/new` · after Make customer → `/pty/customers/:customerPk` · RULE-PTY-002 action "Open that party" «فتح ذلك الطرف» → as SCR-PTY-001 (EMAIL-HOLDER-QUERY, ADR-PTY-043) · after a first save → replace with `/pty/suppliers/:supplierId`.
 <!-- SUB:F4-SCR-PTY-002:END -->
 
-<!-- SUB:F4-SCR-PTY-003:START traces=REQ-PTY-048,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-106,REQ-PTY-108,REQ-PTY-109,AC-PTY-056,AC-PTY-077,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-122,AC-PTY-123,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-030,API-PTY-031,SCR-PTY-003 -->
+<!-- SUB:F4-SCR-PTY-003:START traces=REQ-PTY-048,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-072,REQ-PTY-073,REQ-PTY-077,REQ-PTY-078,REQ-PTY-080,REQ-PTY-085,REQ-PTY-106,REQ-PTY-108,REQ-PTY-109,REQ-PTY-110,AC-PTY-056,AC-PTY-077,AC-PTY-087,AC-PTY-088,AC-PTY-096,AC-PTY-122,AC-PTY-123,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-030,API-PTY-031,SCR-PTY-003 -->
 ### CREDIT-SCREEN — SCR-PTY-003            traces=REQ-PTY-064,REQ-PTY-069,REQ-PTY-077,REQ-PTY-085,REQ-PTY-108,API-PTY-016,API-PTY-017,API-PTY-030,API-PTY-031
 Chunk        : `pty-customer-credit`
 Routes       :
@@ -831,7 +861,7 @@ Saves        : ONE — `Save` runs CREDIT-SAVE (one call). Clear credit is a sep
 Navigation   : row click → `/pty/customer-credits/:customerId` · "Credit override requests" (PERM_PTY_CREDIT_OVERRIDE_VIEW) → `/pty/credit-overrides?customerId=:customerId` · "Credit control settings" (PERM_PTY_CREDIT_SETTINGS_VIEW) → `/pty/credit-settings` · entry `/pty/customer-credits?carriesCredit=true` seeds the filter (REQ-PTY-077).
 <!-- SUB:F4-SCR-PTY-003:END -->
 
-<!-- SUB:F4-SCR-PTY-004:START traces=REQ-PTY-041,REQ-PTY-070,REQ-PTY-072,REQ-PTY-089,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-107,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,API-PTY-002,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-027,API-PTY-032,UXD-PTY-001,SCR-PTY-004 -->
+<!-- SUB:F4-SCR-PTY-004:START traces=REQ-PTY-041,REQ-PTY-070,REQ-PTY-072,REQ-PTY-089,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-098,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-107,REQ-PTY-110,REQ-PTY-112,REQ-PTY-113,AC-PTY-078,AC-PTY-102,AC-PTY-106,AC-PTY-107,AC-PTY-109,AC-PTY-111,AC-PTY-114,AC-PTY-115,AC-PTY-116,AC-PTY-117,API-PTY-002,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-027,API-PTY-032,UXD-PTY-001,SCR-PTY-004 -->
 ### OVERRIDE-SCREEN — SCR-PTY-004            traces=REQ-PTY-091,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-101,REQ-PTY-103,UXD-PTY-001,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-027,API-PTY-032
 Chunk        : `pty-credit-overrides`
 Routes       :
@@ -848,7 +878,7 @@ Saves        : ONE per sub-view — New request: "Request approval" runs OVERRID
 Navigation   : row click → `/pty/credit-overrides/:requestId` · New request (CREATE) → `/pty/credit-overrides/new` · after create → replace with `/pty/credit-overrides/:requestId` · "Customer credit" (PERM_PTY_CUSTOMER_CREDIT_VIEW) → `/pty/customer-credits/:customerFk` · notification deep link → `/pty/credit-overrides/:requestId` · entry `?customerId=` seeds the Customer filter.
 <!-- SUB:F4-SCR-PTY-004:END -->
 
-<!-- SUB:F4-SCR-PTY-005:START traces=REQ-PTY-070,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,AC-PTY-097,AC-PTY-098,AC-PTY-101,API-PTY-024,API-PTY-025,SCR-PTY-005 -->
+<!-- SUB:F4-SCR-PTY-005:START traces=REQ-PTY-070,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,AC-PTY-078,AC-PTY-097,AC-PTY-098,AC-PTY-101,API-PTY-024,API-PTY-025,SCR-PTY-005 -->
 ### SETTINGS-SCREEN — SCR-PTY-005            traces=REQ-PTY-086,REQ-PTY-087,REQ-PTY-090,API-PTY-024,API-PTY-025
 Chunk        : `pty-credit-settings`
 Routes       :
@@ -864,7 +894,7 @@ Navigation   : none out; reached from the menu and from SCR-PTY-003.
 <!-- SUB:F4-SCR-PTY-005:END -->
 <!-- PHASE:F4:END -->
 
-<!-- PHASE:SEC-FE:START traces=SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005,REQ-PTY-043,REQ-PTY-070,REQ-PTY-073,REQ-PTY-090,REQ-PTY-096,REQ-PTY-102,AC-PTY-078,AC-PTY-082,AC-PTY-101,AC-PTY-109,AC-PTY-116,API-PTY-001,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-017,API-PTY-018,API-PTY-019,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-025 -->
+<!-- PHASE:SEC-FE:START traces=REQ-PTY-018,REQ-PTY-043,REQ-PTY-070,REQ-PTY-073,REQ-PTY-090,REQ-PTY-096,REQ-PTY-102,AC-PTY-023,AC-PTY-078,AC-PTY-082,AC-PTY-101,AC-PTY-109,AC-PTY-116,API-PTY-001,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-017,API-PTY-018,API-PTY-019,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-025,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
 ## SEC-FE
 
 The frontend half of security. The server decides (every operation of api-spec-pty.yaml is guarded by the permission the backend registry names); the UI only avoids offering what will be refused. Permission names are the backend registry's 16 names (`PERM_<PAGE_CODE>_<ACTION>`, SRS B4) — none is declared here. A forbidden response is shown as the localized catalog message of `PTY-403-FORBIDDEN` (reads: the unauthorized page; mutations: a banner, the form kept — F2 STD).
@@ -880,7 +910,7 @@ The frontend half of security. The server decides (every operation of api-spec-p
 Menu: an entry whose VIEW the user lacks is not rendered; the Credit group is not rendered while `b2bCredit` is off (REQ-PTY-070) and appears on the next screen load after it is turned on, with no setup step (REQ-PTY-073). Permission and flag reads come from PERMISSIONS-INIT and APP-CONFIG-INIT only; no screen reads a role or an activity name (KB §3 D2). Route parameters and prefill parameters are validated by the zod schemas of F3 before use; nothing from a parameter is rendered as HTML.
 <!-- PHASE:SEC-FE:END -->
 
-<!-- PHASE:ALIGN-FE:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-003,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-044,REQ-PTY-045,REQ-PTY-046,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-050,REQ-PTY-051,REQ-PTY-052,REQ-PTY-053,REQ-PTY-054,REQ-PTY-055,REQ-PTY-056,REQ-PTY-057,REQ-PTY-058,REQ-PTY-059,REQ-PTY-060,REQ-PTY-061,REQ-PTY-062,REQ-PTY-063,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-074,REQ-PTY-075,REQ-PTY-076,REQ-PTY-077,REQ-PTY-078,REQ-PTY-079,REQ-PTY-080,REQ-PTY-081,REQ-PTY-082,REQ-PTY-083,REQ-PTY-084,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-099,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-012,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-024,API-PTY-025,API-PTY-026,API-PTY-027,API-PTY-028,API-PTY-029,API-PTY-030,API-PTY-031,API-PTY-032,API-PTY-033,API-PTY-034,API-PTY-035,API-PTY-036,API-PTY-037,UXD-PTY-001,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
+<!-- PHASE:ALIGN-FE:START traces=REQ-PTY-001,REQ-PTY-002,REQ-PTY-003,REQ-PTY-004,REQ-PTY-005,REQ-PTY-006,REQ-PTY-007,REQ-PTY-008,REQ-PTY-009,REQ-PTY-010,REQ-PTY-011,REQ-PTY-012,REQ-PTY-013,REQ-PTY-014,REQ-PTY-015,REQ-PTY-016,REQ-PTY-017,REQ-PTY-018,REQ-PTY-019,REQ-PTY-020,REQ-PTY-021,REQ-PTY-022,REQ-PTY-023,REQ-PTY-024,REQ-PTY-025,REQ-PTY-026,REQ-PTY-027,REQ-PTY-028,REQ-PTY-029,REQ-PTY-030,REQ-PTY-031,REQ-PTY-032,REQ-PTY-033,REQ-PTY-034,REQ-PTY-035,REQ-PTY-036,REQ-PTY-037,REQ-PTY-038,REQ-PTY-039,REQ-PTY-040,REQ-PTY-041,REQ-PTY-042,REQ-PTY-043,REQ-PTY-044,REQ-PTY-045,REQ-PTY-046,REQ-PTY-047,REQ-PTY-048,REQ-PTY-049,REQ-PTY-050,REQ-PTY-051,REQ-PTY-052,REQ-PTY-053,REQ-PTY-054,REQ-PTY-055,REQ-PTY-056,REQ-PTY-057,REQ-PTY-058,REQ-PTY-059,REQ-PTY-060,REQ-PTY-061,REQ-PTY-062,REQ-PTY-063,REQ-PTY-064,REQ-PTY-065,REQ-PTY-066,REQ-PTY-067,REQ-PTY-068,REQ-PTY-069,REQ-PTY-070,REQ-PTY-071,REQ-PTY-072,REQ-PTY-073,REQ-PTY-074,REQ-PTY-075,REQ-PTY-076,REQ-PTY-077,REQ-PTY-078,REQ-PTY-079,REQ-PTY-080,REQ-PTY-081,REQ-PTY-082,REQ-PTY-083,REQ-PTY-084,REQ-PTY-085,REQ-PTY-086,REQ-PTY-087,REQ-PTY-088,REQ-PTY-089,REQ-PTY-090,REQ-PTY-091,REQ-PTY-092,REQ-PTY-093,REQ-PTY-094,REQ-PTY-095,REQ-PTY-096,REQ-PTY-097,REQ-PTY-098,REQ-PTY-099,REQ-PTY-100,REQ-PTY-101,REQ-PTY-102,REQ-PTY-103,REQ-PTY-104,REQ-PTY-105,REQ-PTY-106,REQ-PTY-107,REQ-PTY-108,REQ-PTY-109,REQ-PTY-110,REQ-PTY-111,REQ-PTY-112,REQ-PTY-113,API-PTY-001,API-PTY-002,API-PTY-003,API-PTY-004,API-PTY-005,API-PTY-006,API-PTY-007,API-PTY-008,API-PTY-009,API-PTY-010,API-PTY-011,API-PTY-012,API-PTY-013,API-PTY-014,API-PTY-015,API-PTY-016,API-PTY-017,API-PTY-018,API-PTY-019,API-PTY-020,API-PTY-021,API-PTY-022,API-PTY-023,API-PTY-024,API-PTY-025,API-PTY-026,API-PTY-027,API-PTY-028,API-PTY-029,API-PTY-030,API-PTY-031,API-PTY-032,API-PTY-033,API-PTY-034,API-PTY-035,API-PTY-036,API-PTY-037,UXD-PTY-001,SCR-PTY-001,SCR-PTY-002,SCR-PTY-003,SCR-PTY-004,SCR-PTY-005 -->
 ## ALIGN-FE
 
 Against this plan, the API document and the SRS ceiling. Every row names the check that backs it; the mark is the `gov.py analyze` report's result for that check, copied by the orchestrator — a clause the report says examined nothing is written `— examined nothing`, never ✓. The author writes no mark.
@@ -939,9 +969,9 @@ Every operation of api-spec-pty.yaml, the screen action that calls it and its ro
 | cancelCreditOverrideRequest | API-PTY-023 | SCR-PTY-004 Cancel request | /pty/credit-overrides/:requestId | ✓ bound |
 | readCreditSettings | API-PTY-024 | SCR-PTY-005 load | /pty/credit-settings | ✓ bound |
 | updateCreditSettings | API-PTY-025 | SCR-PTY-005 Save | /pty/credit-settings | ✓ bound |
-| searchCustomers | API-PTY-026 | SCR-PTY-001 Search | /pty/customers | ✓ bound |
+| searchCustomers | API-PTY-026 | SCR-PTY-001 Search; SCR-PTY-001 / SCR-PTY-002 "Open that party" (EMAIL-HOLDER-QUERY) | /pty/customers | ✓ bound |
 | globalSearchCustomers | API-PTY-027 | SCR-PTY-004 Customer picker (the shell's global search is the other caller) | /pty/credit-overrides · /pty/credit-overrides/new | ✓ bound |
-| searchSuppliers | API-PTY-028 | SCR-PTY-002 Search | /pty/suppliers | ✓ bound |
+| searchSuppliers | API-PTY-028 | SCR-PTY-002 Search; SCR-PTY-001 / SCR-PTY-002 "Open that party" (EMAIL-HOLDER-QUERY) | /pty/suppliers | ✓ bound |
 | listPartyAddresses | API-PTY-029 | SCR-PTY-001 / SCR-PTY-002 Addresses pane | /pty/customers/:customerId · /pty/suppliers/:supplierId | ✓ bound |
 | searchCustomerCredits | API-PTY-030 | SCR-PTY-003 Search | /pty/customer-credits | ✓ bound |
 | readCreditHistory | API-PTY-031 | SCR-PTY-003 Credit history pane | /pty/customer-credits/:customerId | ✓ bound |

@@ -1,6 +1,6 @@
 # ADR-PTY-029 — Bootstrap: number series, setting key, role grants, walk-in provisioning
 
-Status  : ACCEPTED (non-breaking) · Stage : P3.1 · Module : PTY v1 · Date : 2026-10-29
+Status  : ACCEPTED (non-breaking) — number series and the notification template revised by ADR-PTY-036 (seeded by the migration) · Stage : P3.1 · Module : PTY v1 · Date : 2026-10-29
 
 ## Context
 PTY cannot answer its first calls until certain things exist:

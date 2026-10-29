@@ -1,6 +1,6 @@
 # ADR-PTY-020 — No currency column on PTY amounts (profile check CM-8)
 
-Status  : ACCEPTED (non-breaking — a MINOR deviation from CM-8 justified by the approved scope exception) · Stage : P2 · Module : PTY v1 · Date : 2026-10-29
+Status  : SUPERSEDED by ADR-PTY-037 (gate-analysis revise, G11; was ACCEPTED, non-breaking) · Stage : P2 · Module : PTY v1 · Date : 2026-10-29
 Filed   : verbatim from the db-script §5.2 (analysis/modules/PTY/P2/db-script-pty.md) by the P3.1 repair, ADR-PTY-030
 
 ## Context
