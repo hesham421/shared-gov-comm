@@ -91,5 +91,5 @@ differ (`folder`). The marker grammar (`shared/MARKER-PROTOCOL.md`) refuses an u
 <!-- /RENDER:partitions -->
 
 ## Factory pin
-Last written by factory commit `cbdb7dc33ec6acb697f0447ce9cfb1ba20aad96f` · schema `7` (upgrade-project, 2026-10-28T15:40:15+00:00) — `platform/factory-pin.json`.
+Last written by factory commit `2300c0a282226b6807352992f857056161246349` · schema `7` (upgrade-project, 2026-10-29T05:16:07+00:00) — `platform/factory-pin.json`.
 A different `schema_version` refuses every command that writes into this repo; `gov.py upgrade-project` is the one migration path (it re-renders this page, re-runs `graph` and `analyze --all-modules`, and writes the new pin). A different `commit` only warns.
