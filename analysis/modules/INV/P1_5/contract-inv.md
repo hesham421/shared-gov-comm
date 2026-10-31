@@ -166,7 +166,7 @@ Notes     : one move per line at the line's unit cost; a line without a cost tak
 Traces    : REQ-INV-051, REQ-INV-064, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-120
 
 ### CON-INV-015 — صرف مخزون / Issue stock (ar / en)
-Signature : issueStock(warehousePk?: BIGINT, moveTypeCode ISSUE | RETURN_OUT, saleFl, offlineFl, lines: [{variantPk, quantity, lotPk? (non-sale only), measureQty?, reservationPk?, sourceLineRef?}], sourceDoc {typeCode, ref, no}, idempotencyKey) → {moves: [{stockMovePk: BIGINT, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost, moveValue, bundleVariantPk?}]} · errors: warehouse required, warehouse inactive, Variant inactive, invalid quantity, not enough stock (online, negative stock disallowed), reservation closed, bundle without active components, lot expired, measure required
+Signature : issueStock(warehousePk?: BIGINT, moveTypeCode ISSUE | RETURN_OUT, saleFl, offlineFl, lines: [{variantPk, quantity, lotPk? (non-sale only), measureQty?, reservationPk?, sourceLineRef?}], sourceDoc {typeCode, ref, no}, idempotencyKey) → {moves: [{stockMovePk: BIGINT, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost, moveValue, bundleVariantPk?}]} · errors: warehouse required, warehouse inactive, Variant inactive, invalid quantity, not enough stock (online, negative stock disallowed), reservation closed, reservation not of this line (Variant, warehouse or source document differs), bundle without active components, lot expired, measure required
 Entity    : ENT-INV-003
 Notes     : moves are valued at the Variant's current average cost (REQ-INV-061). An issue that
             references a reservation consumes it (REQ-INV-047). A synchronised offline POS sale
@@ -177,7 +177,10 @@ Notes     : moves are valued at the Variant's current average cost (REQ-INV-061)
             quantity without a lot (REQ-INV-110 … 113); a non-sale issue or return to supplier
             naming an expired lot is refused (REQ-INV-114). One answer may therefore carry several
             moves per line. All lines are recorded or none.
-            RULE-INV-007, 008, 017, 018, 019, 021, 022, 024, 038, 039, 040.
+            A referenced reservation must be of the line's Variant and warehouse and of the request's source
+            document (RULE-INV-049). A repeated idempotency key submitted concurrently waits for the first
+            submission and returns its answer.
+            RULE-INV-007, 008, 017, 018, 019, 021, 022, 024, 038, 039, 040, 049.
 Traces    : REQ-INV-052, REQ-INV-053, REQ-INV-067, REQ-INV-069, REQ-INV-110, REQ-INV-111, REQ-INV-114
 
 ### CON-INV-016 — قراءة التقييم / Read the valuation of a Variant (ar / en)
@@ -223,7 +226,7 @@ Traces    : REQ-INV-034
 
 ```yaml name=given-usage
 rows:
-  - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "read the lotExpiry, dualQuantity and bundles capability flags behind the FeatureFlags API (REQ-INV-132), and read and write the INV_ALLOW_NEGATIVE_STOCK and INV_NEAR_EXPIRY_DAYS settings (REQ-INV-065, REQ-INV-118)"}
+  - {given: erp-core, module: modules.cu, via: com.erp.cu.crossmodule.SettingsApi, purpose: "read the lotExpiry, dualQuantity and bundles capability flags behind the FeatureFlags API (REQ-INV-132), read and write the INV_ALLOW_NEGATIVE_STOCK and INV_NEAR_EXPIRY_DAYS settings (REQ-INV-065, REQ-INV-118), and read the INV_MEASURE_UOM_KEY setting that names the consumed unit-of-measure lookup key (REQ-INV-125)"}
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "issue the codes INV_WAREHOUSE and INV_BRANCH and the document numbers INV_TRANSFER, INV_COUNT and INV_ADJUSTMENT (RULE-INV-001, RULE-INV-010, RULE-INV-030)"}
   - {given: erp-core, module: modules.events, via: com.erp.events.OutboxPublisher, purpose: "record the stock-move event and the inventory master-change event in the change transaction and deliver them after commit (REQ-INV-057, REQ-INV-034)"}
   - {given: erp-core, module: modules.audit, via: com.erp.audit.crossmodule.AuditApi, purpose: "record the change history of stock documents, warehouses, branches, lots and Item stock settings (REQ-INV-077)"}

@@ -15,21 +15,20 @@ hold it. The lot filter has the same problem: its options come from API-INV-040,
 
 AC-INV-044 expects a Seller/Cashier to read rows "W1 … W2" by warehouse. Showing a bare identifier would fail it.
 
-## Decision
-- Frontend, now: the warehouse column and the warehouse filter are labelled through the shared warehouse lookup
-  (API-INV-001, `active=ALL`) when the user holds `PERM_INV_WAREHOUSES_VIEW` (Owner, Warehouse). For a user
-  without it, the warehouse label is **PENDING ADR-INV-036**. The column shows the identifier, and the filter is
-  not offered. The lot filter is offered only with `PERM_INV_LOTS_VIEW`. The lot column is always shown, from
+## Decision (revised at gate-analysis revise 1, G13 — the backend delta is applied)
+- **Backend.** `StockBalanceRow` (API-INV-016) and `Availability.perWarehouse` (API-INV-017) carry
+  `warehouseCode`, `warehouseNameAr` and `warehouseNameEn`, read by join in QR-INV-015 / QR-INV-016 (DBF-INV-004,
+  005, 006). They are in the Response lines of the backend plan and in api-spec-inv.yaml.
+- **Frontend.** The warehouse column of SCR-INV-003 and the per-warehouse rows of its availability summary read the
+  label from the row, for every role; no warehouse lookup is needed to label them. The warehouse **filter** still
+  needs its options from API-INV-001, so it is offered only to a user holding `PERM_INV_WAREHOUSES_VIEW` (Owner,
+  Warehouse). The lot filter is offered only with `PERM_INV_LOTS_VIEW`; the lot column is always shown, from
   `lotCode`.
-- Backend gap, named here: `StockBalanceRow` and `Availability.perWarehouse` should carry `warehouseCode`,
-  `warehouseNameAr` and `warehouseNameEn`. The P3.1 delta adds them, and the frontend then reads the label from
-  the row with no change to its hooks.
+- No label is PENDING any more.
 
 ## Consequences
-- Until that P3.1 delta, AC-INV-044 holds for the Owner and Warehouse roles. For a Seller/Cashier in a tenant with
-  two or more active warehouses, it holds by identifier only. In a single-warehouse tenant the column is hidden
-  anyway (REQ-INV-012).
-- This stage grants no permission and invents no field.
+- AC-INV-044 holds for every role, the Seller/Cashier included ("W1 / W2" rows by name).
+- No permission is granted; the label fields are derived reads of DBF columns, not new columns.
 
 ## Status
-ACCEPTED — non-breaking (open item for the P3.1 delta).
+ACCEPTED — non-breaking. The open item of round 1 is closed.

@@ -29,9 +29,19 @@ A test case copies messages from the SRS and asserts the catalogue code. Four pl
 1. TC-INV-045 and TC-INV-046 assert the code and the RULE message. That is the SRS A5 text the server returns
    and the frontend plan binds. Each TC states the AC wording as a recorded divergence. The SRS owner aligns the
    two ACs at the next INV delta.
-2. The TCs assert the catalogue code (INV-422-…). If the delivered service answers INV-400 first, that is a
-   finding against the plan, not a test change. Where the AC data allows, a TC satisfies the schema and still
+2. The TCs assert the catalogue code (INV-422-…). Where the AC data allows, a TC satisfies the schema and still
    triggers the rule: TC-INV-033 sends `reasonCode` as an empty string for "no reason".
+   **Derivation rule (gate-analysis revise 1, G14 — the conflict is no longer deferred):** a bound that a catalogue
+   code owns is **described, not enforced**, in api-spec-inv.yaml — it is written in the property's `description`
+   with its code, and carries no `minimum`, `exclusiveMinimum`, `maximum`, `minItems` or `maxItems`. Removed on that
+   ground: OpeningStockRequest `rows` minItems / maxItems (INV-422-LOAD-ROWS), row `rowNo` minimum, row `quantity`
+   exclusiveMinimum and `unitCost` minimum (INV-422-LOAD-ROWS-INVALID with the row's own code),
+   TransferLineRequest `quantity` exclusiveMinimum (INV-422-QUANTITY-INVALID), StockAdjustmentLineRequest `rowNo`
+   and `unitCost` minimum, StockCountLineAddRequest / StockCountLineUpdateRequest `countedQty` and
+   `countedMeasureQty` minimum (INV-422-COUNTED-NEGATIVE), InventorySettings `nearExpiryDays` minimum / maximum
+   (INV-422-HORIZON-RANGE). Type, format, `maxLength` of a text and the paging bounds of `page` / `size`, which no
+   catalogue code owns, stay enforced (INV-400). A validating server or mock therefore answers the rule's 422 code,
+   as TC-INV-020, TC-INV-027 and the frontend mock expect. The rule is stated in the backend plan's DOC phase.
 3. TC-INV-032 asserts the save-time refusal through API-INV-036. It then builds the AC's DRAFT below the API (a
    persisted fixture) and asserts the post-time refusal through API-INV-038.
 4. The frontend TC of AC-INV-106 covers the reachable path. The count is open as DRAFT and is posted in another

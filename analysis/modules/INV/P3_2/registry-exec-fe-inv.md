@@ -63,8 +63,9 @@ Reads outside the document, none of them a `read` hook (ADR-INV-033):
 - CAT reads, through the UXDs;
 - INV_* lookup values, from the given `mdl`;
 - the session permissions, from the given `sec`.
-Value absent from the document: the warehouse label in `StockBalanceRow` / `Availability` for a user without
-`PERM_INV_WAREHOUSES_VIEW` — PENDING ADR-INV-036 (P3.1 delta).
+Values absent from the document: none. `StockBalanceRow` and `Availability.perWarehouse` carry `warehouseCode`,
+`warehouseNameAr` and `warehouseNameEn`, so every role reads the warehouse label from the row (ADR-INV-036, closed at
+gate-analysis revise 1).
 
 Runtime codes bound to a RULE in `api-surface`: 39. Codes routed with the catalogue text and no RULE:
 - INV-400, INV-401, INV-403, INV-500;
@@ -75,7 +76,8 @@ Runtime codes bound to a RULE in `api-surface`: 39. Codes routed with the catalo
 ### ALIGN
 
 The verdict is stamped by the orchestrator from `gov.py analyze` (the `self-check` block in ALIGN-FE). Findings
-fixed: none yet (round 1).
+fixed at gate-analysis revise 1: G13 (warehouse label from the row on SCR-INV-003), G15 (the jumps from SCR-INV-005
+and SCR-INV-007 to SCR-INV-004 seed `sourceDocTypeCode` + `sourceDocRef`), G12 (opening stock rows by barcode only).
 
 ### ADRs
 
@@ -84,7 +86,7 @@ fixed: none yet (round 1).
 | ADR-INV-033 | Reads a screen needs that are not operations of api-spec-inv.yaml | ACCEPTED |
 | ADR-INV-034 | The stock count entry commits line by line | ACCEPTED |
 | ADR-INV-035 | The browser reads the opening stock sheet | ACCEPTED |
-| ADR-INV-036 | Warehouse and lot labels on the stock balance screen for a Seller/Cashier | ACCEPTED (open item for the P3.1 delta) |
+| ADR-INV-036 | Warehouse and lot labels on the stock balance screen for a Seller/Cashier | ACCEPTED (open item closed at gate-analysis revise 1 — the label is on the row) |
 
 Filed under analysis/decisions/INV/. BLOCKED: none. Next free ADR: ADR-INV-037.
 

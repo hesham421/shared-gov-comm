@@ -53,9 +53,9 @@ DEPENDENCIES
 | Module code | HARD-FK / SOFT-READ | What is consumed |
 |---|---|---|
 | CAT | HARD-FK | Item, Variant, Bundle composition, unit-of-measure conversions |
-| `erp-core:modules.cu` | (given — no XM edge; the SRS declares the use in its `given-usage` block) | `SettingsApi` through `FeatureFlags`: `lotExpiry`, `dualQuantity`, `bundles`; inventory settings (negative-stock setting, near-expiry horizon) |
+| `erp-core:modules.cu` | (given — no XM edge; the SRS declares the use in its `given-usage` block) | `SettingsApi` through `FeatureFlags`: `lotExpiry`, `dualQuantity`, `bundles`; inventory settings (negative-stock setting, near-expiry horizon, the consumed unit-of-measure key INV_MEASURE_UOM_KEY — ADR-INV-043) |
 | `erp-core:modules.sequence` | (given — no XM edge) | `NumberSeriesApi`: transfer, count and adjustment numbers |
-| `erp-core:modules.events` | (given — no XM edge) | `DomainEventPublisher`, `OutboxPublisher`: stock-move events for ACC, SWR, INS; `OutboxSubscriber`: offline POS sales and documents from SLS and PUR |
+| `erp-core:modules.events` | (given — no XM edge) | `OutboxPublisher` only: the events `inv.StockMoveRecorded` (for ACC, SWR, INS) and `inv.InventoryMasterChanged` (for PUR, SLS, SFR, STL, TAX, INS). INV subscribes to no event: offline POS sales and the documents of SLS, PUR and SFR reach INV by calling its in-process operations (SRS D-23, ADR-INV-018) |
 | `erp-core:modules.audit` | (given — no XM edge) | `AuditApi`: change history of stock documents |
 | `erp-core:modules.mdl` | (given — no XM edge) | `MdlLookupApi`: adjustment reason, unit of measure |
 | `erp-core:modules.tenant` | (given — no XM edge) | `TenantProvisioningContributor`: default warehouse and default branch at tenant creation |
@@ -99,7 +99,7 @@ AUTO: Stock is held in the Variant's base unit of measure. Purchase and sale uni
 AUTO: One default warehouse and one default branch are seeded at tenant provisioning through `TenantProvisioningContributor`.  FROM: KB §6.8; manifest `erp-core:modules.tenant`  IF WRONG: create the first warehouse and branch in the setup wizard.
 AUTO: Inventory settings (negative-stock setting, near-expiry horizon) are given `cu` settings, not an INV entity.  FROM: profile rule (core settings read through FeatureFlags); DP §5 G6  IF WRONG: register an INV config entity.
 AUTO: SLS (orders) and SFR (checkout) create reservations through an INV crossmodule API. A POS sale issues stock directly, without a reservation.  FROM: KB §1 (one stock), §5 (SLS, SFR depend on INV); DP §5 G5  IF WRONG: reserve on POS cart lines as well.
-AUTO: Stock moves are published as domain events through the given outbox, each carrying its unit cost. ACC, SWR and INS consume them, and INV holds no reverse edge.  FROM: KB §5 #3 (Inventory uses events); DP §5 G5  IF WRONG: expose a crossmodule query API in their place.
+AUTO: Stock moves are published as domain events through the given outbox (`OutboxPublisher`), each carrying its unit cost. ACC, SWR and INS consume them, and INV holds no reverse edge. INV subscribes to no event (SRS D-23, ADR-INV-018).  FROM: KB §5 #3 (Inventory uses events); DP §5 G5  IF WRONG: expose a crossmodule query API in their place.
 AUTO: INV never calls the given `gl`. Valuation and adjustment postings reach the ledger through ACC, which owns the posting rules and calls `GlPostingApi`.  FROM: KB §5 #9; DP §5 G5; DECISION INV-P02  IF WRONG: let INV post its own journal entries.
 AUTO: Receipt cost is supplied by PUR on the receipt call into INV, so INV holds no edge to PUR.  FROM: KB §5 (PUR depends on INV); DP §5 G5  IF WRONG: INV reads the receipt cost from PUR through a crossmodule API and the edge direction is revisited.
 AUTO: Dual quantity is an attribute of stock balances, moves and lots, not a separate entity.  FROM: registry §4; KB §4.1  IF WRONG: register a dual-quantity entity.

@@ -5,7 +5,8 @@ Track  : frontend · plan exec · stack react-ts-vite (react-router · tanstack-
 Bound  : api-spec-inv.yaml (OpenAPI 3.1.0, 51 operations API-INV-001 … 051) — the document a mock server serves
 Design : ui-ux-spec-inv.md (SCR-INV-001 … 012, UXD-INV-001 … 011) · flow-diagram-inv.md
 ADRs   : ADR-INV-033 (reads outside the document) · ADR-INV-034 (count commits per line) · ADR-INV-035 (browser reads
-         the opening stock sheet) · ADR-INV-036 (balance labels for a Seller/Cashier — PENDING backend delta)
+         the opening stock sheet — barcode only in v1) · ADR-INV-036 (balance labels for a Seller/Cashier — the
+         warehouse label is on the row, closed at gate-analysis revise 1)
 ══════════════════════════════════════════════════════════════════
 
 ## 3.0 Binding to the API document
@@ -178,8 +179,8 @@ codes:
   - INV_* lookup values, from the given `mdl`;
   - the session permissions, from the given `sec`.
   None of them is a `read` hook.
-- **Value absent from the document:** the warehouse label in balance rows and availability for a user without
-  `PERM_INV_WAREHOUSES_VIEW` — PENDING ADR-INV-036.
+- **Values absent from the document:** none. The warehouse label of balance rows and of availability rows is
+  carried by the rows themselves (`warehouseCode`, `warehouseNameAr`, `warehouseNameEn` — ADR-INV-036).
 
 **Shared conventions for all phases** (each SUB below assumes them):
 - **Envelope.** Responses are unwrapped from `ApiResponse<T>.data` in one HTTP client. Errors are parsed as
@@ -236,13 +237,13 @@ They are converted to numbers only at the request boundary, so rounding never ha
 ### F1 · SCR-INV-003 — Stock balances
 - Schemas: `StockBalanceRow`, `StockBalanceRowPageEnvelope`, `Availability`, `AvailabilityFigures`, `AvailabilityEnvelope`, `Warehouse` (labels), `LotRow` (lot options), `InventoryContext`.
 - `BalanceFilter {variantPk?, term?, itemPk?, warehousePk?, lotPk?, nonZero, page, size}`. `term` holds a scanned barcode. A Variant chosen through UXD-INV-001 sets `variantPk`, and an Item chosen through UXD-INV-002 sets `itemPk`.
-- `BalanceRowView`: the row plus `itemName` (UXD-INV-002), `warehouseLabel` (PENDING ADR-INV-036 for a user without warehouse VIEW) and `measureUnitLabel` (UXD-INV-003).
+- `BalanceRowView`: the row plus `itemName` (UXD-INV-002), `warehouseLabel` (from the row's `warehouseCode` / `warehouseNameAr` / `warehouseNameEn`, for every role — ADR-INV-036) and `measureUnitLabel` (UXD-INV-003). `AvailabilityRowView` labels each per-warehouse row the same way.
 <!-- SUB:F1-SCR-INV-003:END -->
 
 <!-- SUB:F1-SCR-INV-004:START traces=SCR-INV-004,UXD-INV-004,REQ-INV-016,REQ-INV-055,REQ-INV-056,REQ-INV-075,REQ-INV-076,API-INV-001,API-INV-008,API-INV-018,API-INV-019,API-INV-040 -->
 ### F1 · SCR-INV-004 — Stock move history
 - Schemas: `StockMove`, `StockMoveEnvelope`, `StockMovePageEnvelope`, `Warehouse` and `LotRow` (labels), `InventoryContext`.
-- `MoveFilter {variantPk?, warehousePk?, lotPk?, moveTypeCode?, docNo?, dateFrom?, dateTo?, page, size}`.
+- `MoveFilter {variantPk?, warehousePk?, lotPk?, moveTypeCode?, docNo?, sourceDocTypeCode?, sourceDocRef?, dateFrom?, dateTo?, page, size}`. `sourceDocTypeCode` + `sourceDocRef` identify one source document exactly; they are set only by the jumps from SCR-INV-005 and SCR-INV-007 and shown as a removable "document" chip, not as editable fields.
 - Derived `showRunningBalance = variantPk != null && warehousePk != null` (REQ-INV-076). When one warehouse is active, `warehousePk` is the default warehouse taken from the context.
 - `MoveDetailNav = stockMovePk`, which comes from the `move` search param.
 <!-- SUB:F1-SCR-INV-004:END -->
@@ -294,7 +295,7 @@ They are converted to numbers only at the request boundary, so rounding never ha
 ### F1 · SCR-INV-010 — Opening stock
 - Schemas: `OpeningStockRequest`, `StockAdjustmentEnvelope`, `ErrorResponse.details` (row failures).
 - `OpeningStockFormState {warehousePk | null, docDate?, rows: OpeningRowDraft[]}`.
-- `OpeningRowDraft {key, rowNo, codeOrBarcode, quantity, unitCost, lotNo?, lotExpiryDate?, measureQty?}`. The request maps `codeOrBarcode` to `barcode` and leaves `variantPk` null (ADR-INV-035).
+- `OpeningRowDraft {key, rowNo, barcode, quantity, unitCost, lotNo?, lotExpiryDate?, measureQty?}`. The request sends `barcode` as entered and leaves `variantPk` null; v1 names a Variant by barcode only (ADR-INV-035).
 - `RowFailure {rowNo, code, messageAr, messageEn}`.
 - `SheetColumnMap`: the header text (ar | en) for each field, used to read the sheet.
 <!-- SUB:F1-SCR-INV-010:END -->
@@ -327,7 +328,7 @@ unless a row says otherwise. Loading is `LOCAL` everywhere. The SRS names no slo
 |---|---|---|---|---|
 | INV-CONTEXT | init | API-INV-008 | `['inv','context']` | staleTime 5 min; refetch on window focus. Every warehouse or branch create, deactivate or reactivate invalidates it, so a second warehouse or branch reveals its controls with no reload (REQ-INV-015, REQ-INV-032). Flags come from FeatureFlags through the server, never from the activity (REQ-INV-132) |
 | SESSION-PERMISSIONS | init | authenticated session (given `sec`, ADR-INV-033) | — (session store) | the set of `PERM_INV_*` the user holds |
-| WAREHOUSES-LOOKUP | lookup | API-INV-001 | `['inv','lookup','warehouses',{active,page:0,size:100}]` | staleTime 10 min. Selectors use `ACTIVE_ONLY`; labels use `ALL`, because history can show an inactive warehouse. An id not on the page is labelled through API-INV-002. Requires `PERM_INV_WAREHOUSES_VIEW`; without it, labels are PENDING ADR-INV-036. Options are `{warehousePk, code, nameAr, nameEn, isDefaultFl}` |
+| WAREHOUSES-LOOKUP | lookup | API-INV-001 | `['inv','lookup','warehouses',{active,page:0,size:100}]` | staleTime 10 min. Selectors use `ACTIVE_ONLY`; labels use `ALL`, because history can show an inactive warehouse. An id not on the page is labelled through API-INV-002. Requires `PERM_INV_WAREHOUSES_VIEW`; without it the lookup does not run and no warehouse filter is offered — balance and availability rows carry their own label (ADR-INV-036). Options are `{warehousePk, code, nameAr, nameEn, isDefaultFl}` |
 | BRANCHES-LOOKUP | lookup | API-INV-009 | `['inv','lookup','branches',{active,page:0,size:100}]` | staleTime 10 min. Selectors use `ACTIVE_ONLY`; labels use `ALL` |
 | LOTS-LOOKUP | lookup | API-INV-040 | `['inv','lookup','lots',{variantPk,warehousePk,page:0,size:100}]` | scoped by its parent, the Variant (and the warehouse when one is chosen). Enabled only when `variantPk` is set, `lotExpiry` is on and the user holds `PERM_INV_LOTS_VIEW`. Options are `{lotPk, code, expiryDate, expiredFl, onHandQty}` |
 | ITEM-TRACKING-LOOKUP | lookup | API-INV-044 | `['inv','item-settings',itemPk]` | `lotTrackedFl` / `dualQuantityFl` / `measureUomCode` of a line's Item, so the line knows whether to ask for a lot or a measure. An Item with no record answers false / false / empty (REQ-INV-129). Shared with the SCR-INV-009 entry |
@@ -405,7 +406,7 @@ hooks:
   - {hook: BALANCES-SCREEN-INIT, kind: init, api: [API-INV-008], cache_key: "['inv','context']", errors: "generic", loading: LOCAL, invalidation: "—"}
   - {hook: BALANCES-QUERY, kind: read, api: [API-INV-016], cache_key: "['inv','stock-balances',filter{variantPk,term,itemPk,warehousePk,lotPk,nonZero,page,size}]", errors: "generic", loading: LOCAL, invalidation: "—"}
   - {hook: AVAILABILITY-QUERY, kind: read, api: [API-INV-017], cache_key: "['inv','availability',variantPk,warehousePk]", errors: "BUNDLE-NO-COMPONENTS → summary message; VARIANT-NOT-FOUND / WAREHOUSE-NOT-FOUND → summary message", loading: LOCAL, invalidation: "—"}
-  - {hook: WAREHOUSES-LOOKUP, kind: lookup, api: [API-INV-001], cache_key: "['inv','lookup','warehouses',{active}]", errors: "INV-403 → labels PENDING ADR-INV-036", loading: LOCAL}
+  - {hook: WAREHOUSES-LOOKUP, kind: lookup, api: [API-INV-001], cache_key: "['inv','lookup','warehouses',{active}]", errors: "INV-403 → warehouse filter not offered (labels come from the rows)", loading: LOCAL}
   - {hook: LOTS-LOOKUP, kind: lookup, api: [API-INV-040], cache_key: "['inv','lookup','lots',{variantPk,warehousePk}]", errors: "INV-403 → lot filter not offered", loading: LOCAL}
   - {hook: CAT-VARIANT-LOOKUP, kind: lookup, cache_key: "['cat','variant-search',term] · ['cat','barcode',barcode]", errors: "not found → 'no results' in the picker", loading: LOCAL}
   - {hook: CAT-ITEM-LOOKUP, kind: lookup, cache_key: "['cat','item-search',term] · ['cat','item',itemPk]", errors: "not found → name left empty", loading: LOCAL}
@@ -415,10 +416,10 @@ hooks:
 
 | Hook | Role · cache · errors (code → routing, text) |
 |---|---|
-| BALANCES-SCREEN-INIT | Permission read: `PERM_INV_STOCK_BALANCES_VIEW`, plus `PERM_INV_WAREHOUSES_VIEW` and `PERM_INV_LOTS_VIEW` to decide whether the label and filter lookups run (ADR-INV-036). Context: `activeWarehouseCount` (filter and column hidden while it is 1 — REQ-INV-012), `lotExpiryFl` (lot filter and columns), `dualQuantityFl` (measure column — REQ-INV-135) |
-| BALANCES-QUERY | read. Each row carries the Variant code and name, lot code, expiry, expired mark (REQ-INV-115), on-hand, reserved and available (REQ-INV-038, REQ-INV-113) and the measure. A Variant with no record answers zeros (REQ-INV-041) and the screen shows them as such |
-| AVAILABILITY-QUERY | read, enabled only when the filter names one Variant. It shows per-warehouse and total availability (REQ-INV-040); for a bundle Variant this is the derived availability (REQ-INV-042). INV-422-BUNDLE-NO-COMPONENTS → message in the summary, text: RULE-INV-022 · `INV-404-*` → summary message, text: catalogue |
-| WAREHOUSES-LOOKUP | labels `warehousePk` of rows and summary, and fills the warehouse filter. Without `PERM_INV_WAREHOUSES_VIEW` it does not run, and the label is PENDING ADR-INV-036 |
+| BALANCES-SCREEN-INIT | Permission read: `PERM_INV_STOCK_BALANCES_VIEW`, plus `PERM_INV_WAREHOUSES_VIEW` and `PERM_INV_LOTS_VIEW` to decide whether the warehouse and lot filter lookups run (ADR-INV-036 — labels never depend on them). Context: `activeWarehouseCount` (filter and column hidden while it is 1 — REQ-INV-012), `lotExpiryFl` (lot filter and columns), `dualQuantityFl` (measure column — REQ-INV-135) |
+| BALANCES-QUERY | read. Each row carries the Variant code and name, the warehouse code and names (the warehouse column's label for every role — ADR-INV-036), lot code, expiry, expired mark (REQ-INV-115), on-hand, reserved and available (REQ-INV-038, REQ-INV-113) and the measure. A Variant with no record answers zeros (REQ-INV-041) and the screen shows them as such |
+| AVAILABILITY-QUERY | read, enabled only when the filter names one Variant. It shows per-warehouse rows (labelled from their `warehouseCode` / names) and total availability (REQ-INV-040); for a bundle Variant this is the derived availability (REQ-INV-042). INV-422-BUNDLE-NO-COMPONENTS → message in the summary, text: RULE-INV-022 · `INV-404-*` → summary message, text: catalogue |
+| WAREHOUSES-LOOKUP | fills the warehouse filter only (the rows label themselves). Without `PERM_INV_WAREHOUSES_VIEW` it does not run and the filter is not offered (ADR-INV-036) |
 | LOTS-LOOKUP | lot filter options, scoped by the chosen Variant; run only with `PERM_INV_LOTS_VIEW` |
 | CAT-VARIANT-LOOKUP | UXD-INV-001: the Variant filter. Choosing a Variant sets `variantPk`. A scanned barcode goes to `term` unchanged |
 | CAT-ITEM-LOOKUP | UXD-INV-002: the Item filter sets `itemPk`. The Item name column reads `['cat','variant',variantPk]` → `itemPk` → `['cat','item',itemPk]`, deduplicated per page |
@@ -433,7 +434,7 @@ hooks:
 screen: SCR-INV-004
 hooks:
   - {hook: MOVES-SCREEN-INIT, kind: init, api: [API-INV-008], cache_key: "['inv','context']", errors: "generic", loading: LOCAL, invalidation: "—"}
-  - {hook: MOVES-QUERY, kind: read, api: [API-INV-018], cache_key: "['inv','stock-moves',filter{variantPk,warehousePk,lotPk,moveTypeCode,docNo,dateFrom,dateTo,page,size}]", errors: "generic", loading: LOCAL, invalidation: "—"}
+  - {hook: MOVES-QUERY, kind: read, api: [API-INV-018], cache_key: "['inv','stock-moves',filter{variantPk,warehousePk,lotPk,moveTypeCode,docNo,sourceDocTypeCode,sourceDocRef,dateFrom,dateTo,page,size}]", errors: "generic", loading: LOCAL, invalidation: "—"}
   - {hook: MOVE-QUERY, kind: read, api: [API-INV-019], cache_key: "['inv','stock-move',stockMovePk]", errors: "INV-404-STOCK-MOVE-NOT-FOUND → message, detail closes", loading: LOCAL, invalidation: "—"}
   - {hook: WAREHOUSES-LOOKUP, kind: lookup, api: [API-INV-001], cache_key: "['inv','lookup','warehouses',{active:'ALL'}]", errors: "generic", loading: LOCAL}
   - {hook: LOTS-LOOKUP, kind: lookup, api: [API-INV-040], cache_key: "['inv','lookup','lots',{variantPk,warehousePk}]", errors: "generic", loading: LOCAL}
@@ -446,7 +447,7 @@ hooks:
 | Hook | Role · cache · errors (code → routing, text) |
 |---|---|
 | MOVES-SCREEN-INIT | Permission read: `PERM_INV_STOCK_MOVES_VIEW`. Context: warehouse count (REQ-INV-012) and flags. Lookups: move type and document type |
-| MOVES-QUERY | read, newest first (REQ-INV-075). `balanceAfterQty` is shown only while the filter names one Variant and one warehouse (REQ-INV-076). Moves are read-only; no mutation exists (REQ-INV-055) |
+| MOVES-QUERY | read, newest first (REQ-INV-075). `balanceAfterQty` is shown only while the filter names one Variant and one warehouse (REQ-INV-076). A jump from a posted transfer or adjustment filters by `sourceDocTypeCode` + `sourceDocRef`, so only that document's moves are listed, never another module's document with the same number. Moves are read-only; no mutation exists (REQ-INV-055) |
 | MOVE-QUERY | read of the detail drawer opened by `move=<id>`: source document type, identifier and number (REQ-INV-056), offline flag and bundle |
 | WAREHOUSES-LOOKUP / LOTS-LOOKUP | labels: warehouse with `active=ALL`; the lot label scoped by the row's Variant and warehouse |
 | CAT-VARIANT-LOOKUP | UXD-INV-004: the Variant filter. Row Variant labels come from `StockMove.variantCode / variantNameAr / variantNameEn` |
@@ -464,7 +465,7 @@ hooks:
   - {hook: TRANSFER-QUERY, kind: read, api: [API-INV-021], cache_key: "['inv','transfer',transferPk]", errors: "INV-404-TRANSFER-NOT-FOUND → message, back to search", loading: LOCAL, invalidation: "—"}
   - {hook: TRANSFER-CREATE, kind: mutation, api: [API-INV-022], errors: "TRANSFER-WAREHOUSES → inline toWarehousePk; line codes → the line", invalidation: "['inv','transfers']"}
   - {hook: TRANSFER-UPDATE, kind: mutation, api: [API-INV-023], errors: "DOCUMENT-CLOSED → message + read-only; STALE-VERSION → reload; line codes → the line", invalidation: "['inv','transfers'], ['inv','transfer',id]"}
-  - {hook: TRANSFER-POST, kind: mutation, api: [API-INV-024], errors: "NO-LINES / NEGATIVE-STOCK / TRANSFER-WAREHOUSES → message; DOCUMENT-CLOSED; STALE-VERSION → reload", invalidation: "['inv','transfers'], ['inv','transfer',id], ['inv','stock-balances'], ['inv','availability'], ['inv','stock-moves'], ['inv','lookup','lots']"}
+  - {hook: TRANSFER-POST, kind: mutation, api: [API-INV-024], errors: "NO-LINES / NEGATIVE-STOCK / TRANSFER-WAREHOUSES → message; VARIANT-INACTIVE / LOT-REQUIRED / MEASURE-REQUIRED → the line; DOCUMENT-CLOSED; STALE-VERSION → reload", invalidation: "['inv','transfers'], ['inv','transfer',id], ['inv','stock-balances'], ['inv','availability'], ['inv','stock-moves'], ['inv','lookup','lots']"}
   - {hook: TRANSFER-CANCEL, kind: mutation, api: [API-INV-025], errors: "DOCUMENT-CLOSED → message + read-only", invalidation: "['inv','transfers'], ['inv','transfer',id]"}
   - {hook: WAREHOUSES-LOOKUP, kind: lookup, api: [API-INV-001], cache_key: "['inv','lookup','warehouses',{active}]", errors: "generic", loading: LOCAL}
   - {hook: LOTS-LOOKUP, kind: lookup, api: [API-INV-040], cache_key: "['inv','lookup','lots',{variantPk,warehousePk:fromWarehousePk}]", errors: "generic", loading: LOCAL}
@@ -481,7 +482,7 @@ hooks:
 | TRANSFERS-QUERY | read, newest first (REQ-INV-086) |
 | TRANSFER-CREATE | mutation `{docDate, fromWarehousePk, toWarehousePk, noteText, lines[]}`; each line is `{variantPk, lotPk, quantity, measureQty}`. INV-422-TRANSFER-WAREHOUSES → inline on toWarehousePk, text: RULE-INV-016 · INV-422-QUANTITY-INVALID → line quantity, text: RULE-INV-017 · INV-422-VARIANT-INACTIVE → line Variant, text: RULE-INV-018 · INV-422-LOT-REQUIRED → line lot, text: RULE-INV-037 · INV-422-MEASURE-REQUIRED → line measure, text: RULE-INV-040 · INV-422-DUPLICATE-LINE → line Variant, text: RULE-INV-048 · `INV-404-WAREHOUSE / VARIANT / LOT-NOT-FOUND` → field or line, text: catalogue. A line code is placed on the line given by `details[].rowNo` (1-based line order) when present, otherwise in the lines pane. On success the route becomes `/:id` |
 | TRANSFER-UPDATE | mutation: the create body plus `{version}`, with each line keeping its `transferLinePk`; it replaces header and lines (REQ-INV-079). The create routing applies, plus INV-409-DOCUMENT-CLOSED → message, text: RULE-INV-029, and the entry reloads read-only · INV-422-DOC-NO-READONLY → message, text: RULE-INV-030 · INV-409-STALE-VERSION → reload |
-| TRANSFER-POST | mutation `{version}`; offered only on a saved, unchanged DRAFT. INV-422-NO-LINES → message, text: RULE-INV-031 · INV-409-NEGATIVE-STOCK → message, text: RULE-INV-019 (the server text carries the on-hand) · INV-422-TRANSFER-WAREHOUSES → message, text: RULE-INV-016 · INV-409-DOCUMENT-CLOSED → message, text: RULE-INV-029 · INV-409-STALE-VERSION → reload |
+| TRANSFER-POST | mutation `{version}`; offered only on a saved, unchanged DRAFT. INV-422-NO-LINES → message, text: RULE-INV-031 · INV-409-NEGATIVE-STOCK → message, text: RULE-INV-019 (the server text carries the on-hand) · INV-422-TRANSFER-WAREHOUSES → message, text: RULE-INV-016 (a warehouse was deactivated since the save) · INV-422-VARIANT-INACTIVE → the line, text: RULE-INV-018 · INV-422-LOT-REQUIRED → the line's lot, text: RULE-INV-037 · INV-422-MEASURE-REQUIRED → the line's measure, text: RULE-INV-040 (the Variant or its Item stock settings changed since the save — ADR-INV-045; the user edits the line, saves, then posts) · INV-409-DOCUMENT-CLOSED → message, text: RULE-INV-029 · INV-409-STALE-VERSION → reload |
 | TRANSFER-CANCEL | mutation (DELETE), after a confirmation. INV-409-DOCUMENT-CLOSED → message, text: RULE-INV-029 |
 | WAREHOUSES-LOOKUP | from / to selectors use `ACTIVE_ONLY`; labels use `ALL` |
 | LOTS-LOOKUP | line lot options, scoped by the line's Variant and the header's from-warehouse (REQ-INV-084); expired lots are marked |
@@ -503,7 +504,7 @@ hooks:
   - {hook: COUNT-LINE-ADD, kind: mutation, api: [API-INV-029], errors: "BARCODE-UNKNOWN → inline barcode + pick by hand; COUNTED-NEGATIVE → inline countedQty; LOT-REQUIRED / MEASURE-REQUIRED → line drawer; DOCUMENT-CLOSED → read-only", invalidation: "['inv','stock-count',id]"}
   - {hook: COUNT-LINE-CHANGE, kind: mutation, api: [API-INV-030], errors: "COUNTED-NEGATIVE / MEASURE-REQUIRED → inline in the line drawer; STALE-VERSION → reload", invalidation: "['inv','stock-count',id]"}
   - {hook: COUNT-LINE-REMOVE, kind: mutation, api: [API-INV-031], errors: "DOCUMENT-CLOSED → read-only", invalidation: "['inv','stock-count',id]"}
-  - {hook: COUNT-POST, kind: mutation, api: [API-INV-032], errors: "NO-LINES / NEGATIVE-STOCK / NO-KNOWN-COST → message; STALE-VERSION → reload", invalidation: "['inv','stock-counts'], ['inv','stock-count',id], ['inv','stock-adjustments'], ['inv','stock-balances'], ['inv','availability'], ['inv','stock-moves'], ['inv','valuation']"}
+  - {hook: COUNT-POST, kind: mutation, api: [API-INV-032], errors: "NO-LINES / NEGATIVE-STOCK / WAREHOUSE-INACTIVE → message; VARIANT-INACTIVE / LOT-REQUIRED / MEASURE-REQUIRED → the line card; STALE-VERSION → reload", invalidation: "['inv','stock-counts'], ['inv','stock-count',id], ['inv','stock-adjustments'], ['inv','stock-balances'], ['inv','availability'], ['inv','stock-moves'], ['inv','valuation']"}
   - {hook: COUNT-CANCEL, kind: mutation, api: [API-INV-033], errors: "DOCUMENT-CLOSED → read-only", invalidation: "['inv','stock-counts'], ['inv','stock-count',id]"}
   - {hook: WAREHOUSES-LOOKUP, kind: lookup, api: [API-INV-001], cache_key: "['inv','lookup','warehouses',{active}]", errors: "generic", loading: LOCAL}
   - {hook: LOTS-LOOKUP, kind: lookup, api: [API-INV-040], cache_key: "['inv','lookup','lots',{variantPk,warehousePk}]", errors: "generic", loading: LOCAL}
@@ -522,7 +523,7 @@ hooks:
 | COUNT-LINE-ADD | mutation `{barcode | variantPk, countedQty, lotPk, countedMeasureQty}`, ONE call per scan (ADR-INV-034). The server adds to an existing line (REQ-INV-088). INV-422-BARCODE-UNKNOWN → inline on barcode, text: RULE-INV-032, and the Variant picker is offered (REQ-INV-091) · INV-422-VARIANT-INACTIVE → inline on barcode, text: RULE-INV-018 · INV-422-COUNTED-NEGATIVE → inline on countedQty, text: RULE-INV-047 · INV-422-LOT-REQUIRED → the line drawer opens at lot, text: RULE-INV-037 · INV-422-MEASURE-REQUIRED → the line drawer opens at measure, text: RULE-INV-040 · INV-409-DOCUMENT-CLOSED → message, text: RULE-INV-029, and the entry reloads read-only (REQ-INV-096) · `INV-404-*` → catalogue |
 | COUNT-LINE-CHANGE | mutation `{countedQty, countedMeasureQty, version}` from the one-line drawer. INV-422-COUNTED-NEGATIVE → inline, text: RULE-INV-047 · INV-422-MEASURE-REQUIRED → inline, text: RULE-INV-040 · INV-409-DOCUMENT-CLOSED → read-only, text: RULE-INV-029 · INV-409-STALE-VERSION → reload |
 | COUNT-LINE-REMOVE | mutation (DELETE line), after a confirmation in the drawer. INV-409-DOCUMENT-CLOSED → read-only, text: RULE-INV-029 |
-| COUNT-POST | mutation `{version}`, after a confirmation. The answer carries the count and the resulting adjustment (or null when every difference is zero). INV-422-NO-LINES → message, text: RULE-INV-031 · INV-409-NEGATIVE-STOCK → message, text: RULE-INV-019 · INV-422-NO-KNOWN-COST → message, text: RULE-INV-025 · INV-409-DOCUMENT-CLOSED → read-only · INV-409-STALE-VERSION → reload. On success the entry shows systemQty and differenceQty, plus a link to the adjustment |
+| COUNT-POST | mutation `{version}`, after a confirmation. The answer carries the count and the resulting adjustment (or null when every difference is zero). INV-422-NO-LINES → message, text: RULE-INV-031 · INV-409-NEGATIVE-STOCK → message, text: RULE-INV-019 · INV-422-WAREHOUSE-INACTIVE → message, text: RULE-INV-007 · INV-422-VARIANT-INACTIVE → the line card, text: RULE-INV-018 · INV-422-LOT-REQUIRED → the line drawer at lot, text: RULE-INV-037 · INV-422-MEASURE-REQUIRED → the line drawer at measure, text: RULE-INV-040 (re-checked on post — ADR-INV-045) · INV-409-DOCUMENT-CLOSED → read-only · INV-409-STALE-VERSION → reload. A count never answers INV-422-NO-KNOWN-COST: an increase of a never-valued Variant enters at cost 0 (ADR-INV-030). On success the entry shows systemQty and differenceQty, plus a link to the adjustment |
 | COUNT-CANCEL | mutation (DELETE), after a confirmation. INV-409-DOCUMENT-CLOSED → read-only, text: RULE-INV-029 |
 | WAREHOUSES-LOOKUP / LOTS-LOOKUP / ITEM-TRACKING-LOOKUP | the warehouse selector at start; lot options scoped by the scanned Variant and the count's warehouse; whether a lot or measure must be asked before the line call is sent |
 | CAT-VARIANT-LOOKUP / CAT-UOM-LOOKUP | UXD-INV-006. A scanned barcode is resolved first, to get `itemPk` → ITEM-TRACKING-LOOKUP. For an Item with no lot or measure, the scan is sent at once with `barcode`. Otherwise the line drawer asks for the lot or measure and sends `variantPk`. The hooks also pick a Variant by hand after an unknown barcode, and label each line's `variantPk` |
@@ -542,7 +543,7 @@ hooks:
   - {hook: WRITE-OFF-BALANCE-QUERY, kind: read, api: [API-INV-016], cache_key: "['inv','stock-balances',{lotPk,warehousePk,nonZero:true,page:0,size:1}]", errors: "generic", loading: LOCAL, invalidation: "—"}
   - {hook: ADJUSTMENT-CREATE, kind: mutation, api: [API-INV-036], errors: "REASON-REQUIRED → inline reasonCode; WAREHOUSE-* → inline warehousePk; line codes → the line", invalidation: "['inv','stock-adjustments']"}
   - {hook: ADJUSTMENT-UPDATE, kind: mutation, api: [API-INV-037], errors: "DOCUMENT-CLOSED → read-only; STALE-VERSION → reload; line codes → the line", invalidation: "['inv','stock-adjustments'], ['inv','stock-adjustment',id]"}
-  - {hook: ADJUSTMENT-POST, kind: mutation, api: [API-INV-038], errors: "NEGATIVE-STOCK / NO-LINES → message; cost and lot codes → the line; STALE-VERSION → reload", invalidation: "['inv','stock-adjustments'], ['inv','stock-adjustment',id], ['inv','stock-balances'], ['inv','availability'], ['inv','stock-moves'], ['inv','valuation'], ['inv','lookup','lots'], ['inv','lots']"}
+  - {hook: ADJUSTMENT-POST, kind: mutation, api: [API-INV-038], errors: "NEGATIVE-STOCK / NO-LINES / WAREHOUSE-INACTIVE → message; VARIANT-INACTIVE, cost and lot codes → the line; STALE-VERSION → reload", invalidation: "['inv','stock-adjustments'], ['inv','stock-adjustment',id], ['inv','stock-balances'], ['inv','availability'], ['inv','stock-moves'], ['inv','valuation'], ['inv','lookup','lots'], ['inv','lots']"}
   - {hook: ADJUSTMENT-CANCEL, kind: mutation, api: [API-INV-039], errors: "DOCUMENT-CLOSED → read-only", invalidation: "['inv','stock-adjustments'], ['inv','stock-adjustment',id]"}
   - {hook: WAREHOUSES-LOOKUP, kind: lookup, api: [API-INV-001], cache_key: "['inv','lookup','warehouses',{active}]", errors: "generic", loading: LOCAL}
   - {hook: LOTS-LOOKUP, kind: lookup, api: [API-INV-040], cache_key: "['inv','lookup','lots',{variantPk,warehousePk}]", errors: "generic", loading: LOCAL}
@@ -560,9 +561,9 @@ hooks:
 | ADJUSTMENTS-QUERY | read, newest first (REQ-INV-104) |
 | WRITE-OFF-LOT-QUERY | read of the seeded lot (code, `variantPk`, expiry), so the seeded line gets `variantPk` and `lotNo = code` |
 | WRITE-OFF-BALANCE-QUERY | read of the one balance row identified by `lotPk` + `warehousePk`. The seeded line gets `quantityChange = −onHandQty` (AC-INV-128); with no row, no line is seeded |
-| ADJUSTMENT-CREATE | mutation `{warehousePk | null, docDate, reasonCode, noteText, lines[]}`; each line is `{rowNo, variantPk, lotNo, lotExpiryDate, quantityChange, measureQtyChange, unitCost}`. INV-422-REASON-REQUIRED → inline on reasonCode, text: RULE-INV-033 · INV-422-WAREHOUSE-REQUIRED → inline on warehousePk, text: RULE-INV-008 · INV-422-WAREHOUSE-INACTIVE → inline, text: RULE-INV-007 · INV-422-VARIANT-INACTIVE → line, text: RULE-INV-018 · INV-422-ZERO-CHANGE → line quantityChange, text: RULE-INV-034 · INV-422-LOT-REQUIRED → line lot, text: RULE-INV-037 · INV-422-DUPLICATE-LINE → line, text: RULE-INV-048 · `INV-404-*` → catalogue. A line code goes to the line whose `rowNo` equals `details[].rowNo` |
+| ADJUSTMENT-CREATE | mutation `{warehousePk | null, docDate, reasonCode, noteText, lines[]}`; each line is `{rowNo, variantPk, lotNo, lotExpiryDate, quantityChange, measureQtyChange, unitCost}`. INV-422-REASON-REQUIRED → inline on reasonCode, text: RULE-INV-033 · INV-422-WAREHOUSE-REQUIRED → inline on warehousePk, text: RULE-INV-008 · INV-422-WAREHOUSE-INACTIVE → inline, text: RULE-INV-007 · INV-422-VARIANT-INACTIVE → line, text: RULE-INV-018 · INV-422-QUANTITY-INVALID → line quantityChange or measureQtyChange, text: RULE-INV-017 · INV-422-NO-KNOWN-COST → line unitCost (more than 4 decimals), text: RULE-INV-025 · INV-422-ZERO-CHANGE → line quantityChange, text: RULE-INV-034 · INV-422-LOT-REQUIRED → line lot, text: RULE-INV-037 · INV-422-DUPLICATE-LINE → line, text: RULE-INV-048 · `INV-404-*` → catalogue. A line code goes to the line whose `rowNo` equals `details[].rowNo` |
 | ADJUSTMENT-UPDATE | mutation `{reasonCode, noteText, version, lines[]}`; it replaces reason, note and lines (REQ-INV-098). The create routing applies, plus INV-409-DOCUMENT-CLOSED → read-only, text: RULE-INV-029 · INV-422-DOC-NO-READONLY → message, text: RULE-INV-030 · INV-409-STALE-VERSION → reload |
-| ADJUSTMENT-POST | mutation `{version}`; offered only on a saved, unchanged DRAFT. INV-422-NO-LINES → message, text: RULE-INV-031 · INV-409-NEGATIVE-STOCK → message, text: RULE-INV-019 (REQ-INV-067) · INV-422-NO-KNOWN-COST → the line's unitCost, Advanced opened, text: RULE-INV-025 (REQ-INV-064, REQ-INV-102) · INV-422-OPENING-COST-REQUIRED → the line's unitCost, text: RULE-INV-026 · INV-422-LOT-EXPIRY-REQUIRED → the line's lot number and expiry, text: RULE-INV-035 (REQ-INV-105) · INV-422-LOT-EXPIRY-MISMATCH → the line's expiry, text: RULE-INV-036 (REQ-INV-107) · INV-422-LOT-REQUIRED → the line's lot, text: RULE-INV-037 · INV-422-REASON-REQUIRED / INV-422-ZERO-CHANGE → as on create · INV-409-DOCUMENT-CLOSED → read-only · INV-409-STALE-VERSION → reload |
+| ADJUSTMENT-POST | mutation `{version}`; offered only on a saved, unchanged DRAFT. INV-422-NO-LINES → message, text: RULE-INV-031 · INV-409-NEGATIVE-STOCK → message, text: RULE-INV-019 (REQ-INV-067) · INV-422-WAREHOUSE-INACTIVE → message, text: RULE-INV-007 · INV-422-VARIANT-INACTIVE → the line, text: RULE-INV-018 (both re-checked on post — ADR-INV-045) · INV-422-NO-KNOWN-COST → the line's unitCost, Advanced opened, text: RULE-INV-025 (REQ-INV-064, REQ-INV-102) · INV-422-OPENING-COST-REQUIRED → the line's unitCost, text: RULE-INV-026 · INV-422-LOT-EXPIRY-REQUIRED → the line's lot number and expiry, text: RULE-INV-035 (REQ-INV-105) · INV-422-LOT-EXPIRY-MISMATCH → the line's expiry, text: RULE-INV-036 (REQ-INV-107) · INV-422-LOT-REQUIRED → the line's lot, text: RULE-INV-037 · INV-422-REASON-REQUIRED / INV-422-ZERO-CHANGE → as on create · INV-409-DOCUMENT-CLOSED → read-only · INV-409-STALE-VERSION → reload |
 | ADJUSTMENT-CANCEL | mutation (DELETE), after a confirmation. INV-409-DOCUMENT-CLOSED → read-only, text: RULE-INV-029 |
 | LOTS-LOOKUP | for a decrease line of a lot-tracked Item: lot options scoped by the line's Variant and the header's warehouse; choosing one sets `lotNo = code`. For an increase line: when the typed `lotNo` matches an option, its expiry is prefilled (REQ-INV-106) |
 | ITEM-TRACKING-LOOKUP | per line Item: whether lot and expiry, or a measure change, are asked (REQ-INV-123: a measure-only line is allowed for a dual-quantity Item) |
@@ -637,7 +638,7 @@ hooks:
 |---|---|
 | OPENING-SCREEN-INIT | Permission read: `PERM_INV_OPENING_STOCK_VIEW`, `_CREATE`. Context: warehouse count (selector hidden while 1); `lotExpiryFl` and `dualQuantityFl` decide the lot, expiry and measure columns (AC-INV-080) |
 | OPENING-SHEET-QUERY | read of the xlsx file (REQ-INV-073), started by "Download sheet"; it saves the blob under the catalogue file name. Not cached |
-| OPENING-STOCK-POST | mutation `{warehousePk | null, docDate, rows[]}`; each row is `{rowNo, barcode: codeOrBarcode, variantPk: null, quantity, unitCost, lotNo, lotExpiryDate, measureQty}`, all in ONE call (ADR-INV-027, ADR-INV-035). INV-422-LOAD-ROWS-INVALID → the row failures list: each `details[]` entry is placed on the row with its `rowNo` and its own code's text. Those codes are INV-422-LOAD-ROW-VARIANT (RULE-INV-028), INV-422-OPENING-COST-REQUIRED (RULE-INV-026), INV-422-VARIANT-INACTIVE (RULE-INV-018), INV-422-LOT-EXPIRY-REQUIRED (RULE-INV-035), INV-422-LOT-EXPIRY-MISMATCH (RULE-INV-036), INV-422-MEASURE-REQUIRED (RULE-INV-040), INV-422-DUPLICATE-LINE (RULE-INV-048), and nothing is posted (REQ-INV-072) · INV-422-LOAD-ROWS → message, text: RULE-INV-027 · INV-422-WAREHOUSE-REQUIRED → inline on warehousePk, text: RULE-INV-008 · INV-422-WAREHOUSE-INACTIVE → inline, text: RULE-INV-007 · INV-404-WAREHOUSE-NOT-FOUND → catalogue · generic. On success it navigates to SCR-INV-007 `/:id` of the returned adjustment |
+| OPENING-STOCK-POST | mutation `{warehousePk | null, docDate, rows[]}`; each row is `{rowNo, barcode, variantPk: null, quantity, unitCost, lotNo, lotExpiryDate, measureQty}`, all in ONE call (ADR-INV-027, ADR-INV-035). INV-422-LOAD-ROWS-INVALID → the row failures list: each `details[]` entry is placed on the row with its `rowNo` and its own code's text. Those codes are INV-422-LOAD-ROW-VARIANT (RULE-INV-028), INV-422-QUANTITY-INVALID (RULE-INV-017), INV-422-NO-KNOWN-COST (RULE-INV-025, a cost with more than 4 decimals), INV-422-OPENING-COST-REQUIRED (RULE-INV-026), INV-422-VARIANT-INACTIVE (RULE-INV-018), INV-422-LOT-EXPIRY-REQUIRED (RULE-INV-035), INV-422-LOT-EXPIRY-MISMATCH (RULE-INV-036), INV-422-MEASURE-REQUIRED (RULE-INV-040), INV-422-DUPLICATE-LINE (RULE-INV-048), and nothing is posted (REQ-INV-072) · INV-422-LOAD-ROWS → message, text: RULE-INV-027 · INV-422-WAREHOUSE-REQUIRED → inline on warehousePk, text: RULE-INV-008 · INV-422-WAREHOUSE-INACTIVE → inline, text: RULE-INV-007 · INV-404-WAREHOUSE-NOT-FOUND → catalogue · generic. On success it navigates to SCR-INV-007 `/:id` of the returned adjustment |
 | OPENING-FACADE | Owns the form state (rows with `rowNo`), the `line` navigation param, the row failures, the sheet-reading progress and derived loading. Operations: `downloadSheet()`, `loadSheet(file)` (reads the file in the browser, ADR-INV-035, and fills the rows; replacing existing rows asks for confirmation), `addRow`, `replaceRow`, `removeRow` (form state only), `post()` (ONE call) |
 <!-- SUB:F2-SCR-INV-010:END -->
 
@@ -735,6 +736,7 @@ only date ranges, where "from" must not be after "to"; the message is «تاري
   - `warehousePk`, `lotPk`.
   - `moveTypeCode`: an INV_MOVE_TYPE option.
   - `docNo`: ≤ 30.
+  - `sourceDocTypeCode` (an INV_SOURCE_DOC_TYPE option) and `sourceDocRef` (integer): both or neither; set by the document jumps only.
   - `dateFrom` ≤ `dateTo`, both ISO dates.
 - No entry form (REQ-INV-055).
 <!-- SUB:F3-SCR-INV-004:END -->
@@ -751,7 +753,7 @@ only date ranges, where "from" must not be after "to"; the message is «تاري
   - `variant`: required; empty → «اختر متغيّر الصنف.» / "Choose the Variant.".
   - `quantity`: > 0 with ≤ 3 decimals, text: RULE-INV-017.
   - `lotPk`: required when `lotExpiryFl` and the Item is `lotTrackedFl`, text: RULE-INV-037 (AC-INV-093).
-  - `measureQty`: > 0, required when `dualQuantityFl` and the Item is `dualQuantityFl`, text: RULE-INV-040 (REQ-INV-122).
+  - `measureQty`: > 0, required when `dualQuantityFl` and the Item is `dualQuantityFl`, text: RULE-INV-040 (REQ-INV-122); ≤ 3 decimals, text: RULE-INV-017.
   The tracking flags come from ITEM-TRACKING-LOOKUP. The drawer's confirm validates the line and returns it to the form state.
 - Post asks for no input. "At least one line" (RULE-INV-031) is also checked before Post is offered.
 <!-- SUB:F3-SCR-INV-005:END -->
@@ -780,12 +782,12 @@ only date ranges, where "from" must not be after "to"; the message is «تاري
   - `lines`: two lines with the same Variant and `lotNo` give a refinement, text: RULE-INV-048 (AC-INV-109).
 - `adjustmentLineSchema`:
   - `variant`: required.
-  - `quantityChange`: ≤ 3 decimals. It must be ≠ 0 unless the Item is dual-quantity and `measureQtyChange` ≠ 0, text: RULE-INV-034 (AC-INV-111, REQ-INV-123).
-  - `unitCost`: ≥ 0 with ≤ 4 decimals, only on increase lines, optional (REQ-INV-102). Required when `reasonCode = OPENING_STOCK`, text: RULE-INV-026.
+  - `quantityChange`: ≤ 3 decimals, text: RULE-INV-017. It must be ≠ 0 unless the Item is dual-quantity and `measureQtyChange` ≠ 0, text: RULE-INV-034 (AC-INV-111, REQ-INV-123).
+  - `unitCost`: ≥ 0 with ≤ 4 decimals, text: RULE-INV-025; only on increase lines, optional (REQ-INV-102). Required when `reasonCode = OPENING_STOCK`, text: RULE-INV-026.
   - `lotNo`: ≤ 40.
   - `lotExpiryDate`: required with `lotNo` on an increase line of a lot-tracked Item, text: RULE-INV-035 (REQ-INV-105).
   - `lotNo` on a decrease line of a lot-tracked Item: required, text: RULE-INV-037.
-  - `measureQtyChange`: ≤ 3 decimals.
+  - `measureQtyChange`: ≤ 3 decimals, text: RULE-INV-017.
 <!-- SUB:F3-SCR-INV-007:END -->
 
 <!-- SUB:F3-SCR-INV-008:START traces=SCR-INV-008,UXD-INV-008,REQ-INV-108,REQ-INV-109,REQ-INV-116,API-INV-040,API-INV-042 -->
@@ -816,12 +818,12 @@ only date ranges, where "from" must not be after "to"; the message is «تاري
   - `rows`: 1–1000 entries, text: RULE-INV-027 (AC-INV-078).
 - `openingRowSchema`:
   - `rowNo`: integer ≥ 1.
-  - `codeOrBarcode`: required, ≤ 64; empty → «أدخل رمز المتغيّر أو الباركود.» / "Enter the Variant code or barcode.".
-  - `quantity`: > 0 with ≤ 3 decimals, text: RULE-INV-026.
-  - `unitCost`: required, ≥ 0 with ≤ 4 decimals, text: RULE-INV-026 (REQ-INV-074, AC-INV-081).
+  - `barcode`: required, ≤ 64; empty → «أدخل الباركود.» / "Enter the barcode." (v1 names a Variant by barcode only — ADR-INV-035).
+  - `quantity`: > 0, text: RULE-INV-026; ≤ 3 decimals, text: RULE-INV-017.
+  - `unitCost`: required and ≥ 0, text: RULE-INV-026 (REQ-INV-074, AC-INV-081); ≤ 4 decimals, text: RULE-INV-025.
   - `lotNo`: ≤ 40.
   - `lotExpiryDate`: required with `lotNo`, text: RULE-INV-035.
-  - `measureQty`: ≥ 0 with ≤ 3 decimals.
+  - `measureQty`: ≥ 0 with ≤ 3 decimals, text: RULE-INV-017.
 - Rows read from the sheet go through the same schema before posting. Rows that fail are listed by `rowNo` with their message, and nothing is sent until they pass (REQ-INV-072). Variant resolution is the server's (ADR-INV-035).
 <!-- SUB:F3-SCR-INV-010:END -->
 
@@ -897,12 +899,12 @@ layout is RTL-first and responsive. The Inventory menu is built from the routes'
   - Variant filter → UXD-INV-001.
   - Item filter and Item name column → UXD-INV-002.
   - Measure unit → UXD-INV-003.
-  - Warehouse label for a user without warehouse VIEW → PENDING ADR-INV-036.
+  - Warehouse label → read from the row (`warehouseCode`, `warehouseNameAr`, `warehouseNameEn`), for every role (ADR-INV-036).
 - **Composition**: container page. Availability per warehouse → inline (`AvailabilitySummary` above the result when one Variant is filtered). No drawer. Submits: none.
 - **Saves**: none (read-only inquiry).
 - **Components**:
-  - `BalanceSearchForm`: the Variant picker (UXD-INV-001), the Item picker (UXD-INV-002), a barcode field, the warehouse select (hidden while one), the lot select (lotExpiry on and lot VIEW), and "non-zero only".
-  - `BalanceResultTable`: the warehouse column hides while one warehouse is active (AC-INV-015). The lot, expiry and `Expired` badge columns show only with lotExpiry on (AC-INV-129). The measure and unit columns show only with dualQuantity on (AC-INV-135, AC-INV-151). There is no cost column.
+  - `BalanceSearchForm`: the Variant picker (UXD-INV-001), the Item picker (UXD-INV-002), a barcode field, the warehouse select (hidden while one; offered with warehouse VIEW), the lot select (lotExpiry on and lot VIEW), and "non-zero only".
+  - `BalanceResultTable`: the warehouse column shows the row's warehouse code and name, and hides while one warehouse is active (AC-INV-015, AC-INV-044). The lot, expiry and `Expired` badge columns show only with lotExpiry on (AC-INV-129). The measure and unit columns show only with dualQuantity on (AC-INV-135, AC-INV-151). There is no cost column.
   - Row link "Moves" goes to `/inventory/stock-moves?variantPk&warehousePk[&lotPk]`.
 - **Routes**: incoming `?warehousePk` or `?lotPk` seeds the filter.
 <!-- SUB:F4-SCR-INV-003:END -->
@@ -918,7 +920,7 @@ layout is RTL-first and responsive. The Inventory menu is built from the routes'
   - `MoveSearchForm`.
   - `MoveResultTable`, newest first. The "Balance after move" column shows only while `showRunningBalance` (AC-INV-083). Document type labels come from INV_SOURCE_DOC_TYPE.
   - `MoveDetailDrawer`, which shows the source document type, identifier and number (AC-INV-062).
-- **Routes**: incoming `?variantPk&warehousePk&lotPk`, `?docNo` or `?variantPk` seeds the filter.
+- **Routes**: incoming `?variantPk&warehousePk&lotPk`, `?sourceDocTypeCode&sourceDocRef` (one document exactly — from SCR-INV-005 and SCR-INV-007) or `?variantPk` seeds the filter.
 <!-- SUB:F4-SCR-INV-004:END -->
 
 <!-- SUB:F4-SCR-INV-005:START traces=SCR-INV-005,UXD-INV-005,REQ-INV-011,REQ-INV-014,REQ-INV-062,REQ-INV-078,REQ-INV-079,REQ-INV-080,REQ-INV-081,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-085,REQ-INV-086,REQ-INV-122,AC-INV-014,AC-INV-017,AC-INV-085,AC-INV-086,AC-INV-087,AC-INV-089,AC-INV-092,AC-INV-094,AC-INV-095,API-INV-001,API-INV-008,API-INV-020,API-INV-021,API-INV-022,API-INV-023,API-INV-024,API-INV-025,API-INV-040,API-INV-044 -->
@@ -932,7 +934,7 @@ layout is RTL-first and responsive. The Inventory menu is built from the routes'
   - `TransferSearchForm`; `TransferResultTable`, newest first (AC-INV-095).
   - `TransferHeader`, `TransferLinesPane`, `TransferLineDrawer`. The lot select appears when the Item is lot-tracked and lotExpiry is on; measure appears when the Item is dual-quantity and dualQuantity is on.
   - `TransferActions` (Save · Post · Cancel).
-  - On a POSTED entry, the link "Stock moves" goes to `/inventory/stock-moves?docNo=<docNo>`.
+  - On a POSTED entry, the link "Stock moves" goes to `/inventory/stock-moves?sourceDocTypeCode=INV_TRANSFER&sourceDocRef=<transferPk>`.
 <!-- SUB:F4-SCR-INV-005:END -->
 
 <!-- SUB:F4-SCR-INV-006:START traces=SCR-INV-006,UXD-INV-006,REQ-INV-013,REQ-INV-017,REQ-INV-018,REQ-INV-087,REQ-INV-088,REQ-INV-089,REQ-INV-090,REQ-INV-091,REQ-INV-092,REQ-INV-093,REQ-INV-094,REQ-INV-095,REQ-INV-096,REQ-INV-122,AC-INV-096,AC-INV-097,AC-INV-099,AC-INV-100,AC-INV-101,AC-INV-102,AC-INV-104,AC-INV-105,API-INV-001,API-INV-008,API-INV-026,API-INV-027,API-INV-028,API-INV-029,API-INV-030,API-INV-031,API-INV-032,API-INV-033,API-INV-040,API-INV-044 -->
@@ -964,7 +966,7 @@ layout is RTL-first and responsive. The Inventory menu is built from the routes'
   - `AdjustmentSearchForm`; `AdjustmentResultTable`, newest first (AC-INV-116).
   - `AdjustmentHeader`, `AdjustmentLinesPane`, `AdjustmentLineDrawer`. Lot number and expiry columns are absent with lotExpiry off (AC-INV-150). The unit cost is behind "Advanced" on increase lines and is opened by a cost error.
   - `AdjustmentActions` (Save · Post · Cancel).
-  - On a POSTED entry, the link "Stock moves" goes to `/inventory/stock-moves?docNo=<docNo>`.
+  - On a POSTED entry, the link "Stock moves" goes to `/inventory/stock-moves?sourceDocTypeCode=INV_ADJUSTMENT&sourceDocRef=<stockAdjustmentPk>`.
 - **Routes**: `/new?reason=EXPIRY_WRITE_OFF&lotPk&warehousePk` seeds the reason and one decrease line from WRITE-OFF-LOT-QUERY and WRITE-OFF-BALANCE-QUERY (AC-INV-128). The seed fills form state only, and nothing is saved until Save.
 <!-- SUB:F4-SCR-INV-007:END -->
 
@@ -1005,7 +1007,7 @@ layout is RTL-first and responsive. The Inventory menu is built from the routes'
 - **Saves**: ONE (Post → API-INV-047, all rows in one call). Download sheet (API-INV-046) is a file read, not a save.
 - **Components**:
   - `OpeningSheetBar`: "Download sheet", and "Load sheet", a file input that reads xlsx in the browser through the lazy sheet reader (ADR-INV-035).
-  - `OpeningRowsPane`, showing row number, code or barcode, quantity, unit cost, lot and expiry (lotExpiry on) and measure (dualQuantity on), plus totals of rows and quantity.
+  - `OpeningRowsPane`, showing row number, barcode, quantity, unit cost, lot and expiry (lotExpiry on) and measure (dualQuantity on), plus totals of rows and quantity.
   - `OpeningRowFailures`.
   - `OpeningActions` (Post).
   After a successful post the route goes to `/inventory/stock-adjustments/<stockAdjustmentPk>` (AC-INV-076).
@@ -1158,8 +1160,8 @@ clean: true
 | search stock valuation | API-INV-050 | SCR-INV-012 search | `/inventory/stock-valuation` | ✓ |
 | read stock valuation of a Variant | API-INV-051 | SCR-INV-012 Variant detail | `/inventory/stock-valuation?variant=<id>` | ✓ |
 
-51 / 51 operations have a screen action and a route. Open item: the warehouse label for a Seller/Cashier on
-SCR-INV-003 is PENDING ADR-INV-036 (backend delta).
+51 / 51 operations have a screen action and a route. No open item: the warehouse label for a Seller/Cashier on
+SCR-INV-003 is read from the row (ADR-INV-036, closed at gate-analysis revise 1).
 <!-- PHASE:ALIGN-FE:END -->
 
 ## Hand-off

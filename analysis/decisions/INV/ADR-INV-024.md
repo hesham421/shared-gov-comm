@@ -13,10 +13,12 @@ screen and no REST endpoint in SRS B5. Four rules are raised only on those paths
 reached by an API-* block.
 
 ## Decision
-- One Spring bean `com.erp.inv.crossmodule.InventoryApi` honours CON-INV-006 … 019; the events CON-INV-020,
-  021 go through OutboxPublisher. No method has a REST route.
-- The four codes raised only in-process (INV-409-RESERVE-NOT-AVAILABLE, INV-409-RESERVATION-CLOSED,
-  INV-409-STOCK-MOVE-IMMUTABLE, INV-422-LOT-EXPIRED) are listed in plan §5.1 and in the API document's
+- One Spring bean `com.commerce.inv.crossmodule.InventoryApi` honours CON-INV-006 … 019 (root namespace per
+  ADR-PTY-047, gate-analysis revise 1 G22; it delegates to the internal engines — ADR-INV-042); the events
+  CON-INV-020, 021 go through OutboxPublisher. No method has a REST route.
+- The codes raised only in-process (INV-409-RESERVE-NOT-AVAILABLE, INV-409-RESERVATION-CLOSED,
+  INV-409-STOCK-MOVE-IMMUTABLE, INV-422-LOT-EXPIRED, and INV-422-RESERVATION-MISMATCH added at gate-analysis
+  revise 1) are listed in plan §5.1 and in the API document's
   document-level `x-inprocess-error-codes`, not in the HTTP catalog block, because no operation can answer
   them.
 - Repository operations reached only in-process (reservation insert / lock / update / by key / by document,

@@ -2,8 +2,8 @@
 ══════════════════════════════════════════════════════════════════
 Module : INV   Version : v1   Profile : commerce   Stage : P2 (Database) · pass 1 · round 1
 Inputs : srs (srs-inv.md, P1 commit 8afe84c — REQ 138 · AC 154 · ENT 14 · RULE 48), registry-srs, contract (contract-inv.md, P1.5 commit 2d5372b), contracts (contract-cat.md CAT v2 — consumed; contract-pty.md — read, INV consumes nothing from PTY)
-Counts : tables 14 · DBF 219 (DBF-INV-001 … DBF-INV-219) · XM 13 (XM-INV-001 … XM-INV-013: 11 HARD-FK · 2 SOFT-READ) · intra-module FK 19 (composite with TENANT_ID) · tenant FK 14 · lookups seeded 6 keys / 34 values · number series 5 · notification templates 2 · settings defaults 2 · ADR 7 raised at P2 (ADR-INV-014 … ADR-INV-020)
-Status : DRAFT — P2 pass 1 · repair round 2 · no question raised · 1 BLOCKED (ADR-INV-019 — its unblock condition is met by ADR-INV-020, which rewords SRS D-13 / D-23; structure complete and unchanged)
+Counts : tables 14 · DBF 219 (DBF-INV-001 … DBF-INV-219) · XM 15 (XM-INV-001 … XM-INV-015: 11 HARD-FK · 4 SOFT-READ — 13 registered at P2 + XM-INV-014, 015 minted at P3.1 and back-registered) · intra-module FK 19 (composite with TENANT_ID) · tenant FK 14 · lookups seeded 6 keys / 34 values · number series 5 · notification templates 2 · settings defaults 3 · ADR 7 raised at P2 (ADR-INV-014 … ADR-INV-020, all ACCEPTED)
+Status : COMPLETE — P2 pass 1 · repair round 2 · no question raised · ADR-INV-019 resolved by ADR-INV-020 (ACCEPTED); gate-analysis revise 1: XM-INV-014 / 015 back-registered as minted, setting INV_MEASURE_UOM_KEY seeded (ADR-INV-043)
 ══════════════════════════════════════════════════════════════════
 
 ## 1 — Header
@@ -35,7 +35,7 @@ Status : DRAFT — P2 pass 1 · repair round 2 · no question raised · 1 BLOCKE
   domain-profile STEERING : vocabulary verbatim; identifier rules (BIGINT identity keys; LOV codes from given mdl)
   project-registry        : no name fixed for INV tables by another module; given tables listed in engine §4 are not re-created
   Extracted               : 14 entities → 14 tables · 19 intra-module FKs ·
-                            4 XM candidates (SRS A8 `module-dependencies`) → 13 XM records (one per HARD-FK column, one per SOFT-READ) ·
+                            4 XM candidates (SRS A8 `module-dependencies`) → 13 XM records (one per HARD-FK column, one per SOFT-READ; 2 more minted at P3.1 — 15 in all) ·
                             6 lookups owned (SRS A6) → 34 seed values · 1 lookup consumed (CAT unit of measure)
 ```
 
@@ -449,8 +449,10 @@ records:
   - REQ-INV-072
   - REQ-INV-078
   - REQ-INV-097
-  state: DELIVERED
-  contract_ref: contract-cat.md#CON-CAT-002
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: no column · RULE-INV-018 / 028 checks and Variant names read through CAT
+    getVariant (CON-CAT-008) and getItem (CON-CAT-007)
 - id: XM-INV-015
   type: SOFT-READ
   target_module: CAT
@@ -461,9 +463,13 @@ records:
   - REQ-INV-126
   - REQ-INV-127
   - REQ-INV-129
-  state: DELIVERED
-  contract_ref: contract-cat.md#CON-CAT-001
+  state: CONTRACTED
+  contract_ref: CON-CAT-001
+  column: no column · Item kind, code, names and Variants read through CAT getItem
+    (CON-CAT-007); Item term search through searchCatalogue (CON-CAT-016)
 ```
+
+XM-INV-014 and XM-INV-015 were minted at P3.1 (ADR-INV-031) and are back-registered here exactly as the backend plan's `xm-minted` block states them.
 
 | XM id | Type | Target | Column / access | SRS A8 row | Traces |
 |---|---|---|---|---|---|
@@ -471,6 +477,8 @@ records:
 | XM-INV-011 | HARD-FK | CAT · ENT-CAT-001 Item | INV_ITEM_STOCK_SETTINGS.ITEM_FK — column only | `{module: CAT, entity: ENT-CAT-001, type: HARD-FK}` | REQ-INV-124, 125, 129 |
 | XM-INV-012 | SOFT-READ | CAT · ENT-CAT-007 Bundle component | read through CON-CAT-007 (component lines with `componentBaseUomCode`) | `{module: CAT, entity: ENT-CAT-007, type: SOFT-READ}` | REQ-INV-042, 049, 053, 054 |
 | XM-INV-013 | SOFT-READ | CAT · ENT-CAT-009 Barcode | read through CON-CAT-010 | `{module: CAT, entity: ENT-CAT-009, type: SOFT-READ}` | REQ-INV-072, 088, 091 |
+| XM-INV-014 | SOFT-READ (minted P3.1) | CAT · ENT-CAT-002 Variant | read through CON-CAT-008, CON-CAT-007 | `{module: CAT, entity: ENT-CAT-002, type: HARD-FK}` (state read beside the key) | REQ-INV-052, 072, 078, 097 |
+| XM-INV-015 | SOFT-READ (minted P3.1) | CAT · ENT-CAT-001 Item | read through CON-CAT-007, CON-CAT-016 | `{module: CAT, entity: ENT-CAT-001, type: HARD-FK}` (state read beside the key) | REQ-INV-039, 124, 126, 127, 129 |
 
 Not XMs, by design:
 - ENT-INV-014.measureUomCode (DBF-INV-208) holds a code of the CAT-owned unit-of-measure lookup, stored as a code in a `VARCHAR(50)` column and validated through the given `MdlLookupApi` (SRS A6 "Lookups consumed") — lookup values live in the given `mdl`, not in a CAT table, so no edge exists.
@@ -1489,13 +1497,15 @@ WHERE NOT EXISTS (SELECT 1 FROM NOTIF_TEMPLATE n WHERE n.TENANT_ID = 1 AND n.COD
 
 -- 8e — settings platform defaults. Table owned by erp-core modules.cu (CU_APP_CONFIGURATION, TENANT_ID NULL = platform
 -- default every tenant inherits until it saves an override); the keys are owned by INV (SRS A6 "Settings consumed",
--- D-04): negative stock allowed by default (REQ-INV-066), near-expiry horizon 30 days (REQ-INV-118). Column list and
--- IS_ACTIVE_FL value as the given cu documents its own seed.
+-- D-04): negative stock allowed by default (REQ-INV-066), near-expiry horizon 30 days (REQ-INV-118), and the key of
+-- the consumed unit-of-measure lookup, CAT_UOM as CAT SRS A6 declares it (ADR-INV-043; no INV endpoint writes it, so
+-- every tenant inherits it). Column list and IS_ACTIVE_FL value as the given cu documents its own seed.
 INSERT INTO CU_APP_CONFIGURATION (ID, TENANT_ID, CONFIG_KEY, CONFIG_VALUE, NOTES, IS_ACTIVE_FL, CREATED_BY, CREATED_AT)
 SELECT nextval('SEQ_CU_APP_CONFIGURATION'), NULL, v.CONFIG_KEY, v.CONFIG_VALUE, v.NOTES, 1, 'SYSTEM', now()
 FROM (VALUES
-    ('INV_ALLOW_NEGATIVE_STOCK', 'true', 'Negative stock allowed (INV, REQ-INV-066)'),
-    ('INV_NEAR_EXPIRY_DAYS',     '30',   'Near-expiry horizon in whole days 1 to 365 (INV, REQ-INV-118)')
+    ('INV_ALLOW_NEGATIVE_STOCK', 'true',    'Negative stock allowed (INV, REQ-INV-066)'),
+    ('INV_NEAR_EXPIRY_DAYS',     '30',      'Near-expiry horizon in whole days 1 to 365 (INV, REQ-INV-118)'),
+    ('INV_MEASURE_UOM_KEY',      'CAT_UOM', 'Key of the consumed unit-of-measure lookup (INV, REQ-INV-125, ADR-INV-043)')
 ) AS v (CONFIG_KEY, CONFIG_VALUE, NOTES)
 WHERE NOT EXISTS (SELECT 1 FROM CU_APP_CONFIGURATION c WHERE c.TENANT_ID IS NULL AND c.CONFIG_KEY = v.CONFIG_KEY);
 
@@ -1532,19 +1542,19 @@ TENANCY       ✓ 14 / 14 tables: TENANT_ID NOT NULL · FK_<TABLE>_TENANT · IDX
 ORDER         ✓ parents before children · PK and tenant-scoped UNIQUE before FK · given DDL before the seed INSERTs
               ✓ the count ↔ adjustment cycle is two nullable FKs added after both tables exist
 COMPLETENESS  ✓ 14 / 14 ENT → table · every A3 field → DBF (219) · derived reservedQty / availableQty not held (SRS A3)
-              ✓ 6 / 6 owned lookup keys seeded (34 values) · 5 / 5 number series · 2 / 2 notification templates · 2 / 2 settings defaults
+              ✓ 6 / 6 owned lookup keys seeded (34 values) · 5 / 5 number series · 2 / 2 notification templates · 3 / 3 settings defaults
               ✓ indexes on every FK column (direct or via a leading UNIQUE), every B2 filter column, every UNIQUE business key
               ✓ shared lookup tables (MDL_*) not re-created
 CROSS-MODULE  ✓ 11 / 11 HARD-FK XM have their column (BIGINT, per CON-CAT-001 / CON-CAT-002) and their pointer "constraint → XM-INV-0nn"
               ✓ 2 / 2 SOFT-READ XM have their commentary block (after 5d) · no cross-module constraint, live or commented
-TRACE         ✓ 219 / 219 DBF trace to ENT.field + ≥ 1 REQ · 13 / 13 XM trace to ≥ 1 REQ and to an SRS A8 row · no orphan, no dangling id
+TRACE         ✓ 219 / 219 DBF trace to ENT.field + ≥ 1 REQ · 15 / 15 XM trace to ≥ 1 REQ and to an SRS A8 row (XM-INV-014, 015 minted at P3.1) · no orphan, no dangling id
 PROFILE       ✓ CM-3 every flag column ends with _FL (IS_DEFAULT_FL, IS_ACTIVE_FL, OFFLINE_FL, LOT_TRACKED_FL, DUAL_QUANTITY_FL)
               ✓ CM-8 every stock-bearing row carries its warehouse (INV_STOCK_BALANCE, INV_STOCK_MOVE, INV_RESERVATION; documents on the
                     header — lines inherit it through their composite FK); every monetary row carries CURRENCY_CODE
                     (INV_STOCK_MOVE, INV_TRANSFER_LINE, INV_STOCK_ADJUSTMENT_LINE, INV_STOCK_VALUATION); INV holds no price (ADR-INV-015)
 ```
 
-Counts: 14 tables · 14 PK · 22 UNIQUE constraints + 2 unique indexes · 34 CHECK · 19 intra-module FK + 14 tenant FK · 0 cross-module constraint (11 column-only HARD-FK) · 0 trigger · 45 non-unique indexes · 6 lookup types / 34 values · 5 number series · 2 notification templates · 2 settings defaults · 0 view · 0 routine.
+Counts: 14 tables · 14 PK · 22 UNIQUE constraints + 2 unique indexes · 34 CHECK · 19 intra-module FK + 14 tenant FK · 0 cross-module constraint (11 column-only HARD-FK) · 0 trigger · 45 non-unique indexes · 6 lookup types / 34 values · 5 number series · 2 notification templates · 3 settings defaults · 0 view · 0 routine.
 
 ---
 
@@ -1565,13 +1575,13 @@ Counts: 14 tables · 14 PK · 22 UNIQUE constraints + 2 unique indexes · 34 CHE
 | D-P2-09 | Column defaults only where the SRS states the initial value: IS_ACTIVE_FL TRUE, IS_DEFAULT_FL / OFFLINE_FL / LOT_TRACKED_FL / DUAL_QUANTITY_FL FALSE (A3 "false by default"), STATUS_CODE 'DRAFT' (REQ-INV-078, 087, 097) and 'ACTIVE' (REQ-INV-043), VERSION 0. DOC_DATE "today by default" is service-filled in the tenant time zone (RULE-INV-038's time-zone rule), not a database default; CURRENCY_CODE is service-filled from the tenant base currency | SRS A3, A7 |
 | D-P2-10 | Intra-module FKs carry no ON DELETE action — master rows are deactivated, never deleted; lines of a DRAFT document are removed by the service | ARCH-5; REQ-INV-089 |
 | D-P2-11 | Search indexes are B-tree on each filter column led by TENANT_ID; "contains" matching of names and barcode resolution (CAT CON-CAT-010) are query / service behaviour; this script creates no extension | engine §4.3 |
-| D-P2-12 | BLOCK 8 seeds every key INV owns into the given tables: 6 lookup types / 34 values (MDL_*), 5 number series (CORE_NUMBER_SERIES), 2 notification templates (NOTIF_TEMPLATE), 2 settings platform defaults (CU_APP_CONFIGURATION) — idempotent, for the platform tenant. The capability flags `lotExpiry`, `dualQuantity`, `bundles` are not seeded: their owner writes them (SRS A2 out of scope) | engine §4.2; SRS A6, A9, D-04 |
+| D-P2-12 | BLOCK 8 seeds every key INV owns into the given tables: 6 lookup types / 34 values (MDL_*), 5 number series (CORE_NUMBER_SERIES), 2 notification templates (NOTIF_TEMPLATE), 3 settings platform defaults (CU_APP_CONFIGURATION — INV_ALLOW_NEGATIVE_STOCK, INV_NEAR_EXPIRY_DAYS, INV_MEASURE_UOM_KEY) — idempotent, for the platform tenant. The capability flags `lotExpiry`, `dualQuantity`, `bundles` are not seeded: their owner writes them (SRS A2 out of scope) | engine §4.2; SRS A6, A9, D-04 |
 | D-P2-13 | Stock valuation carries no warehouse: SRS POL-INV-021 / ENT-INV-013 value each Variant across the tenant, so it is not a per-location stock row; per-location stock is INV_STOCK_BALANCE. Line tables (transfer, count, adjustment lines) take the warehouse from their header | SRS ENT-INV-013; CM-8 |
 | D-P2-14 | Cross-module HARD-FK columns are `BIGINT` exactly as CON-CAT-001 / CON-CAT-002 state; one XM per column so that each pointer maps to one integration block in P3.1 (whose constraint will be composite with TENANT_ID, as every intra-module FK here) | engine §5.1; contract-cat §0 |
 
 ### 5.2 ADRs raised by this stage (ADR-INV-014 … ADR-INV-020)
 
-ADR-INV-014 … 018 are NON-BREAKING with status ACCEPTED. ADR-INV-019 (repair round 2) has status BLOCKED: it stops the pass because the only remaining findings are on P1 SRS text, which P2 cannot write. It is not a structural conflict, and no DBF, XM or SQL depends on it. The write scope of the first run was the two P2 files, so ADR-INV-014 … 017 are recorded here in full (Context · Decision · Consequences · Traces · Status) for the orchestrator to file under `analysis/decisions/INV/ADR-INV-{seq}.md`. ADR-INV-018, ADR-INV-019 and ADR-INV-020 are recorded here and are filed as `analysis/decisions/INV/ADR-INV-018.md`, `ADR-INV-019.md` and `ADR-INV-020.md`. ADR-INV-020 (ACCEPTED) rewords the two SRS cells and so meets the unblock condition of ADR-INV-019. The next free ADR id is ADR-INV-021.
+All seven are NON-BREAKING with status ACCEPTED. ADR-INV-014 … 018 were accepted when raised. ADR-INV-019 (repair round 2) was raised BLOCKED, because the only remaining findings were on P1 SRS text, which P2 could not write; it is now ACCEPTED, resolved by ADR-INV-020, and P2 is complete. It was never a structural conflict, and no DBF, XM or SQL depends on it. The write scope of the first run was the two P2 files, so ADR-INV-014 … 017 are recorded here in full (Context · Decision · Consequences · Traces · Status) for the orchestrator to file under `analysis/decisions/INV/ADR-INV-{seq}.md`. ADR-INV-018, ADR-INV-019 and ADR-INV-020 are recorded here and are filed as `analysis/decisions/INV/ADR-INV-018.md`, `ADR-INV-019.md` and `ADR-INV-020.md`. ADR-INV-020 (ACCEPTED) rewords the two SRS cells and so meets the unblock condition of ADR-INV-019, which is ACCEPTED (resolved). The next free ADR id after P2 was ADR-INV-021 (the module's next free id is now ADR-INV-046).
 
 #### ADR-INV-014 — Platform columns TENANT_ID and VERSION on every INV table
 - **Context.** SRS A3 lists no tenant or version field. The given `erp-core` 1.6.0 states the tenancy rule "every table carries TENANT_ID" and requires every business entity to extend its `AuditableEntity` (TENANT_ID as Hibernate `@TenantId`, VERSION as the optimistic lock): every table has `TENANT_ID BIGINT NOT NULL`, `FK_<TABLE>_TENANT → CORE_TENANT(ID)`, an index led by TENANT_ID, every UNIQUE composite with TENANT_ID, and `VERSION BIGINT NOT NULL DEFAULT 0`. The SRS per-tenant rules (RULE-INV-002, 006, 011, 015, 030, 036, 045) need a tenant column to hold. NO-COLUMN-INVENTION admits a column the platform mandates for the entity. The project applied the same rule to PTY (ADR-PTY-035).
@@ -1617,12 +1627,12 @@ ADR-INV-014 … 018 are NON-BREAKING with status ACCEPTED. ADR-INV-019 (repair r
   No P2 file changes for the findings to clear. This ADR then becomes ACCEPTED (unblocked).
 - **Consequences.** P2 does not pass its gate, and P3.1 does not start, until the unblock condition holds. DBF-INV-001 … 219, XM-INV-001 … 013 and the script are unchanged. The contract needs no change, because neither name appears in it.
 - **Traces.** ADR-INV-018; SRS D-13, D-23; REQ-INV-043, REQ-INV-051, REQ-INV-052, REQ-INV-070, REQ-INV-071, REQ-INV-073.
-- **Status.** BLOCKED — stop the pass. The exit condition depends on a P1 artifact.
+- **Status.** ACCEPTED — resolved by ADR-INV-020 (raised BLOCKED in repair round 2, because the exit condition depended on a P1 artifact; the condition now holds).
 
 #### ADR-INV-020 — The SRS D-13 and D-23 override cells name no given interface (C-GIVEN-2 cleared on the SRS side)
 - **Context.** P2 was refused again with the same two C-GIVEN-2 findings on artifact `srs`. This repair round authorises an in-place edit of `P1/srs-inv.md` for them, which is the unblock condition of ADR-INV-019.
 - **Decision.** Stop using the interfaces, as ADR-INV-018 decided. Reword the two "Override / status" cells with no change of meaning: D-13 → "Server-side import through the given file module once the core publishes the read"; D-23 → "Subscribe to their events through the given events module". The SRS and contract `given-usage` blocks are unchanged and stay identical.
-- **Consequences.** No P1 file names either interface. The unblock condition of ADR-INV-019 holds once `_state/current-srs.md` is regenerated. ADR-INV-019 is not rewritten under its id, and its resolution is left to its owner. No DBF, XM or SQL changes.
+- **Consequences.** No P1 file names either interface. The unblock condition of ADR-INV-019 holds, and ADR-INV-019 is ACCEPTED (resolved). No DBF, XM or SQL changes.
 - **Traces.** ADR-INV-018, ADR-INV-019; SRS D-13, D-23; REQ-INV-043, REQ-INV-051, REQ-INV-052, REQ-INV-070, REQ-INV-071, REQ-INV-073.
 - **Status.** ACCEPTED — non-breaking. Filed as `analysis/decisions/INV/ADR-INV-020.md`.
 
@@ -1644,7 +1654,7 @@ ADR-INV-014 … 018 are NON-BREAKING with status ACCEPTED. ADR-INV-019 (repair r
 | SRS D-24 | no reservation expiry column |
 | contract C-3 | Reservation and Stock move stay private; their keys are soft references for consumers |
 
-BLOCKED: ADR-INV-019. Its unblock condition is met: ADR-INV-020 rewords the D-13 and D-23 override cells in the P1 SRS. Its status change is left to its owner. No structural element of this script is blocked.
+BLOCKED: none. ADR-INV-019 is resolved: ADR-INV-020 reworded the D-13 and D-23 override cells in the P1 SRS, and ADR-INV-019 is ACCEPTED. P2 is complete; no structural element of this script was ever blocked.
 
 ---
 
@@ -1669,6 +1679,6 @@ The registry of this stage is `analysis/modules/INV/P2/registry-db-inv.md` (same
 | INV_STOCK_VALUATION | ENT-INV-013 | transactional | DBF-INV-191 … DBF-INV-204 |
 | INV_ITEM_STOCK_SETTINGS | ENT-INV-014 | config | DBF-INV-205 … DBF-INV-219 |
 
-XM : XM-INV-001 … XM-INV-013 · Last DBF : DBF-INV-219 · Last XM : XM-INV-013 · Decisions : ADR-INV-014 … ADR-INV-020 (1 BLOCKED: ADR-INV-019 — unblock condition met by ADR-INV-020) · DEFAULTs D-P2-01 … D-P2-14
+XM : XM-INV-001 … XM-INV-015 (13 + 2 minted at P3.1) · Last DBF : DBF-INV-219 · Last XM : XM-INV-015 · Decisions : ADR-INV-014 … ADR-INV-020, all ACCEPTED (ADR-INV-019 resolved by ADR-INV-020) · DEFAULTs D-P2-01 … D-P2-14
 
-Event : "P2 completed: INV v1 — 14 tables, 219 DBF, 13 XM — BLOCKED by ADR-INV-019 (P1 SRS D-13 / D-23 wording)"
+Event : "P2 completed: INV v1 — 14 tables, 219 DBF, 15 XM (13 + 2 minted at P3.1) — ADR-INV-019 resolved by ADR-INV-020"

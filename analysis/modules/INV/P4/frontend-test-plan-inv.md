@@ -6,11 +6,12 @@ Sources: _state/current-srs.md (INV v1 — REQ 138 · AC 154 · SCR-REQ 12)
          _state/current-frontend-execution-plan.md (P3.2 — SCR-INV-001 … 012, UXD-INV-001 … 011, F1 … F4, SEC-FE)
          _state/current-api-spec (api-spec-inv.yaml — the document the mock server serves)
          _state/current-backend-execution-plan.md (Error Catalog texts) · _state/current-registry-srs.md
-Owns   : TC-INV-173 … TC-INV-241 (this file) — the sequence starts in backend-test-plan-inv.md (TC-INV-001 … 172)
+Owns   : TC-INV-173 … TC-INV-241 and TC-INV-262 … TC-INV-263 (this file) — the backend cases are in
+         backend-test-plan-inv.md (TC-INV-001 … 172, 242 … 261); TC-INV-262, 263 were added at gate-analysis revise 1
 ADRs   : raised here ADR-INV-037 (track placement and package), ADR-INV-038 (asserted texts and codes),
          ADR-INV-039 (acceptance of F3-SCR-INV-012 and F4-SCR-INV-011 — repair round 1) — ACCEPTED, non-breaking · cited from P3.2: ADR-INV-033 (reads outside the document), ADR-INV-034 (count commits per
-         line), ADR-INV-035 (browser reads the sheet), ADR-INV-036 (PENDING — warehouse label for a Seller/Cashier;
-         no case asserts that label)
+         line), ADR-INV-035 (browser reads the sheet — barcode only in v1), ADR-INV-036 (warehouse label for a
+         Seller/Cashier read from the row — closed at gate-analysis revise 1; TC-INV-262 asserts it)
 ══════════════════════════════════════════════════════════════════
 
 ## How to read this plan
@@ -25,10 +26,10 @@ ADRs   : raised here ADR-INV-037 (track placement and package), ADR-INV-038 (ass
   `move`, `variant`).
 - **Catalogue data.** Every lookup value a case names is seeded by INV. No case needs host data.
 
-<!-- PHASE:TEST-PLAN-FE:START traces=AC-INV-004,AC-INV-007,AC-INV-008,AC-INV-011,AC-INV-013,AC-INV-014,AC-INV-015,AC-INV-018,AC-INV-026,AC-INV-029,AC-INV-030,AC-INV-034,AC-INV-035,AC-INV-037,AC-INV-069,AC-INV-071,AC-INV-076,AC-INV-079,AC-INV-081,AC-INV-083,AC-INV-088,AC-INV-090,AC-INV-091,AC-INV-093,AC-INV-098,AC-INV-100,AC-INV-101,AC-INV-103,AC-INV-106,AC-INV-109,AC-INV-111,AC-INV-113,AC-INV-128,AC-INV-129,AC-INV-130,AC-INV-132,AC-INV-133,AC-INV-135,AC-INV-139,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-150,AC-INV-151,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-003,REQ-INV-006,REQ-INV-008,REQ-INV-010,REQ-INV-011,REQ-INV-012,REQ-INV-015,REQ-INV-022,REQ-INV-025,REQ-INV-029,REQ-INV-030,REQ-INV-032,REQ-INV-063,REQ-INV-065,REQ-INV-070,REQ-INV-072,REQ-INV-074,REQ-INV-076,REQ-INV-080,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-088,REQ-INV-090,REQ-INV-091,REQ-INV-093,REQ-INV-096,REQ-INV-098,REQ-INV-099,REQ-INV-101,REQ-INV-114,REQ-INV-115,REQ-INV-116,REQ-INV-118,REQ-INV-119,REQ-INV-121,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-134,REQ-INV-135,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
+<!-- PHASE:TEST-PLAN-FE:START traces=AC-INV-044,AC-INV-062,REQ-INV-039,REQ-INV-056,AC-INV-004,AC-INV-007,AC-INV-008,AC-INV-011,AC-INV-013,AC-INV-014,AC-INV-015,AC-INV-018,AC-INV-026,AC-INV-029,AC-INV-030,AC-INV-034,AC-INV-035,AC-INV-037,AC-INV-069,AC-INV-071,AC-INV-076,AC-INV-079,AC-INV-081,AC-INV-083,AC-INV-088,AC-INV-090,AC-INV-091,AC-INV-093,AC-INV-098,AC-INV-100,AC-INV-101,AC-INV-103,AC-INV-106,AC-INV-109,AC-INV-111,AC-INV-113,AC-INV-128,AC-INV-129,AC-INV-130,AC-INV-132,AC-INV-133,AC-INV-135,AC-INV-139,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-150,AC-INV-151,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-003,REQ-INV-006,REQ-INV-008,REQ-INV-010,REQ-INV-011,REQ-INV-012,REQ-INV-015,REQ-INV-022,REQ-INV-025,REQ-INV-029,REQ-INV-030,REQ-INV-032,REQ-INV-063,REQ-INV-065,REQ-INV-070,REQ-INV-072,REQ-INV-074,REQ-INV-076,REQ-INV-080,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-088,REQ-INV-090,REQ-INV-091,REQ-INV-093,REQ-INV-096,REQ-INV-098,REQ-INV-099,REQ-INV-101,REQ-INV-114,REQ-INV-115,REQ-INV-116,REQ-INV-118,REQ-INV-119,REQ-INV-121,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-134,REQ-INV-135,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
 ## TEST-PLAN-FE — module test cases
 
-<!-- SUB:UI-FLOWS:START traces=AC-INV-004,AC-INV-007,AC-INV-008,AC-INV-011,AC-INV-013,AC-INV-014,AC-INV-015,AC-INV-026,AC-INV-029,AC-INV-030,AC-INV-034,AC-INV-035,AC-INV-069,AC-INV-071,AC-INV-079,AC-INV-081,AC-INV-083,AC-INV-088,AC-INV-090,AC-INV-091,AC-INV-093,AC-INV-098,AC-INV-101,AC-INV-103,AC-INV-106,AC-INV-109,AC-INV-111,AC-INV-113,AC-INV-129,AC-INV-130,AC-INV-132,AC-INV-133,AC-INV-135,AC-INV-139,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-150,AC-INV-151,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-003,REQ-INV-006,REQ-INV-008,REQ-INV-010,REQ-INV-011,REQ-INV-012,REQ-INV-022,REQ-INV-025,REQ-INV-029,REQ-INV-030,REQ-INV-063,REQ-INV-065,REQ-INV-072,REQ-INV-074,REQ-INV-076,REQ-INV-080,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-088,REQ-INV-091,REQ-INV-093,REQ-INV-096,REQ-INV-098,REQ-INV-099,REQ-INV-101,REQ-INV-115,REQ-INV-116,REQ-INV-118,REQ-INV-119,REQ-INV-121,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-134,REQ-INV-135,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
+<!-- SUB:UI-FLOWS:START traces=AC-INV-044,AC-INV-062,REQ-INV-039,REQ-INV-056,AC-INV-004,AC-INV-007,AC-INV-008,AC-INV-011,AC-INV-013,AC-INV-014,AC-INV-015,AC-INV-026,AC-INV-029,AC-INV-030,AC-INV-034,AC-INV-035,AC-INV-069,AC-INV-071,AC-INV-079,AC-INV-081,AC-INV-083,AC-INV-088,AC-INV-090,AC-INV-091,AC-INV-093,AC-INV-098,AC-INV-101,AC-INV-103,AC-INV-106,AC-INV-109,AC-INV-111,AC-INV-113,AC-INV-129,AC-INV-130,AC-INV-132,AC-INV-133,AC-INV-135,AC-INV-139,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-150,AC-INV-151,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-003,REQ-INV-006,REQ-INV-008,REQ-INV-010,REQ-INV-011,REQ-INV-012,REQ-INV-022,REQ-INV-025,REQ-INV-029,REQ-INV-030,REQ-INV-063,REQ-INV-065,REQ-INV-072,REQ-INV-074,REQ-INV-076,REQ-INV-080,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-088,REQ-INV-091,REQ-INV-093,REQ-INV-096,REQ-INV-098,REQ-INV-099,REQ-INV-101,REQ-INV-115,REQ-INV-116,REQ-INV-118,REQ-INV-119,REQ-INV-121,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-134,REQ-INV-135,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
 ### UI-FLOWS — per-screen flows
 
 <!-- TC:TC-INV-173:START traces=AC-INV-004,REQ-INV-003,SCR-INV-001 -->
@@ -206,11 +207,11 @@ Exercises    : SCR-INV-010 /inventory/opening-stock — Post
 Rule / code  : RULE-INV-028 → INV-422-LOAD-ROWS-INVALID (detail INV-422-LOAD-ROW-VARIANT)
 Package      : F2-SCR-INV-010
 Scenario     : VIOLATION · data class INVALID · language ALL
-Preconditions: Owner session; 20 rows in the form, row 7 with code V-404; the server answers 422 INV-422-LOAD-ROWS-INVALID with details [rowNo 7, INV-422-LOAD-ROW-VARIANT]
+Preconditions: Owner session; 20 rows in the form, row 7 with barcode V-404; the server answers 422 INV-422-LOAD-ROWS-INVALID with details [rowNo 7, INV-422-LOAD-ROW-VARIANT]
 Host data    : none
 Steps        : 1. Post.
-Expected     : the row failures list shows row 7 with «لم يُعثر على متغيّر صنف نشط بهذا الرمز أو الباركود.» / "No active Variant has this code or barcode."; the screen stays on opening stock (nothing posted, no navigation); the 20 rows are kept.
-Test data    : row 7 code "V-404"
+Expected     : the row failures list shows row 7 with «لا يطابق هذا السطر متغيّر صنف نشطًا.» / "This row matches no active Variant."; the screen stays on opening stock (nothing posted, no navigation); the 20 rows are kept.
+Test data    : row 7 barcode "V-404"
 <!-- TC:TC-INV-185:END -->
 
 <!-- TC:TC-INV-186:START traces=AC-INV-081,REQ-INV-074,SCR-INV-010 -->
@@ -618,6 +619,34 @@ Steps        : 1. Open inventory settings. 2. Switch «السماح بالرصي
 Expected     : 1 → the switch is on; the near-expiry horizon field is not displayed (lotExpiry off). 2 → one save request carrying allowNegativeStockFl false and the unchanged nearExpiryDays 30. 3 → the switch shows off. The refusal of a later online issue is asserted on the backend track (TC-INV-017).
 Test data    : allowNegativeStockFl true → false (AC-INV-071)
 <!-- TC:TC-INV-241:END -->
+
+<!-- TC:TC-INV-262:START traces=AC-INV-044,REQ-INV-039,SCR-INV-003 -->
+### TC-INV-262 — A Seller/Cashier sees each balance row labelled with its warehouse name
+Derived from : AC-INV-044  (REQ-INV-039)
+Exercises    : SCR-INV-003 /inventory/stock-balances
+Rule / code  : — → —
+Package      : F4-SCR-INV-003
+Scenario     : PERMISSION · data class VALID · language ALL
+Preconditions: a Seller/Cashier session (no PERM_INV_WAREHOUSES_VIEW); the context answers activeWarehouseCount 2; the server answers 2 rows of Variant V: W1 (warehouseCode WH-0001, warehouseNameAr «المستودع الرئيسي», warehouseNameEn "Main warehouse", on-hand 5) and W2 (WH-0002, «مستودع الفرع», nameEn empty, on-hand 8, reserved 2)
+Host data    : none
+Steps        : 1. Search balances for V. 2. Look at the availability summary.
+Expected     : 1 → the warehouse column shows «المستودع الرئيسي» / "Main warehouse" and «مستودع الفرع» (English falls back to the Arabic name); no request is sent to API-INV-001; no warehouse filter is offered. 2 → the per-warehouse rows of the summary carry the same labels (ADR-INV-036).
+Test data    : —
+<!-- TC:TC-INV-262:END -->
+
+<!-- TC:TC-INV-263:START traces=AC-INV-062,REQ-INV-056,SCR-INV-005,SCR-INV-004 -->
+### TC-INV-263 — The "Stock moves" link of a posted transfer opens that transfer's moves only
+Derived from : AC-INV-062  (REQ-INV-056)
+Exercises    : SCR-INV-005 /inventory/transfers/:id → SCR-INV-004 /inventory/stock-moves
+Rule / code  : — → —
+Package      : F4-SCR-INV-005
+Scenario     : HAPPY · data class VALID · language ALL
+Preconditions: Warehouse user session; 2 active Warehouses; a posted Transfer TR-0005 with transferPk T
+Host data    : none
+Steps        : 1. Open the transfer and choose "Stock moves".
+Expected     : the route becomes /inventory/stock-moves?sourceDocTypeCode=INV_TRANSFER&sourceDocRef=T; the move search is sent with sourceDocTypeCode INV_TRANSFER and sourceDocRef T (not docNo); the filter area shows the chip «المستند المصدر» / "Source document" with the transfer's type and number TR-0005.
+Test data    : —
+<!-- TC:TC-INV-263:END -->
 <!-- SUB:UI-FLOWS:END -->
 
 <!-- SUB:INT-FLOW:START traces=AC-INV-018,AC-INV-037,AC-INV-076,AC-INV-100,AC-INV-128,REQ-INV-015,REQ-INV-032,REQ-INV-070,REQ-INV-090,REQ-INV-114 -->
@@ -1031,9 +1060,9 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-005 | TC-INV-050 | — |
 | AC-INV-006 | TC-INV-051 | — |
 | AC-INV-007 | TC-INV-002 | TC-INV-174 |
-| AC-INV-008 | TC-INV-003 | TC-INV-175 |
+| AC-INV-008 | TC-INV-003, TC-INV-252 | TC-INV-175 |
 | AC-INV-009 | TC-INV-052 | — |
-| AC-INV-010 | TC-INV-053 | — |
+| AC-INV-010 | TC-INV-053, TC-INV-248 | — |
 | AC-INV-011 | TC-INV-004 | TC-INV-176 |
 | AC-INV-012 | TC-INV-054 | — |
 | AC-INV-013 | TC-INV-055 | TC-INV-177 |
@@ -1063,11 +1092,11 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-037 | TC-INV-069 | TC-INV-214 |
 | AC-INV-038 | TC-INV-070 | — |
 | AC-INV-039 | TC-INV-071 | — |
-| AC-INV-040 | TC-INV-072 | — |
+| AC-INV-040 | TC-INV-072, TC-INV-244 | — |
 | AC-INV-041 | TC-INV-073 | — |
-| AC-INV-042 | TC-INV-074 | — |
+| AC-INV-042 | TC-INV-074, TC-INV-251 | — |
 | AC-INV-043 | TC-INV-075 | — |
-| AC-INV-044 | TC-INV-076 | TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221 |
+| AC-INV-044 | TC-INV-076, TC-INV-259 | TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-262 |
 | AC-INV-045 | TC-INV-077 | — |
 | AC-INV-046 | TC-INV-078 | — |
 | AC-INV-047 | TC-INV-079 | — |
@@ -1075,7 +1104,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-049 | TC-INV-011 | — |
 | AC-INV-050 | TC-INV-081 | — |
 | AC-INV-051 | TC-INV-082 | — |
-| AC-INV-052 | TC-INV-083 | — |
+| AC-INV-052 | TC-INV-083, TC-INV-255 | — |
 | AC-INV-053 | TC-INV-012 | — |
 | AC-INV-054 | TC-INV-084 | — |
 | AC-INV-055 | TC-INV-085 | — |
@@ -1085,9 +1114,9 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-059 | TC-INV-088 | — |
 | AC-INV-060 | TC-INV-014 | — |
 | AC-INV-061 | TC-INV-015 | — |
-| AC-INV-062 | TC-INV-089 | — |
+| AC-INV-062 | TC-INV-089, TC-INV-260 | TC-INV-263 |
 | AC-INV-063 | TC-INV-090 | — |
-| AC-INV-064 | TC-INV-091 | — |
+| AC-INV-064 | TC-INV-091, TC-INV-245 | — |
 | AC-INV-065 | TC-INV-092 | — |
 | AC-INV-066 | TC-INV-093 | — |
 | AC-INV-067 | TC-INV-094 | — |
@@ -1099,7 +1128,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-073 | TC-INV-018 | — |
 | AC-INV-074 | TC-INV-098 | — |
 | AC-INV-075 | TC-INV-019 | — |
-| AC-INV-076 | TC-INV-099 | TC-INV-215 |
+| AC-INV-076 | TC-INV-099, TC-INV-257 | TC-INV-215 |
 | AC-INV-077 | TC-INV-100 | — |
 | AC-INV-078 | TC-INV-020 | — |
 | AC-INV-079 | TC-INV-021 | TC-INV-185 |
@@ -1110,13 +1139,13 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-084 | TC-INV-104 | — |
 | AC-INV-085 | TC-INV-105 | TC-INV-226, TC-INV-227 |
 | AC-INV-086 | TC-INV-106 | — |
-| AC-INV-087 | TC-INV-107 | — |
+| AC-INV-087 | TC-INV-107, TC-INV-246, TC-INV-253 | — |
 | AC-INV-088 | TC-INV-022 | TC-INV-188 |
-| AC-INV-089 | TC-INV-108 | — |
+| AC-INV-089 | TC-INV-108, TC-INV-247 | — |
 | AC-INV-090 | TC-INV-023 | TC-INV-189 |
 | AC-INV-091 | TC-INV-024 | TC-INV-190 |
 | AC-INV-092 | TC-INV-109 | — |
-| AC-INV-093 | TC-INV-025 | TC-INV-191 |
+| AC-INV-093 | TC-INV-025, TC-INV-254 | TC-INV-191 |
 | AC-INV-094 | TC-INV-026 | — |
 | AC-INV-095 | TC-INV-110 | — |
 | AC-INV-096 | TC-INV-111 | — |
@@ -1125,13 +1154,13 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-099 | TC-INV-113 | — |
 | AC-INV-100 | — | TC-INV-216 |
 | AC-INV-101 | TC-INV-028 | TC-INV-193 |
-| AC-INV-102 | TC-INV-114 | — |
+| AC-INV-102 | TC-INV-114, TC-INV-258 | — |
 | AC-INV-103 | TC-INV-029 | TC-INV-194 |
 | AC-INV-104 | TC-INV-115 | — |
 | AC-INV-105 | TC-INV-116 | — |
 | AC-INV-106 | TC-INV-030 | TC-INV-195 |
 | AC-INV-107 | TC-INV-117 | TC-INV-230, TC-INV-231 |
-| AC-INV-108 | TC-INV-118 | — |
+| AC-INV-108 | TC-INV-118, TC-INV-256 | — |
 | AC-INV-109 | TC-INV-031 | TC-INV-196 |
 | AC-INV-110 | TC-INV-119 | — |
 | AC-INV-111 | TC-INV-032 | TC-INV-197 |
@@ -1142,7 +1171,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-116 | TC-INV-122 | — |
 | AC-INV-117 | TC-INV-123 | — |
 | AC-INV-118 | TC-INV-035 | — |
-| AC-INV-119 | TC-INV-124 | — |
+| AC-INV-119 | TC-INV-124, TC-INV-249 | — |
 | AC-INV-120 | TC-INV-036 | — |
 | AC-INV-121 | TC-INV-125 | — |
 | AC-INV-122 | TC-INV-126 | TC-INV-232, TC-INV-233 |
@@ -1165,18 +1194,18 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-139 | TC-INV-041 | TC-INV-204 |
 | AC-INV-140 | TC-INV-139 | TC-INV-236, TC-INV-237 |
 | AC-INV-141 | TC-INV-042 | TC-INV-205 |
-| AC-INV-142 | TC-INV-043 | TC-INV-206 |
+| AC-INV-142 | TC-INV-043, TC-INV-250 | TC-INV-206 |
 | AC-INV-143 | TC-INV-044 | TC-INV-207 |
 | AC-INV-144 | TC-INV-045 | — |
 | AC-INV-145 | TC-INV-140 | — |
 | AC-INV-146 | TC-INV-141 | — |
 | AC-INV-147 | TC-INV-046 | — |
-| AC-INV-148 | TC-INV-142 | — |
+| AC-INV-148 | TC-INV-142, TC-INV-242, TC-INV-243 | — |
 | AC-INV-149 | TC-INV-143 | — |
 | AC-INV-150 | — | TC-INV-208 |
 | AC-INV-151 | — | TC-INV-209 |
 | AC-INV-152 | TC-INV-144 | TC-INV-210 |
-| AC-INV-153 | TC-INV-145 | TC-INV-211 |
+| AC-INV-153 | TC-INV-145, TC-INV-261 | TC-INV-211 |
 | AC-INV-154 | TC-INV-146 | TC-INV-212 |
 
 ### REQ → TC
@@ -1195,7 +1224,8 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | REQ-INV-029 | TC-INV-183 |
 | REQ-INV-030 | TC-INV-184 |
 | REQ-INV-032 | TC-INV-214 |
-| REQ-INV-039 | TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221 |
+| REQ-INV-039 | TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-262 |
+| REQ-INV-056 | TC-INV-263 |
 | REQ-INV-063 | TC-INV-238, TC-INV-239, TC-INV-240 |
 | REQ-INV-065 | TC-INV-241 |
 | REQ-INV-070 | TC-INV-215 |
@@ -1240,9 +1270,9 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 |---|---|
 | SCR-INV-001 | TC-INV-173, TC-INV-174, TC-INV-175, TC-INV-176, TC-INV-183, TC-INV-184, TC-INV-213, TC-INV-214 |
 | SCR-INV-002 | TC-INV-180, TC-INV-181, TC-INV-182, TC-INV-214 |
-| SCR-INV-003 | TC-INV-179, TC-INV-203, TC-INV-209, TC-INV-210, TC-INV-211, TC-INV-213, TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-222, TC-INV-223 |
-| SCR-INV-004 | TC-INV-187, TC-INV-210, TC-INV-213, TC-INV-224, TC-INV-225 |
-| SCR-INV-005 | TC-INV-178, TC-INV-188, TC-INV-189, TC-INV-190, TC-INV-191, TC-INV-210, TC-INV-213, TC-INV-226, TC-INV-227 |
+| SCR-INV-003 | TC-INV-179, TC-INV-203, TC-INV-209, TC-INV-210, TC-INV-211, TC-INV-213, TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-222, TC-INV-223, TC-INV-262 |
+| SCR-INV-004 | TC-INV-187, TC-INV-210, TC-INV-213, TC-INV-224, TC-INV-225, TC-INV-263 |
+| SCR-INV-005 | TC-INV-178, TC-INV-188, TC-INV-189, TC-INV-190, TC-INV-191, TC-INV-210, TC-INV-213, TC-INV-226, TC-INV-227, TC-INV-263 |
 | SCR-INV-006 | TC-INV-192, TC-INV-193, TC-INV-194, TC-INV-195, TC-INV-210, TC-INV-216, TC-INV-228, TC-INV-229 |
 | SCR-INV-007 | TC-INV-177, TC-INV-196, TC-INV-197, TC-INV-198, TC-INV-208, TC-INV-210, TC-INV-212, TC-INV-213, TC-INV-215, TC-INV-217, TC-INV-230, TC-INV-231 |
 | SCR-INV-008 | TC-INV-199, TC-INV-200, TC-INV-210, TC-INV-217, TC-INV-232, TC-INV-233 |
@@ -1354,9 +1384,9 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | F3-SCR-INV-012 | TC-INV-238 |
 | F4-SCR-INV-001 | TC-INV-183, TC-INV-184 |
 | F4-SCR-INV-002 | TC-INV-214 |
-| F4-SCR-INV-003 | TC-INV-179, TC-INV-203, TC-INV-209, TC-INV-220, TC-INV-222 |
+| F4-SCR-INV-003 | TC-INV-179, TC-INV-203, TC-INV-209, TC-INV-220, TC-INV-222, TC-INV-262 |
 | F4-SCR-INV-004 | TC-INV-187 |
-| F4-SCR-INV-005 | TC-INV-178, TC-INV-226 |
+| F4-SCR-INV-005 | TC-INV-178, TC-INV-226, TC-INV-263 |
 | F4-SCR-INV-006 | TC-INV-216, TC-INV-228 |
 | F4-SCR-INV-007 | TC-INV-177, TC-INV-208, TC-INV-217, TC-INV-230 |
 | F4-SCR-INV-008 | TC-INV-199 |
@@ -1371,11 +1401,11 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | Measure | Result |
 |---|---|
 | AC covered (both tracks) | ✓ 154/154 · gaps: none |
-| AC covered on this track | 55/154 (the rest on the other track; 47 ACs on both) |
+| AC covered on this track | 56/154 (the rest on the other track; 48 ACs on both) |
 | REQ covered (both tracks) | ✓ 138/138 · gaps: none |
-| REQ covered on this track | 50/138 |
+| REQ covered on this track | 51/138 |
 | SCR covered | ✓ 12/12 · gaps: none |
 | UXD covered | ✓ 11/11 (rendered + empty/failure each) · gaps: none |
 | Split units with no TC | 13 of 50: F1-SCR-INV-001, F1-SCR-INV-002, F1-SCR-INV-003, F1-SCR-INV-004, F1-SCR-INV-005, F1-SCR-INV-006, F1-SCR-INV-007, F1-SCR-INV-008, F1-SCR-INV-009, F1-SCR-INV-010, F1-SCR-INV-011, F1-SCR-INV-012, ALIGN-FE · no AC, XM or UXD derives a case for them (ADR-INV-037); F3-SCR-INV-012 and F4-SCR-INV-011 carry TC-INV-238 and TC-INV-241 (ADR-INV-039) |
-| Over-engineering guard | 69 TCs for 55 ACs + 11 UXD (ratio 1.05 ≤ 2) |
+| Over-engineering guard | 71 TCs for 56 ACs + 11 UXD (ratio 1.06 ≤ 2) |
 

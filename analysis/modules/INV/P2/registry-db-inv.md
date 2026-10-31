@@ -44,11 +44,11 @@ records:
   - {id: XM-INV-011, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-001, traces: [REQ-INV-124, REQ-INV-125, REQ-INV-129], state: CONTRACTED, contract_ref: "CON-CAT-001", column: "INV_ITEM_STOCK_SETTINGS · ITEM_FK (DBF-INV-209)"}
   - {id: XM-INV-012, type: SOFT-READ, target_module: CAT, target_entity: ENT-CAT-007, traces: [REQ-INV-042, REQ-INV-049, REQ-INV-053, REQ-INV-054], state: CONTRACTED, contract_ref: "CON-CAT-006", column: "no column · the bundle availability, reservation and issue services read the Bundle component lines of the bundle Variant's Item through CAT getItem (CON-CAT-007)"}
   - {id: XM-INV-013, type: SOFT-READ, target_module: CAT, target_entity: ENT-CAT-009, traces: [REQ-INV-072, REQ-INV-088, REQ-INV-091], state: CONTRACTED, contract_ref: "CON-CAT-005", column: "no column · the count-line and opening-stock services resolve a scanned or loaded barcode to its Variant through CAT lookupBarcode (CON-CAT-010)"}
-  - {id: XM-INV-014, type: SOFT-READ, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-052, REQ-INV-072, REQ-INV-078, REQ-INV-097], state: DELIVERED, contract_ref: "contract-cat.md#CON-CAT-002"}
-  - {id: XM-INV-015, type: SOFT-READ, target_module: CAT, target_entity: ENT-CAT-001, traces: [REQ-INV-039, REQ-INV-124, REQ-INV-126, REQ-INV-127, REQ-INV-129], state: DELIVERED, contract_ref: "contract-cat.md#CON-CAT-001"}
+  - {id: XM-INV-014, type: SOFT-READ, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-052, REQ-INV-072, REQ-INV-078, REQ-INV-097], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "no column · RULE-INV-018 / 028 checks and Variant names read through CAT getVariant (CON-CAT-008) and getItem (CON-CAT-007)"}
+  - {id: XM-INV-015, type: SOFT-READ, target_module: CAT, target_entity: ENT-CAT-001, traces: [REQ-INV-039, REQ-INV-124, REQ-INV-126, REQ-INV-127, REQ-INV-129], state: CONTRACTED, contract_ref: "CON-CAT-001", column: "no column · Item kind, code, names and Variants read through CAT getItem (CON-CAT-007); Item term search through searchCatalogue (CON-CAT-016)"}
 ```
 
-13 edges INV → CAT (11 HARD-FK, 2 SOFT-READ), all CONTRACTED against contract-cat (CAT v2). XM-INV-014 and XM-INV-015 (SOFT-READ, Variant and Item state reads) were minted at P3.1 (ADR-INV-031) and are back-registered here and in the db-script register, with no column — 15 edges in all. Every record comes from an SRS A8 `module-dependencies` row (ENT-CAT-001, ENT-CAT-002 HARD-FK; ENT-CAT-007, ENT-CAT-009 SOFT-READ). Edges into INV (PUR, SLS, SFR, STL, TAX, INS → CON-INV-001 … CON-INV-021) are minted by those consumers' P2 stages and derived by `gov.py graph`.
+15 edges INV → CAT (11 HARD-FK, 4 SOFT-READ), all CONTRACTED against contract-cat (CAT v2): 13 registered at P2, and XM-INV-014 and XM-INV-015 (SOFT-READ, Variant and Item state reads), minted at P3.1 (ADR-INV-031) and back-registered here and in the db-script register exactly as the backend plan's `xm-minted` block states them (state CONTRACTED, contract_ref CON-CAT-002 / CON-CAT-001, no column). Every record comes from an SRS A8 `module-dependencies` row (ENT-CAT-001, ENT-CAT-002 HARD-FK; ENT-CAT-007, ENT-CAT-009 SOFT-READ). Edges into INV (PUR, SLS, SFR, STL, TAX, INS → CON-INV-001 … CON-INV-021) are minted by those consumers' P2 stages and derived by `gov.py graph`.
 
 ### Lookups
 | Key | Seeded values | Count | Key owner | Table owner |
@@ -60,9 +60,9 @@ records:
 | INV_SOURCE_DOC_TYPE | INV_TRANSFER, INV_COUNT, INV_ADJUSTMENT, PURCHASE_RECEIPT, PURCHASE_RETURN, SALES_INVOICE, POS_SALE, SALES_RETURN, SALES_ORDER, STOREFRONT_ORDER | 10 (open) | INV | given `erp-core:modules.mdl` |
 | INV_CHANGE_KIND | CREATED, UPDATED, DEACTIVATED, REACTIVATED, DEFAULT_CHANGED | 5 (closed, event field) | INV | given `erp-core:modules.mdl` |
 
-Consumed (not seeded here) : CAT unit-of-measure lookup → INV_ITEM_STOCK_SETTINGS.MEASURE_UOM_CODE (owner CAT).
+Consumed (not seeded here) : CAT unit-of-measure lookup → INV_ITEM_STOCK_SETTINGS.MEASURE_UOM_CODE (owner CAT); its key is the setting INV_MEASURE_UOM_KEY (ADR-INV-043).
 
-Total seeded : 6 keys · 34 values (BLOCK 8a / 8b, TENANT_ID = 1) · number series 5 (BLOCK 8c: INV_WAREHOUSE `WH-`, INV_BRANCH `BR-`, INV_TRANSFER `TR-`, INV_COUNT `CNT-`, INV_ADJUSTMENT `ADJ-`, each + 4 digits, never reset) · notification templates 2 (BLOCK 8d: INV_NEGATIVE_STOCK, INV_NEAR_EXPIRY) · settings platform defaults 2 (BLOCK 8e: INV_ALLOW_NEGATIVE_STOCK = true, INV_NEAR_EXPIRY_DAYS = 30).
+Total seeded : 6 keys · 34 values (BLOCK 8a / 8b, TENANT_ID = 1) · number series 5 (BLOCK 8c: INV_WAREHOUSE `WH-`, INV_BRANCH `BR-`, INV_TRANSFER `TR-`, INV_COUNT `CNT-`, INV_ADJUSTMENT `ADJ-`, each + 4 digits, never reset) · notification templates 2 (BLOCK 8d: INV_NEGATIVE_STOCK, INV_NEAR_EXPIRY) · settings platform defaults 3 (BLOCK 8e: INV_ALLOW_NEGATIVE_STOCK = true, INV_NEAR_EXPIRY_DAYS = 30, INV_MEASURE_UOM_KEY = CAT_UOM).
 
 ### Sequences
 Last DBF : DBF-INV-219 (next free DBF-INV-220)
@@ -70,12 +70,12 @@ Last XM  : XM-INV-015 (next free XM-INV-016 — XM-INV-014, 015 minted at P3.1)
 Database sequences : none (identity PKs; business numbers from the given number series)
 
 ### Decisions
-ADR-INV-014 (platform columns TENANT_ID and VERSION), ADR-INV-015 (currency code on monetary rows, CM-8), ADR-INV-016 (physical types and precision), ADR-INV-017 (measure-only adjustment move with quantity 0), ADR-INV-018 (no given events subscriber and no given file private store in v1 — C-GIVEN-2, repair round 1) — all ACCEPTED, non-breaking; ADR-INV-019 (P2 cannot clear the C-GIVEN-2 findings raised on P1 SRS text — repair round 2) — BLOCKED; ADR-INV-020 (SRS D-13 / D-23 override cells reworded so they name no given interface — C-GIVEN-2 cleared on the SRS side) — ACCEPTED, non-breaking. All seven are recorded in full in db-script-inv.md §5.2. ADR-INV-014 … 020 are also filed under `analysis/decisions/INV/` (014 … 017 filed at the P3.1 repair round 1). BLOCKED : ADR-INV-019. Its unblock condition is met: ADR-INV-020 rewords the two SRS cells with no change of meaning, and no P2 structure changes. Its status change is left to its owner. Next free ADR : ADR-INV-021.
+ADR-INV-014 (platform columns TENANT_ID and VERSION), ADR-INV-015 (currency code on monetary rows, CM-8), ADR-INV-016 (physical types and precision), ADR-INV-017 (measure-only adjustment move with quantity 0), ADR-INV-018 (no given events subscriber and no given file private store in v1 — C-GIVEN-2, repair round 1) — all ACCEPTED, non-breaking; ADR-INV-019 (P2 cannot clear the C-GIVEN-2 findings raised on P1 SRS text — repair round 2) — raised BLOCKED, now ACCEPTED (resolved by ADR-INV-020); ADR-INV-020 (SRS D-13 / D-23 override cells reworded so they name no given interface — C-GIVEN-2 cleared on the SRS side) — ACCEPTED, non-breaking. All seven are recorded in full in db-script-inv.md §5.2. ADR-INV-014 … 020 are also filed under `analysis/decisions/INV/` (014 … 017 filed at the P3.1 repair round 1). BLOCKED : none — P2 is complete. Next free ADR after P2 : ADR-INV-021 (module-wide next free : ADR-INV-046).
 DEFAULTs : D-P2-01 … D-P2-14.
 Applied from earlier stages : SRS D-01, D-02, D-03, D-04, D-06, D-07, D-13, D-14, D-19, D-22, D-23, D-24; contract C-3.
 
 ### Event
-"P2 completed: INV v1 — 14 tables, 219 DBF, 13 XM — BLOCKED by ADR-INV-019 (P1 SRS D-13 / D-23 wording)"
+"P2 completed: INV v1 — 14 tables, 219 DBF, 15 XM (13 + 2 minted at P3.1) — ADR-INV-019 resolved by ADR-INV-020"
 
 ### Cascade
 None by hand — `gov.py graph` derives the edges targeting INV and raises their resolution events (shared/XM-PROTOCOL.md §5).

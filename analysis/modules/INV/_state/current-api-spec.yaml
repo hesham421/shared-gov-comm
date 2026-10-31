@@ -5,7 +5,9 @@ info:
   description: >-
     Derived at P3.1 from backend-execution-plan-inv.md (INV v1) — one operation per API-* block, one error
     response per Error Catalog row naming the block. Envelope ApiResponse<T>, lists Page<T>, errors
-    LocalizedException {code, messageAr, messageEn}; code format {MOD}-{http}[-{SLUG}].
+    LocalizedException {code, messageAr, messageEn}; code format {MOD}-{http}[-{SLUG}]. A bound that a catalogue
+    code owns is described in the property's description, not enforced by a schema keyword (ADR-INV-038), so a
+    validating server or mock answers the rule's 422 code, never INV-400 first.
 servers:
   - url: /
 security:
@@ -17,6 +19,7 @@ x-inprocess-error-codes:
   - {code: INV-409-RESERVATION-CLOSED, rule: RULE-INV-021, http: 409}
   - {code: INV-409-STOCK-MOVE-IMMUTABLE, rule: RULE-INV-023, http: 409}
   - {code: INV-422-LOT-EXPIRED, rule: RULE-INV-039, http: 422}
+  - {code: INV-422-RESERVATION-MISMATCH, rule: RULE-INV-049, http: 422}
 x-common:
   errorContent: &ec {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}
   r400: &r400 {description: Bad request, x-error-codes: [INV-400], content: *ec}
@@ -307,7 +310,7 @@ paths:
       operationId: searchStockMoves
       summary: "API-INV-018 — search, list stock moves"
       x-api-id: API-INV-018
-      x-traces: [REQ-INV-075, REQ-INV-076, REQ-INV-016, REQ-INV-056, REQ-INV-110, REQ-INV-111, REQ-INV-112, DBF-INV-041, DBF-INV-042, DBF-INV-043, DBF-INV-046, DBF-INV-047, DBF-INV-049, DBF-INV-053, DBF-INV-054, DBF-INV-055, DBF-INV-058]
+      x-traces: [REQ-INV-075, REQ-INV-076, REQ-INV-016, REQ-INV-056, REQ-INV-110, REQ-INV-111, REQ-INV-112, DBF-INV-041, DBF-INV-042, DBF-INV-043, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-053, DBF-INV-054, DBF-INV-055, DBF-INV-058]
       x-paginated: true
       parameters:
         - {name: variantPk, in: query, required: false, schema: {type: integer, format: int64}}
@@ -315,6 +318,8 @@ paths:
         - {name: lotPk, in: query, required: false, schema: {type: integer, format: int64}}
         - {name: moveTypeCode, in: query, required: false, schema: {type: string, maxLength: 50}}
         - {name: docNo, in: query, required: false, schema: {type: string, maxLength: 30}}
+        - {name: sourceDocTypeCode, in: query, required: false, description: "a code of INV_SOURCE_DOC_TYPE; with sourceDocRef it identifies one source document exactly", schema: {type: string, maxLength: 50}}
+        - {name: sourceDocRef, in: query, required: false, description: the identifier of the source document in its module, schema: {type: integer, format: int64}}
         - {name: dateFrom, in: query, required: false, schema: {type: string, format: date}}
         - {name: dateTo, in: query, required: false, schema: {type: string, format: date}}
         - *qpage
@@ -434,7 +439,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-TRANSFER-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-TRANSFER-WAREHOUSES], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-TRANSFER-WAREHOUSES, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED], content: *ec}
         '500': *r500
   /api/v1/inv/stock-counts:
     get:
@@ -562,7 +567,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-NO-KNOWN-COST], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-WAREHOUSE-INACTIVE, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED], content: *ec}
         '500': *r500
   /api/v1/inv/stock-adjustments:
     get:
@@ -598,7 +603,7 @@ paths:
         '401': *r401
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND, INV-404-VARIANT-NOT-FOUND], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
         '500': *r500
   /api/v1/inv/stock-adjustments/{id}:
     get:
@@ -628,7 +633,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-STOCK-ADJUSTMENT-NOT-FOUND, INV-404-VARIANT-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-DOC-NO-READONLY, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-DOC-NO-READONLY, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
         '500': *r500
     delete:
       operationId: cancelStockAdjustment
@@ -659,7 +664,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-STOCK-ADJUSTMENT-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-REASON-REQUIRED, INV-422-ZERO-CHANGE, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-LOT-REQUIRED], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-REASON-REQUIRED, INV-422-ZERO-CHANGE, INV-422-WAREHOUSE-INACTIVE, INV-422-VARIANT-INACTIVE, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-LOT-REQUIRED], content: *ec}
         '500': *r500
   /api/v1/inv/lots:
     get:
@@ -787,7 +792,7 @@ paths:
         '401': *r401
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
-        '422': {description: Rule violated — row failures in details, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-LOAD-ROWS, INV-422-LOAD-ROWS-INVALID, INV-422-LOAD-ROW-VARIANT, INV-422-VARIANT-INACTIVE, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '422': {description: Rule violated — row failures in details, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-LOAD-ROWS, INV-422-LOAD-ROWS-INVALID, INV-422-LOAD-ROW-VARIANT, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
         '500': *r500
   /api/v1/inv/settings:
     get:
@@ -972,6 +977,9 @@ components:
         variantNameAr: {type: string}
         variantNameEn: {type: [string, 'null']}
         warehousePk: {type: [integer, 'null'], format: int64}
+        warehouseCode: {type: [string, 'null'], maxLength: 20}
+        warehouseNameAr: {type: [string, 'null'], maxLength: 100}
+        warehouseNameEn: {type: [string, 'null'], maxLength: 100}
         lotPk: {type: [integer, 'null'], format: int64}
         lotCode: {type: [string, 'null'], maxLength: 40}
         expiryDate: {type: [string, 'null'], format: date}
@@ -1002,6 +1010,9 @@ components:
               - type: object
                 properties:
                   warehousePk: {type: integer, format: int64}
+                  warehouseCode: {type: string, maxLength: 20}
+                  warehouseNameAr: {type: string, maxLength: 100}
+                  warehouseNameEn: {type: [string, 'null'], maxLength: 100}
                   measureUomCode: {type: [string, 'null'], maxLength: 50}
         total: {$ref: '#/components/schemas/AvailabilityFigures'}
     AvailabilityEnvelope:
@@ -1056,8 +1067,8 @@ components:
         transferLinePk: {type: [integer, 'null'], format: int64}
         variantPk: {type: integer, format: int64}
         lotPk: {type: [integer, 'null'], format: int64}
-        quantity: {type: number, exclusiveMinimum: 0}
-        measureQty: {type: [number, 'null']}
+        quantity: {type: number, description: "> 0 with at most 3 decimals — owned by INV-422-QUANTITY-INVALID (RULE-INV-017), described, not enforced (ADR-INV-038)"}
+        measureQty: {type: [number, 'null'], description: "at most 3 decimals — INV-422-QUANTITY-INVALID"}
     Transfer:
       allOf:
         - {$ref: '#/components/schemas/Audit'}
@@ -1132,14 +1143,14 @@ components:
         barcode: {type: [string, 'null'], maxLength: 64}
         variantPk: {type: [integer, 'null'], format: int64}
         lotPk: {type: [integer, 'null'], format: int64}
-        countedQty: {type: number, minimum: 0}
-        countedMeasureQty: {type: [number, 'null'], minimum: 0}
+        countedQty: {type: number, description: "≥ 0 with at most 3 decimals — owned by INV-422-COUNTED-NEGATIVE (RULE-INV-047), described, not enforced (ADR-INV-038)"}
+        countedMeasureQty: {type: [number, 'null'], description: "≥ 0 with at most 3 decimals — INV-422-COUNTED-NEGATIVE"}
     StockCountLineUpdateRequest:
       type: object
       required: [countedQty, version]
       properties:
-        countedQty: {type: number, minimum: 0}
-        countedMeasureQty: {type: [number, 'null'], minimum: 0}
+        countedQty: {type: number, description: "≥ 0 with at most 3 decimals — INV-422-COUNTED-NEGATIVE (RULE-INV-047)"}
+        countedMeasureQty: {type: [number, 'null'], description: "≥ 0 with at most 3 decimals — INV-422-COUNTED-NEGATIVE"}
         version: {type: integer, format: int64}
     StockCountEnvelope:
       allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/StockCount'}}}]
@@ -1168,13 +1179,13 @@ components:
       type: object
       required: [variantPk, quantityChange]
       properties:
-        rowNo: {type: [integer, 'null'], format: int32, minimum: 1}
+        rowNo: {type: [integer, 'null'], format: int32, description: "1 or more; assigned 1..n when absent"}
         variantPk: {type: integer, format: int64}
         lotNo: {type: [string, 'null'], maxLength: 40}
         lotExpiryDate: {type: [string, 'null'], format: date}
-        quantityChange: {type: number}
-        measureQtyChange: {type: [number, 'null']}
-        unitCost: {type: [number, 'null'], minimum: 0}
+        quantityChange: {type: number, description: "non-zero unless the measure changes (INV-422-ZERO-CHANGE); at most 3 decimals (INV-422-QUANTITY-INVALID)"}
+        measureQtyChange: {type: [number, 'null'], description: "at most 3 decimals — INV-422-QUANTITY-INVALID"}
+        unitCost: {type: [number, 'null'], description: "≥ 0 with at most 4 decimals — owned by INV-422-NO-KNOWN-COST (RULE-INV-025), described, not enforced (ADR-INV-038)"}
     StockAdjustment:
       allOf:
         - {$ref: '#/components/schemas/Audit'}
@@ -1220,20 +1231,19 @@ components:
         docDate: {type: [string, 'null'], format: date}
         rows:
           type: array
-          minItems: 1
-          maxItems: 1000
+          description: "1 to 1000 rows — owned by INV-422-LOAD-ROWS (RULE-INV-027), described, not enforced (ADR-INV-038)"
           items:
             type: object
             required: [rowNo, quantity, unitCost]
             properties:
-              rowNo: {type: integer, format: int32, minimum: 1}
+              rowNo: {type: integer, format: int32, description: "the sheet row number, 1 or more; a row failure is reported under it"}
               variantPk: {type: [integer, 'null'], format: int64}
-              barcode: {type: [string, 'null'], maxLength: 64}
-              quantity: {type: number, exclusiveMinimum: 0}
-              unitCost: {type: number, minimum: 0}
+              barcode: {type: [string, 'null'], maxLength: 64, description: "an active barcode of the Variant (CON-CAT-010); v1 resolves no Variant code (ADR-INV-035) — no match → INV-422-LOAD-ROW-VARIANT"}
+              quantity: {type: number, description: "> 0 (INV-422-OPENING-COST-REQUIRED) with at most 3 decimals (INV-422-QUANTITY-INVALID), reported in details"}
+              unitCost: {type: number, description: "≥ 0 (INV-422-OPENING-COST-REQUIRED) with at most 4 decimals (INV-422-NO-KNOWN-COST), reported in details"}
               lotNo: {type: [string, 'null'], maxLength: 40}
               lotExpiryDate: {type: [string, 'null'], format: date}
-              measureQty: {type: [number, 'null']}
+              measureQty: {type: [number, 'null'], description: "at most 3 decimals — INV-422-QUANTITY-INVALID"}
 
     Lot:
       allOf:
@@ -1318,7 +1328,7 @@ components:
       type: object
       properties:
         allowNegativeStockFl: {type: boolean}
-        nearExpiryDays: {type: integer, minimum: 1, maximum: 365}
+        nearExpiryDays: {type: integer, description: "a whole number from 1 to 365 — owned by INV-422-HORIZON-RANGE, described, not enforced (ADR-INV-038)"}
     InventorySettingsRequest:
       type: object
       required: [allowNegativeStockFl, nearExpiryDays]

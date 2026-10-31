@@ -74,11 +74,11 @@ States            : empty · loading · error · offline (not required)
 ## SCR-INV-004 — سجل حركات المخزون / Stock move history                 traces=REQ-INV-016,REQ-INV-055,REQ-INV-056,REQ-INV-075,REQ-INV-076,AC-INV-019,AC-INV-062,AC-INV-082,AC-INV-083,UXD-INV-004
 UI pattern        : Search + read-only result — journal of moves with running balance (SCR-REQ-INV-004)
 Sub-views         : Search · move detail (read-only) under this ONE SCR
-Fields shown      : Search filters — Variant «متغيّر الصنف» / "Variant"; warehouse «المستودع» / "Warehouse" (hidden while one); lot «التشغيلة» / "Lot" (lotExpiry on); move type «نوع الحركة» / "Move type" (INV_MOVE_TYPE); document number «رقم المستند» / "Document number"; date from «من تاريخ» / "Date from" and date to «إلى تاريخ» / "Date to". Result columns — docDate «تاريخ الحركة» / "Move date"; moveTypeCode «نوع الحركة» / "Move type"; variantFk «متغيّر الصنف» / "Variant"; warehouseFk «المستودع» / "Warehouse" (hidden while one); lotFk «التشغيلة» / "Lot" (lotExpiry on); quantity «الكمية» / "Quantity"; measureQty «القياس» / "Measure" (dualQuantity on); balanceAfterQty «الرصيد بعد الحركة» / "Balance after move" (only while filtered to one Variant and one warehouse); sourceDocTypeCode «نوع المستند» / "Document type"; sourceDocNo «رقم المستند» / "Document number". Move detail adds offlineFl «بيع دون اتصال» / "Offline sale" and bundleVariantFk «الحزمة» / "Bundle". All read-only (REQ-INV-055)
+Fields shown      : Search filters — Variant «متغيّر الصنف» / "Variant"; warehouse «المستودع» / "Warehouse" (hidden while one); lot «التشغيلة» / "Lot" (lotExpiry on); move type «نوع الحركة» / "Move type" (INV_MOVE_TYPE); document number «رقم المستند» / "Document number"; date from «من تاريخ» / "Date from" and date to «إلى تاريخ» / "Date to". Source document «المستند المصدر» / "Source document" (set only by a jump from a posted transfer or adjustment, shown as a removable chip with the document type and number) — sourceDocTypeCode + sourceDocRef. Result columns — docDate «تاريخ الحركة» / "Move date"; moveTypeCode «نوع الحركة» / "Move type"; variantFk «متغيّر الصنف» / "Variant"; warehouseFk «المستودع» / "Warehouse" (hidden while one); lotFk «التشغيلة» / "Lot" (lotExpiry on); quantity «الكمية» / "Quantity"; measureQty «القياس» / "Measure" (dualQuantity on); balanceAfterQty «الرصيد بعد الحركة» / "Balance after move" (only while filtered to one Variant and one warehouse); sourceDocTypeCode «نوع المستند» / "Document type"; sourceDocNo «رقم المستند» / "Document number". Move detail adds offlineFl «بيع دون اتصال» / "Offline sale" and bundleVariantFk «الحزمة» / "Bundle". All read-only (REQ-INV-055)
 Composition       : container page · move detail → none (read-only view, no save) · submits: none (read-only inquiry)
 Permissions       : PERM_INV_STOCK_MOVES_VIEW (Owner, Warehouse) · CREATE / UPDATE / DELETE: not applicable
 Cross-module data : Variant filter → UXD-INV-004 (CAT)
-Navigation        : Inventory → Stock moves (from the inventory home); in from SCR-INV-003 with `variantPk` + `warehousePk` (+ `lotPk`), from SCR-INV-005 and SCR-INV-007 with `docNo`, from SCR-INV-012 with `variantPk`
+Navigation        : Inventory → Stock moves (from the inventory home); in from SCR-INV-003 with `variantPk` + `warehousePk` (+ `lotPk`), from SCR-INV-005 and SCR-INV-007 with `sourceDocTypeCode` + `sourceDocRef` (the posted document exactly), from SCR-INV-012 with `variantPk`
 Actions           : open move detail
 States            : empty · loading · error · offline (not required)
 
@@ -89,7 +89,7 @@ Fields shown      : Search filters — number «رقم التحويل» / "Trans
 Composition       : container page · lines → inline (pane beneath the header; a line is added or changed in a one-line drawer that returns it to the form) · Variant picker → inline (one field inside the line drawer) · submits: one (Save)
 Permissions       : PERM_INV_TRANSFERS_VIEW · PERM_INV_TRANSFERS_CREATE · PERM_INV_TRANSFERS_UPDATE (save, post) · PERM_INV_TRANSFERS_DELETE (cancel) — Owner, Warehouse
 Cross-module data : line Variant (barcode, pick, label, its Item's stock settings and measure unit) → UXD-INV-005 (CAT)
-Navigation        : Inventory → Transfers (shown only with two or more active warehouses); routes search, `/new`, `/:id`; posted entry → SCR-INV-004 seeded `docNo=<the transfer's docNo>`
+Navigation        : Inventory → Transfers (shown only with two or more active warehouses); routes search, `/new`, `/:id`; posted entry → SCR-INV-004 seeded `sourceDocTypeCode=INV_TRANSFER` + `sourceDocRef=<the transfer's transferPk>` (one document exactly)
 Actions           : Save · Post (DRAFT, saved) · Cancel (DRAFT, confirm)
 States            : empty · loading · error · offline (not required)
 
@@ -112,7 +112,7 @@ Fields shown      : Search filters — number «رقم التسوية» / "Adjus
 Composition       : container page · lines → inline (pane beneath the header; a line is added or changed in a one-line drawer that returns it to the form) · Variant picker → inline (one field inside the line drawer) · submits: one (Save)
 Permissions       : PERM_INV_ADJUSTMENTS_VIEW · PERM_INV_ADJUSTMENTS_CREATE · PERM_INV_ADJUSTMENTS_UPDATE (save, post) · PERM_INV_ADJUSTMENTS_DELETE (cancel) — Owner, Warehouse
 Cross-module data : line Variant (barcode, pick, label, its Item's stock settings and measure unit) → UXD-INV-007 (CAT)
-Navigation        : Inventory → Stock adjustments; routes search, `/new`, `/:id`; in from SCR-INV-006 (`/:id` of the resulting adjustment), from SCR-INV-008 (`/new` seeded `reason=EXPIRY_WRITE_OFF` + `lotPk` + `warehousePk`), from SCR-INV-010 (`/:id` of the posted OPENING_STOCK adjustment); posted entry → SCR-INV-004 seeded `docNo=<the adjustment's docNo>`
+Navigation        : Inventory → Stock adjustments; routes search, `/new`, `/:id`; in from SCR-INV-006 (`/:id` of the resulting adjustment), from SCR-INV-008 (`/new` seeded `reason=EXPIRY_WRITE_OFF` + `lotPk` + `warehousePk`), from SCR-INV-010 (`/:id` of the posted OPENING_STOCK adjustment); posted entry → SCR-INV-004 seeded `sourceDocTypeCode=INV_ADJUSTMENT` + `sourceDocRef=<the adjustment's stockAdjustmentPk>` (one document exactly)
 Actions           : Save · Post (DRAFT, saved) · Cancel (DRAFT, confirm)
 States            : empty · loading · error · offline (not required)
 
@@ -141,10 +141,10 @@ States            : empty · loading · error · offline (not required)
 ## SCR-INV-010 — المخزون الافتتاحي / Opening stock                 traces=REQ-INV-070,REQ-INV-071,REQ-INV-072,REQ-INV-073,REQ-INV-074,AC-INV-076,AC-INV-077,AC-INV-078,AC-INV-079,AC-INV-080,AC-INV-081
 UI pattern        : Entry + bulk load — header + repeating lines with totals (SCR-REQ-INV-010)
 Sub-views         : Entry · bulk load (sheet download and read) under this ONE SCR
-Fields shown      : Header — warehouseFk «المستودع» / "Warehouse" (hidden and defaulted while one). Lines (ENT-INV-011) — rowNo «رقم السطر» / "Row number" (read-only); Variant code or barcode «رمز المتغيّر أو الباركود» / "Variant code or barcode" (mandatory); quantityChange «الكمية» / "Quantity" (mandatory, > 0); unitCost «تكلفة الوحدة» / "Unit cost" (mandatory); lotNo «رقم التشغيلة» / "Lot number" and lotExpiryDate «تاريخ الصلاحية» / "Expiry date" (lotExpiry on); measureQtyChange «القياس» / "Measure" (dualQuantity on); total quantity and line count (read-only). Row failures list — rowNo and message
+Fields shown      : Header — warehouseFk «المستودع» / "Warehouse" (hidden and defaulted while one). Lines (ENT-INV-011) — rowNo «رقم السطر» / "Row number" (read-only); barcode «الباركود» / "Barcode" (mandatory — v1 names a Variant by barcode only, ADR-INV-035); quantityChange «الكمية» / "Quantity" (mandatory, > 0); unitCost «تكلفة الوحدة» / "Unit cost" (mandatory); lotNo «رقم التشغيلة» / "Lot number" and lotExpiryDate «تاريخ الصلاحية» / "Expiry date" (lotExpiry on); measureQtyChange «القياس» / "Measure" (dualQuantity on); total quantity and line count (read-only). Row failures list — rowNo and message
 Composition       : container page · lines → inline (pane beneath the header; a line is added or changed in a one-line drawer that returns it to the form; a loaded sheet fills the pane) · submits: one (Post)
 Permissions       : PERM_INV_OPENING_STOCK_VIEW (Owner — screen, sheet download) · PERM_INV_OPENING_STOCK_CREATE (Owner — post) · UPDATE / DELETE: not applicable
-Cross-module data : none (the Variant code or barcode is sent as entered and resolved by INV — ADR-INV-035)
+Cross-module data : none (the barcode is sent as entered and resolved by INV — ADR-INV-035)
 Navigation        : Inventory → Setup → Opening stock (from the setup wizard step 5 and the inventory home); after posting → SCR-INV-007 `/:id` of the posted OPENING_STOCK adjustment
 Actions           : Download sheet · Load sheet · Post
 States            : empty (no line yet: download / load / add line offered) · loading · error · offline (not required)

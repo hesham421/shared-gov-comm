@@ -18,9 +18,9 @@ follow the role grants (REQ-INV-136, REQ-INV-137). Priorities come from the PRD 
 | SCR-INV-001 Warehouses (row) | SCR-INV-003 Stock balances | `warehousePk` |
 | SCR-INV-002 Branches (row) | SCR-INV-001 Warehouses | `branchPk` |
 | SCR-INV-003 Stock balances (row) | SCR-INV-004 Stock move history | `variantPk` + `warehousePk` (+ `lotPk` when the row has a lot) |
-| SCR-INV-005 Transfers (posted entry) | SCR-INV-004 Stock move history | `docNo` of the transfer |
+| SCR-INV-005 Transfers (posted entry) | SCR-INV-004 Stock move history | `sourceDocTypeCode=INV_TRANSFER` + `sourceDocRef=<transferPk>` (one document exactly — a number alone could match another module's document) |
 | SCR-INV-006 Stock counts (posted entry) | SCR-INV-007 Stock adjustments | `adjustmentPk` of the count (entry route `/:id`) |
-| SCR-INV-007 Stock adjustments (posted entry) | SCR-INV-004 Stock move history | `docNo` of the adjustment |
+| SCR-INV-007 Stock adjustments (posted entry) | SCR-INV-004 Stock move history | `sourceDocTypeCode=INV_ADJUSTMENT` + `sourceDocRef=<stockAdjustmentPk>` (one document exactly) |
 | SCR-INV-008 Lots (expired row) | SCR-INV-007 Stock adjustments (new) | `reason=EXPIRY_WRITE_OFF` + `lotPk` + `warehousePk` |
 | SCR-INV-008 Lots (row) | SCR-INV-003 Stock balances | `lotPk` (+ `warehousePk`) |
 | SCR-INV-010 Opening stock (after posting) | SCR-INV-007 Stock adjustments | `stockAdjustmentPk` of the posted OPENING_STOCK adjustment |
@@ -96,7 +96,7 @@ Priority  : HIGH
 ```
 FLOW — Transfer stock between warehouses         traces=US-INV-008,REQ-INV-078,REQ-INV-079,REQ-INV-080,REQ-INV-081,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-085,REQ-INV-086,SCR-INV-005,SCR-INV-004
 Screens   : SCR-INV-005, SCR-INV-004
-Sequence  : Inventory menu → Transfers (search) → entry (new) → add lines → Save (DRAFT) → Post → Stock move history filtered by the transfer number | Cancel (DRAFT) → search
+Sequence  : Inventory menu → Transfers (search) → entry (new) → add lines → Save (DRAFT) → Post → Stock move history filtered by the transfer (document type and identifier) | Cancel (DRAFT) → search
 Trigger   : goods are moved from one warehouse to another (shown only with two or more active warehouses)
 Priority  : HIGH
 ```
@@ -112,7 +112,7 @@ Priority  : HIGH
 ```
 FLOW — Adjust stock with a reason                traces=US-INV-015,US-INV-017,REQ-INV-097,REQ-INV-098,REQ-INV-099,REQ-INV-100,REQ-INV-101,REQ-INV-102,REQ-INV-103,REQ-INV-104,REQ-INV-067,SCR-INV-007,SCR-INV-004
 Screens   : SCR-INV-007, SCR-INV-004
-Sequence  : Inventory menu → Stock adjustments (search) → entry (new) → reason + lines → Save (DRAFT) → Post → Stock move history filtered by the adjustment number | Cancel (DRAFT) → search
+Sequence  : Inventory menu → Stock adjustments (search) → entry (new) → reason + lines → Save (DRAFT) → Post → Stock move history filtered by the adjustment (document type and identifier) | Cancel (DRAFT) → search
 Trigger   : damage, a count difference or another reason
 Priority  : HIGH
 ```

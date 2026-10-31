@@ -75,12 +75,14 @@ Given (no XM edge — SRS A9 `given-usage`): erp-core modules.cu, modules.sequen
 | REQ | 138 | REQ-INV-001 … REQ-INV-138 | 138 |
 | AC | 154 | AC-INV-001 … AC-INV-154 | 154 |
 | ENT | 14 | ENT-INV-001 … ENT-INV-014 | 14 |
-| RULE | 48 | RULE-INV-001 … RULE-INV-048 | 48 |
+| RULE | 49 | RULE-INV-001 … RULE-INV-049 | 49 |
 | SCR-REQ | 12 | SCR-REQ-INV-001 … SCR-REQ-INV-012 | 12 |
 
-Last sequence per atom: (REQ: 138, AC: 154, ENT: 14, RULE: 48, SCR-REQ: 12). Each sequence continues from the next number after its last sequence.
+Last sequence per atom: (REQ: 138, AC: 154, ENT: 14, RULE: 49, SCR-REQ: 12). Each sequence continues from the next number after its last sequence.
 
-Coverage: 28 / 28 stories covered by ≥ 1 REQ; 138 / 138 REQ carry ≥ 1 AC; 48 / 48 RULE trace to ≥ 1 REQ; 12 / 12 SCR-REQ trace to ≥ 1 REQ.
+Coverage: 28 / 28 stories covered by ≥ 1 REQ; 138 / 138 REQ carry ≥ 1 AC; 49 / 49 RULE trace to ≥ 1 REQ; 12 / 12 SCR-REQ trace to ≥ 1 REQ.
+
+RULE-INV-049 (an issue consumes only its own reservation — REQ-INV-047, REQ-INV-048) was added at gate-analysis revise 1 (G9). The same revise extended the triggers of RULE-INV-004, 007, 008, 017, 018, 025, 028, 037, 040 and 047 in place, with no id change.
 
 ### Decisions
 
@@ -92,5 +94,5 @@ Coverage: 28 / 28 stories covered by ≥ 1 REQ; 138 / 138 REQ carry ≥ 1 AC; 48
 
 ### Event
 
-"P1 completed: INV v1 — REQ 138 · AC 154 · ENT 14 · RULE 48 · SCR-REQ 12 · ADR 0"
+"P1 completed: INV v1 — REQ 138 · AC 154 · ENT 14 · RULE 48 · SCR-REQ 12 · ADR 0" · "gate-analysis revise 1: RULE-INV-049 added (RULE 49)"
 ══════════════════════════════════════════════════════════════════

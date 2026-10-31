@@ -51,7 +51,9 @@ this ADR becomes ACCEPTED (unblocked) and P2 proceeds to P3.1.
 - The contract (P1.5) needs no change under the "stop using it" branch, because neither name appears in it.
 
 ## Status
-BLOCKED — stop the pass. The stage's exit condition depends on a P1 artifact outside the P2 write set.
+ACCEPTED — resolved by ADR-INV-020 (2026-10-31). The ADR was raised BLOCKED in P2 repair round 2, because the
+stage's exit condition depended on a P1 artifact outside the P2 write set. ADR-INV-020 reworded the two SRS cells
+with no change of meaning, the unblock condition holds, and P2 is complete (see Resolution).
 
 ## Resolution (2026-10-31, under Hesham's standing authorisation)
 The unblock condition holds. Factory fix `149c8d5` lets a stage repair edit the earlier file a finding

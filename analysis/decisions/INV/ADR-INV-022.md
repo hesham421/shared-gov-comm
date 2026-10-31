@@ -11,16 +11,15 @@ ENT-INV-014.measureUomCode stores a code of the unit-of-measure lookup owned by 
 key string. The binding rule forbids inventing it, and lookup values must be loaded at runtime from mdl.
 
 ## Decision
-The service validates measureUomCode as an active value of the key named by the configuration property
-`inv.lookup.measure-uom-key`, through `MdlLookupApi`. The deployment sets the property from the key owner's
-published registry. The key string is PENDING in this plan; no value is hardcoded in INV. While the
-property is unset, a non-empty measureUomCode is refused with INV-422-MEASURE-UNIT-REQUIRED.
+The service validates measureUomCode as an active value of the consumed unit-of-measure key, through
+`MdlLookupApi`; no key string is hardcoded in INV code. The key is read at runtime from the SettingsApi setting
+INV_MEASURE_UOM_KEY (ADR-INV-043). (The original decision read it from a deployment property and left the key
+PENDING; that property is withdrawn by ADR-INV-043, because it was a second settings mechanism and left
+REQ-INV-125 failing until it was set.)
 
 ## Consequences
-- RULE-INV-041 (and the CHECK CHK_INV_ITEM_STOCK_SETTINGS_MEASURE_UOM_CODE) is enforced from day one; the
-  value check becomes complete once the property is set.
-- If the key owner later publishes the key in its contract, this ADR is superseded by a plan update that
-  names it.
+- RULE-INV-041 (and the CHECK CHK_INV_ITEM_STOCK_SETTINGS_MEASURE_UOM_CODE) is enforced from day one.
+- The key's platform default and the platform finding to CAT are in ADR-INV-043.
 
 ## Status
-ACCEPTED — non-breaking.
+ACCEPTED — non-breaking. Revised by ADR-INV-043 (gate-analysis revise 1, G4).

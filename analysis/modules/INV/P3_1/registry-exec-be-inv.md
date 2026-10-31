@@ -117,7 +117,7 @@ QR ids : QR-INV-001, QR-INV-002, QR-INV-003, QR-INV-004, QR-INV-005, QR-INV-006,
 | QR-INV-040 | ENT-INV-012 | FIND_ONE | API-INV-038, 047 |
 | QR-INV-041 | ENT-INV-012 | NATIVE / UPDATE | API-INV-038, 042, 047 |
 | QR-INV-042 | ENT-INV-014 | FIND_BY_CRITERIA | API-INV-043 |
-| QR-INV-043 | ENT-INV-014 | FIND_ONE | API-INV-016, 017, 022, 023, 029, 030, 036, 037, 038, 044, 045, 047 |
+| QR-INV-043 | ENT-INV-014 | FIND_ONE | API-INV-016, 017, 022, 023, 024, 029, 030, 032, 036, 037, 038, 044, 045, 047 |
 | QR-INV-044 | ENT-INV-014 | SAVE / UPDATE | API-INV-045 |
 | QR-INV-045 | ENT-INV-003 | COUNT | API-INV-045 |
 | QR-INV-046 | ENT-INV-003 | EXISTS | API-INV-045 |
@@ -130,8 +130,9 @@ INV_STOCK_ADJUSTMENT, INV_STOCK_ADJUSTMENT_LINE, INV_LOT, INV_STOCK_VALUATION, I
 219 / 219 DBF in the DB Alignment Manifest, 0 issues.
 
 Lookups reused (keys owned by INV, seeded at P2): INV_ADJUSTMENT_REASON, INV_MOVE_TYPE, INV_DOC_STATUS,
-INV_RESERVATION_STATUS, INV_SOURCE_DOC_TYPE, INV_CHANGE_KIND · consumed: the unit-of-measure key of the Item owner
-(string PENDING — ADR-INV-022) · new: none.
+INV_RESERVATION_STATUS, INV_SOURCE_DOC_TYPE, INV_CHANGE_KIND · consumed: the unit-of-measure key of the Item owner,
+named by the SettingsApi setting INV_MEASURE_UOM_KEY (platform default CAT_UOM — ADR-INV-043, revising ADR-INV-022) ·
+new: none.
 
 ### Integration
 
@@ -163,8 +164,8 @@ Honours: CON-INV-001, CON-INV-002, CON-INV-003, CON-INV-004, CON-INV-005, CON-IN
 
 ### Catalog
 
-Error codes : 56 HTTP catalog rows (`error-catalog` block) + 4 in-process-only codes (§5.1) · format `{MOD}-{http}[-{SLUG}]`
-Rules with a code : 43 (39 in the HTTP catalog, 4 in-process only) · effect / answer rules without a code : RULE-INV-005, 014, 024, 038, 046 (messages kept in §1.3)
+Error codes : 56 HTTP catalog rows (`error-catalog` block) + 5 in-process-only codes (§5.1 — INV-422-RESERVATION-MISMATCH added at gate-analysis revise 1) · format `{MOD}-{http}[-{SLUG}]`
+Rules with a code : 44 (39 in the HTTP catalog, 5 in-process only) · effect / answer rules without a code : RULE-INV-005, 014, 024, 038, 046 (messages kept in §1.3)
 Rules without a message in a language : none · PLATFORM-STD rows without SRS text : 14 → ADR-INV-021 (INV-403 carries the AC-INV-154 text)
 
 ### API document
@@ -201,10 +202,19 @@ the ADR-INV-021 row; totals XM 15.
 | ADR-INV-030 | "Never valued" and valuation row creation | ACCEPTED |
 | ADR-INV-031 | Two SOFT-READ edges minted at P3.1 | ACCEPTED |
 | ADR-INV-032 | State-change PATCH endpoints carry the caller's version as a typed body (repair round 1) | ACCEPTED |
+| ADR-INV-041 | Native SQL writes its tenant predicate by hand and is marked @TenantUnscoped (gate-analysis revise 1, G1) | ACCEPTED |
+| ADR-INV-042 | REST services check INV authority; InventoryApi delegates to unchecked internal engines (G3) | ACCEPTED |
+| ADR-INV-043 | The consumed unit-of-measure key is the setting INV_MEASURE_UOM_KEY (G4; revises ADR-INV-022) | ACCEPTED |
+| ADR-INV-044 | Concurrent requests with one idempotency key serialise on an advisory lock (G6) | ACCEPTED |
+| ADR-INV-045 | A DRAFT is validated again when posted; a warehouse with DRAFT documents stays active (G8) | ACCEPTED |
 
-Filed under analysis/decisions/INV/. BLOCKED : none raised here (ADR-INV-019 from P2 is outside this stage).
+Revised in place at gate-analysis revise 1: ADR-INV-022 (G4), ADR-INV-024 (package, G22), ADR-INV-030 (count-difference
+increase valued at 0, G11), ADR-INV-035 (barcode-only sheet, G12), ADR-INV-036 (warehouse labels on the row, G13),
+ADR-INV-038 (schema-bound derivation rule, G14), ADR-INV-040 (CAT items INV relies on, G19).
+
+Filed under analysis/decisions/INV/. BLOCKED : none. ADR-INV-019 (P2) is ACCEPTED — resolved by ADR-INV-020; P2 is complete.
 ADR-INV-014 … 017 (P2, recorded in db-script §5.2) were filed there in repair round 1, unchanged, so the plan's citations resolve.
-Next free ADR : ADR-INV-033.
+Next free ADR : ADR-INV-046.
 
 ### Traceability
 
@@ -212,5 +222,5 @@ REQ covered by ≥ 1 API or DBF : 138 / 138 · orphan REQ : none.
 
 ### Event
 
-"P3.1 completed: INV v1 — API 51, QR 46, XM blocks 15 (13 registered + 2 minted), ADR-INV-021 … 032"
+"P3.1 completed: INV v1 — API 51, QR 46, XM blocks 15 (13 registered + 2 minted), ADR-INV-021 … 032" · "gate-analysis revise 1: root package com.commerce.inv, ADR-INV-041 … 045"
 ══════════════════════════════════════════════════════════════════

@@ -1,12 +1,12 @@
 # BACKEND EXECUTION PLAN — Inventory / المخزون (INV)
 ══════════════════════════════════════════════════════════════════
-Module : INV   Version : v1   Profile : commerce   Stage : P3.1 (Backend Execution Plan) · pass 1 · round 1
+Module : INV   Version : v1   Profile : commerce   Stage : P3.1 (Backend Execution Plan) · pass 1 · round 1 · gate-analysis revise 1
 Track  : backend · plan exec · lane analysis · prepared by claude:opus
-Inputs : srs (REQ 138 · AC 154 · ENT 14 · RULE 48 · SCR-REQ 12) · db-script (14 tables · DBF 219 · XM 15 — 13 from P2 + the 2 minted here and back-registered, V1002__inv_inventory.sql) · registry-srs · registry-db · contract (CON-INV-001 … CON-INV-021) · contracts (the published contracts of the modules this one reads — reached here only through XM ids)
+Inputs : srs (REQ 138 · AC 154 · ENT 14 · RULE 49 · SCR-REQ 12) · db-script (14 tables · DBF 219 · XM 15 — 13 from P2 + the 2 minted here and back-registered, V1002__inv_inventory.sql) · registry-srs · registry-db · contract (CON-INV-001 … CON-INV-021) · contracts (the published contracts of the modules this one reads — reached here only through XM ids)
 Governance : FULL (db-script present — every binding resolved by DBF / constraint name)
 Produces : backend-execution-plan-inv.md · registry-exec-be-inv.md · api-spec-inv.yaml (OpenAPI 3.1.0, derived from §R3 blocks and the Error Catalog)
 Owns ids : API-INV-001 … API-INV-051 · QR-INV-001 … QR-INV-046 (first sequences of the module)
-ADRs raised : ADR-INV-021 … ADR-INV-032 (all ACCEPTED, non-breaking; filed under analysis/decisions/INV/) · next free ADR-INV-033
+ADRs raised : ADR-INV-021 … ADR-INV-032 (P3.1) and ADR-INV-041 … ADR-INV-045 (gate-analysis revise 1) — all ACCEPTED, non-breaking; filed under analysis/decisions/INV/ · next free ADR-INV-046
 XM minted here : XM-INV-014, XM-INV-015 (SOFT-READ — this stage's runtime checks are the first reads of the Variant and Item state; back-registration is the orchestrator's)
 Questions : none
 ══════════════════════════════════════════════════════════════════
@@ -25,7 +25,8 @@ module's own `XM-*` id.
 ```
 EXECUTION PLAN INDEX — INV v1 — backend-execution-plan-inv.md
 Profile: commerce · dialect: postgresql16 · framework: Spring Boot (Java 25) on the given erp-core
-Open ADRs: 0 BLOCKED raised here (ADR-INV-021 … ADR-INV-032 ACCEPTED) — decisions/INV/
+Open ADRs: 0 BLOCKED raised here (ADR-INV-021 … ADR-INV-032, ADR-INV-041 … ADR-INV-045 ACCEPTED) — decisions/INV/
+Root package: com.commerce.inv (platform summary decision 11 — never com.erp.*, checklist F8)
 INTEGRATION  15 edges — 13 registered (XM-INV-001 … XM-INV-013) + 2 minted (XM-INV-014, XM-INV-015), one block each in INT-C
 GIVEN        12 uses — the SRS A9 given-usage rows (erp-core 1.6.0); none added here
 SECURITY     12 screens × 3 role presets (Owner, Warehouse, Seller/Cashier) · 32 permissions declared
@@ -121,11 +122,11 @@ QR: 46
 | RULE-INV-001 | ENT-INV-001 | on create; on update | The system shall assign the warehouse code from the number series INV_WAREHOUSE on first save and prevent any change to it afterwards. | INV-422-WAREHOUSE-CODE-READONLY |
 | RULE-INV-002 | ENT-INV-001 | on create; on update | The system shall require nameAr and prevent saving when another warehouse of the tenant has the same nameAr. | INV-409-WAREHOUSE-NAME-TAKEN |
 | RULE-INV-003 | ENT-INV-001 | on deactivate | The system shall prevent deactivation when the warehouse has isDefaultFl true. | INV-409-WAREHOUSE-DEFAULT |
-| RULE-INV-004 | ENT-INV-001 | on deactivate | The system shall prevent deactivation when any Stock balance of the warehouse has non-zero onHandQty or any ACTIVE Reservation names the warehouse. | INV-409-WAREHOUSE-IN-USE |
+| RULE-INV-004 | ENT-INV-001 | on deactivate | The system shall prevent deactivation when any Stock balance of the warehouse has non-zero onHandQty, any ACTIVE Reservation names the warehouse, or any DRAFT Transfer, Stock count or Stock adjustment names the warehouse. | INV-409-WAREHOUSE-IN-USE |
 | RULE-INV-005 | ENT-INV-001 | on deactivate | The system shall keep a deactivated warehouse readable by its identifier, exclude it from the active warehouse list and every new selection, and notify consumers through the inventory master-change event without changing their records. | effect rule — raises no error; message «المستودع غير نشط.» / "The warehouse is inactive." is the one RULE-INV-007 raises (INV-422-WAREHOUSE-INACTIVE) |
 | RULE-INV-006 | ENT-INV-001 | on set as default; on create of the first warehouse | The system shall require the default warehouse to be active and keep exactly one warehouse of the tenant with isDefaultFl true. | INV-409-WAREHOUSE-DEFAULT-INACTIVE |
-| RULE-INV-007 | ENT-INV-004, 005, 006, 008, 010 | on submit of a receipt, issue or reservation; on save of a transfer, count or adjustment | The system shall prevent a stock document or cross-module stock request that names a warehouse whose isActiveFl is false. | INV-422-WAREHOUSE-INACTIVE |
-| RULE-INV-008 | ENT-INV-004, 005, 008, 010 | on submit; on save | The system shall require a warehouse on a stock document or cross-module stock request when the tenant has two or more active warehouses, and assign the default warehouse when it has exactly one. | INV-422-WAREHOUSE-REQUIRED |
+| RULE-INV-007 | ENT-INV-004, 005, 006, 008, 010 | on submit of a receipt, issue or reservation; on save of a transfer, count or adjustment; on post of a transfer, count or adjustment | The system shall prevent a stock document or cross-module stock request that names a warehouse whose isActiveFl is false. | INV-422-WAREHOUSE-INACTIVE |
+| RULE-INV-008 | ENT-INV-004, 005, 008, 010 | on submit; on save; on post | The system shall require a warehouse on a stock document or cross-module stock request when the tenant has two or more active warehouses, and assign the default warehouse when it has exactly one. | INV-422-WAREHOUSE-REQUIRED |
 | RULE-INV-009 | ENT-INV-001 | on create; on update | The system shall require branchFk to reference an active branch and assign the default branch when none is given. | INV-422-BRANCH-INACTIVE |
 | RULE-INV-010 | ENT-INV-002 | on create; on update | The system shall assign the branch code from the number series INV_BRANCH on first save and prevent any change to it afterwards. | INV-422-BRANCH-CODE-READONLY |
 | RULE-INV-011 | ENT-INV-002 | on create; on update | The system shall require nameAr and prevent saving when another branch of the tenant has the same nameAr. | INV-409-BRANCH-NAME-TAKEN |
@@ -134,18 +135,18 @@ QR: 46
 | RULE-INV-014 | ENT-INV-002 | on deactivate | The system shall keep a deactivated branch readable by its identifier, exclude it from the active branch list and every new selection, and notify consumers through the inventory master-change event without changing their records. | effect rule — raises no error; message «الفرع غير نشط.» / "The branch is inactive." is shown as the inactive-state label; selecting an inactive branch raises RULE-INV-009 (INV-422-BRANCH-INACTIVE) |
 | RULE-INV-015 | ENT-INV-002 | on set as default | The system shall require the default branch to be active and keep exactly one branch of the tenant with isDefaultFl true. | INV-409-BRANCH-DEFAULT-INACTIVE |
 | RULE-INV-016 | ENT-INV-006 | on save; on post | The system shall prevent a transfer whose source and destination warehouses are the same, or either of which is inactive. | INV-422-TRANSFER-WAREHOUSES |
-| RULE-INV-017 | ENT-INV-004, 005, 007 | on submit; on save | The system shall require every receipt, issue, reservation and transfer quantity to be greater than zero with at most 3 decimal places. | INV-422-QUANTITY-INVALID |
-| RULE-INV-018 | ENT-INV-004, 005, 007, 009, 011 | on submit; on save | The system shall prevent a stock line whose Variant or Item is inactive, and a transfer, count or adjustment line whose Variant belongs to a BUNDLE Item. | INV-422-VARIANT-INACTIVE |
+| RULE-INV-017 | ENT-INV-004, 005, 007, 011 | on submit; on save; on post | The system shall require every receipt, issue, reservation and transfer quantity to be greater than zero with at most 3 decimal places, and every measure quantity of a receipt, issue or transfer line and every quantity change and measure change of an adjustment or opening stock line to have at most 3 decimal places. | INV-422-QUANTITY-INVALID |
+| RULE-INV-018 | ENT-INV-004, 005, 007, 009, 011 | on submit; on save; on post | The system shall prevent a stock line whose Variant or Item is inactive, and a transfer, count or adjustment line whose Variant belongs to a BUNDLE Item. | INV-422-VARIANT-INACTIVE |
 | RULE-INV-019 | ENT-INV-004, 006, 010 | on submit of an issue; on post of a transfer or adjustment | The system shall prevent an online stock decrease that would take the on-hand quantity of a Variant in a warehouse below zero when the cu setting INV_ALLOW_NEGATIVE_STOCK is false, and shall never apply this check to a move with offlineFl true. | INV-409-NEGATIVE-STOCK |
 | RULE-INV-020 | ENT-INV-005 | on create of a reservation | The system shall prevent a reservation whose quantity exceeds the available quantity when the cu setting INV_ALLOW_NEGATIVE_STOCK is false, and record the uncovered part as shortfallQty when it is true. | INV-409-RESERVE-NOT-AVAILABLE (in-process, §5.1) |
 | RULE-INV-021 | ENT-INV-005 | on release; on issue that references a reservation | The system shall prevent a release or a consumption of a reservation whose statusCode is not ACTIVE. | INV-409-RESERVATION-CLOSED (in-process, §5.1) |
 | RULE-INV-022 | ENT-INV-004, 005 | on submit of an issue or reservation of a bundle Variant | The system shall prevent the issue or reservation of a bundle Variant that has no active component line. | INV-422-BUNDLE-NO-COMPONENTS |
 | RULE-INV-023 | ENT-INV-004 | on update; on delete | The system shall prevent every change and every deletion of a recorded stock move. | INV-409-STOCK-MOVE-IMMUTABLE (in-process, §5.1) |
 | RULE-INV-024 | ENT-INV-004, 005 | on submit of a receipt, issue or reservation | The system shall require an idempotency key on every cross-module receipt, issue and reservation request and return the first result without recording anything when the key was already recorded. | not an error — the first answer is returned; message «سبق تسجيل هذا الطلب؛ أُعيدت النتيجة الأولى.» / "This request was already recorded; the first result is returned." is carried as the answer's informational message |
-| RULE-INV-025 | ENT-INV-004, 011 | on submit of a receipt or customer return; on post of an adjustment | The system shall require unitCost ≥ 0 with at most 4 decimals on an incoming line, use the current averageUnitCost when the line has none, and prevent the line when it has none and the Variant has no Stock valuation. | INV-422-NO-KNOWN-COST |
+| RULE-INV-025 | ENT-INV-004, 011 | on submit of a receipt or customer return; on save and on post of an adjustment (the 4-decimal part on save, the no-known-cost part on post) | The system shall require unitCost ≥ 0 with at most 4 decimals on an incoming line and prevent a unitCost with more than 4 decimals, use the current averageUnitCost when the line has none, and prevent the line when it has none and the Variant has no Stock valuation — except an increase line of an adjustment generated by a stock count, which is valued at 0 when the Variant has no Stock valuation (ADR-INV-030). | INV-422-NO-KNOWN-COST |
 | RULE-INV-026 | ENT-INV-011 | on post of an adjustment with reason OPENING_STOCK | The system shall require unitCost ≥ 0 and quantityChange > 0 on every line of an adjustment whose reasonCode is OPENING_STOCK. | INV-422-OPENING-COST-REQUIRED |
 | RULE-INV-027 | ENT-INV-011 | on submit of an opening stock load | The system shall prevent an opening stock load with zero rows or more than 1000 rows. | INV-422-LOAD-ROWS |
-| RULE-INV-028 | ENT-INV-011 | on submit of an opening stock load | The system shall require the Variant code or barcode of every load row to identify exactly one active Variant of a STANDARD Item and report the row number when it does not. | INV-422-LOAD-ROW-VARIANT |
+| RULE-INV-028 | ENT-INV-011 | on submit of an opening stock load | The system shall require the barcode or the Variant identifier of every load row to identify exactly one active Variant of a STANDARD Item and report the row number when it does not. | INV-422-LOAD-ROW-VARIANT |
 | RULE-INV-029 | ENT-INV-006 … 011 | on update; on cancel; on line change | The system shall prevent every change to a transfer, count or adjustment, and to its lines, when its statusCode is POSTED or CANCELLED. | INV-409-DOCUMENT-CLOSED |
 | RULE-INV-030 | ENT-INV-006, 008, 010 | on create | The system shall assign docNo on first save from the series INV_TRANSFER, INV_COUNT or INV_ADJUSTMENT, unique per document type, and prevent any change to it afterwards. | INV-422-DOC-NO-READONLY |
 | RULE-INV-031 | ENT-INV-006, 008, 010 | on post | The system shall prevent posting a transfer, count or adjustment that has no line. | INV-422-NO-LINES |
@@ -154,18 +155,19 @@ QR: 46
 | RULE-INV-034 | ENT-INV-011 | on save; on post | The system shall prevent an adjustment line whose quantityChange is zero unless its Item is dual-quantity and its measureQtyChange is non-zero. | INV-422-ZERO-CHANGE |
 | RULE-INV-035 | ENT-INV-004, 011, 012 | on submit of a receipt; on post of an increase line | The system shall require a lot number and an expiry date on every incoming line of an Item whose lotTrackedFl is true while the lotExpiry capability flag is on. | INV-422-LOT-EXPIRY-REQUIRED |
 | RULE-INV-036 | ENT-INV-012 | on create of a lot; on incoming line naming an existing lot | The system shall keep lot numbers unique per Variant and prevent an incoming line that names an existing lot number with a different expiry date. | INV-422-LOT-EXPIRY-MISMATCH |
-| RULE-INV-037 | ENT-INV-007, 009, 011 | on save | The system shall require a lot of the line's Variant on every transfer, count and decrease adjustment line of an Item whose lotTrackedFl is true while the lotExpiry capability flag is on. | INV-422-LOT-REQUIRED |
+| RULE-INV-037 | ENT-INV-007, 009, 011 | on save; on post | The system shall require a lot of the line's Variant on every transfer, count and decrease adjustment line of an Item whose lotTrackedFl is true while the lotExpiry capability flag is on. | INV-422-LOT-REQUIRED |
 | RULE-INV-038 | ENT-INV-012, 004 | on submit of a sale issue; on FEFO selection; on availability read | The system shall exclude from sale issue, FEFO selection and available quantity every lot whose expiryDate is before today in the tenant's time zone. | effect rule — exclusion, raises no error; message «التشغيلة منتهية الصلاحية ولا تُباع.» / "The lot has expired and cannot be sold." is the expired-lot label (expiredFl) of balance and lot reads |
 | RULE-INV-039 | ENT-INV-004 | on submit of an issue or return to supplier | The system shall prevent an ISSUE or RETURN_OUT move that names a lot whose expiryDate is before today. | INV-422-LOT-EXPIRED (in-process, §5.1) |
-| RULE-INV-040 | ENT-INV-004, 007, 009 | on submit; on save | The system shall require a measure quantity greater than zero on every receipt, issue and transfer line, and a counted measure on every count line, of an Item whose dualQuantityFl is true while the dualQuantity capability flag is on. | INV-422-MEASURE-REQUIRED |
+| RULE-INV-040 | ENT-INV-004, 007, 009 | on submit; on save; on post | The system shall require a measure quantity greater than zero on every receipt, issue and transfer line, and a counted measure on every count line, of an Item whose dualQuantityFl is true while the dualQuantity capability flag is on. | INV-422-MEASURE-REQUIRED |
 | RULE-INV-041 | ENT-INV-014 | on save | The system shall require measureUomCode when dualQuantityFl is true. | INV-422-MEASURE-UNIT-REQUIRED |
 | RULE-INV-042 | ENT-INV-014 | on update (lotTrackedFl true → false) | The system shall prevent clearing lotTrackedFl while any Stock balance with a lot of the Item's Variants has non-zero onHandQty. | INV-409-LOT-TRACKING-IN-USE |
 | RULE-INV-043 | ENT-INV-014 | on update (dualQuantityFl true → false) | The system shall prevent clearing dualQuantityFl while any Stock balance of the Item's Variants has non-zero onHandMeasureQty. | INV-409-DUAL-QUANTITY-IN-USE |
 | RULE-INV-044 | ENT-INV-014 | on create; on update | The system shall prevent setting lotTrackedFl true while the lotExpiry capability flag is off and setting dualQuantityFl true while the dualQuantity capability flag is off. | INV-422-CAPABILITY-OFF |
 | RULE-INV-045 | ENT-INV-014 | on create | The system shall prevent Item stock settings for an Item whose itemKindCode is BUNDLE and keep at most one record per Item. | INV-422-BUNDLE-SETTINGS |
 | RULE-INV-046 | ENT-INV-014 | on capability turn-off check | The system shall answer not allowed for lotExpiry while any Item stock settings record has lotTrackedFl true, and for dualQuantity while any has dualQuantityFl true. | not an error — the in-process answer `allowedFl false` carries message «لا يمكن إيقاف «{flag}»: {count} أصناف تعتمد عليه. ألغِ الإعداد لها أولًا.» / "{flag} cannot be switched off: {count} Items depend on it. Clear the setting on them first." (SVC-API-INT, CON-INV-019) |
-| RULE-INV-047 | ENT-INV-009 | on save of a count line | The system shall require countedQty ≥ 0 with at most 3 decimals. | INV-422-COUNTED-NEGATIVE |
+| RULE-INV-047 | ENT-INV-009 | on save of a count line | The system shall require countedQty ≥ 0 and countedMeasureQty ≥ 0, each with at most 3 decimals. | INV-422-COUNTED-NEGATIVE |
 | RULE-INV-048 | ENT-INV-007, 011 | on save | The system shall prevent two lines with the same Variant and the same lot on one transfer or one adjustment. | INV-422-DUPLICATE-LINE |
+| RULE-INV-049 | ENT-INV-004, 005 | on issue that references a reservation | The system shall prevent an issue line that references a reservation whose variantFk or warehouseFk differs from the line's, or whose sourceDocTypeCode or sourceDocRef differs from the issue's source document. | INV-422-RESERVATION-MISMATCH (in-process, §5.1) |
 
 No RULE of this module has a `Data source` marked DEFERRED: every check reads a column the db-script declares (db-script §2, C6.9).
 
@@ -192,7 +194,7 @@ Full permission names and grants: SEC-BE (`permission-matrix`, `bootstrap`).
 
 | via | Used for in this plan |
 |---|---|
-| com.erp.cu.crossmodule.SettingsApi | capability flags lotExpiry / dualQuantity / bundles behind FeatureFlags; INV_ALLOW_NEGATIVE_STOCK, INV_NEAR_EXPIRY_DAYS (API-INV-008, 048, 049; posting engine); tenant base currency for CURRENCY_CODE columns |
+| com.erp.cu.crossmodule.SettingsApi | capability flags lotExpiry / dualQuantity / bundles behind FeatureFlags; INV_ALLOW_NEGATIVE_STOCK, INV_NEAR_EXPIRY_DAYS (API-INV-008, 048, 049; posting engine); INV_MEASURE_UOM_KEY, the key of the consumed unit-of-measure lookup (API-INV-045, ADR-INV-043); tenant base currency for CURRENCY_CODE columns |
 | com.erp.sequence.crossmodule.NumberSeriesApi | INV_WAREHOUSE, INV_BRANCH codes; INV_TRANSFER, INV_COUNT, INV_ADJUSTMENT document numbers |
 | com.erp.events.OutboxPublisher | StockMoveRecorded (CON-INV-020), InventoryMasterChanged (CON-INV-021) |
 | com.erp.audit.crossmodule.AuditApi | change history of documents, warehouses, branches, lots, Item stock settings (REQ-INV-077) |
@@ -212,17 +214,22 @@ Each is filed in full under `analysis/decisions/INV/` (Context · Decision · Co
 | ADR | Decision | Status |
 |---|---|---|
 | ADR-INV-021 | Infrastructure errors are PLATFORM-STD catalog rows: INV-400 (malformed request), INV-401 (unauthenticated), INV-403 (forbidden — message of AC-INV-154), one not-found code per resource (INV-404-WAREHOUSE-NOT-FOUND … INV-404-LOT-NOT-FOUND, §5), INV-409-STALE-VERSION (optimistic lock on VERSION), INV-500 (server). Their texts other than INV-403 are the platform's own (LocalizedException of the given), not invented here. | ACCEPTED |
-| ADR-INV-022 | The consumed unit-of-measure lookup key (ENT-INV-014.measureUomCode) is not spelled by the SRS; the code is validated through MdlLookupApi against the key configured as `inv.lookup.measure-uom-key`, whose value the deployment takes from the key owner's registry. Key string PENDING; no INV value is hardcoded. | ACCEPTED |
+| ADR-INV-022 | The consumed unit-of-measure lookup key (ENT-INV-014.measureUomCode) is not hardcoded in INV code; it is read at runtime and the code is validated through MdlLookupApi against it. Revised by ADR-INV-043: the key is the SettingsApi setting INV_MEASURE_UOM_KEY, not a deployment property. | ACCEPTED (revised by ADR-INV-043) |
 | ADR-INV-023 | The cross-module foreign keys (INT-C) reference the target's primary key column only — single-column FKs — because the target's contract promises the identifier, not a tenant-scoped unique key; the target table and key column are derived from the shared naming rule and verified by the executor against the delivered target migration before the patch runs. | ACCEPTED |
-| ADR-INV-024 | The contract's in-process operations (CON-INV-006 … 019) are one injected bean `InventoryApi` (package com.erp.inv.crossmodule), with no REST surface; their codes raised only in-process (RULE-INV-020, 021, 023, 039) are listed in §5.1, not in the HTTP catalog; their reservation-only repository intents are stated in SVC-API-INT, outside the QRC (no API-* reaches them). | ACCEPTED |
+| ADR-INV-024 | The contract's in-process operations (CON-INV-006 … 019) are one injected bean `InventoryApi` (package com.commerce.inv.crossmodule — platform summary decision 11), with no REST surface; their codes raised only in-process (RULE-INV-020, 021, 023, 039) are listed in §5.1, not in the HTTP catalog; their reservation-only repository intents are stated in SVC-API-INT, outside the QRC (no API-* reaches them). | ACCEPTED |
 | ADR-INV-025 | Balance, availability and lot searches are native aggregate queries joining INV_STOCK_BALANCE with INV_LOT and INV_RESERVATION (derived reserved / available, expired exclusion); the Variant "term" filter resolves a barcode through XM-INV-013 and an Item filter through XM-INV-015; display names of Variants are read in-process per page through XM-INV-014. | ACCEPTED |
 | ADR-INV-026 | Concurrency: balance and valuation rows are locked `FOR UPDATE` in ascending (variantFk, warehouseFk, lotFk) order after an insert-if-absent on their unique keys; posting paths read the warehouse `FOR SHARE`, deactivation takes it `FOR UPDATE`; default switches lock the current default; document headers are locked before status checks; numbers come atomically from NumberSeriesApi. | ACCEPTED |
 | ADR-INV-027 | Opening stock (API-INV-047) creates and posts one OPENING_STOCK adjustment in one call; rows identify the Variant by `variantPk` or by `barcode` (resolved through XM-INV-013); all-or-nothing validation answers 422 INV-422-LOAD-ROWS-INVALID with one `details` entry per failing row (rowNo, code, messageAr, messageEn). | ACCEPTED |
 | ADR-INV-028 | Inventory settings (API-INV-048/049) read and write the given cu settings INV_ALLOW_NEGATIVE_STOCK and INV_NEAR_EXPIRY_DAYS; the 1–365 range of REQ-INV-119 raises INV-422-HORIZON-RANGE (rule REQ-INV-119, no RULE — SRS D-04); the context endpoint (API-INV-008) returns active counts and the three capability flags. | ACCEPTED |
 | ADR-INV-029 | Item stock settings are saved by an idempotent PUT keyed by itemId: CREATE permission when no record exists, UPDATE when one does; key = Item code, valueAr / valueEn = a system-filled tracking summary built from the two flags. | ACCEPTED |
-| ADR-INV-030 | "Never valued" ≡ no INV_STOCK_VALUATION row. An outgoing move of a never-valued Variant is valued at 0 and creates no valuation row; the first incoming valued move creates it with TOTAL_ON_HAND_QTY = the Variant's on-hand sum after the move and the move's unit cost as average (REQ-INV-060). | ACCEPTED |
+| ADR-INV-030 | "Never valued" ≡ no INV_STOCK_VALUATION row. An outgoing move of a never-valued Variant is valued at 0 and creates no valuation row; the first incoming valued move creates it with TOTAL_ON_HAND_QTY = the Variant's on-hand sum after the move and the move's unit cost as average (REQ-INV-060). Extended (gate-analysis revise 1, G11): an ADJUSTMENT_IN of an adjustment generated by a count posting (sourceCountFk set) of a never-valued Variant is valued at 0 and creates no valuation row, so a count can always be posted. | ACCEPTED |
 | ADR-INV-031 | Two SOFT-READ edges are minted (XM-INV-014 Variant read, XM-INV-015 Item read): RULE-INV-018 / 028 / 042 / 043 / 045 and the Item filter are the first runtime reads of that state, and the register held only structural edges for it. | ACCEPTED |
 | ADR-INV-032 | The seven state-change PATCH endpoints (reactivate and set-default of a warehouse or a branch; post of a transfer, a count or an adjustment) take a typed body `VersionedActionRequest {version}` — the VERSION the caller read. A stale version answers INV-409-STALE-VERSION, so a record changed by another user since it was read (a draft edited, a default moved) is never acted on unseen. | ACCEPTED |
+| ADR-INV-041 | Tenancy of native SQL: Hibernate `@TenantId` filters JPQL and derived queries only. Every NATIVE entry (QR-INV-015, 016, 017, 024, 038, 041, the advisory lock of ADR-INV-044, and any native form of R-1 … R-6) writes `TENANT_ID = :tenantId` on each table and each join, and TENANT_ID in every INSERT column list; `:tenantId` is the given tenant context's current id. Each such repository method carries `@TenantUnscoped(reason = "native SQL — tenant predicate written by hand", adr = "ADR-INV-041")`, and a repository test runs each one under two tenants. | ACCEPTED |
+| ADR-INV-042 | Authority of the in-process surface: every REST-facing service method carries `@PreAuthorize(hasAuthority(T(com.commerce.inv.permission.InvPermissions).PERM_…))` with INV's own constants. `InventoryApi` (CON-INV-006 … 019) delegates to the internal engine package `com.commerce.inv.engine` (StockPostingEngine, AvailabilityEngine, ReservationEngine, InventoryReadEngine), which has no permission check and no REST path; the calling module authorises its own caller (SRS access summary). Depends on CORE-GAP-in-process-caller-authority. | ACCEPTED |
+| ADR-INV-043 | The consumed unit-of-measure lookup key is the SettingsApi setting INV_MEASURE_UOM_KEY, platform default `CAT_UOM` (the key CAT SRS A6 declares), seeded by db-script BLOCK 8e and not tenant-editable; the deployment property of ADR-INV-022 is withdrawn. A platform finding asks CAT to publish the key in contract-cat. | ACCEPTED |
+| ADR-INV-044 | Concurrent requests with one idempotency key: receive, issue and reserve take `pg_advisory_xact_lock(hashtextextended(<tenantId> || ':' || <idempotencyKey>, 0))` before the R-2 / R-6 lookup, so a retried submission waits for the first and then returns its answer. IDEMPOTENCY_KEY stays a non-unique index (D-P2-05). | ACCEPTED |
+| ADR-INV-045 | A DRAFT is validated again when posted: engine step 0 re-runs RULE-INV-007, 008, 016, 018, 037 and 040 on every line; a warehouse named by a DRAFT transfer, count or adjustment cannot be deactivated (RULE-INV-004, INV-409-WAREHOUSE-IN-USE text). | ACCEPTED |
 
 Inherited and applied: ADR-INV-014 (TENANT_ID, VERSION), ADR-INV-015 (CURRENCY_CODE), ADR-INV-016 (types), ADR-INV-017 (measure-only move, quantity 0), ADR-INV-018 / ADR-INV-020 (no events subscriber, no server-side file parsing); SRS D-01 … D-27; db-script D-P2-01 … D-P2-14.
 
@@ -460,16 +467,24 @@ Legend  ✓ aligned · ✗ type mismatch (finding)   ·   writer = API that writ
 | DBF-INV-218 | ENT-INV-014 | updatedBy | String | — | ✓ core-provided |
 | DBF-INV-219 | ENT-INV-014 | updatedAt | OffsetDateTime | — | ✓ core-provided |
 
-Derived, not held (no DBF): `reservedQty`, `availableQty` of a balance row (REQ-INV-038 — QR-INV-015/016), `expiredFl` and `daysLeft` of a lot (RULE-INV-038, today in the tenant time zone), the bundle availability (REQ-INV-042). No ADR is needed: the SRS A3 declares them derived.
+Derived, not held (no DBF): `reservedQty`, `availableQty` of a balance row (REQ-INV-038 — QR-INV-015/016), the warehouse label `warehouseCode` / `warehouseNameAr` / `warehouseNameEn` of a balance row and of an availability row (read by join from DBF-INV-004, 005, 006 — QR-INV-015/016, ADR-INV-036), `expiredFl` and `daysLeft` of a lot (RULE-INV-038, today in the tenant time zone), the bundle availability (REQ-INV-042). No ADR is needed: the SRS A3 declares them derived.
 
 DB ALIGNMENT: 219 / 219 ✓ · issues: 0.
 
 ## 4 — Query Reference Catalog (QR)
 
 Logical intent only — the implementer rewrites each entry with the mapped entity classes and the project's
-query strategy (Spring Data JPA; native SQL only where the entry says NATIVE / AGGREGATE). Every query is
-tenant-scoped by the given (`AuditableEntity` / Hibernate `@TenantId`): the `TENANT_ID` predicate is implied
-and not repeated below. Ordering / paging: `Page<T>`; responses wrapped in `ApiResponse<T>`. Locking modes
+query strategy (Spring Data JPA; native SQL only where the entry says NATIVE). Tenancy (ADR-INV-041):
+- **JPQL and derived queries** (every entry not marked NATIVE) are tenant-scoped by the given
+  (`AuditableEntity` / Hibernate `@TenantId`); their `TENANT_ID` predicate is added by Hibernate and is not
+  repeated in their logical spec.
+- **NATIVE entries** (QR-INV-015, 016, 017, 024, 038, 041) are not filtered by `@TenantId`. Their logical spec
+  writes `TENANT_ID = :tenantId` on every table and every join predicate, and TENANT_ID in every INSERT column
+  list; `:tenantId` is the current tenant of the given tenant context. Each such repository method carries
+  `@TenantUnscoped(reason = "native SQL — tenant predicate written by hand", adr = "ADR-INV-041")`. The same
+  holds for the advisory lock of ADR-INV-044 and for any native form of the in-process intents R-1 … R-6.
+
+Ordering / paging: `Page<T>`; responses wrapped in `ApiResponse<T>`. Locking modes
 follow ADR-INV-026. Every entry names the `API-*` that reaches it; every `API-*` with a DB operation cites its
 entries on its Repository line.
 
@@ -485,7 +500,7 @@ QR-INV-002 — Warehouse by identifier
 Phase · API · Entity · Op : SVC-API · API-INV-002, 004, 005, 006, 007, 017, 022, 023, 024, 028, 032, 036, 038, 047 · ENT-INV-001 · FIND_ONE
 Intent        : one warehouse by WAREHOUSE_PK, inactive included (RULE-INV-005); used as the active check of RULE-INV-007
 Logical spec  : SELECT * FROM INV_WAREHOUSE WHERE WAREHOUSE_PK = :id
-Join · Tx · Locking · Paging : NONE · READ_ONLY (reads) / READ_WRITE (in write paths) · FOR UPDATE in API-INV-004/005/006/007; FOR SHARE in posting paths (API-INV-024, 038, 047) so a concurrent deactivation waits (ADR-INV-026) · NO
+Join · Tx · Locking · Paging : NONE · READ_ONLY (reads) / READ_WRITE (in write paths) · FOR UPDATE in API-INV-004/005/006/007; FOR SHARE in posting paths (API-INV-024, 032, 038, 047) and in DRAFT saves (API-INV-022, 023, 028, 036) so a concurrent deactivation waits (ADR-INV-026, ADR-INV-045) · NO
 Filters · Result · Nulls : PK EXACT · full entity · not found → INV-404-WAREHOUSE-NOT-FOUND
 
 QR-INV-003 — Warehouse Arabic name taken
@@ -518,9 +533,9 @@ Filters · Result · Nulls : — · count · —
 
 QR-INV-007 — Warehouse in use
 Phase · API · Entity · Op : SVC-API · API-INV-005 · ENT-INV-001 · EXISTS
-Intent        : the warehouse holds non-zero stock or an ACTIVE reservation (RULE-INV-004)
-Logical spec  : SELECT 1 FROM INV_STOCK_BALANCE WHERE WAREHOUSE_FK = :id AND ON_HAND_QTY <> 0 UNION ALL SELECT 1 FROM INV_RESERVATION WHERE WAREHOUSE_FK = :id AND STATUS_CODE = 'ACTIVE' LIMIT 1
-Join · Tx · Locking · Paging : NONE (two single-table probes) · READ_WRITE (runs after QR-INV-002 FOR UPDATE) · warehouse row locked first, so in-flight posts (FOR SHARE) finish before the probe · NO
+Intent        : the warehouse holds non-zero stock, an ACTIVE reservation or a DRAFT transfer, count or adjustment (RULE-INV-004, ADR-INV-045)
+Logical spec  : five single-table EXISTS probes, stopping at the first hit — INV_STOCK_BALANCE WHERE WAREHOUSE_FK = :id AND ON_HAND_QTY <> 0 · INV_RESERVATION WHERE WAREHOUSE_FK = :id AND STATUS_CODE = 'ACTIVE' · INV_TRANSFER WHERE (FROM_WAREHOUSE_FK = :id OR TO_WAREHOUSE_FK = :id) AND STATUS_CODE = 'DRAFT' · INV_STOCK_COUNT WHERE WAREHOUSE_FK = :id AND STATUS_CODE = 'DRAFT' · INV_STOCK_ADJUSTMENT WHERE WAREHOUSE_FK = :id AND STATUS_CODE = 'DRAFT'
+Join · Tx · Locking · Paging : NONE (single-table JPQL probes) · READ_WRITE (runs after QR-INV-002 FOR UPDATE) · warehouse row locked first, so in-flight posts (FOR SHARE) finish before the probe; a DRAFT saved against the warehouse reads it with QR-INV-002 FOR SHARE (API-INV-022, 023, 028, 036), so it cannot slip in after the probe · NO
 Filters · Result · Nulls : — · boolean · —
 
 QR-INV-008 — Branch search
@@ -574,23 +589,23 @@ Filters · Result · Nulls : — · boolean · —
 
 QR-INV-015 — Stock balance search with reserved and available
 Phase · API · Entity · Op : SVC-API · API-INV-016 · ENT-INV-003 · NATIVE (AGGREGATE)
-Intent        : per Variant × warehouse × lot: on-hand, measure, reserved (ACTIVE reservations of the Variant × warehouse), available = on-hand outside expired lots − reserved (REQ-INV-038, RULE-INV-038), lot code / expiry / expired mark
-Logical spec  : SELECT b.*, l.CODE, l.EXPIRY_DATE, (l.EXPIRY_DATE < :today) AS expired, r.reserved FROM INV_STOCK_BALANCE b LEFT JOIN INV_LOT l ON l.LOT_PK = b.LOT_FK LEFT JOIN (SELECT VARIANT_FK, WAREHOUSE_FK, SUM(RESERVED_QTY) reserved FROM INV_RESERVATION WHERE STATUS_CODE = 'ACTIVE' GROUP BY 1,2) r ON r.VARIANT_FK = b.VARIANT_FK AND r.WAREHOUSE_FK = b.WAREHOUSE_FK WHERE [b.VARIANT_FK IN (:variantPks)] [AND b.WAREHOUSE_FK = :warehousePk] [AND b.LOT_FK = :lotPk] [AND b.ON_HAND_QTY <> 0 when nonZero] ORDER BY b.VARIANT_FK, b.WAREHOUSE_FK, l.EXPIRY_DATE NULLS FIRST [page/size]; available per Variant × warehouse = SUM(on-hand of non-expired rows) − reserved, reported on each row of that pair
-Join · Tx · Locking · Paging : required — ADR-INV-025 (lot expiry and reservations are separate tables) · READ_ONLY · NONE · YES (Page<T>)
-Filters · Result · Nulls : variantPks SET (from variantPk, barcode term via integrate (XM-INV-013), itemPk via integrate (XM-INV-015)), warehousePk EXACT, lotPk EXACT, nonZero · projection StockBalanceRow · LOT_FK null → stock without a lot, never expired; reserved null → 0
+Intent        : per Variant × warehouse × lot: on-hand, measure, reserved (ACTIVE reservations of the Variant × warehouse), available = on-hand outside expired lots − reserved (REQ-INV-038, RULE-INV-038), lot code / expiry / expired mark, and the warehouse code and names (ADR-INV-036)
+Logical spec  : SELECT b.*, w.CODE, w.NAME_AR, w.NAME_EN, l.CODE, l.EXPIRY_DATE, (l.EXPIRY_DATE < :today) AS expired, r.reserved FROM INV_STOCK_BALANCE b JOIN INV_WAREHOUSE w ON w.TENANT_ID = :tenantId AND w.WAREHOUSE_PK = b.WAREHOUSE_FK LEFT JOIN INV_LOT l ON l.TENANT_ID = :tenantId AND l.LOT_PK = b.LOT_FK LEFT JOIN (SELECT VARIANT_FK, WAREHOUSE_FK, SUM(RESERVED_QTY) reserved FROM INV_RESERVATION WHERE TENANT_ID = :tenantId AND STATUS_CODE = 'ACTIVE' GROUP BY 1,2) r ON r.VARIANT_FK = b.VARIANT_FK AND r.WAREHOUSE_FK = b.WAREHOUSE_FK WHERE b.TENANT_ID = :tenantId [AND b.VARIANT_FK IN (:variantPks)] [AND b.WAREHOUSE_FK = :warehousePk] [AND b.LOT_FK = :lotPk] [AND b.ON_HAND_QTY <> 0 when nonZero] ORDER BY b.VARIANT_FK, b.WAREHOUSE_FK, l.EXPIRY_DATE NULLS FIRST [page/size]; available per Variant × warehouse = SUM(on-hand of non-expired rows) − reserved, reported on each row of that pair
+Join · Tx · Locking · Paging : required — ADR-INV-025 (lot expiry, reservations and warehouse labels are separate tables); tenant predicate on every table and join — ADR-INV-041 (`@TenantUnscoped`) · READ_ONLY · NONE · YES (Page<T>)
+Filters · Result · Nulls : variantPks SET (from variantPk, barcode term via integrate (XM-INV-013), itemPk via integrate (XM-INV-015)), warehousePk EXACT, lotPk EXACT, nonZero · projection StockBalanceRow (with warehouseCode, warehouseNameAr, warehouseNameEn) · LOT_FK null → stock without a lot, never expired; reserved null → 0; NAME_EN null → display NAME_AR
 
 QR-INV-016 — Availability of a Variant per warehouse
 Phase · API · Entity · Op : SVC-API · API-INV-016, 017 · ENT-INV-003 · NATIVE (AGGREGATE)
 Intent        : on-hand, reserved and available per ACTIVE warehouse and in total for one Variant (REQ-INV-040); zeros for a Variant with no balance (REQ-INV-041); reused per component for a bundle (REQ-INV-042); the reservation and in-process issue paths read the same figures
-Logical spec  : SELECT w.WAREHOUSE_PK, COALESCE(SUM(b.ON_HAND_QTY),0) on_hand, COALESCE(SUM(b.ON_HAND_QTY) FILTER (WHERE l.EXPIRY_DATE IS NULL OR l.EXPIRY_DATE >= :today),0) sellable, COALESCE(SUM(b.ON_HAND_MEASURE_QTY),0) measure FROM INV_WAREHOUSE w LEFT JOIN INV_STOCK_BALANCE b ON b.WAREHOUSE_FK = w.WAREHOUSE_PK AND b.VARIANT_FK = :variantPk LEFT JOIN INV_LOT l ON l.LOT_PK = b.LOT_FK WHERE w.IS_ACTIVE_FL = TRUE [AND w.WAREHOUSE_PK = :warehousePk] GROUP BY w.WAREHOUSE_PK; reserved from QR-INV-026; available = sellable − reserved
-Join · Tx · Locking · Paging : required — ADR-INV-025 · READ_ONLY · NONE (the reserve path re-reads under its own locks, SVC-API-INT) · NO
-Filters · Result · Nulls : variantPk EXACT, warehousePk EXACT · projection Availability · no rows → zeros
+Logical spec  : SELECT w.WAREHOUSE_PK, w.CODE, w.NAME_AR, w.NAME_EN, COALESCE(SUM(b.ON_HAND_QTY),0) on_hand, COALESCE(SUM(b.ON_HAND_QTY) FILTER (WHERE l.EXPIRY_DATE IS NULL OR l.EXPIRY_DATE >= :today),0) sellable, COALESCE(SUM(b.ON_HAND_MEASURE_QTY),0) measure FROM INV_WAREHOUSE w LEFT JOIN INV_STOCK_BALANCE b ON b.TENANT_ID = :tenantId AND b.WAREHOUSE_FK = w.WAREHOUSE_PK AND b.VARIANT_FK = :variantPk LEFT JOIN INV_LOT l ON l.TENANT_ID = :tenantId AND l.LOT_PK = b.LOT_FK WHERE w.TENANT_ID = :tenantId AND w.IS_ACTIVE_FL = TRUE [AND w.WAREHOUSE_PK = :warehousePk] GROUP BY w.WAREHOUSE_PK, w.CODE, w.NAME_AR, w.NAME_EN; reserved from QR-INV-026; available = sellable − reserved
+Join · Tx · Locking · Paging : required — ADR-INV-025; tenant predicate on every table and join — ADR-INV-041 (`@TenantUnscoped`) · READ_ONLY · NONE (the reserve path re-reads under its own locks, SVC-API-INT) · NO
+Filters · Result · Nulls : variantPk EXACT, warehousePk EXACT · projection Availability (perWarehouse rows with warehouseCode, warehouseNameAr, warehouseNameEn) · no rows → zeros
 
 QR-INV-017 — Stock balance lock-or-create
 Phase · API · Entity · Op : SVC-API · API-INV-024, 032, 038, 047 · ENT-INV-003 · NATIVE (insert-if-absent) + FIND_ONE
 Intent        : obtain the one balance row of (Variant, warehouse, lot) locked for the move about to change it (REQ-INV-036, REQ-INV-037)
-Logical spec  : INSERT INTO INV_STOCK_BALANCE (VARIANT_FK, WAREHOUSE_FK, LOT_FK, ON_HAND_QTY, LAST_MOVE_AT, DOC_DATE, …audit) VALUES (:v, :w, :l, 0, now, :moveDate, …) ON CONFLICT ON CONSTRAINT UQ_INV_STOCK_BALANCE_VAR_WH_LOT DO NOTHING; then SELECT * FROM INV_STOCK_BALANCE WHERE VARIANT_FK = :v AND WAREHOUSE_FK = :w AND LOT_FK IS NOT DISTINCT FROM :l FOR UPDATE
-Join · Tx · Locking · Paging : NONE · READ_WRITE · FOR UPDATE, rows taken in ascending (VARIANT_FK, WAREHOUSE_FK, LOT_FK NULLS FIRST) order across the whole document (ADR-INV-026) — two parallel moves of the same pair serialise, neither update is lost · NO
+Logical spec  : INSERT INTO INV_STOCK_BALANCE (TENANT_ID, VARIANT_FK, WAREHOUSE_FK, LOT_FK, ON_HAND_QTY, LAST_MOVE_AT, DOC_DATE, VERSION, …audit) VALUES (:tenantId, :v, :w, :l, 0, now, :moveDate, 0, …) ON CONFLICT ON CONSTRAINT UQ_INV_STOCK_BALANCE_VAR_WH_LOT DO NOTHING; then SELECT * FROM INV_STOCK_BALANCE WHERE TENANT_ID = :tenantId AND VARIANT_FK = :v AND WAREHOUSE_FK = :w AND LOT_FK IS NOT DISTINCT FROM :l FOR UPDATE
+Join · Tx · Locking · Paging : NONE; tenant predicate and TENANT_ID column written by hand — ADR-INV-041 (`@TenantUnscoped`) · READ_WRITE · FOR UPDATE. Lock order across the whole document (ADR-INV-026): first the lot-less row (variant, warehouse, NULL) of every Variant × warehouse pair the document touches, created when absent, in ascending (VARIANT_FK, WAREHOUSE_FK); then the lot rows in ascending (VARIANT_FK, WAREHOUSE_FK, LOT_FK). The lot-less row is the serialisation point of every reserve, issue, transfer leg and adjustment of the pair, with or without a lot — two parallel moves of the same pair serialise, neither update is lost · NO
 Filters · Result · Nulls : key EXACT · full entity · LOT_FK null is one key value (NULLS NOT DISTINCT)
 
 QR-INV-018 — Stock balance update
@@ -604,15 +619,15 @@ QR-INV-019 — On-hand sum
 Phase · API · Entity · Op : SVC-API · API-INV-024, 032, 038, 047 · ENT-INV-003 · AGGREGATE
 Intent        : on-hand of a Variant in a warehouse over all lots (BALANCE_AFTER_QTY, REQ-INV-076; the RULE-INV-019 check; the negative-crossing alert REQ-INV-068), of a Variant over all warehouses (valuation creation, ADR-INV-030) and of a lot over all warehouses (lot active flag)
 Logical spec  : SELECT COALESCE(SUM(ON_HAND_QTY),0) FROM INV_STOCK_BALANCE WHERE VARIANT_FK = :v [AND WAREHOUSE_FK = :w] [AND LOT_FK = :l]
-Join · Tx · Locking · Paging : NONE · READ_WRITE (inside the posting transaction) · the rows of the touched lots are locked by QR-INV-017; untouched lots of the pair cannot change concurrently because every move of the pair locks its own row first and the sum is taken after all rows of the document are locked · NO
+Join · Tx · Locking · Paging : NONE · READ_WRITE (inside the posting transaction) · the pair's lot-less row and the touched lot rows are locked by QR-INV-017; untouched lots of the pair cannot change concurrently because every move of the pair locks the pair's lot-less row first, and the sum is taken after all rows of the document are locked · NO
 Filters · Result · Nulls : — · scalar · none → 0
 
 QR-INV-020 — Stock move search
 Phase · API · Entity · Op : SVC-API · API-INV-018 · ENT-INV-004 · FIND_BY_CRITERIA
-Intent        : moves matching Variant, warehouse, lot, move type, document number and date range, newest first, with source document type and number (REQ-INV-075, 076)
-Logical spec  : SELECT * FROM INV_STOCK_MOVE WHERE [VARIANT_FK = :variantPk] [AND WAREHOUSE_FK = :warehousePk] [AND LOT_FK = :lotPk] [AND MOVE_TYPE_CODE = :moveTypeCode] [AND SOURCE_DOC_NO = :docNo] [AND DOC_DATE BETWEEN :dateFrom AND :dateTo] ORDER BY DOC_DATE DESC, STOCK_MOVE_PK DESC [page/size]
-Join · Tx · Locking · Paging : NONE · READ_ONLY · NONE · YES (Page<T>)
-Filters · Result · Nulls : variantPk, warehousePk, lotPk, moveTypeCode, docNo EXACT; DATE_RANGE · full entity (BALANCE_AFTER_QTY shown only when filtered to one Variant and one warehouse) · LOT_FK, MEASURE_QTY nullable
+Intent        : moves matching Variant, warehouse, lot, move type, document number, source document (type and identifier) and date range, newest first, with source document type and number (REQ-INV-075, 076); the source document filter identifies one document exactly, so the jumps from a posted transfer or adjustment show only its moves (SRS SCR-REQ-INV-004 B2)
+Logical spec  : SELECT * FROM INV_STOCK_MOVE WHERE [VARIANT_FK = :variantPk] [AND WAREHOUSE_FK = :warehousePk] [AND LOT_FK = :lotPk] [AND MOVE_TYPE_CODE = :moveTypeCode] [AND SOURCE_DOC_NO = :docNo] [AND SOURCE_DOC_TYPE_CODE = :sourceDocTypeCode] [AND SOURCE_DOC_REF = :sourceDocRef] [AND DOC_DATE BETWEEN :dateFrom AND :dateTo] ORDER BY DOC_DATE DESC, STOCK_MOVE_PK DESC [page/size]
+Join · Tx · Locking · Paging : NONE · READ_ONLY · NONE · YES (Page<T>) — IDX_INV_STOCK_MOVE_SRC_TYPE_REF serves the source document filter
+Filters · Result · Nulls : variantPk, warehousePk, lotPk, moveTypeCode, docNo, sourceDocTypeCode, sourceDocRef EXACT; DATE_RANGE · full entity (BALANCE_AFTER_QTY shown only when filtered to one Variant and one warehouse) · LOT_FK, MEASURE_QTY nullable
 
 QR-INV-021 — Stock move by identifier
 Phase · API · Entity · Op : SVC-API · API-INV-019 · ENT-INV-004 · FIND_ONE
@@ -638,8 +653,8 @@ Filters · Result · Nulls : variantPk EXACT · full entity · absent → API-IN
 QR-INV-024 — Valuation save
 Phase · API · Entity · Op : SVC-API · API-INV-024, 032, 038, 047 · ENT-INV-013 · NATIVE (insert-if-absent) / UPDATE
 Intent        : create the valuation on the first valued incoming move, or update total, average, value and last move
-Logical spec  : INSERT INTO INV_STOCK_VALUATION (VARIANT_FK, TOTAL_ON_HAND_QTY, AVERAGE_UNIT_COST, STOCK_VALUE, LAST_MOVE_AT, DOC_DATE, CURRENCY_CODE, …audit) VALUES (…) ON CONFLICT ON CONSTRAINT UQ_INV_STOCK_VALUATION_VARIANT_FK DO NOTHING, then re-read with QR-INV-023 FOR UPDATE · UPDATE INV_STOCK_VALUATION SET TOTAL_ON_HAND_QTY = :t, AVERAGE_UNIT_COST = :a, STOCK_VALUE = :v, LAST_MOVE_AT = :now WHERE STOCK_VALUATION_PK = :id
-Join · Tx · Locking · Paging : NONE · READ_WRITE · row locked (QR-INV-023) · NO
+Logical spec  : INSERT INTO INV_STOCK_VALUATION (TENANT_ID, VARIANT_FK, TOTAL_ON_HAND_QTY, AVERAGE_UNIT_COST, STOCK_VALUE, LAST_MOVE_AT, DOC_DATE, CURRENCY_CODE, VERSION, …audit) VALUES (:tenantId, …, 0, …) ON CONFLICT ON CONSTRAINT UQ_INV_STOCK_VALUATION_VARIANT_FK DO NOTHING, then re-read with QR-INV-023 FOR UPDATE · UPDATE INV_STOCK_VALUATION SET TOTAL_ON_HAND_QTY = :t, AVERAGE_UNIT_COST = :a, STOCK_VALUE = :v, LAST_MOVE_AT = :now WHERE TENANT_ID = :tenantId AND STOCK_VALUATION_PK = :id
+Join · Tx · Locking · Paging : NONE; the insert-if-absent is native — tenant predicate and TENANT_ID column written by hand, ADR-INV-041 (`@TenantUnscoped`) · READ_WRITE · row locked (QR-INV-023) · NO
 Filters · Result · Nulls : — · full entity · —
 
 QR-INV-025 — Valuation search with grand total
@@ -736,8 +751,8 @@ Filters · Result · Nulls : — · aggregate · —
 QR-INV-038 — Lot search with on-hand
 Phase · API · Entity · Op : SVC-API · API-INV-040 · ENT-INV-012, ENT-INV-003 · NATIVE (AGGREGATE)
 Intent        : lots matching Variant, lot number, warehouse and expiry range with on-hand, ordered by expiry date (REQ-INV-109); near-expiry only = non-zero on-hand and expiry within today + horizon (REQ-INV-116); expired lots with stock stay listed and marked (REQ-INV-115); the daily near-expiry job reads the same query with "not yet notified"
-Logical spec  : SELECT l.*, b.WAREHOUSE_FK, SUM(b.ON_HAND_QTY) on_hand FROM INV_LOT l LEFT JOIN INV_STOCK_BALANCE b ON b.LOT_FK = l.LOT_PK WHERE [l.VARIANT_FK = :variantPk] [AND l.CODE ILIKE %:code%] [AND b.WAREHOUSE_FK = :warehousePk] [AND l.EXPIRY_DATE BETWEEN :expiryFrom AND :expiryTo] [AND l.EXPIRY_DATE <= :today + :horizonDays when nearExpiryOnly] [AND l.NEAR_EXPIRY_NOTIFIED_AT IS NULL for the job] GROUP BY l.LOT_PK, b.WAREHOUSE_FK [HAVING SUM(b.ON_HAND_QTY) <> 0 when nearExpiryOnly or job] ORDER BY l.EXPIRY_DATE, l.CODE [page/size]
-Join · Tx · Locking · Paging : required — ADR-INV-025 · READ_ONLY · NONE · YES (Page<T>)
+Logical spec  : SELECT l.*, b.WAREHOUSE_FK, SUM(b.ON_HAND_QTY) on_hand FROM INV_LOT l LEFT JOIN INV_STOCK_BALANCE b ON b.TENANT_ID = :tenantId AND b.LOT_FK = l.LOT_PK WHERE l.TENANT_ID = :tenantId [AND l.VARIANT_FK = :variantPk] [AND l.CODE ILIKE %:code%] [AND b.WAREHOUSE_FK = :warehousePk] [AND l.EXPIRY_DATE BETWEEN :expiryFrom AND :expiryTo] [AND l.EXPIRY_DATE <= :today + :horizonDays when nearExpiryOnly] [AND l.NEAR_EXPIRY_NOTIFIED_AT IS NULL for the job] GROUP BY l.LOT_PK, b.WAREHOUSE_FK [HAVING SUM(b.ON_HAND_QTY) <> 0 when nearExpiryOnly or job] ORDER BY l.EXPIRY_DATE, l.CODE [page/size]
+Join · Tx · Locking · Paging : required — ADR-INV-025; tenant predicate on every table and join — ADR-INV-041 (`@TenantUnscoped`) · READ_ONLY · NONE · YES (Page<T>)
 Filters · Result · Nulls : variantPk EXACT, code LIKE, warehousePk EXACT, expiry DATE_RANGE, nearExpiryOnly · projection LotRow (expiredFl = EXPIRY_DATE < today, daysLeft) · lot with no balance row → on-hand 0, warehouse null
 
 QR-INV-039 — Lot by identifier
@@ -757,8 +772,8 @@ Filters · Result · Nulls : key EXACT · full entity or none · —
 QR-INV-041 — Lot save
 Phase · API · Entity · Op : SVC-API · API-INV-038, 042, 047 · ENT-INV-012 · NATIVE (insert-if-absent) / UPDATE
 Intent        : create a lot on first receipt or increase; correct its expiry / descriptions; set its active flag from its stock; stamp NEAR_EXPIRY_NOTIFIED_AT (daily job)
-Logical spec  : INSERT INTO INV_LOT (VARIANT_FK, CODE, EXPIRY_DATE, FIRST_RECEIVED_AT, IS_ACTIVE_FL, …audit) VALUES (…) ON CONFLICT ON CONSTRAINT UQ_INV_LOT_VAR_CODE DO NOTHING · UPDATE INV_LOT SET EXPIRY_DATE / NAME_AR / NAME_EN / IS_ACTIVE_FL / NEAR_EXPIRY_NOTIFIED_AT = … WHERE LOT_PK = :id [AND VERSION = :version]
-Join · Tx · Locking · Paging : NONE · READ_WRITE · optimistic VERSION (API-INV-042) · NO
+Logical spec  : INSERT INTO INV_LOT (TENANT_ID, VARIANT_FK, CODE, EXPIRY_DATE, FIRST_RECEIVED_AT, IS_ACTIVE_FL, VERSION, …audit) VALUES (:tenantId, …, 0, …) ON CONFLICT ON CONSTRAINT UQ_INV_LOT_VAR_CODE DO NOTHING · UPDATE INV_LOT SET EXPIRY_DATE / NAME_AR / NAME_EN / IS_ACTIVE_FL / NEAR_EXPIRY_NOTIFIED_AT = … WHERE LOT_PK = :id [AND VERSION = :version] (the update is JPA, tenant-filtered by `@TenantId`)
+Join · Tx · Locking · Paging : NONE; the insert-if-absent is native — tenant predicate and TENANT_ID column written by hand, ADR-INV-041 (`@TenantUnscoped`) · READ_WRITE · optimistic VERSION (API-INV-042) · NO
 Filters · Result · Nulls : — · full entity · NAME_AR / NAME_EN null → display CODE
 
 QR-INV-042 — Item stock settings search
@@ -772,7 +787,7 @@ QR-INV-043 — Item stock settings of an Item
 Phase · API · Entity · Op : SVC-API · API-INV-016, 017, 022, 023, 029, 030, 036, 037, 038, 044, 045, 047 · ENT-INV-014 · FIND_ONE
 Intent        : whether an Item is lot-tracked / dual-quantity and its measure unit; no record = false, false, empty (REQ-INV-129)
 Logical spec  : SELECT * FROM INV_ITEM_STOCK_SETTINGS WHERE ITEM_FK = :itemPk
-Join · Tx · Locking · Paging : NONE · READ_ONLY / READ_WRITE · FOR UPDATE in API-INV-045 · NO
+Join · Tx · Locking · Paging : NONE · READ_ONLY / READ_WRITE · FOR UPDATE in API-INV-045; FOR SHARE in the posting paths (engine step 1 — API-INV-024, 032, 038, 047 and the in-process receive / issue), the records of the document's Items read in ascending ITEM_FK order, so a flag clear (FOR UPDATE) and a receipt of the same Item serialise (ADR-INV-026) · NO
 Filters · Result · Nulls : itemPk EXACT · full entity or defaults · —
 
 QR-INV-044 — Item stock settings save
@@ -810,9 +825,9 @@ rows:
   - {code: "INV-422-WAREHOUSE-CODE-READONLY", rule: RULE-INV-001, api: [API-INV-004], http: 422, trigger: "an update request carries a code different from the stored warehouse code", messages: {ar: "رمز المستودع يُنشأ تلقائيًا ولا يمكن تغييره.", en: "The warehouse code is generated automatically and cannot be changed."}}
   - {code: "INV-409-WAREHOUSE-NAME-TAKEN", rule: RULE-INV-002, api: [API-INV-003, API-INV-004], http: 409, trigger: "another warehouse of the tenant has the same nameAr (QR-INV-003 or UQ_INV_WAREHOUSE_NAME_AR)", messages: {ar: "يوجد مستودع آخر بهذا الاسم.", en: "Another warehouse already has this name."}}
   - {code: "INV-409-WAREHOUSE-DEFAULT", rule: RULE-INV-003, api: [API-INV-005], http: 409, trigger: "deactivation of the warehouse whose isDefaultFl is true", messages: {ar: "لا يمكن إيقاف المستودع الافتراضي. اجعل مستودعًا آخر افتراضيًا أولًا.", en: "The default warehouse cannot be deactivated. Set another warehouse as the default first."}}
-  - {code: "INV-409-WAREHOUSE-IN-USE", rule: RULE-INV-004, api: [API-INV-005], http: 409, trigger: "deactivation of a warehouse with a non-zero balance or an ACTIVE reservation (QR-INV-007)", messages: {ar: "لا يمكن إيقاف مستودع فيه مخزون أو حجوزات قائمة. انقل المخزون أو سوِّه أولًا.", en: "A warehouse that holds stock or open reservations cannot be deactivated. Transfer or adjust the stock first."}}
+  - {code: "INV-409-WAREHOUSE-IN-USE", rule: RULE-INV-004, api: [API-INV-005], http: 409, trigger: "deactivation of a warehouse with a non-zero balance, an ACTIVE reservation or a DRAFT transfer, count or adjustment naming it (QR-INV-007, ADR-INV-045)", messages: {ar: "لا يمكن إيقاف مستودع فيه مخزون أو حجوزات قائمة. انقل المخزون أو سوِّه أولًا.", en: "A warehouse that holds stock or open reservations cannot be deactivated. Transfer or adjust the stock first."}}
   - {code: "INV-409-WAREHOUSE-DEFAULT-INACTIVE", rule: RULE-INV-006, api: [API-INV-007], http: 409, trigger: "set as default on an inactive warehouse", messages: {ar: "المستودع الافتراضي يجب أن يكون نشطًا.", en: "The default warehouse must be active."}}
-  - {code: "INV-422-WAREHOUSE-INACTIVE", rule: RULE-INV-007, api: [API-INV-028, API-INV-036, API-INV-047], http: 422, trigger: "a stock document names a warehouse whose isActiveFl is false (also the inactive-warehouse message of RULE-INV-005)", messages: {ar: "المستودع غير نشط.", en: "The warehouse is inactive."}}
+  - {code: "INV-422-WAREHOUSE-INACTIVE", rule: RULE-INV-007, api: [API-INV-028, API-INV-032, API-INV-036, API-INV-038, API-INV-047], http: 422, trigger: "a stock document names a warehouse whose isActiveFl is false, on save or again on post (engine step 0, ADR-INV-045; also the inactive-warehouse message of RULE-INV-005)", messages: {ar: "المستودع غير نشط.", en: "The warehouse is inactive."}}
   - {code: "INV-422-WAREHOUSE-REQUIRED", rule: RULE-INV-008, api: [API-INV-028, API-INV-036, API-INV-047], http: 422, trigger: "no warehouse named while two or more warehouses are active", messages: {ar: "اختر المستودع.", en: "Choose the warehouse."}}
   - {code: "INV-422-BRANCH-INACTIVE", rule: RULE-INV-009, api: [API-INV-003, API-INV-004, API-INV-006], http: 422, trigger: "a warehouse is saved or reactivated against an inactive branch", messages: {ar: "الفرع المختار غير نشط.", en: "The chosen branch is inactive."}}
   - {code: "INV-422-BRANCH-CODE-READONLY", rule: RULE-INV-010, api: [API-INV-012], http: 422, trigger: "an update request carries a code different from the stored branch code", messages: {ar: "رمز الفرع يُنشأ تلقائيًا ولا يمكن تغييره.", en: "The branch code is generated automatically and cannot be changed."}}
@@ -821,14 +836,14 @@ rows:
   - {code: "INV-409-BRANCH-IN-USE", rule: RULE-INV-013, api: [API-INV-013], http: 409, trigger: "deactivation of a branch that an active warehouse belongs to (QR-INV-014)", messages: {ar: "لا يمكن إيقاف فرع تتبعه مستودعات نشطة. انقل المستودعات إلى فرع آخر أو أوقفها أولًا.", en: "A branch with active warehouses cannot be deactivated. Move the warehouses to another branch or deactivate them first."}}
   - {code: "INV-409-BRANCH-DEFAULT-INACTIVE", rule: RULE-INV-015, api: [API-INV-015], http: 409, trigger: "set as default on an inactive branch", messages: {ar: "الفرع الافتراضي يجب أن يكون نشطًا.", en: "The default branch must be active."}}
   - {code: "INV-422-TRANSFER-WAREHOUSES", rule: RULE-INV-016, api: [API-INV-022, API-INV-023, API-INV-024], http: 422, trigger: "source equals destination, either warehouse is inactive, or fewer than two warehouses are active (REQ-INV-014)", messages: {ar: "التحويل يحتاج إلى مستودعين نشطين مختلفين.", en: "A transfer needs two different active warehouses."}}
-  - {code: "INV-422-QUANTITY-INVALID", rule: RULE-INV-017, api: [API-INV-022, API-INV-023], http: 422, trigger: "a transfer line quantity is not greater than zero or has more than 3 decimals", messages: {ar: "أدخل كمية أكبر من صفر بثلاث خانات عشرية على الأكثر.", en: "Enter a quantity greater than zero with at most 3 decimal places."}}
-  - {code: "INV-422-VARIANT-INACTIVE", rule: RULE-INV-018, api: [API-INV-022, API-INV-023, API-INV-029, API-INV-036, API-INV-037, API-INV-047], http: 422, trigger: "the line's Variant or Item is inactive, or the Variant belongs to a BUNDLE Item (integrate (XM-INV-014))", messages: {ar: "متغيّر الصنف غير نشط.", en: "The Variant is inactive."}}
+  - {code: "INV-422-QUANTITY-INVALID", rule: RULE-INV-017, api: [API-INV-022, API-INV-023, API-INV-036, API-INV-037, API-INV-047], http: 422, trigger: "a transfer line quantity is not greater than zero or has more than 3 decimals; a transfer line measure, an adjustment line quantityChange or measureQtyChange, or an opening stock row quantity or measure has more than 3 decimals", messages: {ar: "أدخل كمية أكبر من صفر بثلاث خانات عشرية على الأكثر.", en: "Enter a quantity greater than zero with at most 3 decimal places."}}
+  - {code: "INV-422-VARIANT-INACTIVE", rule: RULE-INV-018, api: [API-INV-022, API-INV-023, API-INV-024, API-INV-029, API-INV-032, API-INV-036, API-INV-037, API-INV-038, API-INV-047], http: 422, trigger: "the line's Variant or Item is inactive, or the Variant belongs to a BUNDLE Item (integrate (XM-INV-014)), on save or again on post (engine step 0, ADR-INV-045)", messages: {ar: "متغيّر الصنف غير نشط.", en: "The Variant is inactive."}}
   - {code: "INV-409-NEGATIVE-STOCK", rule: RULE-INV-019, api: [API-INV-024, API-INV-032, API-INV-038], http: 409, trigger: "an online decrease would take a Variant's on-hand in a warehouse below zero while INV_ALLOW_NEGATIVE_STOCK is false; {onHand} = on-hand before the move", messages: {ar: "الرصيد لا يكفي: المتاح في المستودع {onHand}. الرصيد السالب غير مسموح.", en: "Not enough stock: {onHand} on hand in this warehouse. Negative stock is not allowed."}}
   - {code: "INV-422-BUNDLE-NO-COMPONENTS", rule: RULE-INV-022, api: [API-INV-017], http: 422, trigger: "availability of a bundle Variant that has no active component line (integrate (XM-INV-012)); the in-process reserve and issue raise the same code", messages: {ar: "الحزمة ليس لها مكوّنات نشطة.", en: "The bundle has no active components."}}
-  - {code: "INV-422-NO-KNOWN-COST", rule: RULE-INV-025, api: [API-INV-032, API-INV-038], http: 422, trigger: "an increase line has no unit cost and the Variant has no Stock valuation (ADR-INV-030)", messages: {ar: "لا توجد تكلفة معروفة لهذا المتغيّر. أدخل تكلفة الوحدة.", en: "This Variant has no known cost. Enter the unit cost."}}
+  - {code: "INV-422-NO-KNOWN-COST", rule: RULE-INV-025, api: [API-INV-036, API-INV-037, API-INV-038, API-INV-047], http: 422, trigger: "an increase line has no unit cost and the Variant has no Stock valuation (ADR-INV-030; an increase line of a count-generated adjustment is valued at 0 instead, so API-INV-032 never raises it), or a unit cost has more than 4 decimals", messages: {ar: "لا توجد تكلفة معروفة لهذا المتغيّر. أدخل تكلفة الوحدة.", en: "This Variant has no known cost. Enter the unit cost."}}
   - {code: "INV-422-OPENING-COST-REQUIRED", rule: RULE-INV-026, api: [API-INV-038, API-INV-047], http: 422, trigger: "a line of an OPENING_STOCK adjustment has no unit cost, a negative cost or a quantity change not above zero", messages: {ar: "أدخل تكلفة الوحدة للمخزون الافتتاحي.", en: "Enter the unit cost of the opening stock."}}
   - {code: "INV-422-LOAD-ROWS", rule: RULE-INV-027, api: [API-INV-047], http: 422, trigger: "an opening stock load with zero rows or more than 1000 rows", messages: {ar: "الحد الأقصى 1000 سطر في التحميل الواحد.", en: "At most 1000 rows per load."}}
-  - {code: "INV-422-LOAD-ROW-VARIANT", rule: RULE-INV-028, api: [API-INV-047], http: 422, trigger: "a load row's barcode or Variant identifies no active Variant of a STANDARD Item (row detail)", messages: {ar: "لم يُعثر على متغيّر صنف نشط بهذا الرمز أو الباركود.", en: "No active Variant has this code or barcode."}}
+  - {code: "INV-422-LOAD-ROW-VARIANT", rule: RULE-INV-028, api: [API-INV-047], http: 422, trigger: "a load row's barcode or Variant identifier identifies no active Variant of a STANDARD Item (row detail)", messages: {ar: "لا يطابق هذا السطر متغيّر صنف نشطًا.", en: "This row matches no active Variant."}}
   - {code: "INV-422-LOAD-ROWS-INVALID", rule: REQ-INV-072, api: [API-INV-047], http: 422, trigger: "one or more rows of an opening stock load fail validation; nothing is posted and details lists each failing rowNo with its own code and message", adr: ADR-INV-027}
   - {code: "INV-409-DOCUMENT-CLOSED", rule: RULE-INV-029, api: [API-INV-023, API-INV-024, API-INV-025, API-INV-029, API-INV-030, API-INV-031, API-INV-032, API-INV-033, API-INV-037, API-INV-038, API-INV-039], http: 409, trigger: "change, post, cancel or line change of a transfer, count or adjustment whose statusCode is POSTED or CANCELLED", messages: {ar: "المستند مُرحَّل أو ملغى ولا يمكن تعديله.", en: "The document is posted or cancelled and cannot be changed."}}
   - {code: "INV-422-DOC-NO-READONLY", rule: RULE-INV-030, api: [API-INV-023, API-INV-037], http: 422, trigger: "an update request carries a docNo different from the stored one", messages: {ar: "رقم المستند يُنشأ تلقائيًا ولا يمكن تغييره.", en: "The document number is generated automatically and cannot be changed."}}
@@ -838,14 +853,14 @@ rows:
   - {code: "INV-422-ZERO-CHANGE", rule: RULE-INV-034, api: [API-INV-036, API-INV-037, API-INV-038], http: 422, trigger: "an adjustment line with quantityChange 0, unless the Item is dual-quantity and measureQtyChange is non-zero", messages: {ar: "أدخل تغيّرًا في الكمية أو القياس لا يساوي صفرًا.", en: "Enter a non-zero change of quantity or measure."}}
   - {code: "INV-422-LOT-EXPIRY-REQUIRED", rule: RULE-INV-035, api: [API-INV-038, API-INV-047], http: 422, trigger: "an incoming line of a lot-tracked Item without lot number or expiry date while lotExpiry is on", messages: {ar: "أدخل رقم التشغيلة وتاريخ الصلاحية لهذا الصنف.", en: "Enter the lot number and expiry date for this Item."}}
   - {code: "INV-422-LOT-EXPIRY-MISMATCH", rule: RULE-INV-036, api: [API-INV-038, API-INV-047], http: 422, trigger: "an incoming line names an existing lot of the Variant with a different expiry date; {lot}, {expiry} = the stored lot", messages: {ar: "التشغيلة {lot} مسجّلة بتاريخ صلاحية {expiry}.", en: "Lot {lot} is recorded with expiry date {expiry}."}}
-  - {code: "INV-422-LOT-REQUIRED", rule: RULE-INV-037, api: [API-INV-022, API-INV-023, API-INV-029, API-INV-036, API-INV-037, API-INV-038], http: 422, trigger: "a transfer, count or decrease adjustment line of a lot-tracked Item names no lot of its Variant while lotExpiry is on", messages: {ar: "اختر التشغيلة لهذا الصنف.", en: "Choose the lot for this Item."}}
-  - {code: "INV-422-MEASURE-REQUIRED", rule: RULE-INV-040, api: [API-INV-022, API-INV-023, API-INV-029, API-INV-030, API-INV-047], http: 422, trigger: "a transfer, count or load line of a dual-quantity Item carries no measure while dualQuantity is on", messages: {ar: "أدخل القياس (الوزن أو الطول) لهذا الصنف.", en: "Enter the measure (weight or length) for this Item."}}
+  - {code: "INV-422-LOT-REQUIRED", rule: RULE-INV-037, api: [API-INV-022, API-INV-023, API-INV-024, API-INV-029, API-INV-032, API-INV-036, API-INV-037, API-INV-038], http: 422, trigger: "a transfer, count or decrease adjustment line of a lot-tracked Item names no lot of its Variant while lotExpiry is on, on save or again on post (the Item became lot-tracked after the save — engine step 0, ADR-INV-045)", messages: {ar: "اختر التشغيلة لهذا الصنف.", en: "Choose the lot for this Item."}}
+  - {code: "INV-422-MEASURE-REQUIRED", rule: RULE-INV-040, api: [API-INV-022, API-INV-023, API-INV-024, API-INV-029, API-INV-030, API-INV-032, API-INV-047], http: 422, trigger: "a transfer, count or load line of a dual-quantity Item carries no measure while dualQuantity is on, on save or again on post (the Item became dual-quantity after the save — engine step 0, ADR-INV-045)", messages: {ar: "أدخل القياس (الوزن أو الطول) لهذا الصنف.", en: "Enter the measure (weight or length) for this Item."}}
   - {code: "INV-422-MEASURE-UNIT-REQUIRED", rule: RULE-INV-041, api: [API-INV-045], http: 422, trigger: "dualQuantityFl true without measureUomCode", messages: {ar: "اختر وحدة القياس الثانية (وزن أو طول).", en: "Choose the measure unit (weight or length)."}}
   - {code: "INV-409-LOT-TRACKING-IN-USE", rule: RULE-INV-042, api: [API-INV-045], http: 409, trigger: "clearing lotTrackedFl while lots of the Item's Variants hold stock; {count} = QR-INV-045", messages: {ar: "لا يمكن إلغاء تتبع التشغيلة: توجد تشغيلات فيها مخزون ({count}). اشطبها أو اصرفها أولًا.", en: "Lot tracking cannot be cleared: lots still hold stock ({count}). Write them off or issue them first."}}
   - {code: "INV-409-DUAL-QUANTITY-IN-USE", rule: RULE-INV-043, api: [API-INV-045], http: 409, trigger: "clearing dualQuantityFl while a balance of the Item's Variants holds a non-zero measure", messages: {ar: "لا يمكن إلغاء الكمية المزدوجة: يوجد مخزون بقياس غير صفري. سوِّ القياس إلى صفر أولًا.", en: "Dual quantity cannot be cleared: stock still holds a non-zero measure. Adjust the measure to zero first."}}
   - {code: "INV-422-CAPABILITY-OFF", rule: RULE-INV-044, api: [API-INV-045], http: 422, trigger: "lotTrackedFl set true while lotExpiry is off, or dualQuantityFl set true while dualQuantity is off", messages: {ar: "فعِّل مفتاح القدرة الخاص بهذا الإعداد أولًا.", en: "Switch on the capability flag for this setting first."}}
   - {code: "INV-422-BUNDLE-SETTINGS", rule: RULE-INV-045, api: [API-INV-045], http: 422, trigger: "Item stock settings for an Item whose itemKindCode is BUNDLE (integrate (XM-INV-015))", messages: {ar: "الحزمة لا تحمل مخزونًا؛ تُضبط إعدادات المخزون على مكوّناتها.", en: "A bundle holds no stock; set stock settings on its components."}}
-  - {code: "INV-422-COUNTED-NEGATIVE", rule: RULE-INV-047, api: [API-INV-029, API-INV-030], http: 422, trigger: "countedQty below zero or with more than 3 decimals", messages: {ar: "الكمية المعدودة لا تكون سالبة.", en: "The counted quantity cannot be negative."}}
+  - {code: "INV-422-COUNTED-NEGATIVE", rule: RULE-INV-047, api: [API-INV-029, API-INV-030], http: 422, trigger: "countedQty or countedMeasureQty below zero or with more than 3 decimals", messages: {ar: "الكمية المعدودة لا تكون سالبة.", en: "The counted quantity cannot be negative."}}
   - {code: "INV-422-DUPLICATE-LINE", rule: RULE-INV-048, api: [API-INV-022, API-INV-023, API-INV-036, API-INV-037, API-INV-047], http: 422, trigger: "two lines with the same Variant and lot on one transfer, adjustment or load", messages: {ar: "هذا المتغيّر مذكور في سطر آخر بالتشغيلة نفسها.", en: "This Variant is already on another line with the same lot."}}
   - {code: "INV-422-HORIZON-RANGE", rule: REQ-INV-119, api: [API-INV-049], http: 422, trigger: "nearExpiryDays not a whole number from 1 to 365 (SRS D-04, no RULE)", messages: {ar: "أدخل عدد أيام من 1 إلى 365.", en: "Enter a number of days from 1 to 365."}, adr: ADR-INV-028}
   - {code: "INV-404-WAREHOUSE-NOT-FOUND", rule: PLATFORM-STD, api: [API-INV-002, API-INV-004, API-INV-005, API-INV-006, API-INV-007, API-INV-017, API-INV-022, API-INV-023, API-INV-028, API-INV-036, API-INV-047], http: 404, trigger: "a path or body warehouse identifier that does not exist in the tenant", adr: ADR-INV-021}
@@ -877,6 +892,7 @@ document-level `x-inprocess-error-codes`. They follow the same format.
 | INV-409-RESERVATION-CLOSED | RULE-INV-021 | releaseReservation (CON-INV-012), issueStock with a reservation (CON-INV-015) | الحجز مغلق ولا يمكن استخدامه. | The reservation is closed and cannot be used. |
 | INV-409-STOCK-MOVE-IMMUTABLE | RULE-INV-023 | any attempt through the repository to update or delete a move (the repository exposes no such method; the guard throws) | لا تُعدَّل حركات المخزون. صحّح الرصيد بتسوية مخزون. | Stock moves cannot be changed. Correct the balance with a stock adjustment. |
 | INV-422-LOT-EXPIRED | RULE-INV-039 | issueStock (CON-INV-015) — a non-sale ISSUE or RETURN_OUT naming an expired lot | التشغيلة منتهية الصلاحية. اشطبها بتسوية مخزون. | The lot has expired. Write it off with a stock adjustment. |
+| INV-422-RESERVATION-MISMATCH | RULE-INV-049 | issueStock with a reservation (CON-INV-015) — the reservation's variantFk or warehouseFk differs from the line's, or its sourceDocTypeCode / sourceDocRef differs from the request's source document | الحجز لا يخص هذا السطر: المتغيّر أو المستودع أو المستند مختلف. | The reservation does not belong to this line: the Variant, warehouse or document differs. |
 
 The in-process operations also raise, with the same codes and texts as the catalog: INV-422-WAREHOUSE-INACTIVE,
 INV-422-WAREHOUSE-REQUIRED, INV-422-QUANTITY-INVALID, INV-422-VARIANT-INACTIVE, INV-422-BUNDLE-NO-COMPONENTS,
@@ -886,13 +902,73 @@ INV-422-MEASURE-REQUIRED, INV-404-WAREHOUSE-NOT-FOUND, INV-404-VARIANT-NOT-FOUND
 <!-- PHASE:CORE:START traces=REQ-INV-016,REQ-INV-034,REQ-INV-037,REQ-INV-057,REQ-INV-058,REQ-INV-077,REQ-INV-132,REQ-INV-133 -->
 ## CORE — architecture policies
 
-**Module layout (Spring Boot, Java 25, on the given erp-core).** Package root `com.erp.inv`:
-`domain` (JPA entities extending the given `AuditableEntity`), `repository` (Spring Data repositories, one per
-entity), `service` (transactional business services), `web` (REST controllers under `/api/v1/inv`),
-`crossmodule` (the in-process `InventoryApi` other modules inject — CON-INV-006 … 021), `port` (this module's
-own interfaces for data owned elsewhere — implemented only by INT-C packages), `config` (permission, report,
-provisioning and scheduler contributors). Layers: Controller → Service → Repository; a controller holds no
-business rule; a repository holds no rule; services call other services only inside the module.
+**Module layout (Spring Boot, Java 25, on the given erp-core).** Package root `com.commerce.inv`, the
+application namespace of every business module (platform summary decision 11; `com.erp.*` is the
+given's namespace, checklist F8). The folders follow the checklist:
+
+| Package (`com.commerce.inv.…`) | Holds |
+|---|---|
+| `entity` | JPA entities extending the given `AuditableEntity`, and one `<Entity>Domain` companion per entity (below) |
+| `repository` | Spring Data repositories, one per entity |
+| `service` | transactional REST-facing services — orchestrate, lock and persist; every public method carries `@PreAuthorize` (SEC-BE, ADR-INV-042) |
+| `engine` | the internal engines shared by the services and `InventoryApi` — `StockPostingEngine`, `AvailabilityEngine`, `ReservationEngine`, `InventoryReadEngine`; no permission check, no REST path (ADR-INV-042) |
+| `controller` | REST controllers under `/api/v1/inv` |
+| `crossmodule` | the in-process `InventoryApi` other modules inject (CON-INV-006 … 021) — the only package other modules may import |
+| `port` | this module's own interfaces for data owned elsewhere — implemented only by INT-C packages |
+| `integration.cat` | the INT-C adapters of the CAT edges (XM-INV-012 … 015) |
+| `permission` | `InvPermissions implements PermissionContributor` — page codes, `PERM_INV_*` constants, preset grants |
+| `exception` | `InvErrorCodes` — the runtime codes of §5 / §5.1 as constants |
+| `report` | `InvReports implements ReportProvider` — report INV_OPENING_STOCK_SHEET |
+| `tenant` | `InvTenantProvisioning implements TenantProvisioningContributor`; `InvNearExpiryJob` (TenantRunner) |
+| `config` | `InvFeatureFlags`, `InvSettings`, `InvNotifier` |
+
+Layers: Controller → Service → (Domain companion, Engine, Repository). A controller holds no business rule; a
+repository holds no rule; a service orchestrates — it loads, locks, calls the companion and the engine, and
+persists; services call other services only inside the module.
+
+**Domain companions (`<Entity>Domain`, package `entity`).** Each entity has a companion with a static
+`create(…)` (a new valid instance) and `from(entity)` (the domain view of a stored one, whose methods apply the
+transitions). The companion holds every rule that needs no other aggregate, the A7 transitions and the
+default / active invariants; the service never re-states them. A rule that needs another aggregate (a
+repository probe, a CAT read, a balance) stays in the service or the engine (§1.3 names which).
+
+| Companion | Rules and transitions it holds |
+|---|---|
+| `WarehouseDomain` | RULE-INV-001 (code set once, change refused), 002 (nameAr required, non-blank — uniqueness stays a repository probe + constraint), 003 and 006 (default / active invariants: the default cannot be deactivated, a default must be active), deactivate / reactivate / setDefault / clearDefault |
+| `BranchDomain` | RULE-INV-010, 011 (nameAr required, non-blank), 012, 015, deactivate / reactivate / setDefault / clearDefault |
+| `StockBalanceDomain` | apply(quantity, measure) — the only writer of onHandQty / onHandMeasureQty; returns whether the pair crossed below zero (REQ-INV-068) |
+| `StockMoveDomain` | create only (RULE-INV-023 — no mutator exists), RULE-INV-017 (quantity > 0, or the measure-only form of ADR-INV-017), moveValue = quantity × unitCost |
+| `ReservationDomain` | RULE-INV-017, the A7 reservation transitions consume(quantity) / release() with RULE-INV-021 (only ACTIVE), shortfall |
+| `TransferDomain` | RULE-INV-016 (source ≠ destination — the active check stays in the service), 017, 029, 030, 048 on its lines, the A7 transitions post() / cancel() |
+| `TransferLineDomain` | RULE-INV-017 on quantity and measure |
+| `StockCountDomain` | RULE-INV-029, 030, 047 on its lines, addCounted(variant, lot, qty) (REQ-INV-088), the A7 transitions post() / cancel() |
+| `StockCountLineDomain` | RULE-INV-047 |
+| `StockAdjustmentDomain` | RULE-INV-017, 029, 030, 034, 048 on its lines, rowNo assignment, the A7 transitions post() / cancel() |
+| `StockAdjustmentLineDomain` | RULE-INV-017, 034 (with the Item's dual-quantity flag passed in), RULE-INV-025's 4-decimal part |
+| `LotDomain` | RULE-INV-036 (expiry equality against the stored expiry), activate / deactivate from on-hand, correctExpiry (REQ-INV-108) |
+| `StockValuationDomain` | the weighted-average arithmetic of REQ-INV-059 … 062 and ADR-INV-030 (restart when total ≤ 0, 4-dp average, 2-dp value) |
+| `ItemStockSettingsDomain` | RULE-INV-041, the system-filled key / tracking summary (ADR-INV-029) |
+
+**Module manifest (`META-INF/erp/modules/inv.yaml`, checklist C18).**
+```
+code: INV
+package: com.commerce.inv
+api-paths: [/api/v1/inv/**]
+permission-modules: [INV]
+depends-on: [CAT]
+home-cards: []
+```
+Every endpoint of §1.2 is under `/api/v1/inv/**`; the only permission module the INV code references is `INV`.
+
+**Module boundary (checklist C20).** The module's test suite runs the given
+`ModuleBoundaryRules.modulesDependOnlyOnTheirDeclaredDependencies()` (ArchUnit), so INV imports only its own
+packages, the given's `com.erp.*` crossmodule / extension packages it declares in §1.5, and
+`com.commerce.cat.crossmodule` (its one declared dependency; CAT v2 still declares `com.erp.cat`, and its rename
+to `com.commerce.cat` is the open platform finding of business-policies-pty PLATFORM FINDINGS row 1, cited in
+business-policies-inv — the rule names CAT's crossmodule package as CAT delivers it). Its own test `InvModuleBoundaryTest` adds that no
+other module imports `com.commerce.inv` outside `com.commerce.inv.crossmodule`, and that nothing in
+`com.commerce.inv` reads the activity preset (REQ-INV-132). The module has its own CI job `inv-backend`
+(build, unit and integration tests, the two boundary rules, `api-verify` against `api-spec-inv.yaml`).
 
 **Type mapping (postgresql16 → Java)** — column types only; the PK-generation clause is not a type (every PK is
 `GENERATED ALWAYS AS IDENTITY`, mapped `@GeneratedValue(strategy = IDENTITY)`):
@@ -911,8 +987,9 @@ business rule; a repository holds no rule; services call other services only ins
 
 **Runtime error-code format:** `{MOD}-{http}[-{SLUG}]` — MOD = `INV`, http = the response status, SLUG = upper
 kebab case. Every Error Catalog row (§5, §5.1) is an instance of it. Errors are raised as the given
-`LocalizedException → {code, messageAr, messageEn}`; one `InvErrors` class holds the codes as constants and
-the texts are copied from §5 into the module's message bundle (`messages_ar`, `messages_en`). A
+`LocalizedException → {code, messageAr, messageEn}`; one class `com.commerce.inv.exception.InvErrorCodes`
+(checklist C11, `<Module>ErrorCodes`) holds the codes as constants and the texts are copied from §5 into the
+module's message bundle (`messages_ar`, `messages_en`). A
 `DataIntegrityViolationException` on a named constraint is translated by constraint name: UQ_INV_WAREHOUSE_NAME_AR
 → INV-409-WAREHOUSE-NAME-TAKEN, UQ_INV_BRANCH_NAME_AR → INV-409-BRANCH-NAME-TAKEN,
 UQ_INV_TRANSFER_LINE_TRF_VAR_LOT and UQ_INV_STOCK_ADJUSTMENT_LINE_ADJ_VAR_LOT → INV-422-DUPLICATE-LINE; an
@@ -920,8 +997,9 @@ UQ_INV_TRANSFER_LINE_TRF_VAR_LOT and UQ_INV_STOCK_ADJUSTMENT_LINE_ADJ_VAR_LOT �
 
 **Lookups.** All LOV values are runtime-loaded from the core lookup module (mdl); no enum is hard-coded in an API
 or a field specification. Stored values are codes. A code written by a request is validated as an active value
-of its key through `MdlLookupApi` (INV_ADJUSTMENT_REASON for reasonCode; the consumed unit-of-measure key for
-measureUomCode — ADR-INV-022). Codes the service itself writes (INV_MOVE_TYPE, INV_DOC_STATUS,
+of its key through `MdlLookupApi` (INV_ADJUSTMENT_REASON for reasonCode; for measureUomCode, the consumed
+unit-of-measure key named by the SettingsApi setting INV_MEASURE_UOM_KEY, platform default `CAT_UOM` —
+ADR-INV-043, which revises ADR-INV-022; no second settings mechanism such as a `@Value` property is used). Codes the service itself writes (INV_MOVE_TYPE, INV_DOC_STATUS,
 INV_RESERVATION_STATUS, INV_SOURCE_DOC_TYPE for INV documents, INV_CHANGE_KIND) are the seeded values of SRS A6,
 held as string constants of the behaviour they select; INV_MOVE_TYPE, INV_DOC_STATUS and INV_RESERVATION_STATUS
 are also CHECK-constrained in the db-script. Labels are resolved by the frontend through the lookup module; the
@@ -945,20 +1023,29 @@ size ≤ 100, default 20) and answers an empty page as success. No client-chosen
 nameAr — names of lots fall back to their code); every error carries messageAr and messageEn.
 
 **Tenancy.** Every entity extends the given `AuditableEntity` (TENANT_ID with `@TenantId`, VERSION as
-`@Version`, audit columns filled by the given auditing) — no INV code reads or writes a tenant identifier,
-version or audit value (ADR-INV-014).
+`@Version`, audit columns filled by the given auditing) — no JPA code of INV reads or writes a tenant
+identifier, version or audit value (ADR-INV-014). `@TenantId` does not filter native SQL: every NATIVE query of
+§4, the advisory lock of ADR-INV-044 and any native form of R-1 … R-6 writes `TENANT_ID = :tenantId` on each
+table and join and TENANT_ID in each INSERT column list, with the current tenant taken from the given tenant
+context; each such repository method carries `@TenantUnscoped(reason, adr = "ADR-INV-041")`, and a repository
+test runs every one under two tenants and asserts no row of the other tenant is read or written (ADR-INV-041).
 
 **Capability flags and settings.** `InvFeatureFlags` (service) reads `lotExpiry`, `dualQuantity`, `bundles` through
 `SettingsApi` behind the FeatureFlags API — never the activity or its preset (REQ-INV-132, REQ-INV-133; an
-ArchUnit rule fails the build on any read of the activity preset in `com.erp.inv`). `InvSettings` reads and
+ArchUnit rule fails the build on any read of the activity preset in `com.commerce.inv`). `InvSettings` reads and
 writes INV_ALLOW_NEGATIVE_STOCK (default true, REQ-INV-066) and INV_NEAR_EXPIRY_DAYS (default 30) through
-`SettingsApi`; the tenant base currency written to every CURRENCY_CODE column (DBF-INV-061, 110, 171, 200) is
+`SettingsApi`, and reads INV_MEASURE_UOM_KEY (platform default `CAT_UOM`, never written by a tenant —
+ADR-INV-043); every operator-changeable value is a SettingsApi key `INV_<NAME>` (checklist C14); the tenant base currency written to every CURRENCY_CODE column (DBF-INV-061, 110, 171, 200) is
 read through `SettingsApi` as well (ADR-INV-015). "Today" is the current date in the tenant time zone
 (RULE-INV-038); a lot expiring today is still sellable.
 
-**Concurrency (ADR-INV-026).** Stock-changing transactions lock balance rows `FOR UPDATE` in ascending
-(variantFk, warehouseFk, lotFk) order after an insert-if-absent, then the valuation rows in ascending variantFk
-order; they read the warehouse `FOR SHARE`. Document headers are locked `FOR UPDATE` before any status check.
+**Concurrency (ADR-INV-026, ADR-INV-044).** Cross-module receive, issue and reserve first take the
+transaction-scoped advisory lock of their idempotency key (`pg_advisory_xact_lock` on a hash of tenant and key —
+ADR-INV-044), then look the key up. Stock-changing transactions read the warehouse `FOR SHARE` and the Item stock
+settings records of the document's Items `FOR SHARE` in ascending itemFk order; they then lock, after an
+insert-if-absent, first the lot-less balance row of every Variant × warehouse pair the document touches in
+ascending (variantFk, warehouseFk), then its lot rows in ascending (variantFk, warehouseFk, lotFk), then the
+valuation rows in ascending variantFk order. Document headers are locked `FOR UPDATE` before any status check.
 Masters use optimistic VERSION for edits and `FOR UPDATE` for default switches and deactivation.
 
 **Idempotency of internal documents.** IDEMPOTENCY_KEY (NOT NULL) of a move recorded by an INV document is
@@ -972,8 +1059,12 @@ changeKindCode from INV_CHANGE_KIND (CON-INV-021, REQ-INV-034).
 
 **Audit (AuditApi).** Every create, change, post and cancel of a Transfer, Stock count, Stock adjustment,
 Warehouse, Branch, Lot or Item stock settings record writes one audit entry with user, time and changed fields
-(REQ-INV-077) — entity listeners annotated for the given audit, plus an explicit business action entry on post
-and cancel.
+(REQ-INV-077, checklist C16). The seven audited entities carry the given annotation with their table:
+`@Audited(entityType = "INV_WAREHOUSE")`, `@Audited(entityType = "INV_BRANCH")`,
+`@Audited(entityType = "INV_TRANSFER")`, `@Audited(entityType = "INV_STOCK_COUNT")`,
+`@Audited(entityType = "INV_STOCK_ADJUSTMENT")`, `@Audited(entityType = "INV_LOT")` and
+`@Audited(entityType = "INV_ITEM_STOCK_SETTINGS")`; their line entities are audited as part of their header's
+entry. Post and cancel add an explicit business action entry through `AuditApi`.
 
 **Notifications.** `InvNotifier` collects alerts during a transaction and sends them after commit:
 negative-stock (template INV_NEGATIVE_STOCK, variables variant / warehouse / onHand — REQ-INV-068, sent when a
@@ -996,7 +1087,7 @@ the lots with non-zero on-hand, expiry within today + INV_NEAR_EXPIRY_DAYS and N
 injected; until it is delivered the dependent check is unavailable and the executor follows that block's
 `if_not_met`):
 
-| Port (com.erp.inv.port) | Reads | Edge |
+| Port (com.commerce.inv.port) | Reads | Edge |
 |---|---|---|
 | `VariantReadPort` | Variant active state, its Item, Item kind and active state, code and names, by identifier (batch) | XM-INV-014 |
 | `ItemReadPort` | Item kind, code, names, active state and the identifiers of its Variants | XM-INV-015 |
@@ -1008,8 +1099,10 @@ injected; until it is delivered the dependent check is unavailable and the execu
 ## DATA-DOM — data and domain
 
 Every entity: table and columns bound by DBF id (properties and types in §3), PK `GENERATED ALWAYS AS IDENTITY`
-from db-script INV v1 (`V1002__inv_inventory.sql`), audit / tenant / version from `AuditableEntity`. Full RULE
-text: §1.3; codes and messages: §5. DTO rule for every entity: PK, business code / docNo, audit fields,
+from db-script INV v1 (`V1002__inv_inventory.sql`), audit / tenant / version from `AuditableEntity`. Each entity
+has its `<Entity>Domain` companion (CORE): the DOMAIN RULES line marks a rule the companion holds with "(domain)";
+"(app)" marks one the service or the engine checks because it reads another aggregate. Full RULE text: §1.3;
+codes and messages: §5. DTO rule for every entity: PK, business code / docNo, audit fields,
 version (except on update requests, where it is the optimistic-lock token), tenant and every system-set column
 are excluded from create requests and present in every response.
 
@@ -1022,7 +1115,7 @@ DEFAULT FIELDS : master → nameAr DBF-INV-005, nameEn DBF-INV-006, code DBF-INV
 DTO MEMBERSHIP : create nameAr, nameEn, branchPk (→ DBF-INV-003) · update + version · excluded warehousePk, code, isDefaultFl, isActiveFl, audit · response all
 LOOKUP FIELDS  : none
 CONSTRAINTS    : UQ_INV_WAREHOUSE_NAME_AR, UQ_INV_WAREHOUSE_TENANT_PK, UQ_INV_WAREHOUSE_IS_DEFAULT_FL (unique index), CHK_INV_WAREHOUSE_IS_DEFAULT_FL, CHK_INV_WAREHOUSE_NAME_AR, FK_INV_WAREHOUSE_INV_BRANCH
-DOMAIN RULES   : RULE-INV-001 (app — code excluded from requests, change refused), 002 (UQ_INV_WAREHOUSE_NAME_AR + QR-INV-003), 003 (app), 004 (app, QR-INV-007), 005 (effect: readable, excluded from active lists, master-change event), 006 (UQ_INV_WAREHOUSE_IS_DEFAULT_FL + CHK_INV_WAREHOUSE_IS_DEFAULT_FL + app), 007 (app, every stock document), 009 (app + FK_INV_WAREHOUSE_INV_BRANCH) — scope CREATE / UPDATE / DELETE as §1.3
+DOMAIN RULES   : RULE-INV-001 (domain — code set once, excluded from requests, change refused), 002 (domain: required, non-blank; app: uniqueness by UQ_INV_WAREHOUSE_NAME_AR + QR-INV-003), 003 (domain), 004 (app, QR-INV-007 — stock, ACTIVE reservations and DRAFT documents), 005 (effect: readable, excluded from active lists, master-change event), 006 (domain + UQ_INV_WAREHOUSE_IS_DEFAULT_FL + CHK_INV_WAREHOUSE_IS_DEFAULT_FL), 007 (app, every stock document on save and on post), 009 (app + FK_INV_WAREHOUSE_INV_BRANCH) — scope CREATE / UPDATE / DELETE as §1.3
 STATE MACHINE  : none — isActiveFl flag (deactivate / reactivate); isDefaultFl moves in one transaction
 CROSS-MODULE   : none
 OPERATIONS     : VIEW, CREATE, UPDATE, DELETE
@@ -1066,7 +1159,7 @@ DEFAULT FIELDS : transactional → docDate DBF-INV-033 (date of the first move);
 DTO MEMBERSHIP : no request (never written by a user) · response StockBalanceRow: variantPk, Variant code / names (XM-INV-014), warehousePk, lotPk, lot code, expiryDate, expiredFl, onHandQty, reservedQty, availableQty (derived), onHandMeasureQty, measureUomCode (dualQuantity on)
 LOOKUP FIELDS  : none
 CONSTRAINTS    : UQ_INV_STOCK_BALANCE_VAR_WH_LOT (NULLS NOT DISTINCT), FK_INV_STOCK_BALANCE_INV_WAREHOUSE, FK_INV_STOCK_BALANCE_INV_LOT
-DOMAIN RULES   : RULE-INV-004, 019, 038, 042, 043 read it; maintained only by the posting engine (SVC-API-CRUD) in the move's transaction
+DOMAIN RULES   : RULE-INV-004, 019, 038, 042, 043 read it; maintained only by `StockPostingEngine` (SVC-API-CRUD) through `StockBalanceDomain.apply` in the move's transaction
 STATE MACHINE  : none
 CROSS-MODULE   : XM-INV-001
 OPERATIONS     : VIEW
@@ -1092,7 +1185,7 @@ DEFAULT FIELDS : transactional → docDate DBF-INV-079, statusCode DBF-INV-080; 
 DTO MEMBERSHIP : no REST request (created, released and consumed only in-process — SVC-API-INT) · reserved quantity appears in balance and availability reads
 LOOKUP FIELDS  : statusCode DBF-INV-080 key INV_RESERVATION_STATUS · sourceDocTypeCode DBF-INV-070 key INV_SOURCE_DOC_TYPE
 CONSTRAINTS    : CHK_INV_RESERVATION_STATUS_CODE, CHK_INV_RESERVATION_ORIGINAL_QTY, CHK_INV_RESERVATION_RESERVED_QTY, CHK_INV_RESERVATION_SHORTFALL_QTY, CHK_INV_RESERVATION_CLOSED_AT, FK_INV_RESERVATION_INV_WAREHOUSE
-DOMAIN RULES   : RULE-INV-007, 008, 017, 018, 020, 021, 022, 024
+DOMAIN RULES   : RULE-INV-007, 008, 017, 018, 020, 021 (domain), 022, 024, 049 (app — compares the reservation with the issue line and its source document)
 STATE MACHINE  : statusCode DBF-INV-080 · ACTIVE (initial) → issue with remainder > 0 → ACTIVE · issue with remainder 0 → CONSUMED · release → RELEASED · CONSUMED and RELEASED terminal (CLOSED_AT DBF-INV-074 set) · invalid transition → RULE-INV-021 (INV-409-RESERVATION-CLOSED)
 CROSS-MODULE   : XM-INV-004, XM-INV-005
 OPERATIONS     : VIEW
@@ -1190,14 +1283,14 @@ REPOSITORY OPS : QR-INV-023 … QR-INV-025
 | INV_SOURCE_DOC_TYPE | open | DBF-INV-047, DBF-INV-070 | INV_TRANSFER, INV_COUNT, INV_ADJUSTMENT, PURCHASE_RECEIPT, PURCHASE_RETURN, SALES_INVOICE, POS_SALE, SALES_RETURN, SALES_ORDER, STOREFRONT_ORDER |
 | INV_CHANGE_KIND | closed | — (event field of InventoryMasterChanged) | CREATED, UPDATED, DEACTIVATED, REACTIVATED, DEFAULT_CHANGED |
 
-Consumed: the unit-of-measure lookup key of the Item owner → DBF-INV-208 (ADR-INV-022).
+Consumed: the unit-of-measure lookup key of the Item owner → DBF-INV-208; the key is the SettingsApi setting INV_MEASURE_UOM_KEY, platform default `CAT_UOM` (ADR-INV-043).
 
 ### ENT-INV-014 — Item stock settings / إعدادات مخزون الصنف      kind: config
 BINDINGS       : table INV_ITEM_STOCK_SETTINGS · PK DBF-INV-205 (PK_INV_ITEM_STOCK_SETTINGS) · identity · fields DBF-INV-205 … DBF-INV-219
 BUSINESS CODE  : key DBF-INV-210 = the Item's code (read through XM-INV-015), system-filled, read-only
 DEFAULT FIELDS : config → key DBF-INV-210, valueAr DBF-INV-211, valueEn DBF-INV-212 (system-filled tracking summary — ADR-INV-029), isActiveFl DBF-INV-213; audit DBF-INV-216 … 219
 DTO MEMBERSHIP : save (PUT by itemId) lotTrackedFl, dualQuantityFl, measureUomCode, version (when the record exists) · excluded key, valueAr, valueEn, isActiveFl · response all; an Item without a record answers false, false, empty (REQ-INV-129)
-LOOKUP FIELDS  : measureUomCode DBF-INV-208 — the consumed unit-of-measure key (ADR-INV-022), stores the code
+LOOKUP FIELDS  : measureUomCode DBF-INV-208 — the consumed unit-of-measure key named by INV_MEASURE_UOM_KEY (ADR-INV-043), stores the code
 CONSTRAINTS    : UQ_INV_ITEM_STOCK_SETTINGS_ITEM_FK, CHK_INV_ITEM_STOCK_SETTINGS_MEASURE_UOM_CODE
 DOMAIN RULES   : RULE-INV-041 (CHK_INV_ITEM_STOCK_SETTINGS_MEASURE_UOM_CODE + app), 042, 043, 044, 045 (UQ_INV_ITEM_STOCK_SETTINGS_ITEM_FK + app), 046 (in-process turn-off check)
 STATE MACHINE  : none
@@ -1213,26 +1306,53 @@ REPOSITORY OPS : QR-INV-042 … QR-INV-046
 51 endpoints (≥ 8) — grouped CRUD (writes), SEARCH (reads), INT (the in-process surface other modules call).
 Every endpoint: base path `/api/v1/inv/{resource}`; success wrapped in `ApiResponse<T>`; lists in `Page<T>`;
 errors through `LocalizedException → {code, messageAr, messageEn}`; the permission checked before any
-processing (`@PreAuthorize` on the controller method with the `InvPermissions` constant — never a role name).
-Services: `WarehouseService`, `BranchService`, `StockQueryService`, `StockPostingService`, `TransferService`,
-`StockCountService`, `StockAdjustmentService`, `OpeningStockService`, `LotService`, `ItemStockSettingsService`,
-`ValuationService`, `InventorySettingsService`, `InventoryContextService`.
+processing — `@PreAuthorize("hasAuthority(T(com.commerce.inv.permission.InvPermissions).PERM_…)")` on the
+controller method **and** on every public method of the REST-facing service it calls, INV's own constants only,
+never a role name (checklist C13, ADR-INV-042).
+Services (REST-facing, package `service`): `WarehouseService`, `BranchService`, `StockQueryService`,
+`TransferService`, `StockCountService`, `StockAdjustmentService`, `OpeningStockService`, `LotService`,
+`ItemStockSettingsService`, `ValuationService`, `InventorySettingsService`, `InventoryContextService`.
+Engines (internal, package `engine`, no permission check, no REST path — ADR-INV-042): `StockPostingEngine`
+(the posting engine below), `AvailabilityEngine` (availability and bundle derivation), `ReservationEngine`
+(reserve, release, consume), `InventoryReadEngine` (the reads `InventoryApi` serves). A REST service reaches an
+engine only after its own `@PreAuthorize` has passed.
 
 <!-- SUB:SVC-API-CRUD:START traces=REQ-INV-003,REQ-INV-004,REQ-INV-005,REQ-INV-008,REQ-INV-022,REQ-INV-036,REQ-INV-059,REQ-INV-078,REQ-INV-080,REQ-INV-087,REQ-INV-092,REQ-INV-097,REQ-INV-099,REQ-INV-108,REQ-INV-124,REQ-INV-070,REQ-INV-065,DBF-INV-005,DBF-INV-017,DBF-INV-027,DBF-INV-042,DBF-INV-092,DBF-INV-120,DBF-INV-149,DBF-INV-177,DBF-INV-206 -->
-### Stock posting engine (`StockPostingService`)
+### Stock posting engine (`com.commerce.inv.engine.StockPostingEngine`)
 
 Used by API-INV-024, 032, 038, 047 and by the in-process receive / issue (SVC-API-INT). Input: a document
-context {sourceDocTypeCode, sourceDocRef, sourceDocNo, docDate, offlineFl, idempotencyKey} and move requests
-{moveTypeCode, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost?, bundleVariantPk?,
-reservationPk?, sourceLineRef?}. All in the caller's transaction — a refusal rolls back every line.
+context {sourceDocTypeCode, sourceDocRef, sourceDocNo, docDate, offlineFl, idempotencyKey, countGeneratedFl}
+and move requests {moveTypeCode, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost?,
+bundleVariantPk?, reservationPk?, sourceLineRef?}. All in the caller's transaction — a refusal rolls back every
+line. The engine carries no `@PreAuthorize`: a REST service calls it after its own check, `InventoryApi` calls
+it on behalf of a caller the calling module has authorised (ADR-INV-042).
 
-1. **Lock** — warehouse `FOR SHARE` (QR-INV-002); balance rows lock-or-create in ascending (variant, warehouse,
-   lot) order (QR-INV-017); valuation rows `FOR UPDATE` in ascending variant order (QR-INV-023).
+0. **Validate again on post** (ADR-INV-045) — a DRAFT was validated when it was saved, but the warehouse, the
+   Variant or the Item stock settings may have changed since. For an INV document (transfer, count, adjustment,
+   opening stock) the engine re-runs, after the locks of step 1, on the header and on every line:
+   RULE-INV-007 (the warehouse, or both transfer warehouses, active — INV-422-WAREHOUSE-INACTIVE; a transfer
+   answers RULE-INV-016's INV-422-TRANSFER-WAREHOUSES), RULE-INV-008 (a warehouse is named — always true for a
+   saved document, kept for the in-process requests), RULE-INV-016 (transfer: two different active
+   warehouses), RULE-INV-018 (Variant and Item active, STANDARD — integrate (XM-INV-014) at post time),
+   RULE-INV-037 (a line of an Item that is lot-tracked now names a lot of its Variant) and RULE-INV-040 (a line
+   of an Item that is dual-quantity now carries its measure). The in-process receive / issue run the same
+   checks in their resolve step. The first failing line refuses the document with its code.
+1. **Lock** — warehouse(s) `FOR SHARE` (QR-INV-002); the Item stock settings records of the document's Items
+   `FOR SHARE` in ascending itemFk order (QR-INV-043), so a concurrent flag clear (API-INV-045, `FOR UPDATE`)
+   either finishes first or waits; then the balance rows (QR-INV-017): **first** the lot-less row (variant,
+   warehouse, NULL) of every Variant × warehouse pair the document touches, created when absent, in ascending
+   (variant, warehouse) order, **then** the lot rows in ascending (variant, warehouse, lot) order — every
+   reserve, issue, transfer leg and adjustment of a pair, with or without a lot, serialises on the pair's
+   lot-less row (ADR-INV-026); then the valuation rows `FOR UPDATE` in ascending variant order (QR-INV-023).
 2. **Negative stock** (RULE-INV-019) — for each Variant × warehouse the document decreases, when offlineFl is
    false and INV_ALLOW_NEGATIVE_STOCK is false: on-hand over all lots (QR-INV-019) minus the document's total
    decrease < 0 → INV-409-NEGATIVE-STOCK with {onHand}. Offline moves are never checked (REQ-INV-069).
-3. **Unit cost** — RECEIPT, RETURN_IN, ADJUSTMENT_IN with a line cost → that cost (≥ 0, 4 dp); without one → the
-   valuation average (REQ-INV-102); no valuation → INV-422-NO-KNOWN-COST (RULE-INV-025). ISSUE, RETURN_OUT,
+3. **Unit cost** — RECEIPT, RETURN_IN, ADJUSTMENT_IN with a line cost → that cost (≥ 0, at most 4 dp; more than
+   4 dp → INV-422-NO-KNOWN-COST, RULE-INV-025 — never rounded silently); without one → the valuation average
+   (REQ-INV-102); no valuation → INV-422-NO-KNOWN-COST (RULE-INV-025), **except** an ADJUSTMENT_IN of an
+   adjustment generated by a count posting (countGeneratedFl, sourceCountFk set): it is valued at 0 and creates
+   no valuation row, so a count difference can always be posted (ADR-INV-030 as extended — a count line has
+   no cost field). ISSUE, RETURN_OUT,
    ADJUSTMENT_OUT and both transfer legs → the average at the time of the move (REQ-INV-061); 0 when never
    valued (ADR-INV-030). Measure-only adjustment move: quantity 0, measure = |measure change|, average cost,
    value 0 (ADR-INV-017).
@@ -1248,7 +1368,8 @@ reservationPk?, sourceLineRef?}. All in the caller's transaction — a refusal r
    leave total, average and value unchanged (REQ-INV-062). value = total × average (2 dp); last move now. A
    never-valued Variant: the first incoming valued move creates the row (QR-INV-024) with total = QR-INV-019
    over all warehouses after the move, average = unit cost, docDate = move date, currencyCode = base currency;
-   an outgoing move creates nothing (ADR-INV-030). Writes DBF-INV-192, 193, 194, 195, 196, 197, 200.
+   an outgoing move, and a count-difference ADJUSTMENT_IN valued at 0, create nothing (ADR-INV-030). The
+   arithmetic is `StockValuationDomain`'s. Writes DBF-INV-192, 193, 194, 195, 196, 197, 200.
 7. **Lot activity** — after an outgoing move from a lot whose on-hand over all warehouses (QR-INV-019 by lot)
    is 0, the lot's isActiveFl DBF-INV-184 becomes false; an incoming move sets it true (QR-INV-041).
 8. **Alerts** — a Variant × warehouse on-hand crossing from ≥ 0 to < 0 queues the negative-stock alert, sent
@@ -1298,7 +1419,7 @@ Validations  : RULE-INV-003 → INV-409-WAREHOUSE-DEFAULT · RULE-INV-004 → IN
 Errors       : INV-404-WAREHOUSE-NOT-FOUND, INV-409-WAREHOUSE-DEFAULT, INV-409-WAREHOUSE-IN-USE, INV-400, INV-401, INV-403, INV-500
 Orchestration: load QR-INV-002 FOR UPDATE → already inactive → return it unchanged (no event) → RULE-INV-003 on isDefaultFl DBF-INV-002 → RULE-INV-004 (QR-INV-007) → isActiveFl DBF-INV-007 = false → persist QR-INV-004 → AuditApi → InventoryMasterChanged DEACTIVATED (exactly one, after commit — AC-INV-039)
 Repository   : QR-INV-002, QR-INV-007, QR-INV-004 · join NONE · READ_WRITE
-Concurrency  : the warehouse row is locked FOR UPDATE before the usage probe; every posting path reads it FOR SHARE, so no move can land between the probe and the flag change
+Concurrency  : the warehouse row is locked FOR UPDATE before the usage probe; every posting path and every DRAFT save reads it FOR SHARE, so no move and no new DRAFT can land between the probe and the flag change (ADR-INV-045)
 Security     : SCR-REQ-INV-001 · PERM_INV_WAREHOUSES_DELETE
 Localization : ar + en
 <!-- API:API-INV-005:END -->
@@ -1422,9 +1543,9 @@ Endpoint     : /api/v1/inv/transfers   verb: POST
 Layers       : TransferController.create → TransferService.create
 Request      : body TransferCreateRequest {docDate DBF-INV-093 (optional — today), fromWarehousePk DBF-INV-090 (required), toWarehousePk DBF-INV-091 (required), noteText DBF-INV-088 (≤ 500), lines[] {variantPk DBF-INV-106 (required), lotPk DBF-INV-107, quantity DBF-INV-102 (required), measureQty DBF-INV-103}} · excluded transferPk, docNo, statusCode, postedAt, unitCost, currencyCode, audit
 Response     : 201 · ApiResponse<TransferDto> (with lines)
-Validations  : RULE-INV-016 → INV-422-TRANSFER-WAREHOUSES (also fewer than two active warehouses, REQ-INV-014) · RULE-INV-017 → INV-422-QUANTITY-INVALID · RULE-INV-018 → INV-422-VARIANT-INACTIVE · RULE-INV-037 → INV-422-LOT-REQUIRED · RULE-INV-040 → INV-422-MEASURE-REQUIRED · RULE-INV-048 → INV-422-DUPLICATE-LINE · RULE-INV-030 (docNo assigned)
+Validations  : RULE-INV-016 → INV-422-TRANSFER-WAREHOUSES (also fewer than two active warehouses, REQ-INV-014) · RULE-INV-017 → INV-422-QUANTITY-INVALID (quantity > 0 and ≤ 3 dp; measure ≤ 3 dp) · RULE-INV-018 → INV-422-VARIANT-INACTIVE · RULE-INV-037 → INV-422-LOT-REQUIRED · RULE-INV-040 → INV-422-MEASURE-REQUIRED · RULE-INV-048 → INV-422-DUPLICATE-LINE · RULE-INV-030 (docNo assigned) — line rules held by `TransferDomain` / `TransferLineDomain`
 Errors       : INV-404-WAREHOUSE-NOT-FOUND, INV-422-TRANSFER-WAREHOUSES, INV-422-QUANTITY-INVALID, INV-404-VARIANT-NOT-FOUND, INV-422-VARIANT-INACTIVE, INV-404-LOT-NOT-FOUND, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE, INV-400, INV-401, INV-403, INV-500
-Orchestration: load warehouses QR-INV-002 ×2 and the active count QR-INV-006 → RULE-INV-016 → per line: Variant integrate (XM-INV-014) — inactive / BUNDLE → RULE-INV-018; Item settings QR-INV-043 — lot-tracked with lotExpiry on → lot required and of the Variant (QR-INV-039); dual-quantity with dualQuantity on → measure > 0 → duplicates in the request (RULE-INV-048) → docNo DBF-INV-092 from NumberSeriesApi (INV_TRANSFER), statusCode DBF-INV-094 = DRAFT, transferFk DBF-INV-105 on each line, currencyCode DBF-INV-110 = base currency → persist QR-INV-029 → AuditApi; no stock move (AC-INV-085)
+Orchestration: load warehouses QR-INV-002 ×2 FOR SHARE (a concurrent deactivation waits — ADR-INV-045) and the active count QR-INV-006 → RULE-INV-016 → per line: Variant integrate (XM-INV-014) — inactive / BUNDLE → RULE-INV-018; Item settings QR-INV-043 — lot-tracked with lotExpiry on → lot required and of the Variant (QR-INV-039); dual-quantity with dualQuantity on → measure > 0 → duplicates in the request (RULE-INV-048) → docNo DBF-INV-092 from NumberSeriesApi (INV_TRANSFER), statusCode DBF-INV-094 = DRAFT, transferFk DBF-INV-105 on each line, currencyCode DBF-INV-110 = base currency → persist QR-INV-029 → AuditApi; no stock move (AC-INV-085)
 Repository   : QR-INV-002, QR-INV-006, QR-INV-039, QR-INV-043, QR-INV-029 · join NONE · READ_WRITE
 Concurrency  : docNo allocated atomically; duplicate lines also stopped by UQ_INV_TRANSFER_LINE_TRF_VAR_LOT
 Security     : SCR-REQ-INV-005 · PERM_INV_TRANSFERS_CREATE
@@ -1440,7 +1561,7 @@ Request      : path id (DBF-INV-087) · body TransferUpdateRequest {docDate DBF-
 Response     : 200 · ApiResponse<TransferDto>
 Validations  : RULE-INV-029 → INV-409-DOCUMENT-CLOSED · RULE-INV-030 → INV-422-DOC-NO-READONLY · RULE-INV-016, 017, 018, 037, 040, 048 as API-INV-022
 Errors       : INV-404-TRANSFER-NOT-FOUND, INV-409-DOCUMENT-CLOSED, INV-422-DOC-NO-READONLY, INV-404-WAREHOUSE-NOT-FOUND, INV-422-TRANSFER-WAREHOUSES, INV-422-QUANTITY-INVALID, INV-404-VARIANT-NOT-FOUND, INV-422-VARIANT-INACTIVE, INV-404-LOT-NOT-FOUND, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
-Orchestration: load QR-INV-028 FOR UPDATE → statusCode DRAFT else RULE-INV-029 → version → validations as API-INV-022 (QR-INV-002, QR-INV-006, integrate (XM-INV-014), QR-INV-043, QR-INV-039) → replace header fields and lines (transferFk DBF-INV-105, currencyCode DBF-INV-110 on new lines) → persist QR-INV-029 → AuditApi
+Orchestration: load QR-INV-028 FOR UPDATE → statusCode DRAFT else RULE-INV-029 → version → validations as API-INV-022 (QR-INV-002 FOR SHARE, QR-INV-006, integrate (XM-INV-014), QR-INV-043, QR-INV-039) → replace header fields and lines (transferFk DBF-INV-105, currencyCode DBF-INV-110 on new lines) → persist QR-INV-029 → AuditApi
 Repository   : QR-INV-028, QR-INV-002, QR-INV-006, QR-INV-039, QR-INV-043, QR-INV-029 · join NONE · READ_WRITE
 Concurrency  : header locked FOR UPDATE and VERSION checked — a concurrent post makes this update fail with INV-409-DOCUMENT-CLOSED
 Security     : SCR-REQ-INV-005 · PERM_INV_TRANSFERS_UPDATE
@@ -1451,14 +1572,14 @@ Localization : ar + en
 ### API-INV-024 — post transfer
 Entity       : ENT-INV-006, ENT-INV-007 · operation UPDATE · screen operations: post
 Endpoint     : /api/v1/inv/transfers/{id}/post   verb: PATCH
-Layers       : TransferController.post → TransferService.post → StockPostingService.post
+Layers       : TransferController.post → TransferService.post → StockPostingEngine.post
 Request      : path id (DBF-INV-087) · body VersionedActionRequest {version DBF-INV-096 (required)} (ADR-INV-032)
 Response     : 200 · ApiResponse<TransferDto> (statusCode POSTED, line unit costs)
-Validations  : RULE-INV-029 → INV-409-DOCUMENT-CLOSED · RULE-INV-031 → INV-422-NO-LINES · RULE-INV-016 → INV-422-TRANSFER-WAREHOUSES (re-checked) · RULE-INV-019 → INV-409-NEGATIVE-STOCK
-Errors       : INV-404-TRANSFER-NOT-FOUND, INV-409-DOCUMENT-CLOSED, INV-422-NO-LINES, INV-422-TRANSFER-WAREHOUSES, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
-Orchestration: load QR-INV-028 FOR UPDATE → DRAFT → version check (DBF-INV-096) → ≥ 1 line → warehouses QR-INV-002 FOR SHARE, active count QR-INV-006 → posting engine, per line: TRANSFER_OUT from the source and TRANSFER_IN to the destination, same lot (the lot keeps its expiry — REQ-INV-084), both at the average (REQ-INV-061); moves write moveTypeCode DBF-INV-041, quantity DBF-INV-042, unitCost DBF-INV-044, moveValue DBF-INV-045, balanceAfterQty DBF-INV-046, sourceDocTypeCode DBF-INV-047 = INV_TRANSFER, sourceDocRef DBF-INV-048 = transferPk, sourceDocNo DBF-INV-049 = docNo, offlineFl DBF-INV-051 = false, idempotencyKey DBF-INV-052 = INV_TRANSFER:{transferPk}, variantFk DBF-INV-053, warehouseFk DBF-INV-054, docDate DBF-INV-058 = transfer docDate, currencyCode DBF-INV-061; balances DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033; valuation DBF-INV-192, DBF-INV-194, DBF-INV-195 (total and value unchanged — REQ-INV-062) → line unitCost DBF-INV-104 = average → statusCode DBF-INV-094 = POSTED, postedAt DBF-INV-089 → persist QR-INV-029 → AuditApi → StockMoveRecorded per move; negative-crossing alert after commit
-Repository   : QR-INV-028, QR-INV-002, QR-INV-006, QR-INV-017, QR-INV-018, QR-INV-019, QR-INV-022, QR-INV-023, QR-INV-024, QR-INV-029 · join NONE · READ_WRITE
-Concurrency  : header FOR UPDATE — a second post waits, then sees POSTED (INV-409-DOCUMENT-CLOSED); balance rows locked in key order before the RULE-INV-019 read, so two posts draining one balance cannot both pass the check
+Validations  : RULE-INV-029 → INV-409-DOCUMENT-CLOSED · RULE-INV-031 → INV-422-NO-LINES · re-checked on post by engine step 0 (ADR-INV-045): RULE-INV-016 → INV-422-TRANSFER-WAREHOUSES (either warehouse deactivated since the save), RULE-INV-018 → INV-422-VARIANT-INACTIVE, RULE-INV-037 → INV-422-LOT-REQUIRED, RULE-INV-040 → INV-422-MEASURE-REQUIRED · RULE-INV-019 → INV-409-NEGATIVE-STOCK
+Errors       : INV-404-TRANSFER-NOT-FOUND, INV-409-DOCUMENT-CLOSED, INV-422-NO-LINES, INV-422-TRANSFER-WAREHOUSES, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
+Orchestration: load QR-INV-028 FOR UPDATE → DRAFT → version check (DBF-INV-096) → ≥ 1 line → warehouses QR-INV-002 FOR SHARE, active count QR-INV-006 → posting engine (steps 0 … 9), per line: TRANSFER_OUT from the source and TRANSFER_IN to the destination, same lot (the lot keeps its expiry — REQ-INV-084), both at the average (REQ-INV-061); moves write moveTypeCode DBF-INV-041, quantity DBF-INV-042, unitCost DBF-INV-044, moveValue DBF-INV-045, balanceAfterQty DBF-INV-046, sourceDocTypeCode DBF-INV-047 = INV_TRANSFER, sourceDocRef DBF-INV-048 = transferPk, sourceDocNo DBF-INV-049 = docNo, offlineFl DBF-INV-051 = false, idempotencyKey DBF-INV-052 = INV_TRANSFER:{transferPk}, variantFk DBF-INV-053, warehouseFk DBF-INV-054, docDate DBF-INV-058 = transfer docDate, currencyCode DBF-INV-061; balances DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033; valuation DBF-INV-192, DBF-INV-194, DBF-INV-195 (total and value unchanged — REQ-INV-062) → line unitCost DBF-INV-104 = average → statusCode DBF-INV-094 = POSTED, postedAt DBF-INV-089 → persist QR-INV-029 → AuditApi → StockMoveRecorded per move; negative-crossing alert after commit
+Repository   : QR-INV-028, QR-INV-002, QR-INV-006, QR-INV-043, QR-INV-017, QR-INV-018, QR-INV-019, QR-INV-022, QR-INV-023, QR-INV-024, QR-INV-029 · join NONE · READ_WRITE
+Concurrency  : header FOR UPDATE — a second post, or a cancel racing the post, waits, then sees POSTED / CANCELLED (INV-409-DOCUMENT-CLOSED); lot-less rows then lot rows locked in key order before the RULE-INV-019 read, so two posts draining one balance cannot both pass the check; Item stock settings read FOR SHARE (engine step 1)
 Security     : SCR-REQ-INV-005 · PERM_INV_TRANSFERS_UPDATE
 Localization : ar + en
 <!-- API:API-INV-024:END -->
@@ -1488,7 +1609,7 @@ Request      : body StockCountCreateRequest {warehousePk DBF-INV-118 (optional w
 Response     : 201 · ApiResponse<StockCountDto>
 Validations  : RULE-INV-007 → INV-422-WAREHOUSE-INACTIVE · RULE-INV-008 → INV-422-WAREHOUSE-REQUIRED · RULE-INV-030 (docNo assigned)
 Errors       : INV-404-WAREHOUSE-NOT-FOUND, INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-400, INV-401, INV-403, INV-500
-Orchestration: warehouse — given → QR-INV-002 (active); absent → QR-INV-006 = 1 → default QR-INV-005 (REQ-INV-013), ≥ 2 → RULE-INV-008 → docNo DBF-INV-120 from NumberSeriesApi (INV_COUNT), statusCode DBF-INV-122 = DRAFT, docDate DBF-INV-121 → persist QR-INV-032 → AuditApi
+Orchestration: warehouse — given → QR-INV-002 FOR SHARE (active); absent → QR-INV-006 = 1 → default QR-INV-005 (REQ-INV-013), ≥ 2 → RULE-INV-008 → docNo DBF-INV-120 from NumberSeriesApi (INV_COUNT), statusCode DBF-INV-122 = DRAFT, docDate DBF-INV-121 → persist QR-INV-032 → AuditApi
 Repository   : QR-INV-002, QR-INV-005, QR-INV-006, QR-INV-032 · join NONE · READ_WRITE
 Concurrency  : docNo allocated atomically
 Security     : SCR-REQ-INV-006 · PERM_INV_COUNTS_CREATE
@@ -1547,13 +1668,13 @@ Localization : ar + en
 ### API-INV-032 — post stock count
 Entity       : ENT-INV-008, ENT-INV-009, ENT-INV-010 · operation UPDATE · screen operations: post
 Endpoint     : /api/v1/inv/stock-counts/{id}/post   verb: PATCH
-Layers       : StockCountController.post → StockCountService.post → StockAdjustmentService.createAndPost → StockPostingService.post
+Layers       : StockCountController.post → StockCountService.post → StockAdjustmentService.createAndPost → StockPostingEngine.post
 Request      : path id (DBF-INV-115) · body VersionedActionRequest {version DBF-INV-124 (required)} (ADR-INV-032)
 Response     : 200 · ApiResponse<StockCountPostResult> {stockCount (with systemQty / differenceQty), stockAdjustment (or null when nothing differs)}
-Validations  : RULE-INV-029 → INV-409-DOCUMENT-CLOSED · RULE-INV-031 → INV-422-NO-LINES · RULE-INV-019 → INV-409-NEGATIVE-STOCK · RULE-INV-025 → INV-422-NO-KNOWN-COST (an increase of a never-valued Variant)
-Errors       : INV-404-STOCK-COUNT-NOT-FOUND, INV-409-DOCUMENT-CLOSED, INV-422-NO-LINES, INV-409-NEGATIVE-STOCK, INV-422-NO-KNOWN-COST, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
-Orchestration: load QR-INV-031 FOR UPDATE → DRAFT → version check (DBF-INV-124) → ≥ 1 line → warehouse QR-INV-002 FOR SHARE → lock each line's balance (QR-INV-017) → systemQty DBF-INV-132 = on-hand, differenceQty DBF-INV-133 = counted − system (QR-INV-034) → non-zero differences: create adjustment (QR-INV-037) reasonCode DBF-INV-144 = COUNT_DIFFERENCE, warehouseFk DBF-INV-147 = the count's, sourceCountFk DBF-INV-148, docNo DBF-INV-149 (INV_ADJUSTMENT), docDate DBF-INV-150, lines rowNo DBF-INV-159, quantityChange DBF-INV-162 = difference, measureQtyChange DBF-INV-163 (dual), stockAdjustmentFk DBF-INV-166, variantFk DBF-INV-167, lotFk DBF-INV-168, currencyCode DBF-INV-171 → post it through the posting engine (ADJUSTMENT_IN / ADJUSTMENT_OUT at the average; sourceDocTypeCode INV_ADJUSTMENT) → adjustment statusCode DBF-INV-151 = POSTED, postedAt DBF-INV-146 → count statusCode DBF-INV-122 = POSTED, postedAt DBF-INV-117, adjustmentFk DBF-INV-119 → persist QR-INV-032 → AuditApi → events
-Repository   : QR-INV-031, QR-INV-002, QR-INV-017, QR-INV-018, QR-INV-019, QR-INV-022, QR-INV-023, QR-INV-024, QR-INV-034, QR-INV-037, QR-INV-032 · join NONE · READ_WRITE
+Validations  : RULE-INV-029 → INV-409-DOCUMENT-CLOSED · RULE-INV-031 → INV-422-NO-LINES · re-checked on post by engine step 0 (ADR-INV-045): RULE-INV-007 → INV-422-WAREHOUSE-INACTIVE, RULE-INV-018 → INV-422-VARIANT-INACTIVE, RULE-INV-037 → INV-422-LOT-REQUIRED, RULE-INV-040 → INV-422-MEASURE-REQUIRED · RULE-INV-019 → INV-409-NEGATIVE-STOCK · RULE-INV-025 is not raised: an increase of a never-valued Variant enters at cost 0 and creates no valuation row (ADR-INV-030 as extended), because a count line carries no cost
+Errors       : INV-404-STOCK-COUNT-NOT-FOUND, INV-409-DOCUMENT-CLOSED, INV-422-NO-LINES, INV-422-WAREHOUSE-INACTIVE, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
+Orchestration: load QR-INV-031 FOR UPDATE → DRAFT → version check (DBF-INV-124) → ≥ 1 line → warehouse QR-INV-002 FOR SHARE, Item stock settings QR-INV-043 FOR SHARE → engine step 0 on the count and its lines → lock each pair's lot-less balance row, then each line's lot row (QR-INV-017) → systemQty DBF-INV-132 = on-hand, differenceQty DBF-INV-133 = counted − system (QR-INV-034) → non-zero differences: create adjustment (QR-INV-037) reasonCode DBF-INV-144 = COUNT_DIFFERENCE, warehouseFk DBF-INV-147 = the count's, sourceCountFk DBF-INV-148, docNo DBF-INV-149 (INV_ADJUSTMENT), docDate DBF-INV-150, lines rowNo DBF-INV-159, quantityChange DBF-INV-162 = difference, measureQtyChange DBF-INV-163 (dual), stockAdjustmentFk DBF-INV-166, variantFk DBF-INV-167, lotFk DBF-INV-168, currencyCode DBF-INV-171 → post it through the posting engine with countGeneratedFl (ADJUSTMENT_IN / ADJUSTMENT_OUT at the average; an ADJUSTMENT_IN of a never-valued Variant at 0 with no valuation row — ADR-INV-030; sourceDocTypeCode INV_ADJUSTMENT) → adjustment statusCode DBF-INV-151 = POSTED, postedAt DBF-INV-146 → count statusCode DBF-INV-122 = POSTED, postedAt DBF-INV-117, adjustmentFk DBF-INV-119 → persist QR-INV-032 → AuditApi → events
+Repository   : QR-INV-031, QR-INV-002, QR-INV-043, QR-INV-017, QR-INV-018, QR-INV-019, QR-INV-022, QR-INV-023, QR-INV-024, QR-INV-034, QR-INV-037, QR-INV-032 · join NONE · READ_WRITE
 Concurrency  : header FOR UPDATE; system quantities read under the balance locks the adjustment then changes, so a sale between "read system" and "post difference" is impossible
 Security     : SCR-REQ-INV-006 · PERM_INV_COUNTS_UPDATE
 Localization : ar + en
@@ -1582,9 +1703,9 @@ Endpoint     : /api/v1/inv/stock-adjustments   verb: POST
 Layers       : StockAdjustmentController.create → StockAdjustmentService.create
 Request      : body StockAdjustmentCreateRequest {warehousePk DBF-INV-147 (optional while one is active), docDate DBF-INV-150, reasonCode DBF-INV-144 (required), noteText DBF-INV-145, lines[] {rowNo DBF-INV-159 (optional — 1..n in order), variantPk DBF-INV-167, lotNo DBF-INV-160, lotExpiryDate DBF-INV-161, quantityChange DBF-INV-162, measureQtyChange DBF-INV-163, unitCost DBF-INV-164}}
 Response     : 201 · ApiResponse<StockAdjustmentDto>
-Validations  : RULE-INV-007 → INV-422-WAREHOUSE-INACTIVE · RULE-INV-008 → INV-422-WAREHOUSE-REQUIRED · RULE-INV-033 → INV-422-REASON-REQUIRED · RULE-INV-018 → INV-422-VARIANT-INACTIVE · RULE-INV-034 → INV-422-ZERO-CHANGE · RULE-INV-037 → INV-422-LOT-REQUIRED (decrease lines of lot-tracked Items) · RULE-INV-048 → INV-422-DUPLICATE-LINE · RULE-INV-030 (docNo assigned)
-Errors       : INV-404-WAREHOUSE-NOT-FOUND, INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-REASON-REQUIRED, INV-404-VARIANT-NOT-FOUND, INV-422-VARIANT-INACTIVE, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE, INV-400, INV-401, INV-403, INV-500
-Orchestration: warehouse as API-INV-028 (QR-INV-002, QR-INV-006, QR-INV-005) → reasonCode active in INV_ADJUSTMENT_REASON (MdlLookupApi) → per line: Variant integrate (XM-INV-014), Item settings QR-INV-043 → docNo DBF-INV-149 from NumberSeriesApi (INV_ADJUSTMENT), statusCode DBF-INV-151 = DRAFT, stockAdjustmentFk DBF-INV-166, currencyCode DBF-INV-171 → persist QR-INV-037 → AuditApi; no stock move (AC-INV-107)
+Validations  : RULE-INV-007 → INV-422-WAREHOUSE-INACTIVE · RULE-INV-008 → INV-422-WAREHOUSE-REQUIRED · RULE-INV-033 → INV-422-REASON-REQUIRED · RULE-INV-018 → INV-422-VARIANT-INACTIVE · RULE-INV-017 → INV-422-QUANTITY-INVALID (quantityChange and measureQtyChange ≤ 3 dp) · RULE-INV-025 → INV-422-NO-KNOWN-COST (a unitCost with more than 4 dp; the "no known cost" part is checked at post) · RULE-INV-034 → INV-422-ZERO-CHANGE · RULE-INV-037 → INV-422-LOT-REQUIRED (decrease lines of lot-tracked Items) · RULE-INV-048 → INV-422-DUPLICATE-LINE · RULE-INV-030 (docNo assigned) — line rules held by `StockAdjustmentDomain` / `StockAdjustmentLineDomain`
+Errors       : INV-404-WAREHOUSE-NOT-FOUND, INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-REASON-REQUIRED, INV-404-VARIANT-NOT-FOUND, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE, INV-400, INV-401, INV-403, INV-500
+Orchestration: warehouse as API-INV-028 (QR-INV-002 FOR SHARE, QR-INV-006, QR-INV-005) → reasonCode active in INV_ADJUSTMENT_REASON (MdlLookupApi) → per line: Variant integrate (XM-INV-014), Item settings QR-INV-043 → docNo DBF-INV-149 from NumberSeriesApi (INV_ADJUSTMENT), statusCode DBF-INV-151 = DRAFT, stockAdjustmentFk DBF-INV-166, currencyCode DBF-INV-171 → persist QR-INV-037 → AuditApi; no stock move (AC-INV-107)
 Repository   : QR-INV-002, QR-INV-005, QR-INV-006, QR-INV-043, QR-INV-037 · join NONE · READ_WRITE
 Concurrency  : docNo atomic; UQ_INV_STOCK_ADJUSTMENT_LINE_ADJ_VAR_LOT, UQ_INV_STOCK_ADJUSTMENT_LINE_ADJ_ROW
 Security     : SCR-REQ-INV-007 · PERM_INV_ADJUSTMENTS_CREATE (a Seller/Cashier is refused with INV-403 — AC-INV-154)
@@ -1598,8 +1719,8 @@ Endpoint     : /api/v1/inv/stock-adjustments/{id}   verb: PUT
 Layers       : StockAdjustmentController.update → StockAdjustmentService.update
 Request      : path id (DBF-INV-143) · body StockAdjustmentUpdateRequest {reasonCode DBF-INV-144, noteText DBF-INV-145, version DBF-INV-153 (required), docNo (optional echo), lines[] as API-INV-036 (rowNo DBF-INV-159, variantPk DBF-INV-167, lotNo DBF-INV-160, lotExpiryDate DBF-INV-161, quantityChange DBF-INV-162, measureQtyChange DBF-INV-163, unitCost DBF-INV-164)} — reason, note and lines replace the stored ones (REQ-INV-098)
 Response     : 200 · ApiResponse<StockAdjustmentDto>
-Validations  : RULE-INV-029 → INV-409-DOCUMENT-CLOSED · RULE-INV-030 → INV-422-DOC-NO-READONLY · RULE-INV-033, 018, 034, 037, 048 as API-INV-036
-Errors       : INV-404-STOCK-ADJUSTMENT-NOT-FOUND, INV-409-DOCUMENT-CLOSED, INV-422-DOC-NO-READONLY, INV-422-REASON-REQUIRED, INV-404-VARIANT-NOT-FOUND, INV-422-VARIANT-INACTIVE, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
+Validations  : RULE-INV-029 → INV-409-DOCUMENT-CLOSED · RULE-INV-030 → INV-422-DOC-NO-READONLY · RULE-INV-033, 018, 017, 025 (4 dp), 034, 037, 048 as API-INV-036
+Errors       : INV-404-STOCK-ADJUSTMENT-NOT-FOUND, INV-409-DOCUMENT-CLOSED, INV-422-DOC-NO-READONLY, INV-422-REASON-REQUIRED, INV-404-VARIANT-NOT-FOUND, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
 Orchestration: load QR-INV-036 FOR UPDATE → DRAFT → version → validations (MdlLookupApi, integrate (XM-INV-014), QR-INV-043) → replace reason, note, lines (stockAdjustmentFk DBF-INV-166, currencyCode DBF-INV-171) → persist QR-INV-037 → AuditApi (line change 2 → 3 recorded — AC-INV-084)
 Repository   : QR-INV-036, QR-INV-043, QR-INV-037 · join NONE · READ_WRITE
 Concurrency  : header lock + VERSION
@@ -1611,12 +1732,12 @@ Localization : ar + en
 ### API-INV-038 — post stock adjustment
 Entity       : ENT-INV-010, ENT-INV-011 · operation UPDATE · screen operations: post
 Endpoint     : /api/v1/inv/stock-adjustments/{id}/post   verb: PATCH
-Layers       : StockAdjustmentController.post → StockAdjustmentService.post → StockPostingService.post
+Layers       : StockAdjustmentController.post → StockAdjustmentService.post → StockPostingEngine.post
 Request      : path id (DBF-INV-143) · body VersionedActionRequest {version DBF-INV-153 (required)} (ADR-INV-032)
 Response     : 200 · ApiResponse<StockAdjustmentDto> (POSTED, line lots and values)
-Validations  : RULE-INV-029 → INV-409-DOCUMENT-CLOSED · RULE-INV-031 → INV-422-NO-LINES · RULE-INV-033 → INV-422-REASON-REQUIRED · RULE-INV-034 → INV-422-ZERO-CHANGE · RULE-INV-019 → INV-409-NEGATIVE-STOCK · RULE-INV-025 → INV-422-NO-KNOWN-COST · RULE-INV-026 → INV-422-OPENING-COST-REQUIRED · RULE-INV-035 → INV-422-LOT-EXPIRY-REQUIRED · RULE-INV-036 → INV-422-LOT-EXPIRY-MISMATCH · RULE-INV-037 → INV-422-LOT-REQUIRED (a decrease naming no existing lot)
-Errors       : INV-404-STOCK-ADJUSTMENT-NOT-FOUND, INV-409-DOCUMENT-CLOSED, INV-422-NO-LINES, INV-422-REASON-REQUIRED, INV-422-ZERO-CHANGE, INV-409-NEGATIVE-STOCK, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-LOT-REQUIRED, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
-Orchestration: load QR-INV-036 FOR UPDATE → DRAFT → version check (DBF-INV-153) → ≥ 1 line → reason still active (MdlLookupApi) → OPENING_STOCK → RULE-INV-026 on every line → per line (Item settings QR-INV-043): increase with lotNo → QR-INV-040; existing lot → expiry equal else RULE-INV-036; new → lotExpiryDate required (RULE-INV-035) and lot created QR-INV-041 (expiryDate DBF-INV-177, firstReceivedAt DBF-INV-178, variantFk DBF-INV-180, code DBF-INV-181, isActiveFl DBF-INV-184); lot-tracked increase without lotNo while lotExpiry is on → RULE-INV-035; decrease with lotNo → existing lot else RULE-INV-037 → lotFk DBF-INV-168 → warehouse QR-INV-002 FOR SHARE → posting engine: positive → ADJUSTMENT_IN at the line cost or the average (REQ-INV-102), negative → ADJUSTMENT_OUT at the average, measure-only → ADR-INV-017; an expired lot may leave by this path (REQ-INV-114, EXPIRY_WRITE_OFF); moves DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047 (INV_ADJUSTMENT), DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061; balances DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033; valuation DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200 → lineValue DBF-INV-165 = |quantity| × unit cost → statusCode DBF-INV-151 = POSTED, postedAt DBF-INV-146 → persist QR-INV-037 → AuditApi → events
+Validations  : RULE-INV-029 → INV-409-DOCUMENT-CLOSED · RULE-INV-031 → INV-422-NO-LINES · RULE-INV-033 → INV-422-REASON-REQUIRED · RULE-INV-034 → INV-422-ZERO-CHANGE · re-checked on post by engine step 0 (ADR-INV-045): RULE-INV-007 → INV-422-WAREHOUSE-INACTIVE, RULE-INV-018 → INV-422-VARIANT-INACTIVE, RULE-INV-037 → INV-422-LOT-REQUIRED · RULE-INV-019 → INV-409-NEGATIVE-STOCK · RULE-INV-025 → INV-422-NO-KNOWN-COST · RULE-INV-026 → INV-422-OPENING-COST-REQUIRED · RULE-INV-035 → INV-422-LOT-EXPIRY-REQUIRED · RULE-INV-036 → INV-422-LOT-EXPIRY-MISMATCH · RULE-INV-037 → INV-422-LOT-REQUIRED (a decrease naming no existing lot)
+Errors       : INV-404-STOCK-ADJUSTMENT-NOT-FOUND, INV-409-DOCUMENT-CLOSED, INV-422-NO-LINES, INV-422-REASON-REQUIRED, INV-422-ZERO-CHANGE, INV-422-WAREHOUSE-INACTIVE, INV-422-VARIANT-INACTIVE, INV-409-NEGATIVE-STOCK, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-LOT-REQUIRED, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
+Orchestration: load QR-INV-036 FOR UPDATE → DRAFT → version check (DBF-INV-153) → ≥ 1 line → reason still active (MdlLookupApi) → engine step 0 on the header and lines → OPENING_STOCK → RULE-INV-026 on every line → per line (Item settings QR-INV-043 FOR SHARE): increase with lotNo → QR-INV-040; existing lot → expiry equal else RULE-INV-036; new → lotExpiryDate required (RULE-INV-035) and lot created QR-INV-041 (expiryDate DBF-INV-177, firstReceivedAt DBF-INV-178, variantFk DBF-INV-180, code DBF-INV-181, isActiveFl DBF-INV-184); lot-tracked increase without lotNo while lotExpiry is on → RULE-INV-035; decrease with lotNo → existing lot else RULE-INV-037 → lotFk DBF-INV-168 → warehouse QR-INV-002 FOR SHARE → posting engine: positive → ADJUSTMENT_IN at the line cost or the average (REQ-INV-102), negative → ADJUSTMENT_OUT at the average, measure-only → ADR-INV-017; an expired lot may leave by this path (REQ-INV-114, EXPIRY_WRITE_OFF); moves DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047 (INV_ADJUSTMENT), DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061; balances DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033; valuation DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200 → lineValue DBF-INV-165 = |quantity| × unit cost → statusCode DBF-INV-151 = POSTED, postedAt DBF-INV-146 → persist QR-INV-037 → AuditApi → events
 Repository   : QR-INV-036, QR-INV-002, QR-INV-040, QR-INV-041, QR-INV-043, QR-INV-017, QR-INV-018, QR-INV-019, QR-INV-022, QR-INV-023, QR-INV-024, QR-INV-037 · join NONE · READ_WRITE
 Concurrency  : header FOR UPDATE; lots resolved FOR UPDATE with insert-if-absent on UQ_INV_LOT_VAR_CODE (two posts creating one lot number collapse to one lot); balance and valuation locks per the engine
 Security     : SCR-REQ-INV-007 · PERM_INV_ADJUSTMENTS_UPDATE
@@ -1662,11 +1783,11 @@ Endpoint     : /api/v1/inv/item-stock-settings/by-item/{itemId}   verb: PUT
 Layers       : ItemStockSettingsController.save → ItemStockSettingsService.save
 Request      : path itemId (→ itemFk DBF-INV-209) · body ItemStockSettingsRequest {lotTrackedFl DBF-INV-206 (required), dualQuantityFl DBF-INV-207 (required), measureUomCode DBF-INV-208 (required when dual), version DBF-INV-215 (required when the record exists)}
 Response     : 200 · ApiResponse<ItemStockSettingsDto>
-Validations  : RULE-INV-044 → INV-422-CAPABILITY-OFF · RULE-INV-045 → INV-422-BUNDLE-SETTINGS · RULE-INV-041 → INV-422-MEASURE-UNIT-REQUIRED (also a code that is not an active value of the unit-of-measure key, ADR-INV-022) · RULE-INV-042 → INV-409-LOT-TRACKING-IN-USE · RULE-INV-043 → INV-409-DUAL-QUANTITY-IN-USE
+Validations  : RULE-INV-044 → INV-422-CAPABILITY-OFF · RULE-INV-045 → INV-422-BUNDLE-SETTINGS · RULE-INV-041 → INV-422-MEASURE-UNIT-REQUIRED (also a code that is not an active value of the unit-of-measure key named by INV_MEASURE_UOM_KEY, ADR-INV-043) · RULE-INV-042 → INV-409-LOT-TRACKING-IN-USE · RULE-INV-043 → INV-409-DUAL-QUANTITY-IN-USE
 Errors       : INV-404-ITEM-NOT-FOUND, INV-422-CAPABILITY-OFF, INV-422-BUNDLE-SETTINGS, INV-422-MEASURE-UNIT-REQUIRED, INV-409-LOT-TRACKING-IN-USE, INV-409-DUAL-QUANTITY-IN-USE, INV-409-STALE-VERSION, INV-400, INV-401, INV-403, INV-500
-Orchestration: Item integrate (XM-INV-015) — unknown → 404, BUNDLE → RULE-INV-045 → QR-INV-043 FOR UPDATE (absent → CREATE permission, present → UPDATE permission and version — ADR-INV-029) → a flag turned on → its capability flag on (InvFeatureFlags) else RULE-INV-044 → lotTrackedFl true → false → QR-INV-045 = 0 else RULE-INV-042 {count} → dualQuantityFl true → false → QR-INV-046 false else RULE-INV-043 → RULE-INV-041 (MdlLookupApi) → key DBF-INV-210 = Item code, valueAr DBF-INV-211 / valueEn DBF-INV-212 = tracking summary, isActiveFl DBF-INV-213 = true → persist QR-INV-044 → AuditApi
+Orchestration: Item integrate (XM-INV-015) — unknown → 404, BUNDLE → RULE-INV-045 → QR-INV-043 FOR UPDATE (absent → CREATE permission, present → UPDATE permission and version — ADR-INV-029) → a flag turned on → its capability flag on (InvFeatureFlags) else RULE-INV-044 → lotTrackedFl true → false → QR-INV-045 = 0 else RULE-INV-042 {count} → dualQuantityFl true → false → QR-INV-046 false else RULE-INV-043 → RULE-INV-041 (`ItemStockSettingsDomain`; the code checked through MdlLookupApi against the key read from SettingsApi INV_MEASURE_UOM_KEY) → key DBF-INV-210 = Item code, valueAr DBF-INV-211 / valueEn DBF-INV-212 = tracking summary, isActiveFl DBF-INV-213 = true → persist QR-INV-044 → AuditApi
 Repository   : QR-INV-043, QR-INV-045, QR-INV-046, QR-INV-044 · join NONE · READ_WRITE
-Concurrency  : record FOR UPDATE; two first saves of one Item collide on UQ_INV_ITEM_STOCK_SETTINGS_ITEM_FK — the loser re-reads and applies as an update; clearing a flag reads the balances inside the same transaction, but a receipt of a lot racing the clear is serialised by the posting engine reading the settings record FOR SHARE
+Concurrency  : record FOR UPDATE; two first saves of one Item collide on UQ_INV_ITEM_STOCK_SETTINGS_ITEM_FK — the loser re-reads and applies as an update; clearing a flag reads the balances inside the same transaction, and a receipt of a lot racing the clear is serialised because engine step 1 reads the same record FOR SHARE (QR-INV-043) — whichever comes second sees the other's result (ADR-INV-026)
 Security     : SCR-REQ-INV-009 · PERM_INV_ITEM_STOCK_SETTINGS_CREATE (no record yet) / PERM_INV_ITEM_STOCK_SETTINGS_UPDATE (record exists)
 Localization : ar + en
 <!-- API:API-INV-045:END -->
@@ -1675,11 +1796,11 @@ Localization : ar + en
 ### API-INV-047 — create (post), custom (download sheet, bulk load) — post opening stock
 Entity       : ENT-INV-010, ENT-INV-011 · operation CREATE · screen operations: create (post), custom (download sheet, bulk load)
 Endpoint     : /api/v1/inv/opening-stock   verb: POST
-Layers       : OpeningStockController.post → OpeningStockService.post → StockAdjustmentService.createAndPost → StockPostingService.post
-Request      : body OpeningStockRequest {warehousePk DBF-INV-147 (optional while one is active), docDate DBF-INV-150 (optional — today), rows[] (1–1000) {rowNo DBF-INV-159 (required), variantPk DBF-INV-167 or barcode (one required — ADR-INV-027), quantity → quantityChange DBF-INV-162 (> 0), unitCost DBF-INV-164 (required, ≥ 0), lotNo DBF-INV-160, lotExpiryDate DBF-INV-161, measureQty → measureQtyChange DBF-INV-163}}
+Layers       : OpeningStockController.post → OpeningStockService.post → StockAdjustmentService.createAndPost → StockPostingEngine.post
+Request      : body OpeningStockRequest {warehousePk DBF-INV-147 (optional while one is active), docDate DBF-INV-150 (optional — today), rows[] (1–1000 — RULE-INV-027) {rowNo DBF-INV-159 (required), variantPk DBF-INV-167 or barcode (one required — ADR-INV-027), quantity → quantityChange DBF-INV-162 (> 0), unitCost DBF-INV-164 (required, ≥ 0, ≤ 4 dp), lotNo DBF-INV-160, lotExpiryDate DBF-INV-161, measureQty → measureQtyChange DBF-INV-163}}. **Variant resolution, stated once (ADR-INV-035):** `barcode` is resolved through XM-INV-013; a row with `variantPk` is read through XM-INV-014. CAT v2 publishes no exact Variant-code read, so v1 accepts no Variant code: the sheet column is «الباركود» / "Barcode" (AC-INV-080), and a text that is not an active barcode fails its row with INV-422-LOAD-ROW-VARIANT. The Variant-code read is a platform finding owned by CAT (business-policies-inv PLATFORM FINDINGS); when CAT publishes it, an INV delta adds the fallback "barcode not found → exact Variant code" here and in XM-INV-013 / 014
 Response     : 201 · ApiResponse<StockAdjustmentDto> (POSTED, reasonCode OPENING_STOCK)
-Validations  : RULE-INV-027 → INV-422-LOAD-ROWS · per row (all rows checked, all failures returned in details, nothing posted — REQ-INV-072 → INV-422-LOAD-ROWS-INVALID): RULE-INV-028 → INV-422-LOAD-ROW-VARIANT · RULE-INV-018 → INV-422-VARIANT-INACTIVE · RULE-INV-026 → INV-422-OPENING-COST-REQUIRED · RULE-INV-035 → INV-422-LOT-EXPIRY-REQUIRED · RULE-INV-036 → INV-422-LOT-EXPIRY-MISMATCH · RULE-INV-040 → INV-422-MEASURE-REQUIRED · RULE-INV-048 → INV-422-DUPLICATE-LINE · RULE-INV-007 / 008 on the warehouse
-Errors       : INV-404-WAREHOUSE-NOT-FOUND, INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-LOAD-ROWS, INV-422-LOAD-ROWS-INVALID, INV-422-LOAD-ROW-VARIANT, INV-422-VARIANT-INACTIVE, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE, INV-400, INV-401, INV-403, INV-500
+Validations  : RULE-INV-027 → INV-422-LOAD-ROWS · per row (all rows checked, all failures returned in details, nothing posted — REQ-INV-072 → INV-422-LOAD-ROWS-INVALID): RULE-INV-028 → INV-422-LOAD-ROW-VARIANT · RULE-INV-018 → INV-422-VARIANT-INACTIVE · RULE-INV-017 → INV-422-QUANTITY-INVALID (quantity and measure ≤ 3 dp) · RULE-INV-025 → INV-422-NO-KNOWN-COST (unitCost with more than 4 dp) · RULE-INV-026 → INV-422-OPENING-COST-REQUIRED · RULE-INV-035 → INV-422-LOT-EXPIRY-REQUIRED · RULE-INV-036 → INV-422-LOT-EXPIRY-MISMATCH · RULE-INV-040 → INV-422-MEASURE-REQUIRED · RULE-INV-048 → INV-422-DUPLICATE-LINE · RULE-INV-007 / 008 on the warehouse
+Errors       : INV-404-WAREHOUSE-NOT-FOUND, INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-LOAD-ROWS, INV-422-LOAD-ROWS-INVALID, INV-422-LOAD-ROW-VARIANT, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE, INV-400, INV-401, INV-403, INV-500
 Orchestration: RULE-INV-027 → warehouse as API-INV-028 (QR-INV-002, QR-INV-006, QR-INV-005) → resolve every row: barcode → integrate (XM-INV-013), Variant → integrate (XM-INV-014) (active, STANDARD), Item settings QR-INV-043, lot by (Variant, lotNo) QR-INV-040 → any failure → INV-422-LOAD-ROWS-INVALID with details → create adjustment (QR-INV-037) reasonCode DBF-INV-144 = OPENING_STOCK, warehouseFk DBF-INV-147, docNo DBF-INV-149 (INV_ADJUSTMENT), docDate DBF-INV-150, lines rowNo DBF-INV-159, quantityChange DBF-INV-162, unitCost DBF-INV-164, lotNo DBF-INV-160, lotExpiryDate DBF-INV-161, measureQtyChange DBF-INV-163, stockAdjustmentFk DBF-INV-166, variantFk DBF-INV-167, currencyCode DBF-INV-171 → lots created QR-INV-041 (DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184) → posting engine: one ADJUSTMENT_IN per row at the row's cost (moves DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061; balances DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033; valuation DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200) → statusCode DBF-INV-151 = POSTED → AuditApi → events
 Repository   : QR-INV-002, QR-INV-005, QR-INV-006, QR-INV-043, QR-INV-040, QR-INV-041, QR-INV-037, QR-INV-017, QR-INV-018, QR-INV-019, QR-INV-022, QR-INV-023, QR-INV-024 · join NONE · READ_WRITE (one transaction, batched inserts)
 Concurrency  : up to 1000 balance rows locked in key order (engine); a resubmitted identical load creates a second adjustment — the screen disables the button after the first 201 (no server idempotency key for INV-internal documents, D-P2-05)
@@ -1791,7 +1912,7 @@ Entity       : ENT-INV-003, ENT-INV-005, ENT-INV-012 · operation VIEW · screen
 Endpoint     : /api/v1/inv/stock-balances   verb: GET
 Layers       : StockBalanceController.search → StockQueryService.searchBalances
 Request      : query variantPk (DBF-INV-030), term (a barcode), itemPk, warehousePk (DBF-INV-031), lotPk (DBF-INV-032), nonZero (on-hand DBF-INV-027 ≠ 0), page, size · sort fixed: Variant, warehouse, expiry
-Response     : 200 · ApiResponse<Page<StockBalanceRowDto>> · paginated {variantPk, variantCode, variantNameAr, variantNameEn, warehousePk, lotPk, lotCode, expiryDate DBF-INV-177, expiredFl, onHandQty, reservedQty (from DBF-INV-068), availableQty, onHandMeasureQty DBF-INV-028, measureUomCode} — no cost or value column (SRS D-26)
+Response     : 200 · ApiResponse<Page<StockBalanceRowDto>> · paginated {variantPk, variantCode, variantNameAr, variantNameEn, warehousePk, warehouseCode DBF-INV-004, warehouseNameAr DBF-INV-005, warehouseNameEn DBF-INV-006 (the label every role can read — ADR-INV-036), lotPk, lotCode, expiryDate DBF-INV-177, expiredFl, onHandQty, reservedQty (from DBF-INV-068), availableQty, onHandMeasureQty DBF-INV-028, measureUomCode} — no cost or value column (SRS D-26)
 Validations  : none (RULE-INV-038 applied to the available column, not raised)
 Errors       : INV-400, INV-401, INV-403, INV-500
 Orchestration: Variant set — variantPk; term → integrate (XM-INV-013); itemPk → integrate (XM-INV-015) → QR-INV-015 (reserved per QR-INV-026) → a filter naming one Variant with no balance → zeros per active warehouse from QR-INV-016 (REQ-INV-041) → a bundle Variant with bundles on → the derived row of REQ-INV-042 (as API-INV-017) → Variant codes / names integrate (XM-INV-014) per page → measureUomCode per Item QR-INV-043 (dualQuantity on)
@@ -1805,9 +1926,9 @@ Localization : lot expired mark label «منتهية الصلاحية» / "Expir
 ### API-INV-017 — read availability of a Variant
 Entity       : ENT-INV-003, ENT-INV-005, ENT-INV-012 · operation VIEW · screen operations: read
 Endpoint     : /api/v1/inv/stock-balances/availability/{variantId}   verb: GET
-Layers       : StockBalanceController.availability → StockQueryService.availability (the same method serves the in-process readAvailability — CON-INV-010)
+Layers       : StockBalanceController.availability → StockQueryService.availability (`@PreAuthorize` PERM_INV_STOCK_BALANCES_VIEW) → AvailabilityEngine.availability (the engine also serves the in-process readAvailability — CON-INV-010, ADR-INV-042)
 Request      : path variantId (DBF-INV-030) · query warehousePk (DBF-INV-031, optional)
-Response     : 200 · ApiResponse<AvailabilityDto> {variantPk, perWarehouse[] {warehousePk, onHandQty, reservedQty, availableQty, onHandMeasureQty, measureUomCode}, total {onHandQty, reservedQty, availableQty, onHandMeasureQty}}
+Response     : 200 · ApiResponse<AvailabilityDto> {variantPk, perWarehouse[] {warehousePk, warehouseCode DBF-INV-004, warehouseNameAr DBF-INV-005, warehouseNameEn DBF-INV-006, onHandQty, reservedQty, availableQty, onHandMeasureQty, measureUomCode}, total {onHandQty, reservedQty, availableQty, onHandMeasureQty}} — the warehouse label is on the row, so a Seller/Cashier reads "W1 / W2" with no warehouse permission (ADR-INV-036)
 Validations  : RULE-INV-022 → INV-422-BUNDLE-NO-COMPONENTS; RULE-INV-038 applied (expired lots excluded from available); the same figures decide a reservation (RULE-INV-020, REQ-INV-044 — SVC-API-INT)
 Errors       : INV-404-VARIANT-NOT-FOUND, INV-404-WAREHOUSE-NOT-FOUND, INV-422-BUNDLE-NO-COMPONENTS, INV-400, INV-401, INV-403, INV-500
 Orchestration: Variant integrate (XM-INV-014) → warehousePk given → QR-INV-002 … (404) → bundles on and the Variant's Item is a bundle → components integrate (XM-INV-012) (none active → RULE-INV-022); per component QR-INV-016 + QR-INV-026; bundle available per warehouse = smallest whole of component available ÷ component quantity, bundle on-hand = smallest whole of component on-hand ÷ quantity, reserved 0 (components carry their own reservations) — REQ-INV-042 → otherwise QR-INV-016 (on-hand, sellable = outside expired lots) and QR-INV-026 (reserved), available = sellable − reserved; no rows → zeros (REQ-INV-041) → measure unit QR-INV-043 (dualQuantity on)
@@ -1817,12 +1938,12 @@ Security     : SCR-REQ-INV-003 · PERM_INV_STOCK_BALANCES_VIEW
 Localization : ar + en
 <!-- API:API-INV-017:END -->
 
-<!-- API:API-INV-018:START traces=REQ-INV-075,REQ-INV-076,REQ-INV-016,REQ-INV-056,REQ-INV-110,REQ-INV-111,REQ-INV-112,DBF-INV-041,DBF-INV-042,DBF-INV-043,DBF-INV-046,DBF-INV-047,DBF-INV-049,DBF-INV-053,DBF-INV-054,DBF-INV-055,DBF-INV-058 -->
+<!-- API:API-INV-018:START traces=REQ-INV-075,REQ-INV-076,REQ-INV-016,REQ-INV-056,REQ-INV-110,REQ-INV-111,REQ-INV-112,DBF-INV-041,DBF-INV-042,DBF-INV-043,DBF-INV-046,DBF-INV-047,DBF-INV-048,DBF-INV-049,DBF-INV-053,DBF-INV-054,DBF-INV-055,DBF-INV-058 -->
 ### API-INV-018 — search, list stock moves
 Entity       : ENT-INV-004 · operation VIEW · screen operations: search, list
 Endpoint     : /api/v1/inv/stock-moves   verb: GET
 Layers       : StockMoveController.search → StockQueryService.searchMoves
-Request      : query variantPk (DBF-INV-053), warehousePk (DBF-INV-054), lotPk (DBF-INV-055), moveTypeCode (DBF-INV-041, a code of INV_MOVE_TYPE), docNo (DBF-INV-049), dateFrom, dateTo (DBF-INV-058), page, size · sort fixed: newest first
+Request      : query variantPk (DBF-INV-053), warehousePk (DBF-INV-054), lotPk (DBF-INV-055), moveTypeCode (DBF-INV-041, a code of INV_MOVE_TYPE), docNo (DBF-INV-049), sourceDocTypeCode (DBF-INV-047, a code of INV_SOURCE_DOC_TYPE) and sourceDocRef (DBF-INV-048) — together they identify one source document exactly (the jumps from SCR-INV-005 and SCR-INV-007; SRS SCR-REQ-INV-004 B2), dateFrom, dateTo (DBF-INV-058), page, size · sort fixed: newest first
 Response     : 200 · ApiResponse<Page<StockMoveDto>> · paginated — each move with sourceDocTypeCode DBF-INV-047 and sourceDocNo, quantity DBF-INV-042, measureQty DBF-INV-043, balanceAfterQty DBF-INV-046 (displayed when filtered to one Variant and one warehouse — REQ-INV-076); the FEFO split, lot-less shortfall and lot-less-first issues of REQ-INV-110 … 112 are visible here as separate moves
 Validations  : none
 Errors       : INV-400, INV-401, INV-403, INV-500
@@ -1997,7 +2118,7 @@ Localization : ar + en
 ### API-INV-044 — read Item stock settings
 Entity       : ENT-INV-014 · operation VIEW · screen operations: read
 Endpoint     : /api/v1/inv/item-stock-settings/by-item/{itemId}   verb: GET
-Layers       : ItemStockSettingsController.read → ItemStockSettingsService.readByItem (also the in-process readItemStockSettings — CON-INV-018)
+Layers       : ItemStockSettingsController.read → ItemStockSettingsService.readByItem (`@PreAuthorize` PERM_INV_ITEM_STOCK_SETTINGS_VIEW) → InventoryReadEngine.itemStockSettings (the engine also serves the in-process readItemStockSettings — CON-INV-018, ADR-INV-042)
 Request      : path itemId (DBF-INV-209)
 Response     : 200 · ApiResponse<ItemStockSettingsDto> — no record → lotTrackedFl false, dualQuantityFl false, measureUomCode empty (REQ-INV-129)
 Validations  : none
@@ -2015,7 +2136,7 @@ Entity       : ENT-INV-010, ENT-INV-011 · operation VIEW · screen operations: 
 Endpoint     : /api/v1/inv/opening-stock/sheet   verb: GET
 Layers       : OpeningStockController.sheet → OpeningStockService.sheet
 Request      : none
-Response     : 200 · `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` binary (a file — not wrapped in ApiResponse) — columns «رمز المتغيّر أو الباركود» / "Variant code or barcode", «الكمية» / "Quantity" (→ DBF-INV-162), «تكلفة الوحدة» / "Unit cost" (→ DBF-INV-164); lot number and expiry date (→ DBF-INV-160, DBF-INV-161) only with lotExpiry on; measure (→ DBF-INV-163) only with dualQuantity on (AC-INV-080)
+Response     : 200 · `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` binary (a file — not wrapped in ApiResponse) — columns «الباركود» / "Barcode" (barcode only in v1 — ADR-INV-035), «الكمية» / "Quantity" (→ DBF-INV-162), «تكلفة الوحدة» / "Unit cost" (→ DBF-INV-164); lot number and expiry date (→ DBF-INV-160, DBF-INV-161) only with lotExpiry on; measure (→ DBF-INV-163) only with dualQuantity on (AC-INV-080)
 Validations  : none
 Errors       : INV-400, INV-401, INV-403, INV-500
 Orchestration: InvFeatureFlags → PrintApi renders report INV_OPENING_STOCK_SHEET (registered through ReportProvider) with the column set → stream the xlsx
@@ -2061,7 +2182,7 @@ Localization : ar + en
 ### API-INV-051 — read stock valuation of a Variant
 Entity       : ENT-INV-013 · operation VIEW · screen operations: read
 Endpoint     : /api/v1/inv/stock-valuation/{variantId}   verb: GET
-Layers       : ValuationController.read → ValuationService.readByVariant (also the in-process readValuation — CON-INV-016)
+Layers       : ValuationController.read → ValuationService.readByVariant (`@PreAuthorize` PERM_INV_STOCK_VALUATION_VIEW) → InventoryReadEngine.valuation (the engine also serves the in-process readValuation — CON-INV-016, ADR-INV-042)
 Request      : path variantId (DBF-INV-196)
 Response     : 200 · ApiResponse<StockValuationDto> — never valued → totalOnHandQty 0, stockValue 0, averageUnitCost null (contract C-5)
 Validations  : none
@@ -2075,44 +2196,64 @@ Localization : ar + en
 <!-- SUB:SVC-API-SEARCH:END -->
 
 <!-- SUB:SVC-API-INT:START traces=REQ-INV-019,REQ-INV-033,REQ-INV-040,REQ-INV-043,REQ-INV-044,REQ-INV-045,REQ-INV-046,REQ-INV-047,REQ-INV-048,REQ-INV-049,REQ-INV-050,REQ-INV-051,REQ-INV-052,REQ-INV-053,REQ-INV-058,REQ-INV-063,REQ-INV-069,REQ-INV-109,REQ-INV-110,REQ-INV-111,REQ-INV-112,REQ-INV-113,REQ-INV-114,REQ-INV-129,REQ-INV-130,REQ-INV-131,REQ-INV-057,REQ-INV-034,DBF-INV-066,DBF-INV-067,DBF-INV-068,DBF-INV-069,DBF-INV-075,DBF-INV-080,DBF-INV-052 -->
-### In-process surface — `InventoryApi` (com.erp.inv.crossmodule)
+### In-process surface — `InventoryApi` (com.commerce.inv.crossmodule)
 
 One injected bean (conventions.module_interface: in_process — one deployable; no HTTP client, no base path, no
-timeout, no network error path). The calling module authorises its own caller; tenancy applies to every call.
-Quantities are in the Item's base unit (SRS D-05); every receive / issue / reserve carries an idempotency key
-(text ≤ 64) — a repeated key returns the first answer and records nothing (RULE-INV-024, REQ-INV-058). Errors
-are `LocalizedException` with the codes of §5 / §5.1. Every method reuses the services of the REST endpoints;
-no method has a REST route (ADR-INV-024).
+timeout, no network error path). Quantities are in the Item's base unit (SRS D-05); every receive / issue /
+reserve carries an idempotency key (text ≤ 64) — a repeated key returns the first answer and records nothing
+(RULE-INV-024, REQ-INV-058). Errors are `LocalizedException` with the codes of §5 / §5.1. No method has a REST
+route (ADR-INV-024).
+
+**Authority (ADR-INV-042).** `InventoryApi` does **not** call the REST-facing services. Every method delegates
+to the internal engine package `com.commerce.inv.engine`, which carries no `@PreAuthorize` and has no REST
+path; the REST services carry `@PreAuthorize` on every method and reach the same engines after their own check.
+All fourteen methods of CON-INV-006 … 019 bypass the INV permission check, for one reason: the calling module
+authorises its own caller against its own permissions before it calls INV (SRS access summary). A cashier selling at the POS holds only PERM_INV_STOCK_BALANCES_VIEW, so a
+check on the INV services would refuse every POS issue and every reservation; a storefront shopper and the
+system jobs of PUR / SLS hold no INV authority at all. Tenancy still applies to every call. INV's published
+operations are stock postings made for users who by design hold no INV write permission. They follow CORE-GAP-in-process-caller-authority (OPEN) when the core
+answers; no `InventoryApi` signature changes then. An ArchUnit rule of `InvModuleBoundaryTest` checks that
+`com.commerce.inv.engine` is used only by `service` and `crossmodule`, never by `controller`.
 
 | Method | Honours | Implementation |
 |---|---|---|
-| readWarehouse(warehousePk) | CON-INV-006 | QR-INV-002 → {warehousePk, code, nameAr, nameEn, branchPk, isDefaultFl, isActiveFl}; inactive returned |
-| listActiveWarehouses() | CON-INV-007 | QR-INV-001 (active only, all rows) + QR-INV-006 → {activeCount, warehouses} |
-| readBranch(branchPk) | CON-INV-008 | QR-INV-009 → Branch; inactive returned |
-| listActiveBranches() | CON-INV-009 | QR-INV-008 (active only) + QR-INV-013 → {activeCount, branches} |
-| readAvailability(variantPk, warehousePk?) | CON-INV-010 | StockQueryService.availability (API-INV-017) |
-| reserve(variantPk, warehousePk?, quantity, sourceDoc, idempotencyKey) | CON-INV-011 | see "Reserve" below |
-| releaseReservation(reservationPk) | CON-INV-012 | see "Release" below |
-| reservationsOfDocument(sourceDocTypeCode, sourceDocRef) | CON-INV-013 | reservations of the document (intent R-3), empty list when none |
-| receiveStock(warehousePk?, RECEIPT / RETURN_IN, lines, sourceDoc, idempotencyKey) | CON-INV-014 | see "Receive" below |
-| issueStock(warehousePk?, ISSUE / RETURN_OUT, saleFl, offlineFl, lines, sourceDoc, idempotencyKey) | CON-INV-015 | see "Issue" below |
-| readValuation(variantPk) | CON-INV-016 | ValuationService.readByVariant (API-INV-051) |
-| readLot(lotPk) | CON-INV-017 | QR-INV-039 + expiredFl |
-| readItemStockSettings(itemPk) | CON-INV-018 | ItemStockSettingsService.readByItem (API-INV-044) |
-| canTurnOff(lotExpiry / dualQuantity) | CON-INV-019 | QR-INV-042 filtered on the flag: count and the first 20 (Item code / names through integrate (XM-INV-015)); count > 0 → allowedFl false with the RULE-INV-046 message, {flag} = «التشغيلة والصلاحية» / "Lot and expiry" or «الكمية المزدوجة» / "Dual quantity", {count} = the count; unknown flag → INV-400 |
+| readWarehouse(warehousePk) | CON-INV-006 | InventoryReadEngine — QR-INV-002 → {warehousePk, code, nameAr, nameEn, branchPk, isDefaultFl, isActiveFl}; inactive returned |
+| listActiveWarehouses() | CON-INV-007 | InventoryReadEngine — QR-INV-001 (active only, all rows) + QR-INV-006 → {activeCount, warehouses} |
+| readBranch(branchPk) | CON-INV-008 | InventoryReadEngine — QR-INV-009 → Branch; inactive returned |
+| listActiveBranches() | CON-INV-009 | InventoryReadEngine — QR-INV-008 (active only) + QR-INV-013 → {activeCount, branches} |
+| readAvailability(variantPk, warehousePk?) | CON-INV-010 | AvailabilityEngine.availability (the engine behind API-INV-017) |
+| reserve(variantPk, warehousePk?, quantity, sourceDoc, idempotencyKey) | CON-INV-011 | ReservationEngine — see "Reserve" below |
+| releaseReservation(reservationPk) | CON-INV-012 | ReservationEngine — see "Release" below |
+| reservationsOfDocument(sourceDocTypeCode, sourceDocRef) | CON-INV-013 | ReservationEngine — reservations of the document (intent R-3), empty list when none |
+| receiveStock(warehousePk?, RECEIPT / RETURN_IN, lines, sourceDoc, idempotencyKey) | CON-INV-014 | StockPostingEngine — see "Receive" below |
+| issueStock(warehousePk?, ISSUE / RETURN_OUT, saleFl, offlineFl, lines, sourceDoc, idempotencyKey) | CON-INV-015 | StockPostingEngine + ReservationEngine — see "Issue" below |
+| readValuation(variantPk) | CON-INV-016 | InventoryReadEngine.valuation (the engine behind API-INV-051) |
+| readLot(lotPk) | CON-INV-017 | InventoryReadEngine — QR-INV-039 + expiredFl |
+| readItemStockSettings(itemPk) | CON-INV-018 | InventoryReadEngine.itemStockSettings (the engine behind API-INV-044) |
+| canTurnOff(lotExpiry / dualQuantity) | CON-INV-019 | InventoryReadEngine — QR-INV-042 filtered on the flag: count and the first 20 (Item code / names through integrate (XM-INV-015)); count > 0 → allowedFl false with the RULE-INV-046 message, {flag} = «التشغيلة والصلاحية» / "Lot and expiry" or «الكمية المزدوجة» / "Dual quantity", {count} = the count; unknown flag → INV-400 |
 | event inv.StockMoveRecorded | CON-INV-020 | posting engine step 9 — {stockMovePk, docDate, moveTypeCode, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost, moveValue, sourceDocTypeCode, sourceDocRef, sourceDocNo, sourceLineRef?, bundleVariantPk?, offlineFl}; a measure-only move carries quantity 0 (ADR-INV-017) |
 | event inv.InventoryMasterChanged | CON-INV-021 | API-INV-003 … 007, 011 … 015 — {entity ENT-INV-001 / ENT-INV-002, identifier, changeKindCode} |
 
-**Common resolution.** Warehouse: given → QR-INV-002 active (RULE-INV-007); absent → QR-INV-006 = 1 → default
-(QR-INV-005), ≥ 2 → INV-422-WAREHOUSE-REQUIRED (RULE-INV-008, REQ-INV-013, 017). Quantity > 0, ≤ 3 dp
-(RULE-INV-017). Variant active, STANDARD Item — integrate (XM-INV-014) (RULE-INV-018). Bundles on and the Variant
+**Idempotency guard (ADR-INV-044).** Receive, issue and reserve begin with
+`SELECT pg_advisory_xact_lock(hashtextextended(:tenantId || ':' || :idempotencyKey, 0))` (native, tenant in the
+hash — ADR-INV-041), **then** run the R-2 / R-6 lookup by key. Two simultaneous submissions with one key (a POS
+sync retried by the client) therefore serialise: the second waits until the first commits or rolls back, then
+finds the first's reservations or moves and returns them, recording nothing. The lock is released with the
+transaction; IDEMPOTENCY_KEY stays a non-unique index (D-P2-05), because one request records several rows under
+one key.
+
+**Common resolution.** Warehouse: given → QR-INV-002 FOR SHARE, active (RULE-INV-007); absent → QR-INV-006 = 1 →
+default (QR-INV-005), ≥ 2 → INV-422-WAREHOUSE-REQUIRED (RULE-INV-008, REQ-INV-013, 017). Quantity > 0, ≤ 3 dp,
+measure ≤ 3 dp (RULE-INV-017). Variant active, STANDARD Item — integrate (XM-INV-014) (RULE-INV-018). Bundles on and the Variant
 is a bundle → its active component lines integrate (XM-INV-012); none → INV-422-BUNDLE-NO-COMPONENTS
 (RULE-INV-022); the request is exploded to the components (bundle quantity × component quantity) with
 bundleVariantFk set (REQ-INV-049, 053).
 
-**Reserve** (REQ-INV-043 … 045, 049). Idempotency: reservations with this key (R-2) → return them. Resolve → per
-(component) Variant: lock the pair's lot-less balance row (QR-INV-017 — the serialisation point of reservations
-and issues of that Variant × warehouse) → available = QR-INV-016 sellable − QR-INV-026 reserved → quantity >
+**Reserve** (REQ-INV-043 … 045, 049). Idempotency: advisory lock, then reservations with this key (R-2) → return
+them. Resolve → per (component) Variant, in ascending (variant, warehouse) order: lock-or-create the pair's
+lot-less balance row (QR-INV-017 — the serialisation point of every reservation, issue, transfer leg and
+adjustment of that Variant × warehouse, lot moves included, because the posting engine locks the same row first —
+ADR-INV-026) → available = QR-INV-016 sellable − QR-INV-026 reserved → quantity >
 available: INV_ALLOW_NEGATIVE_STOCK false → INV-409-RESERVE-NOT-AVAILABLE {available} (RULE-INV-020); true →
 shortfall = quantity − max(available, 0) → insert (R-1) originalQty DBF-INV-067 = reservedQty DBF-INV-068 =
 quantity, shortfallQty DBF-INV-069, sourceDocTypeCode / Ref / No / LineRef DBF-INV-070 … 073, idempotencyKey
@@ -2123,14 +2264,17 @@ row; the second sees the first's reservation in QR-INV-026.
 **Release** (REQ-INV-046, 048). Reservation by PK FOR UPDATE (R-4) → not ACTIVE → INV-409-RESERVATION-CLOSED
 (RULE-INV-021) → statusCode RELEASED, reservedQty 0, closedAt DBF-INV-074 = now (R-5).
 
-**Receive** (REQ-INV-051, 059, 064, 105 … 107, 120). Idempotency: moves with this key (R-6) → return them.
-Resolve → per line: Item settings QR-INV-043 — lot-tracked with lotExpiry on → lot number and expiry required
+**Receive** (REQ-INV-051, 059, 064, 105 … 107, 120). Idempotency: advisory lock, then moves with this key (R-6)
+→ return them. Resolve → per line: Item settings QR-INV-043 FOR SHARE — lot-tracked with lotExpiry on → lot number and expiry required
 (RULE-INV-035), lot reused or created (QR-INV-040 / 041; different expiry → RULE-INV-036); dual-quantity with
 dualQuantity on → measure > 0 (RULE-INV-040); cost ≥ 0 or the average, none → RULE-INV-025 → posting engine
 (RECEIPT / RETURN_IN; idempotencyKey DBF-INV-052 = the caller's key on every move). All lines or none.
 
-**Issue** (REQ-INV-047, 052, 053, 067, 069, 110 … 114, 120). Idempotency (R-6). Resolve and explode → per line:
-reservationPk given → reservation FOR UPDATE (R-4): not ACTIVE → RULE-INV-021; reservedQty −= issued (floor 0),
+**Issue** (REQ-INV-047, 052, 053, 067, 069, 110 … 114, 120). Idempotency: advisory lock, then R-6. Resolve and
+explode → per line: reservationPk given → reservation FOR UPDATE (R-4): not ACTIVE → RULE-INV-021; its
+variantFk or warehouseFk differs from the line's (the component's, for an exploded bundle line), or its
+sourceDocTypeCode / sourceDocRef differs from the request's source document → INV-422-RESERVATION-MISMATCH
+(RULE-INV-049) — so an unrelated reservation is never consumed; reservedQty −= issued (floor 0),
 0 → CONSUMED with closedAt (R-5), and the moves carry reservationFk → lot selection: a sale (saleFl) of a
 lot-tracked Variant with lotExpiry on → stock without a lot first (REQ-INV-112), then unexpired lots by ascending
 expiry (REQ-INV-110; lots with expiryDate < today skipped — RULE-INV-038, REQ-INV-113), any remainder as a move
@@ -2144,7 +2288,10 @@ R-1 insert INV_RESERVATION; R-2 reservations by IDEMPOTENCY_KEY (IDX_INV_RESERVA
 R-3 reservations by SOURCE_DOC_TYPE_CODE + SOURCE_DOC_REF (IDX_INV_RESERVATION_SRC_TYPE_REF); R-4 reservation by
 RESERVATION_PK FOR UPDATE; R-5 update reservation status / remaining / closed time with VERSION; R-6 moves by
 IDEMPOTENCY_KEY (IDX_INV_STOCK_MOVE_IDEMPOTENCY_KEY). Each is READ_WRITE inside the caller's transaction except
-R-2, R-3 and R-6 (READ_ONLY), with no join.
+R-2, R-3 and R-6 (READ_ONLY), with no join; R-2 and R-6 run after the advisory lock of ADR-INV-044. They are
+JPA / derived queries, tenant-filtered by `@TenantId`; an implementer who writes any of them as native SQL writes
+`TENANT_ID = :tenantId` in its WHERE clause (and TENANT_ID in R-1's INSERT column list) and marks the method
+`@TenantUnscoped(reason, adr = "ADR-INV-041")`.
 <!-- SUB:SVC-API-INT:END -->
 <!-- PHASE:SVC-API:END -->
 
@@ -2155,9 +2302,20 @@ R-2, R-3 and R-6 (READ_ONLY), with no join.
   and the Error Catalog: one operation per block (`operationId` = the block's operation, `x-api-id` = its id,
   `x-traces` = its traces), the request / response schemas from its Request / Response lines (field types from
   the DBF types via CORE R1), one error response per catalog row naming the block (`x-error-codes`), paging
-  `page` / `size` with `x-paginated: true`, bearer JWT on every operation. The four in-process-only codes of §5.1
+  `page` / `size` with `x-paginated: true`, bearer JWT on every operation. The five in-process-only codes of §5.1
   sit under the document-level `x-inprocess-error-codes`. The frontend binds to this document and mocks it; the
   test stage cites it.
+- **Schema bounds (derivation rule, ADR-INV-038).** A bound that a catalogue code owns is **described, not
+  enforced**, in the schema: it is stated in the property's `description` with its code, and carries no
+  `minimum`, `exclusiveMinimum`, `maximum`, `minItems` or `maxItems`, so a validating server or mock never
+  answers INV-400 before the rule's 422 code. This covers OpeningStockRequest `rows` (1–1000, INV-422-LOAD-ROWS),
+  row `rowNo`, `quantity` and `unitCost` (INV-422-LOAD-ROWS-INVALID with the row's own code), TransferLineRequest
+  `quantity` (INV-422-QUANTITY-INVALID), StockAdjustmentLineRequest `rowNo` and `unitCost`, StockCountLine
+  `countedQty` and `countedMeasureQty` (INV-422-COUNTED-NEGATIVE) and InventorySettings `nearExpiryDays`
+  (INV-422-HORIZON-RANGE). Type, format, `maxLength` of a text and the paging bounds of `page` / `size`, which no
+  catalogue code owns, stay enforced (INV-400).
+- **Packages and manifest.** The code lives under `com.commerce.inv` (CORE); the module manifest
+  `META-INF/erp/modules/inv.yaml` declares the api-paths `/api/v1/inv/**` this document covers.
 - **The delivered backend** publishes its api-docs with springdoc as the group `inv` (paths `/api/v1/inv/**`);
   each controller method carries `@Operation(operationId = …, summary = <block heading>)`, `@ApiResponse` per
   catalog status, and the `x-api-id` extension, so `api-verify` can hold the published document to
@@ -2172,13 +2330,24 @@ R-2, R-3 and R-6 (READ_ONLY), with no join.
 <!-- PHASE:SEC-BE:START traces=REQ-INV-136,REQ-INV-137,REQ-INV-138,DBF-INV-001,DBF-INV-014 -->
 ## SEC-BE — security (backend half)
 
-Security model: one `SEC_PAGES` row per composite screen, registered by `InvPermissions`
-(PermissionContributor, permission module `INV`); the security module derives `PERM_<PAGE_CODE>_<ACTION>` for
-VIEW / CREATE / UPDATE / DELETE, VIEW being the gateway. Every endpoint verifies its permission before any
-processing (`@PreAuthorize` with the `InvPermissions` constant); a refusal answers INV-403 through
-`LocalizedException → {code, messageAr, messageEn}` (REQ-INV-138). No service checks a role name. The
-in-process `InventoryApi` checks no INV permission: the calling module authorises its own caller (SRS access
-summary).
+Security model: one `SEC_PAGES` row per composite screen, registered by
+`com.commerce.inv.permission.InvPermissions` (PermissionContributor, permission module `INV`); the security
+module derives `PERM_<PAGE_CODE>_<ACTION>` for VIEW / CREATE / UPDATE / DELETE, VIEW being the gateway. Every
+endpoint verifies its permission before any processing, and so does every public method of the REST-facing
+service it calls: both carry
+`@PreAuthorize("hasAuthority(T(com.commerce.inv.permission.InvPermissions).PERM_…)")` with the permission its
+API block's Security line names (also listed in registry-exec-be "Endpoints"), INV's own constants only
+(checklist C13). API-INV-008 carries
+`hasAnyAuthority(…)` over the twelve VIEW constants; API-INV-045 carries `hasAnyAuthority(…_CREATE, …_UPDATE)` and
+the service requires CREATE when the record is absent and UPDATE when it exists (ADR-INV-029). A refusal answers
+INV-403 through `LocalizedException → {code, messageAr, messageEn}` (REQ-INV-138). No service checks a role
+name.
+
+**In-process surface (ADR-INV-042).** `InventoryApi` (CON-INV-006 … 019) delegates to the engines of
+`com.commerce.inv.engine`, which carry no permission check and have no REST path; it never calls a REST-facing
+service. Every one of its fourteen methods therefore bypasses the INV permission check, because the calling
+module authorises its own caller (SRS access summary; a POS cashier holds only PERM_INV_STOCK_BALANCES_VIEW).
+It follows CORE-GAP-in-process-caller-authority when the core answers.
 
 | Page code | Name ar / en | Parent | Screen |
 |---|---|---|---|
@@ -2323,6 +2492,7 @@ rows:
   - {kind: notification template, name: "INV_NEAR_EXPIRY", source: "db-script BLOCK 8d; given notif provisioning per tenant"}
   - {kind: setting, name: "INV_ALLOW_NEGATIVE_STOCK", source: "db-script BLOCK 8e platform default (true) in the given CU_APP_CONFIGURATION; tenants inherit until API-INV-049 saves an override"}
   - {kind: setting, name: "INV_NEAR_EXPIRY_DAYS", source: "db-script BLOCK 8e platform default (30); tenants inherit until API-INV-049 saves an override"}
+  - {kind: setting, name: "INV_MEASURE_UOM_KEY", source: "db-script BLOCK 8e platform default (CAT_UOM, the key CAT SRS A6 declares); every tenant inherits it, no INV endpoint writes it (ADR-INV-043)", note: "the key of the consumed unit-of-measure lookup; CAT is asked to publish it in contract-cat"}
   - {kind: report, name: "INV_OPENING_STOCK_SHEET", source: "InvReports (ReportProvider) registers the report at start-up; rendered by PrintApi (API-INV-046)"}
   - {kind: master row, name: "default branch «الفرع الرئيسي» / Main branch", source: "InvTenantProvisioning (TenantProvisioningContributor) at tenant provisioning, idempotent (REQ-INV-020, 021)"}
   - {kind: master row, name: "default warehouse «المستودع الرئيسي» / Main warehouse", source: "InvTenantProvisioning (TenantProvisioningContributor) at tenant provisioning, under the default branch, idempotent (REQ-INV-001, 002)"}
@@ -2427,7 +2597,12 @@ downward from INV, DAG #3). Access is in-process (conventions.module_interface: 
 crossmodule API is an injected bean — there is no HTTP client, base path, timeout or network error path.
 Foreign keys reference the target's primary-key column only (ADR-INV-023); the executor checks the target table
 and key column against CAT's delivered migration before running a patch. Each block is one package
-(`integration/XM-INV-0nn`).
+(`integration/XM-INV-0nn`); the adapters live in `com.commerce.inv.integration.cat`. They inject CAT's published
+crossmodule bean by its type, as CAT delivers it: CAT v2 still declares it under `com.erp.cat.crossmodule`, and
+the rename to `com.commerce.cat.crossmodule` is the open platform finding of business-policies-pty PLATFORM
+FINDINGS row 1 (cited in business-policies-inv PLATFORM FINDINGS row 3) — when CAT applies it, only the adapters'
+import lines change. The CAT contract items INV relies on are CON-CAT-001, 002, 005, 006, 007, 008, 010 and 016
+(ADR-INV-040).
 
 <!-- XM:XM-INV-001:START traces=REQ-INV-035,REQ-INV-039,REQ-INV-040 -->
 ### XM-INV-001 — Stock balance Variant foreign key on VARIANT_FK (DBF-INV-030)
@@ -2591,8 +2766,8 @@ contract   : contract-cat.md#CON-CAT-006
 requires   : CAT:DELIVERED
 do         :
   ddl_patch : none — SOFT-READ, no column and no constraint
-  adapter   : `com.erp.inv.integration.cat.CatalogBundleComponentAdapter implements BundleComponentPort` — injects CAT's published in-process crossmodule API (the bean exposing CON-CAT-007 / CON-CAT-008). `List<BundleComponent> activeComponents(long bundleVariantPk)`: getVariant(bundleVariantPk) (CON-CAT-008) → itemFk; getItem(itemFk) (CON-CAT-007) → itemKindCode; not BUNDLE → empty list with `isBundle = false`; BUNDLE → its Bundle component lines mapped to {componentVariantPk = componentVariantFk, quantity (3 dp, in the component Item's base unit — CON-CAT-006), componentBaseUomCode}; a line whose component Variant reads inactive through getVariant is dropped; CAT "not found" → INV-404-VARIANT-NOT-FOUND. The callers multiply the bundle quantity by `quantity` (REQ-INV-042 availability, 049 reservation, 053 issue) and raise INV-422-BUNDLE-NO-COMPONENTS on an empty list of a bundle (RULE-INV-022)
-  config    : Spring `@Component` in package com.erp.inv.integration.cat, the only `BundleComponentPort` bean; in-process call inside the caller's transaction — no HTTP client, no base path, no timeout
+  adapter   : `com.commerce.inv.integration.cat.CatalogBundleComponentAdapter implements BundleComponentPort` — injects CAT's published in-process crossmodule API (the bean exposing CON-CAT-007 / CON-CAT-008). `List<BundleComponent> activeComponents(long bundleVariantPk)`: getVariant(bundleVariantPk) (CON-CAT-008) → itemFk; getItem(itemFk) (CON-CAT-007) → itemKindCode; not BUNDLE → empty list with `isBundle = false`; BUNDLE → its Bundle component lines mapped to {componentVariantPk = componentVariantFk, quantity (3 dp, in the component Item's base unit — CON-CAT-006), componentBaseUomCode}; a line whose component Variant reads inactive through getVariant is dropped; CAT "not found" → INV-404-VARIANT-NOT-FOUND. The callers multiply the bundle quantity by `quantity` (REQ-INV-042 availability, 049 reservation, 053 issue) and raise INV-422-BUNDLE-NO-COMPONENTS on an empty list of a bundle (RULE-INV-022)
+  config    : Spring `@Component` in package com.commerce.inv.integration.cat, the only `BundleComponentPort` bean; in-process call inside the caller's transaction — no HTTP client, no base path, no timeout
 tests      : AC-INV-047, AC-INV-054, AC-INV-059, AC-INV-060
 if_not_met : skip-block; record in execution-state.json → deferred_xm; continue
 <!-- XM:XM-INV-012:END -->
@@ -2605,8 +2780,8 @@ contract   : contract-cat.md#CON-CAT-005
 requires   : CAT:DELIVERED
 do         :
   ddl_patch : none — SOFT-READ, no column and no constraint
-  adapter   : `com.erp.inv.integration.cat.CatalogBarcodeAdapter implements BarcodePort` — injects CAT's published in-process crossmodule API (the bean exposing CON-CAT-010). `Optional<Long> variantOf(String barcode)`: lookupBarcode(barcode) (CON-CAT-010) → variantPk; CAT "not found" or "scale label not readable" → Optional.empty(); the embedded weight or price of a scale label is ignored. Callers: count line add → INV-422-BARCODE-UNKNOWN (RULE-INV-032, API-INV-029); opening stock row → INV-422-LOAD-ROW-VARIANT (RULE-INV-028, API-INV-047); balance / valuation term filters → empty result (API-INV-016, 050)
-  config    : Spring `@Component` in package com.erp.inv.integration.cat, the only `BarcodePort` bean; in-process — no HTTP client, no base path, no timeout
+  adapter   : `com.commerce.inv.integration.cat.CatalogBarcodeAdapter implements BarcodePort` — injects CAT's published in-process crossmodule API (the bean exposing CON-CAT-010). `Optional<Long> variantOf(String barcode)`: lookupBarcode(barcode) (CON-CAT-010) → variantPk; CAT "not found" or "scale label not readable" → Optional.empty(); the embedded weight or price of a scale label is ignored. Callers: count line add → INV-422-BARCODE-UNKNOWN (RULE-INV-032, API-INV-029); opening stock row → INV-422-LOAD-ROW-VARIANT (RULE-INV-028, API-INV-047 — the row's `barcode` is resolved here only: CAT v2 publishes no exact Variant-code read, so v1 resolves no Variant code, and the sheet column is "Barcode" — ADR-INV-035; the code read is a platform finding owned by CAT); balance / valuation term filters → empty result (API-INV-016, 050)
+  config    : Spring `@Component` in package com.commerce.inv.integration.cat, the only `BarcodePort` bean; in-process — no HTTP client, no base path, no timeout
 tests      : AC-INV-079, AC-INV-097, AC-INV-101
 if_not_met : skip-block; record in execution-state.json → deferred_xm; continue
 <!-- XM:XM-INV-013:END -->
@@ -2619,8 +2794,8 @@ contract   : contract-cat.md#CON-CAT-002
 requires   : CAT:DELIVERED
 do         :
   ddl_patch : none — SOFT-READ, no column and no constraint
-  adapter   : `com.erp.inv.integration.cat.CatalogVariantAdapter implements VariantReadPort` — injects CAT's published in-process crossmodule API (the bean exposing CON-CAT-007 / CON-CAT-008). `VariantRef readVariant(long variantPk)`: getVariant(variantPk) (CON-CAT-008) → {variantPk, itemFk, code, nameAr, nameEn, isActiveFl}; getItem(itemFk) (CON-CAT-007) → {itemKindCode, isActiveFl, code, nameAr, nameEn}; returns {variantPk, itemPk, variantCode, variantNameAr, variantNameEn, variantActiveFl, itemActiveFl, itemKindCode, itemCode}; CAT "not found" → INV-404-VARIANT-NOT-FOUND. `Map<Long, VariantRef> readVariants(Set<Long>)` loops readVariant per page (≤ 100). Used by RULE-INV-018 (active Variant of a STANDARD Item), RULE-INV-028, the Variant display names of the search pages and the Item of a line (lot / dual-quantity settings)
-  config    : Spring `@Component` in package com.erp.inv.integration.cat, the only `VariantReadPort` bean; in-process — no HTTP client, no base path, no timeout; state read at request time (SRS D-23 — the catalogue-change event is not consumed in v1)
+  adapter   : `com.commerce.inv.integration.cat.CatalogVariantAdapter implements VariantReadPort` — injects CAT's published in-process crossmodule API (the bean exposing CON-CAT-007 / CON-CAT-008). `VariantRef readVariant(long variantPk)`: getVariant(variantPk) (CON-CAT-008) → {variantPk, itemFk, code, nameAr, nameEn, isActiveFl}; getItem(itemFk) (CON-CAT-007) → {itemKindCode, isActiveFl, code, nameAr, nameEn}; returns {variantPk, itemPk, variantCode, variantNameAr, variantNameEn, variantActiveFl, itemActiveFl, itemKindCode, itemCode}; CAT "not found" → INV-404-VARIANT-NOT-FOUND. `Map<Long, VariantRef> readVariants(Set<Long>)` loops readVariant per page (≤ 100). Used by RULE-INV-018 (active Variant of a STANDARD Item — on save and again on post, engine step 0), RULE-INV-028 (an opening stock row given by `variantPk`, or the Variant a barcode resolved to through XM-INV-013; no Variant-code lookup exists in v1 — ADR-INV-035), the Variant display names of the search pages and the Item of a line (lot / dual-quantity settings)
+  config    : Spring `@Component` in package com.commerce.inv.integration.cat, the only `VariantReadPort` bean; in-process — no HTTP client, no base path, no timeout; state read at request time (SRS D-23 — the catalogue-change event is not consumed in v1)
 tests      : AC-INV-058, AC-INV-079, AC-INV-085, AC-INV-107
 if_not_met : skip-block; record in execution-state.json → deferred_xm; continue
 <!-- XM:XM-INV-014:END -->
@@ -2633,8 +2808,8 @@ contract   : contract-cat.md#CON-CAT-001
 requires   : CAT:DELIVERED
 do         :
   ddl_patch : none — SOFT-READ, no column and no constraint
-  adapter   : `com.erp.inv.integration.cat.CatalogItemAdapter implements ItemReadPort` — injects CAT's published in-process crossmodule API (the bean exposing CON-CAT-007 / CON-CAT-016). `ItemRef readItem(long itemPk)`: getItem(itemPk) (CON-CAT-007) → {itemPk, code, nameAr, nameEn, itemKindCode, isActiveFl, variantPks = its Variants' identifiers}; CAT "not found" → INV-404-ITEM-NOT-FOUND. `List<Long> searchItems(String term)`: searchCatalogue(term) (CON-CAT-016) → at most 20 itemPks (term under 2 characters → empty). Used by RULE-INV-045 (BUNDLE refused), the settings key / names (API-INV-044, 045), RULE-INV-042 / 043 (the Item's Variants for QR-INV-045 / 046), the Item filters of API-INV-016, 043, 050
-  config    : Spring `@Component` in package com.erp.inv.integration.cat, the only `ItemReadPort` bean; in-process — no HTTP client, no base path, no timeout
+  adapter   : `com.commerce.inv.integration.cat.CatalogItemAdapter implements ItemReadPort` — injects CAT's published in-process crossmodule API (the bean exposing CON-CAT-007 / CON-CAT-016). `ItemRef readItem(long itemPk)`: getItem(itemPk) (CON-CAT-007) → {itemPk, code, nameAr, nameEn, itemKindCode, isActiveFl, variantPks = its Variants' identifiers}; CAT "not found" → INV-404-ITEM-NOT-FOUND. `List<Long> searchItems(String term)`: searchCatalogue(term) (CON-CAT-016) → at most 20 itemPks (term under 2 characters → empty). Used by RULE-INV-045 (BUNDLE refused), the settings key / names (API-INV-044, 045), RULE-INV-042 / 043 (the Item's Variants for QR-INV-045 / 046), the Item filters of API-INV-016, 043, 050
+  config    : Spring `@Component` in package com.commerce.inv.integration.cat, the only `ItemReadPort` bean; in-process — no HTTP client, no base path, no timeout
 tests      : AC-INV-139, AC-INV-142, AC-INV-143, AC-INV-145
 if_not_met : skip-block; record in execution-state.json → deferred_xm; continue
 <!-- XM:XM-INV-015:END -->
