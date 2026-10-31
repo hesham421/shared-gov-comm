@@ -98,7 +98,7 @@
     {
       "from": "APR",
       "to": "INV",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -140,7 +140,7 @@
     {
       "from": "INS",
       "to": "INV",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -198,36 +198,204 @@
       "source": "platform"
     },
     {
-      "from": "INV",
-      "to": "CAT",
-      "entity": "ENT-CAT-001",
-      "type": "HARD-FK",
-      "state": "DELIVERED",
-      "source": "module"
-    },
-    {
+      "id": "XM-INV-001",
       "from": "INV",
       "to": "CAT",
       "entity": "ENT-CAT-002",
       "type": "HARD-FK",
       "state": "DELIVERED",
-      "source": "module"
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-035",
+        "REQ-INV-039",
+        "REQ-INV-040"
+      ],
+      "source": "xm"
     },
     {
+      "id": "XM-INV-002",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-051",
+        "REQ-INV-052",
+        "REQ-INV-075"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-003",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-053"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-004",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-043",
+        "REQ-INV-050"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-005",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-049"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-006",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-078",
+        "REQ-INV-080"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-007",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-088",
+        "REQ-INV-092"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-008",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-070",
+        "REQ-INV-072",
+        "REQ-INV-097"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-009",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-106",
+        "REQ-INV-109"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-010",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
+      "traces": [
+        "REQ-INV-059",
+        "REQ-INV-063"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-011",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-001",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-001",
+      "traces": [
+        "REQ-INV-124",
+        "REQ-INV-125",
+        "REQ-INV-129"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-012",
       "from": "INV",
       "to": "CAT",
       "entity": "ENT-CAT-007",
       "type": "SOFT-READ",
       "state": "DELIVERED",
-      "source": "module"
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-006",
+      "traces": [
+        "REQ-INV-042",
+        "REQ-INV-049",
+        "REQ-INV-053",
+        "REQ-INV-054"
+      ],
+      "source": "xm"
     },
     {
+      "id": "XM-INV-013",
       "from": "INV",
       "to": "CAT",
       "entity": "ENT-CAT-009",
       "type": "SOFT-READ",
       "state": "DELIVERED",
-      "source": "module"
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-005",
+      "traces": [
+        "REQ-INV-072",
+        "REQ-INV-088",
+        "REQ-INV-091"
+      ],
+      "source": "xm"
     },
     {
       "from": "PRC",
@@ -244,7 +412,7 @@
     {
       "from": "PUR",
       "to": "INV",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -262,7 +430,7 @@
     {
       "from": "SFR",
       "to": "INV",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -310,7 +478,7 @@
     {
       "from": "SLS",
       "to": "INV",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
@@ -346,7 +514,7 @@
     {
       "from": "SWR",
       "to": "INV",
-      "state": "CONTRACTED",
+      "state": "READY",
       "source": "platform"
     },
     {
