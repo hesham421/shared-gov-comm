@@ -1,7 +1,7 @@
-# G19 is added as MAJOR. The FOR UPDATE on `IS_DEFAULT_FL = TRUE` returns no row to the second of two concurrent default switches, which contradicts TC-INV-248. The fix is a per-tenant advisory lock, the same pattern as ADR-INV-044.
+# G2 (lot-less stock stranded) is confirmed MAJOR. RULE-INV-044 allows lot tracking to be switched on while lot-less stock exists. RULE-INV-037 then blocks every count, transfer and decrease-adjustment line without a lot. Only FEFO sales can drain that stock.
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: INV        Version: v1
-Written: 2026-10-31T12:23:59+00:00
+Written: 2026-10-31T13:11:52+00:00
 
 

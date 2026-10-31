@@ -5,11 +5,11 @@
   "scores": {
     "unambiguous": 2,
     "verifiable": 2,
-    "complete": 1,
-    "consistent": 1,
-    "singular": 2,
+    "complete": 2,
+    "consistent": 2,
+    "singular": 3,
     "feasible": 2,
-    "traceable": 2
+    "traceable": 3
   },
   "extra_checks": [
     {
@@ -55,54 +55,29 @@
   ],
   "analyze_confirmed": [
     {
-      "finding": "C5.14 AC-INV-104",
+      "finding": "C5.15 crud-covered ENT-INV-007 (srs:221)",
       "confirmed": true,
-      "note": "Minor. Restate the Then as 'adjustmentPk null and 0 Stock moves with its sourceDocRef', which is what TC-INV-115 already asserts."
+      "note": "The Operations cell states read and delete; no REQ does. Add one clause to REQ-INV-079."
     },
     {
-      "finding": "C5.14 AC-INV-145",
+      "finding": "C5.15 crud-covered ENT-INV-011 (srs:289)",
       "confirmed": true,
-      "note": "Minor. The outcome can be enumerated (false, false, empty) but the AC has no number. Reword it to the three exact values."
+      "note": "Same as ENT-INV-007. Add one clause to REQ-INV-098."
     },
     {
-      "finding": "C5.14 AC-INV-149",
+      "finding": "C5.15 crud-covered ENT-INV-013 (srs:327)",
       "confirmed": true,
-      "note": "Minor. Name code INV-422-LOT-EXPIRY-REQUIRED and 0 moves recorded, as TC-INV-143 asserts."
+      "note": "'Never deleted, written only by moves' sits in the Operations cell only. Mirror it in REQ-INV-059."
     },
     {
-      "finding": "C5.15 ENT-INV-007",
+      "finding": "C5.15 crud-covered ENT-INV-014 (srs:345)",
       "confirmed": true,
-      "note": "Lines are read with the header (API-INV-021). They are deleted only by the PUT replace (QR-INV-029). The SRS never says so."
+      "note": "'Never deleted; clear by saving both flags false' belongs in REQ-INV-124 or REQ-INV-126."
     },
     {
-      "finding": "C5.15 ENT-INV-011",
+      "finding": "Empty clauses C10.8, C10.9, C6.12, C7.24",
       "confirmed": true,
-      "note": "Same as ENT-INV-007 (API-INV-035, QR-INV-037)."
-    },
-    {
-      "finding": "C5.15 ENT-INV-013",
-      "confirmed": true,
-      "note": "Read-only by design: the record is maintained by moves. One SRS sentence closes it."
-    },
-    {
-      "finding": "C5.15 ENT-INV-014",
-      "confirmed": true,
-      "note": "No delete path exists and isActiveFl is always written true (ADR-INV-029). State the lifecycle: a record is cleared by setting both flags false."
-    },
-    {
-      "finding": "C10.7/C10.8/C10.9 examined nothing",
-      "confirmed": false,
-      "note": "Not empty by nature. 263 TCs carry messages, test data and expected codes, so these checks found no subject to bind to (G16)."
-    },
-    {
-      "finding": "C7.23/C7.24 examined nothing",
-      "confirmed": false,
-      "note": "The CON-INV-006 … 021 items are honoured in the SVC-API-INT table and in the registry 'Honours' list, so these clauses should have had subjects (G16)."
-    },
-    {
-      "finding": "C6.12 examined nothing",
-      "confirmed": true,
-      "note": "Empty by nature: INV records no XM state transition in this run."
+      "note": "Empty by nature: no tabular TC data or consistency blocks, no XM state transitions minted by INV, and no consumed contract obligation for the contract-honoured check."
     }
   ],
   "findings": [
@@ -110,22 +85,22 @@
       "id": "G1",
       "severity": "MAJOR",
       "section": "backend",
-      "artifact": "srs",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "consistent",
-      "problem": "Two ACs quote messages that differ from their own RULEs, and from the Error Catalog row and the frontend binding. AC-INV-144 differs from RULE-INV-044 and AC-INV-147 from RULE-INV-046. ADR-INV-038 and TC-INV-045 / TC-INV-046 knowingly assert the RULE text and record the AC wording as a divergence. The SRS therefore makes two contradictory statements, and a tester who follows the AC fails a correct build.",
-      "fix": "Edit the SRS in this revise. Reword AC-INV-144 to the RULE-INV-044 text «فعِّل مفتاح القدرة الخاص بهذا الإعداد أولًا.» / 'Switch on the capability flag for this setting first.'. Reword AC-INV-147 to the RULE-INV-046 text with {flag} = Lot and expiry and {count} = 3. Remove the 'recorded divergence' notes from TC-INV-045 and TC-INV-046 and narrow ADR-INV-038 point 1.",
+      "clause": "erp-core 1.6.0 checklist C11: \"Every error is LocalizedException(Status, <Module>ErrorCodes.X, args); every code has an EN and an AR message\"",
+      "problem": "Error Catalog §5 gives no messageAr/messageEn for INV-404-{WAREHOUSE|BRANCH|VARIANT|ITEM|STOCK-MOVE|TRANSFER|STOCK-COUNT|STOCK-COUNT-LINE|STOCK-ADJUSTMENT|LOT}-NOT-FOUND, INV-404-LOOKUP-KEY-UNKNOWN or INV-422-LOAD-ROWS-INVALID. ADR-INV-021 defers these texts to the erp-core catalogue, but these module-specific codes do not exist there. As planned, InvErrorCodes / messages_ar / messages_en would hold codes with no text. TC-INV-276 and TC-INV-148/257/275 assert the code and status only.",
+      "fix": "Add an ar and en text to each of these rows in §5. For example: «المستودع غير موجود.» / \"The warehouse was not found.\" (one per resource); «مفتاح القائمة غير معروف.» / \"Unknown lookup key.\"; «بعض أسطر التحميل غير صالحة؛ راجع الأسطر المذكورة.» / \"Some rows of the load are invalid; see the listed rows.\". Amend ADR-INV-021 to say INV owns these texts; only INV-400/401/500/409-STALE-VERSION reuse the platform texts. Make TC-INV-276 and the LOAD-ROWS-INVALID cases assert the texts.",
       "adr": false
     },
     {
       "id": "G2",
       "severity": "MAJOR",
       "section": "backend",
-      "artifact": "backend-execution-plan",
+      "artifact": "srs",
       "line": null,
-      "clause": "consistent (seam: backend plan ↔ frontend plan)",
-      "problem": "The frontend F2 rows (TRANSFER-CREATE/UPDATE/POST, ADJUSTMENT-CREATE/UPDATE/POST, COUNT-POST) place line-level refusals on the offending line through details[].rowNo. The backend Error Catalog says a details list is added only by API-INV-047. TransferLine and StockCountLine have no rowNo, and the post-time re-validation (ADR-INV-045) names no line. When a post fails for one line of many, the user cannot find that line.",
-      "fix": "Add one rule to backend plan §5 and to ErrorResponse. For API-INV-022, 023, 024, 029, 030, 032, 036, 037 and 038, a line-level refusal returns details[{lineRef, rowNo?, code, messageAr, messageEn}] for the first failing line. lineRef is the transferLinePk / stockCountLinePk, or the request line order for unsaved lines. rowNo is the adjustment rowNo. Add the field to api-spec-inv.yaml, align the F2 routing and add one backend and one frontend TC.",
+      "clause": "complete (P2 closure: what happens when something a record depends on changes)",
+      "problem": "Switching lot tracking on (RULE-INV-044) is allowed while the Item holds stock without a lot (D-18 says such stock exists). After that, RULE-INV-037 refuses every transfer, count and decrease-adjustment line without a lot. The lot-less balance can then never be counted, transferred or written off; only FEFO sales drain it. The Owner has no next step (KB §6.5). No REQ, AC or TC covers this.",
+      "fix": "Add an unwanted-behaviour REQ and a RULE-INV-037 exception. For a lot-tracked Item, a line that names no lot is accepted up to the quantity held without a lot, and posts against the lot-less balance row (engine step 1 already locks that row first). Beyond that quantity it answers INV-422-LOT-REQUIRED. Add an AC and a backend TC: switch tracking on for an Item holding 5 lot-less units, then count, transfer and write them off. Record the choice in an ADR.",
       "adr": true
     },
     {
@@ -134,249 +109,107 @@
       "section": "backend",
       "artifact": "srs",
       "line": null,
-      "clause": "complete (closure question: something it depends on is withdrawn)",
-      "problem": "INV_ADJUSTMENT_REASON is an open, tenant-editable lookup. SRS A6 says COUNT_DIFFERENCE, OPENING_STOCK and EXPIRY_WRITE_OFF 'stay active', but nothing enforces this. Nothing says whether StockAdjustmentService.createAndPost (API-INV-032, 047) applies RULE-INV-033. If it does, a deactivated COUNT_DIFFERENCE makes every count unpostable, with a code that API-INV-032 does not list. If it does not, the plan does not say so.",
-      "fix": "Add one statement to SRS RULE-INV-033: system-generated adjustments (count posting, opening stock) do not check that their reason is tenant-active, because the code is system-written. Add a TC: a deactivated COUNT_DIFFERENCE does not block a count post. Record platform finding row 5 (G15).",
+      "clause": "complete (P1 invert REQ-INV-069 / POL-INV-020 / CON-INV-015 'an offline sale is always recorded')",
+      "problem": "REQ-INV-069 and RULE-INV-019 exempt a synchronised offline sale only from the negative-stock check. The same ISSUE is still refused by RULE-INV-007 (an empty warehouse deactivated after the sale), RULE-INV-018 (Variant or Item deactivated in CAT after the sale) and RULE-INV-008 (a second warehouse added and the sale names none). The goods have already left, so the sale is lost. CON-INV-015 promises otherwise, and no TC covers it.",
+      "fix": "Extend REQ-INV-069 and the triggers of RULE-INV-007/008/018: for offlineFl true, skip the active-state checks on warehouse, Variant and Item, and apply the default warehouse when none is named. Record the move and notify the Warehouse role, naming the inactive record. Add an AC and an SVC-API-INT TC: an offline sale of a Variant deactivated after the sale is recorded. Record the choice in an ADR, extending ADR-INV-045.",
       "adr": true
     },
     {
       "id": "G4",
       "severity": "MAJOR",
       "section": "backend",
-      "artifact": "srs",
+      "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "complete (inverted AC: AC-INV-073 / AC-INV-091)",
-      "problem": "RULE-INV-019 and engine step 2 check on-hand per Variant × warehouse over all lots. A transfer, adjustment or RETURN_OUT that names a specific lot therefore passes whenever the warehouse total covers it, even when the named lot holds less. That lot balance goes negative while negative stock is disallowed, and the expiry and FEFO logic then runs on a negative lot. No statement or TC covers this.",
-      "fix": "Extend RULE-INV-019: while INV_ALLOW_NEGATIVE_STOCK is false, a decrease that names a lot is also refused when that lot's on-hand in the warehouse is below the decrease. The code is the same and {onHand} is the lot's on-hand. Add the check to engine step 2 (the lot rows are already locked) and add a TC.",
-      "adr": false
+      "clause": "concurrency spot-check (a named guard, not 'validated first')",
+      "problem": "API-INV-047 creates and posts opening stock in one call. Its Concurrency line accepts that a resubmitted load creates a second adjustment, and relies on the screen disabling the button. A client retry after a timeout, or a double submit, doubles stock and valuation. Moves are immutable (RULE-INV-023), so the only correction is a manual counter-adjustment.",
+      "fix": "Require an idempotencyKey on OpeningStockRequest. Guard it with the same advisory-lock-then-lookup and request hash as ADR-INV-044 / ADR-INV-048: the same hash returns the first 201, a different hash answers INV-409-IDEMPOTENCY-KEY-REUSED. Add that code as an HTTP row for API-INV-047 in §5 and in api-spec-inv.yaml. Have the frontend generate the key once per load. Add a backend TC: a double submit posts once.",
+      "adr": true
     },
     {
       "id": "G5",
-      "severity": "MAJOR",
+      "severity": "MINOR",
       "section": "backend",
       "artifact": "srs",
       "line": null,
-      "clause": "consistent (upstream wins)",
-      "problem": "Three statements disagree on receiving a bundle Variant. CON-INV-014 says receiving one is refused. RULE-INV-018 refuses BUNDLE Variants only on transfer, count and adjustment lines. The plan's 'Common resolution' both requires a STANDARD Item and explodes bundles for receive, issue and reserve alike. A receipt or RETURN_IN of a bundle is therefore undefined: refused, exploded, or stocked against a Variant that 'holds no stock' (POL-INV-014).",
-      "fix": "Extend RULE-INV-018 to receipt and RETURN_IN lines, which are refused (as the contract says). Restrict the explosion in 'Common resolution' to issue and reserve. Add a TC for INV-422-VARIANT-INACTIVE on a bundle receipt.",
+      "clause": "singular",
+      "problem": "RULE-INV-007 includes ENT-INV-006 in its scope, but an inactive transfer warehouse is refused with RULE-INV-016's code (engine step 0, Error Catalog). Two rules claim one refusal.",
+      "fix": "Remove ENT-INV-006 from RULE-INV-007's scope, and state in RULE-INV-016 that it owns the inactive-warehouse refusal for transfers.",
       "adr": false
     },
     {
       "id": "G6",
-      "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "srs",
+      "severity": "MINOR",
+      "section": "frontend",
+      "artifact": "ui-ux-spec",
       "line": null,
-      "clause": "complete",
-      "problem": "RULE-INV-040 and REQ-INV-122 require a measure on receipt, issue, transfer and count lines only. Two consequences follow. A manual adjustment of a dual-quantity Item may change the count with no measure change, so count and measure drift apart with no statement. API-INV-047 already raises INV-422-MEASURE-REQUIRED on opening stock rows (ENT-INV-011), which is outside the rule's scope.",
-      "fix": "Extend RULE-INV-040 and REQ-INV-122 to adjustment and opening-stock lines: while dualQuantity is on, a non-zero quantityChange of a dual-quantity Item requires a measure change. List the code on API-INV-036, 037 and 038, and add a TC.",
+      "clause": "traceable (P3 seam: every foreign id a screen renders resolves to a label)",
+      "problem": "Several identifiers are rendered with no label: bundleVariantPk on SCR-INV-004 (UXD-INV-004 covers only the filter), sourceCountFk on SCR-INV-007, adjustmentPk on SCR-INV-006, and lotPk on transfer and count lines. The lots lookup is capped at 100 rows and scoped to a warehouse, so it may not resolve every lot.",
+      "fix": "State one rule in backend plan CORE: every id a screen renders carries its display label in the API row. Add lotCode to TransferLine, StockCountLine and StockAdjustmentLine; adjustmentDocNo to StockCount; sourceCountDocNo to StockAdjustment. Extend UXD-INV-004 to cover bundleVariantPk.",
       "adr": false
     },
     {
       "id": "G7",
-      "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "checklist C6 — 'The module serves only its own lookup keys through OwnedLookups.read(...)'",
-      "problem": "INV owns six lookup keys. The CORE phase never mentions OwnedLookups.read: it describes only validation through MdlLookupApi, and the frontend plan says it reads the keys from the given mdl.",
-      "fix": "Add an `InvLookups` component to CORE that serves exactly INV_ADJUSTMENT_REASON, INV_MOVE_TYPE, INV_DOC_STATUS, INV_RESERVATION_STATUS, INV_SOURCE_DOC_TYPE and INV_CHANGE_KIND through OwnedLookups.read and no other key. Point the frontend lookup hooks (ADR-INV-033) at it, and add a row to ALIGN-BE.",
-      "adr": false
-    },
-    {
-      "id": "G8",
-      "severity": "MAJOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
-      "line": null,
-      "clause": "pattern: a catalogue code with a statement but no test case",
-      "problem": "Several catalogue codes have no case asserting their refusal. INV-409-STALE-VERSION is raised by 14 endpoints (ADR-INV-021, ADR-INV-032) and has no TC. INV-422-BRANCH-INACTIVE, INV-422-WAREHOUSE-CODE-READONLY, INV-422-BRANCH-CODE-READONLY and INV-422-DOC-NO-READONLY have none. INV-422-WAREHOUSE-INACTIVE is tested only in-process, not on the REST create and post paths. INV-422-OPENING-COST-REQUIRED is tested only by TC-099 (happy path) and the frontend TC-186. This one gap shows up for at least six codes.",
-      "fix": "Add the rule to P4: every row of the HTTP catalogue and of §5.1 is asserted by at least one TC. Add TCs for: a stale version on a PATCH of a warehouse or branch, on posting a document and on the lot / settings PUT; an inactive branch on warehouse create, update and reactivate; the code and docNo read-only echoes; an inactive warehouse on count and adjustment create; the opening-stock cost refusal on API-INV-047.",
-      "adr": false
-    },
-    {
-      "id": "G19",
-      "severity": "MAJOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "concurrency (named guard does not hold)",
-      "problem": "API-INV-007 and API-INV-015 lock the current default with QR-INV-005 / QR-INV-012 (WHERE IS_DEFAULT_FL = TRUE FOR UPDATE). When two switches run at once, the second waits on row A. Once the first commits, PostgreSQL re-checks the WHERE on A's new version, which no longer matches. The second therefore gets no row: the plan answers INV-500 ('none → provisioning defect'), or it sets C while B is still default and violates UQ_INV_WAREHOUSE_IS_DEFAULT_FL. TC-INV-248 expects both to succeed with no INV-500, so the plan fails its own test.",
-      "fix": "Serialise default switches on a stable key. Each switch first takes pg_advisory_xact_lock(hashtextextended(tenantId || ':INV_WAREHOUSE_DEFAULT', 0)) (or ':INV_BRANCH_DEFAULT'), tenant in the hash as in ADR-INV-044 and ADR-INV-041, then reads the current default. State this in ADR-INV-026, QR-INV-005 / QR-INV-012 and the two Concurrency lines, and add a branch twin of TC-INV-248.",
-      "adr": true
-    },
-    {
-      "id": "G9",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "srs",
-      "line": null,
-      "clause": "complete (closure question: duplicated record)",
-      "problem": "RULE-INV-024 returns the first result whenever an idempotency key repeats. A reused key with different content (another Variant or quantity) gets the first result silently, and the caller believes its new request was recorded.",
-      "fix": "Record a hash of the request with the key. The same key with a different hash answers INV-409-IDEMPOTENCY-KEY-REUSED (add it to §5.1 and x-inprocess-error-codes). Add a TC.",
-      "adr": true
-    },
-    {
-      "id": "G10",
       "severity": "MINOR",
       "section": "backend",
       "artifact": "backend-execution-plan",
       "line": null,
-      "clause": "complete (seam: QR-INV-038 job mode ↔ AC-INV-131)",
-      "problem": "QR-INV-038 groups by lot and warehouse. In job mode, a lot held in two warehouses gives two rows, so the users get two notifications with partial quantities. AC-INV-131 and D-19 say one notification per lot.",
-      "fix": "In job mode, group by lot only, using the sum of on-hand over all warehouses. Notify once with that total, then stamp NEAR_EXPIRY_NOTIFIED_AT.",
-      "adr": false
-    },
-    {
-      "id": "G11",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "contract",
-      "line": null,
-      "clause": "consistent",
-      "problem": "ADR-INV-015 lets the stock-move event carry currencyCode as an additive field. The CON-INV-020 payload in the contract and in SVC-API-INT still omits it, although the event carries unitCost and moveValue.",
-      "fix": "Add currencyCode (ADDITIVE) to CON-INV-020 and to the SVC-API-INT event row.",
-      "adr": false
-    },
-    {
-      "id": "G12",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "db-script",
-      "line": null,
-      "clause": "feasible",
-      "problem": "Stock-ledger immutability (RULE-INV-023) is enforced only in the application. D-P2-06 leaves the trigger block empty, so direct SQL or a JPA dirty-check can change a move.",
-      "fix": "Mark the StockMove entity @Immutable, and add a BEFORE UPDATE OR DELETE trigger on INV_STOCK_MOVE that raises. Record the decision in a P2 delta ADR.",
-      "adr": true
-    },
-    {
-      "id": "G13",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "concurrency",
-      "problem": "API-INV-042 (expiry correction) reads the lot with no lock, and the sale issue and FEFO selection read lots with no lock. A sale racing a correction to a past date can draw from a lot that has just become expired. The lot active flag (engine step 7) also reads balances of other warehouses that are not locked.",
-      "fix": "Lock the lot FOR UPDATE in API-INV-042. Read the selected lots FOR SHARE in issue and FEFO selection, after the balance rows and in key order. Add a CONCURRENCY TC.",
-      "adr": false
-    },
-    {
-      "id": "G14",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "srs",
-      "line": null,
-      "clause": "complete (closure question: edges)",
-      "problem": "docDate on transfers, counts, adjustments and opening stock has no bound. The source of 'today in the tenant time zone' (RULE-INV-038, the near-expiry horizon) is not named.",
-      "fix": "State the allowed docDate window (not after today) with a catalogue code. Name the tenant time-zone source (the given tenant context) once in CORE.",
-      "adr": false
-    },
-    {
-      "id": "G15",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "business-policies",
-      "line": null,
-      "clause": "§7 platform findings",
-      "problem": "ADR-INV-042 depends on CORE-GAP-in-process-caller-authority, and G3 needs an mdl feature. Neither is an INV row in PLATFORM FINDINGS, which holds only three rows. The core owner has nothing from INV to act on.",
-      "fix": "Add row 4: in-process caller authority (owner: core; evidence ADR-INV-042; status OPEN, tracked with PTY's gap). Add row 5: a seeded lookup value that cannot be deactivated (owner: core mdl; evidence G3).",
-      "adr": false
-    },
-    {
-      "id": "G16",
-      "severity": "MINOR",
-      "section": "tests",
-      "artifact": "backend-test-plan",
-      "line": null,
-      "clause": "C10.7 / C10.8 / C10.9 / C7.23 / C7.24 coverage",
-      "problem": "These clauses examined nothing, although the TCs carry messages, test data and expected values, and CON-INV-006 … 021 are honoured. They enforced nothing in this run.",
-      "fix": "Confirm which markup each check reads, then make the TC blocks and the 'Honours' lines match it. If a set really is empty, record why.",
-      "adr": false
-    },
-    {
-      "id": "G17",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "srs",
-      "line": null,
-      "clause": "verifiable",
-      "problem": "No API path can reach the Given of AC-INV-111 (a saved DRAFT with a zero-change line), because API-INV-036 and 037 refuse that line at save, so ADR-INV-038 uses a fixture. AC-INV-106 is reachable through the API (TC-INV-030). Only its UI form needs a second session.",
-      "fix": "Reword the Given of AC-INV-111 to a state the API can reach: a DRAFT line with quantityChange 0 and a measure change, of an Item whose dual quantity was cleared after the save. Then post it.",
-      "adr": false
-    },
-    {
-      "id": "G18",
-      "severity": "MINOR",
-      "section": "backend",
-      "artifact": "backend-execution-plan",
-      "line": null,
-      "clause": "complete (permission seam)",
-      "problem": "The Warehouse role holds ADJUSTMENTS_CREATE and _UPDATE. It can therefore create and post an adjustment with reason OPENING_STOCK through API-INV-036 and 038, bypassing PERM_INV_OPENING_STOCK_CREATE (Owner only).",
-      "fix": "Refuse reasonCode OPENING_STOCK on API-INV-036 and 037 with INV-422-REASON-REQUIRED, so it is reachable only through API-INV-047. Add a TC.",
+      "clause": "erp-core 1.6.0 checklist C12 (look-for: domain/*Domain.java)",
+      "problem": "CORE puts the <Entity>Domain companions in package com.commerce.inv.entity. The checklist reviewer looks for them under domain/. The convention itself (rules on the companion) is met.",
+      "fix": "Move the companions to com.commerce.inv.domain, and update the CORE package table and the DATA-DOM intro.",
       "adr": false
     }
   ],
   "adrs_reviewed": [
     {
-      "id": "ADR-INV-019",
+      "id": "ADR-INV-001…013",
       "status_ok": true,
-      "note": "ACCEPTED and resolved by ADR-INV-020. Consistent."
+      "note": "RESOLVED-IN-DIALOGUE and consistent with P0 and P0.5."
     },
     {
-      "id": "ADR-INV-022",
+      "id": "ADR-INV-014…020",
       "status_ok": true,
-      "note": "Correctly marked as revised by ADR-INV-043."
+      "note": "ACCEPTED. ADR-INV-019 is resolved by ADR-INV-020. No BLOCKED ADR remains."
     },
     {
-      "id": "ADR-INV-026",
-      "status_ok": true,
-      "note": "Status is right, but its default-switch guard does not serialise concurrent switches (G19). Amend it."
+      "id": "ADR-INV-021",
+      "status_ok": false,
+      "note": "Its decision to leave module-specific texts to the platform conflicts with checklist C11 (G1). Amend the decision text."
     },
     {
-      "id": "ADR-INV-030",
+      "id": "ADR-INV-022 / ADR-INV-043",
       "status_ok": true,
-      "note": "The extension is valid. G4 and G6 do not contradict it."
+      "note": "Supersession is stated. Platform finding row 1 is correctly owned by CAT."
     },
     {
-      "id": "ADR-INV-032",
+      "id": "ADR-INV-023…032",
       "status_ok": true,
-      "note": "Sound, but its stale-version path has no TC (G8)."
+      "note": "Traces are correct. ADR-INV-026 notes its amendment by ADR-INV-050."
     },
     {
-      "id": "ADR-INV-037",
+      "id": "ADR-INV-033…039",
       "status_ok": true,
-      "note": "The counts in Consequences (172 / 67) are stale after ADR-INV-039 and revise 1. Refresh them."
-    },
-    {
-      "id": "ADR-INV-038",
-      "status_ok": true,
-      "note": "Point 1 records SRS divergences that should be fixed upstream (G1). Point 2's derivation rule is good."
+      "note": "Consistent with the frontend and test plans. G6 extends ADR-INV-036's principle to other ids."
     },
     {
       "id": "ADR-INV-040",
       "status_ok": true,
-      "note": "The acknowledgement is accurate. Each CAT item cited is in contract-cat v2."
+      "note": "The 16 CAT v2 events are acknowledged, with each contract item confirmed."
     },
     {
-      "id": "ADR-INV-042",
+      "id": "ADR-INV-041…045",
       "status_ok": true,
-      "note": "Reasonable. The CORE gap it depends on is not an INV platform-finding row (G15)."
+      "note": "Honoured downstream. ADR-INV-042's CORE-GAP exists at analysis/decisions/PTY/CORE-GAP-in-process-caller-authority.md, so F9 is met. G3 extends ADR-INV-045."
     },
     {
-      "id": "ADR-INV-043",
+      "id": "ADR-INV-046…050",
       "status_ok": true,
-      "note": "Good. The registry-db 'Given tables' line still lists two settings, not three. Align it."
+      "note": "Honoured in the API spec, catalogue, trigger and locks. G4 extends ADR-INV-048 to API-INV-047."
     },
     {
-      "id": "ADR-INV-044",
+      "id": "Platform findings rows 1–5",
       "status_ok": true,
-      "note": "Good. The payload-mismatch case is missing (G9)."
-    },
-    {
-      "id": "ADR-INV-045",
-      "status_ok": true,
-      "note": "Good. It does not identify the failing line (G2)."
+      "note": "All five are outside INV, with owner and evidence named. None is missing."
     }
   ],
-  "verdict": "REVISE"
+  "verdict": "ESCALATE"
 }
