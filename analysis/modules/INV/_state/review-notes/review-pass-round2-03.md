@@ -1,7 +1,7 @@
-# new finding G9, an ambiguous lot-less on-hand query
+# G3 — no tenant export contributor is planned
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: INV        Version: v1
-Written: 2026-10-31T14:15:23+00:00
+Written: 2026-10-31T14:49:28+00:00
 
-QR-INV-019 says in its intent "held without a lot (LOT_FK IS NULL)", but its logical spec writes `[AND LOT_FK = :l]`. With a null parameter that compares to nothing, so the on-hand without a lot reads as 0. RULE-INV-037's exception (ADR-INV-051) would then refuse every line without a lot. This is MINOR.
+Confirmed. `tenant.md` line 34 and `conventions.md` line 36 state the convention: an application with its own tenant tables implements `TenantExportContributor`, and `core-manifest.yaml` line 121 lists it as an extension point. INV adds 14 tenant tables but plans no such contributor, so the platform's tenant export would leave out all INV data. MAJOR, because it breaks a checklist line.
