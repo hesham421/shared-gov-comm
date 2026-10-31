@@ -20,7 +20,9 @@
   },
   "plans": {
     "backend/exec": "P3_1/backend-execution-plan-inv.md",
-    "frontend/exec": "P3_2/frontend-execution-plan-inv.md"
+    "backend/test": "P4/backend-test-plan-inv.md",
+    "frontend/exec": "P3_2/frontend-execution-plan-inv.md",
+    "frontend/test": "P4/frontend-test-plan-inv.md"
   },
   "packages": {
     "backend/exec": "../../../backend/modules/INV/packages/backend-execution",

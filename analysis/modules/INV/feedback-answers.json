@@ -1,0 +1,118 @@
+{
+  "module": "INV",
+  "version": 1,
+  "answers": [
+    {
+      "key": "factory|xm_events|INV>CAT",
+      "digest": "fdf46024414c9fdb",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-001",
+      "digest": "c4d5907648ac1afe",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-002",
+      "digest": "201a25c3cd40e658",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-003",
+      "digest": "116ad448d61081fb",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-004",
+      "digest": "81097384e04503b3",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-005",
+      "digest": "c2576622351ccd06",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-006",
+      "digest": "1ff951757d79aea5",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-007",
+      "digest": "c63220a896f00157",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-008",
+      "digest": "7dbbb37cb51675da",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-009",
+      "digest": "e6595bb49d10b277",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-010",
+      "digest": "9473187ed95e1ff5",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-011",
+      "digest": "c789c18146d86ff7",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-012",
+      "digest": "d11544bab5932005",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-013",
+      "digest": "8d98c919be21f9a9",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-014",
+      "digest": "2fed9dbce6f0a93c",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    },
+    {
+      "key": "factory|xm_events|XM-INV-015",
+      "digest": "1716269178c7a185",
+      "ref": "ADR-INV-040",
+      "how": "INV v1 planned its XM edges against the published CAT v2 contract; no plan change needed",
+      "at": "2026-10-31T11:27:17+00:00"
+    }
+  ]
+}
