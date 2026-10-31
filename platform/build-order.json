@@ -181,7 +181,7 @@
     "2": {
       "CAT": "done",
       "PTY": "done",
-      "INV": "ready",
+      "INV": "done",
       "PRC": "ready",
       "PUR": "ready",
       "SLS": "waiting",
