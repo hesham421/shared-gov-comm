@@ -1,0 +1,1346 @@
+openapi: 3.1.0
+info:
+  title: Inventory / المخزون (INV) API
+  version: 1.0.0
+  description: >-
+    Derived at P3.1 from backend-execution-plan-inv.md (INV v1) — one operation per API-* block, one error
+    response per Error Catalog row naming the block. Envelope ApiResponse<T>, lists Page<T>, errors
+    LocalizedException {code, messageAr, messageEn}; code format {MOD}-{http}[-{SLUG}].
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+x-module: INV
+x-generated-from: analysis/modules/INV/P3_1/backend-execution-plan-inv.md
+x-inprocess-error-codes:
+  - {code: INV-409-RESERVE-NOT-AVAILABLE, rule: RULE-INV-020, http: 409}
+  - {code: INV-409-RESERVATION-CLOSED, rule: RULE-INV-021, http: 409}
+  - {code: INV-409-STOCK-MOVE-IMMUTABLE, rule: RULE-INV-023, http: 409}
+  - {code: INV-422-LOT-EXPIRED, rule: RULE-INV-039, http: 422}
+x-common:
+  errorContent: &ec {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}
+  r400: &r400 {description: Bad request, x-error-codes: [INV-400], content: *ec}
+  r401: &r401 {description: Unauthenticated, x-error-codes: [INV-401], content: *ec}
+  r403: &r403 {description: Forbidden, x-error-codes: [INV-403], content: *ec}
+  r500: &r500 {description: Server error, x-error-codes: [INV-500], content: *ec}
+  pId: &pid {name: id, in: path, required: true, schema: {type: integer, format: int64}}
+  pLineId: &plineid {name: lineId, in: path, required: true, schema: {type: integer, format: int64}}
+  pVariantId: &pvariantid {name: variantId, in: path, required: true, schema: {type: integer, format: int64}}
+  pItemId: &pitemid {name: itemId, in: path, required: true, schema: {type: integer, format: int64}}
+  qPage: &qpage {name: page, in: query, required: false, schema: {type: integer, minimum: 0, default: 0}}
+  qSize: &qsize {name: size, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 100, default: 20}}
+
+paths:
+  /api/v1/inv/warehouses:
+    get:
+      operationId: searchWarehouses
+      summary: "API-INV-001 — search, list warehouses"
+      x-api-id: API-INV-001
+      x-traces: [REQ-INV-009, REQ-INV-019, REQ-INV-030, DBF-INV-002, DBF-INV-003, DBF-INV-004, DBF-INV-005, DBF-INV-006, DBF-INV-007]
+      x-paginated: true
+      parameters:
+        - {name: code, in: query, required: false, schema: {type: string, maxLength: 20}}
+        - {name: name, in: query, required: false, schema: {type: string, maxLength: 100}}
+        - {name: branchPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: active, in: query, required: false, schema: {type: string, enum: [ACTIVE_ONLY, ALL], default: ACTIVE_ONLY}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/WarehousePageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+    post:
+      operationId: createWarehouse
+      summary: "API-INV-003 — create warehouse"
+      x-api-id: API-INV-003
+      x-traces: [REQ-INV-003, REQ-INV-031, REQ-INV-034, DBF-INV-002, DBF-INV-003, DBF-INV-004, DBF-INV-005, DBF-INV-006, DBF-INV-007]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/WarehouseCreateRequest'}}}}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/WarehouseEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-BRANCH-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-WAREHOUSE-NAME-TAKEN], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-BRANCH-INACTIVE], content: *ec}
+        '500': *r500
+  /api/v1/inv/warehouses/{id}:
+    get:
+      operationId: readWarehouse
+      summary: "API-INV-002 — read warehouse"
+      x-api-id: API-INV-002
+      x-traces: [REQ-INV-009, REQ-INV-005, DBF-INV-001]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/WarehouseEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
+        '500': *r500
+    put:
+      operationId: updateWarehouse
+      summary: "API-INV-004 — update warehouse"
+      x-api-id: API-INV-004
+      x-traces: [REQ-INV-004, REQ-INV-034, DBF-INV-001, DBF-INV-003, DBF-INV-004, DBF-INV-005, DBF-INV-006, DBF-INV-009]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/WarehouseUpdateRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/WarehouseEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND, INV-404-BRANCH-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-WAREHOUSE-NAME-TAKEN, INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-WAREHOUSE-CODE-READONLY, INV-422-BRANCH-INACTIVE], content: *ec}
+        '500': *r500
+    delete:
+      operationId: deactivateWarehouse
+      summary: "API-INV-005 — deactivate warehouse"
+      x-api-id: API-INV-005
+      x-traces: [REQ-INV-005, REQ-INV-006, REQ-INV-034, DBF-INV-001, DBF-INV-002, DBF-INV-007, DBF-INV-031, DBF-INV-077]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/WarehouseEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-WAREHOUSE-DEFAULT, INV-409-WAREHOUSE-IN-USE], content: *ec}
+        '500': *r500
+  /api/v1/inv/warehouses/{id}/reactivate:
+    patch:
+      operationId: reactivateWarehouse
+      summary: "API-INV-006 — reactivate warehouse"
+      x-api-id: API-INV-006
+      x-traces: [REQ-INV-007, REQ-INV-034, DBF-INV-001, DBF-INV-007, DBF-INV-003, DBF-INV-009]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/WarehouseEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-BRANCH-INACTIVE], content: *ec}
+        '500': *r500
+  /api/v1/inv/warehouses/{id}/default:
+    patch:
+      operationId: setDefaultWarehouse
+      summary: "API-INV-007 — set as default warehouse"
+      x-api-id: API-INV-007
+      x-traces: [REQ-INV-008, REQ-INV-034, DBF-INV-001, DBF-INV-002, DBF-INV-007, DBF-INV-009]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/WarehouseEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-WAREHOUSE-DEFAULT-INACTIVE, INV-409-STALE-VERSION], content: *ec}
+        '500': *r500
+  /api/v1/inv/context:
+    get:
+      operationId: readInventoryContext
+      summary: "API-INV-008 — read inventory context"
+      x-api-id: API-INV-008
+      x-traces: [REQ-INV-001, REQ-INV-002, REQ-INV-010, REQ-INV-011, REQ-INV-012, REQ-INV-015, REQ-INV-020, REQ-INV-021, REQ-INV-029, REQ-INV-030, REQ-INV-032, REQ-INV-132, REQ-INV-133, REQ-INV-134, REQ-INV-135, REQ-INV-136, REQ-INV-137, DBF-INV-002, DBF-INV-007, DBF-INV-015, DBF-INV-019]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/InventoryContextEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+  /api/v1/inv/branches:
+    get:
+      operationId: searchBranches
+      summary: "API-INV-009 — search, list branches"
+      x-api-id: API-INV-009
+      x-traces: [REQ-INV-028, REQ-INV-033, DBF-INV-015, DBF-INV-016, DBF-INV-017, DBF-INV-018, DBF-INV-019]
+      x-paginated: true
+      parameters:
+        - {name: code, in: query, required: false, schema: {type: string, maxLength: 20}}
+        - {name: name, in: query, required: false, schema: {type: string, maxLength: 100}}
+        - {name: active, in: query, required: false, schema: {type: string, enum: [ACTIVE_ONLY, ALL], default: ACTIVE_ONLY}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/BranchPageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+    post:
+      operationId: createBranch
+      summary: "API-INV-011 — create branch"
+      x-api-id: API-INV-011
+      x-traces: [REQ-INV-022, REQ-INV-034, DBF-INV-015, DBF-INV-016, DBF-INV-017, DBF-INV-018, DBF-INV-019]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/BranchCreateRequest'}}}}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/BranchEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '409': {description: Conflict, x-error-codes: [INV-409-BRANCH-NAME-TAKEN], content: *ec}
+        '500': *r500
+  /api/v1/inv/branches/{id}:
+    get:
+      operationId: readBranch
+      summary: "API-INV-010 — read branch"
+      x-api-id: API-INV-010
+      x-traces: [REQ-INV-028, REQ-INV-024, DBF-INV-014]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/BranchEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-BRANCH-NOT-FOUND], content: *ec}
+        '500': *r500
+    put:
+      operationId: updateBranch
+      summary: "API-INV-012 — update branch"
+      x-api-id: API-INV-012
+      x-traces: [REQ-INV-023, REQ-INV-034, DBF-INV-014, DBF-INV-016, DBF-INV-017, DBF-INV-018, DBF-INV-021]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/BranchUpdateRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/BranchEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-BRANCH-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-BRANCH-NAME-TAKEN, INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-BRANCH-CODE-READONLY], content: *ec}
+        '500': *r500
+    delete:
+      operationId: deactivateBranch
+      summary: "API-INV-013 — deactivate branch"
+      x-api-id: API-INV-013
+      x-traces: [REQ-INV-024, REQ-INV-025, REQ-INV-034, DBF-INV-014, DBF-INV-015, DBF-INV-019, DBF-INV-003]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/BranchEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-BRANCH-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-BRANCH-DEFAULT, INV-409-BRANCH-IN-USE], content: *ec}
+        '500': *r500
+  /api/v1/inv/branches/{id}/reactivate:
+    patch:
+      operationId: reactivateBranch
+      summary: "API-INV-014 — reactivate branch"
+      x-api-id: API-INV-014
+      x-traces: [REQ-INV-026, REQ-INV-034, DBF-INV-014, DBF-INV-019, DBF-INV-021]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/BranchEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-BRANCH-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-STALE-VERSION], content: *ec}
+        '500': *r500
+  /api/v1/inv/branches/{id}/default:
+    patch:
+      operationId: setDefaultBranch
+      summary: "API-INV-015 — set as default branch"
+      x-api-id: API-INV-015
+      x-traces: [REQ-INV-027, REQ-INV-034, DBF-INV-014, DBF-INV-015, DBF-INV-019, DBF-INV-021]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/BranchEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-BRANCH-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-BRANCH-DEFAULT-INACTIVE, INV-409-STALE-VERSION], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-balances:
+    get:
+      operationId: searchStockBalances
+      summary: "API-INV-016 — search, list stock balances"
+      x-api-id: API-INV-016
+      x-traces: [REQ-INV-035, REQ-INV-038, REQ-INV-039, REQ-INV-041, REQ-INV-042, REQ-INV-113, REQ-INV-115, REQ-INV-121, REQ-INV-012, DBF-INV-027, DBF-INV-028, DBF-INV-030, DBF-INV-031, DBF-INV-032, DBF-INV-068, DBF-INV-177]
+      x-paginated: true
+      parameters:
+        - {name: variantPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: term, in: query, required: false, description: a barcode, schema: {type: string, maxLength: 64}}
+        - {name: itemPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: warehousePk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: lotPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: nonZero, in: query, required: false, schema: {type: boolean, default: false}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockBalanceRowPageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+  /api/v1/inv/stock-balances/availability/{variantId}:
+    get:
+      operationId: readAvailability
+      summary: "API-INV-017 — read availability of a Variant"
+      x-api-id: API-INV-017
+      x-traces: [REQ-INV-038, REQ-INV-040, REQ-INV-041, REQ-INV-042, REQ-INV-044, REQ-INV-054, REQ-INV-113, REQ-INV-121, DBF-INV-027, DBF-INV-028, DBF-INV-030, DBF-INV-031, DBF-INV-068, DBF-INV-080, DBF-INV-177]
+      parameters:
+        - *pvariantid
+        - {name: warehousePk, in: query, required: false, schema: {type: integer, format: int64}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/AvailabilityEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-VARIANT-NOT-FOUND, INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-BUNDLE-NO-COMPONENTS], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-moves:
+    get:
+      operationId: searchStockMoves
+      summary: "API-INV-018 — search, list stock moves"
+      x-api-id: API-INV-018
+      x-traces: [REQ-INV-075, REQ-INV-076, REQ-INV-016, REQ-INV-056, REQ-INV-110, REQ-INV-111, REQ-INV-112, DBF-INV-041, DBF-INV-042, DBF-INV-043, DBF-INV-046, DBF-INV-047, DBF-INV-049, DBF-INV-053, DBF-INV-054, DBF-INV-055, DBF-INV-058]
+      x-paginated: true
+      parameters:
+        - {name: variantPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: warehousePk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: lotPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: moveTypeCode, in: query, required: false, schema: {type: string, maxLength: 50}}
+        - {name: docNo, in: query, required: false, schema: {type: string, maxLength: 30}}
+        - {name: dateFrom, in: query, required: false, schema: {type: string, format: date}}
+        - {name: dateTo, in: query, required: false, schema: {type: string, format: date}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockMovePageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+  /api/v1/inv/stock-moves/{id}:
+    get:
+      operationId: readStockMove
+      summary: "API-INV-019 — read stock move"
+      x-api-id: API-INV-019
+      x-traces: [REQ-INV-056, REQ-INV-055, DBF-INV-040]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockMoveEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-MOVE-NOT-FOUND], content: *ec}
+        '500': *r500
+  /api/v1/inv/transfers:
+    get:
+      operationId: searchTransfers
+      summary: "API-INV-020 — search, list transfers"
+      x-api-id: API-INV-020
+      x-traces: [REQ-INV-086, DBF-INV-090, DBF-INV-091, DBF-INV-092, DBF-INV-093, DBF-INV-094]
+      x-paginated: true
+      parameters:
+        - {name: docNo, in: query, required: false, schema: {type: string, maxLength: 30}}
+        - {name: dateFrom, in: query, required: false, schema: {type: string, format: date}}
+        - {name: dateTo, in: query, required: false, schema: {type: string, format: date}}
+        - {name: fromWarehousePk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: toWarehousePk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: statusCode, in: query, required: false, schema: {type: string, maxLength: 50}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/TransferPageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+    post:
+      operationId: createTransfer
+      summary: "API-INV-022 — create transfer"
+      x-api-id: API-INV-022
+      x-traces: [REQ-INV-078, REQ-INV-014, REQ-INV-082, REQ-INV-084, REQ-INV-122, DBF-INV-088, DBF-INV-090, DBF-INV-091, DBF-INV-092, DBF-INV-093, DBF-INV-094, DBF-INV-102, DBF-INV-103, DBF-INV-105, DBF-INV-106, DBF-INV-107, DBF-INV-110]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TransferCreateRequest'}}}}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/TransferEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND, INV-404-VARIANT-NOT-FOUND, INV-404-LOT-NOT-FOUND], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-TRANSFER-WAREHOUSES, INV-422-QUANTITY-INVALID, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '500': *r500
+  /api/v1/inv/transfers/{id}:
+    get:
+      operationId: readTransfer
+      summary: "API-INV-021 — read transfer"
+      x-api-id: API-INV-021
+      x-traces: [REQ-INV-086, DBF-INV-087]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/TransferEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-TRANSFER-NOT-FOUND], content: *ec}
+        '500': *r500
+    put:
+      operationId: updateTransfer
+      summary: "API-INV-023 — update transfer"
+      x-api-id: API-INV-023
+      x-traces: [REQ-INV-079, REQ-INV-085, REQ-INV-082, REQ-INV-084, REQ-INV-122, DBF-INV-087, DBF-INV-088, DBF-INV-090, DBF-INV-091, DBF-INV-093, DBF-INV-096, DBF-INV-102, DBF-INV-103, DBF-INV-105, DBF-INV-106, DBF-INV-107, DBF-INV-110]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TransferUpdateRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/TransferEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-TRANSFER-NOT-FOUND, INV-404-WAREHOUSE-NOT-FOUND, INV-404-VARIANT-NOT-FOUND, INV-404-LOT-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-DOC-NO-READONLY, INV-422-TRANSFER-WAREHOUSES, INV-422-QUANTITY-INVALID, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '500': *r500
+    delete:
+      operationId: cancelTransfer
+      summary: "API-INV-025 — cancel transfer"
+      x-api-id: API-INV-025
+      x-traces: [REQ-INV-081, REQ-INV-085, DBF-INV-087, DBF-INV-094]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/TransferEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-TRANSFER-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED], content: *ec}
+        '500': *r500
+  /api/v1/inv/transfers/{id}/post:
+    patch:
+      operationId: postTransfer
+      summary: "API-INV-024 — post transfer"
+      x-api-id: API-INV-024
+      x-traces: [REQ-INV-080, REQ-INV-083, REQ-INV-084, REQ-INV-062, REQ-INV-014, REQ-INV-068, REQ-INV-036, REQ-INV-037, REQ-INV-057, REQ-INV-061, DBF-INV-089, DBF-INV-094, DBF-INV-096, DBF-INV-104, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-194, DBF-INV-195]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/TransferEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-TRANSFER-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-TRANSFER-WAREHOUSES], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-counts:
+    get:
+      operationId: searchStockCounts
+      summary: "API-INV-026 — search, list stock counts"
+      x-api-id: API-INV-026
+      x-traces: [REQ-INV-095, DBF-INV-118, DBF-INV-120, DBF-INV-121, DBF-INV-122]
+      x-paginated: true
+      parameters:
+        - {name: docNo, in: query, required: false, schema: {type: string, maxLength: 30}}
+        - {name: dateFrom, in: query, required: false, schema: {type: string, format: date}}
+        - {name: dateTo, in: query, required: false, schema: {type: string, format: date}}
+        - {name: warehousePk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: statusCode, in: query, required: false, schema: {type: string, maxLength: 50}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountPageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+    post:
+      operationId: createStockCount
+      summary: "API-INV-028 — create stock count"
+      x-api-id: API-INV-028
+      x-traces: [REQ-INV-087, REQ-INV-013, REQ-INV-017, REQ-INV-090, DBF-INV-116, DBF-INV-118, DBF-INV-120, DBF-INV-121, DBF-INV-122]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountCreateRequest'}}}}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-counts/{id}:
+    get:
+      operationId: readStockCount
+      summary: "API-INV-027 — read stock count"
+      x-api-id: API-INV-027
+      x-traces: [REQ-INV-095, REQ-INV-090, DBF-INV-115]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND], content: *ec}
+        '500': *r500
+    delete:
+      operationId: cancelStockCount
+      summary: "API-INV-033 — cancel stock count"
+      x-api-id: API-INV-033
+      x-traces: [REQ-INV-094, REQ-INV-096, DBF-INV-115, DBF-INV-122]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-counts/{id}/lines:
+    post:
+      operationId: addStockCountLine
+      summary: "API-INV-029 — update (lines) — add counted quantity"
+      x-api-id: API-INV-029
+      x-traces: [REQ-INV-088, REQ-INV-091, REQ-INV-096, REQ-INV-090, REQ-INV-122, DBF-INV-130, DBF-INV-131, DBF-INV-134, DBF-INV-135, DBF-INV-136]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountLineAddRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountLineEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND, INV-404-VARIANT-NOT-FOUND, INV-404-LOT-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-BARCODE-UNKNOWN, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-COUNTED-NEGATIVE], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-counts/{id}/lines/{lineId}:
+    put:
+      operationId: changeStockCountLine
+      summary: "API-INV-030 — update (lines) — change counted line"
+      x-api-id: API-INV-030
+      x-traces: [REQ-INV-089, REQ-INV-096, DBF-INV-129, DBF-INV-130, DBF-INV-131, DBF-INV-138]
+      parameters: [*pid, *plineid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountLineUpdateRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountLineEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND, INV-404-STOCK-COUNT-LINE-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-COUNTED-NEGATIVE, INV-422-MEASURE-REQUIRED], content: *ec}
+        '500': *r500
+    delete:
+      operationId: removeStockCountLine
+      summary: "API-INV-031 — update (lines) — remove counted line"
+      x-api-id: API-INV-031
+      x-traces: [REQ-INV-089, REQ-INV-096, DBF-INV-129, DBF-INV-134]
+      parameters: [*pid, *plineid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND, INV-404-STOCK-COUNT-LINE-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-counts/{id}/post:
+    patch:
+      operationId: postStockCount
+      summary: "API-INV-032 — post stock count"
+      x-api-id: API-INV-032
+      x-traces: [REQ-INV-092, REQ-INV-093, REQ-INV-090, REQ-INV-068, DBF-INV-117, DBF-INV-119, DBF-INV-122, DBF-INV-124, DBF-INV-132, DBF-INV-133, DBF-INV-144, DBF-INV-146, DBF-INV-147, DBF-INV-148, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-162, DBF-INV-163, DBF-INV-166, DBF-INV-167, DBF-INV-168, DBF-INV-171]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockCountPostResultEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-NO-KNOWN-COST], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-adjustments:
+    get:
+      operationId: searchStockAdjustments
+      summary: "API-INV-034 — search, list stock adjustments"
+      x-api-id: API-INV-034
+      x-traces: [REQ-INV-104, DBF-INV-144, DBF-INV-147, DBF-INV-149, DBF-INV-150, DBF-INV-151]
+      x-paginated: true
+      parameters:
+        - {name: docNo, in: query, required: false, schema: {type: string, maxLength: 30}}
+        - {name: dateFrom, in: query, required: false, schema: {type: string, format: date}}
+        - {name: dateTo, in: query, required: false, schema: {type: string, format: date}}
+        - {name: warehousePk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: reasonCode, in: query, required: false, schema: {type: string, maxLength: 50}}
+        - {name: statusCode, in: query, required: false, schema: {type: string, maxLength: 50}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentPageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+    post:
+      operationId: createStockAdjustment
+      summary: "API-INV-036 — create stock adjustment"
+      x-api-id: API-INV-036
+      x-traces: [REQ-INV-097, REQ-INV-101, REQ-INV-010, REQ-INV-013, REQ-INV-138, DBF-INV-144, DBF-INV-145, DBF-INV-147, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-160, DBF-INV-161, DBF-INV-162, DBF-INV-163, DBF-INV-164, DBF-INV-166, DBF-INV-167, DBF-INV-171]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentCreateRequest'}}}}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND, INV-404-VARIANT-NOT-FOUND], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-adjustments/{id}:
+    get:
+      operationId: readStockAdjustment
+      summary: "API-INV-035 — read stock adjustment"
+      x-api-id: API-INV-035
+      x-traces: [REQ-INV-104, DBF-INV-143]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-ADJUSTMENT-NOT-FOUND], content: *ec}
+        '500': *r500
+    put:
+      operationId: updateStockAdjustment
+      summary: "API-INV-037 — update stock adjustment"
+      x-api-id: API-INV-037
+      x-traces: [REQ-INV-098, REQ-INV-103, DBF-INV-143, DBF-INV-144, DBF-INV-145, DBF-INV-153, DBF-INV-159, DBF-INV-160, DBF-INV-161, DBF-INV-162, DBF-INV-163, DBF-INV-164, DBF-INV-166, DBF-INV-167, DBF-INV-171]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentUpdateRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-ADJUSTMENT-NOT-FOUND, INV-404-VARIANT-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-DOC-NO-READONLY, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '500': *r500
+    delete:
+      operationId: cancelStockAdjustment
+      summary: "API-INV-039 — cancel stock adjustment"
+      x-api-id: API-INV-039
+      x-traces: [REQ-INV-100, REQ-INV-103, DBF-INV-143, DBF-INV-151]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-ADJUSTMENT-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-adjustments/{id}/post:
+    patch:
+      operationId: postStockAdjustment
+      summary: "API-INV-038 — post stock adjustment"
+      x-api-id: API-INV-038
+      x-traces: [REQ-INV-099, REQ-INV-102, REQ-INV-114, REQ-INV-123, REQ-INV-067, REQ-INV-068, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-036, REQ-INV-057, REQ-INV-059, REQ-INV-060, REQ-INV-061, DBF-INV-146, DBF-INV-151, DBF-INV-153, DBF-INV-165, DBF-INV-168, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-STOCK-ADJUSTMENT-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-REASON-REQUIRED, INV-422-ZERO-CHANGE, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-LOT-REQUIRED], content: *ec}
+        '500': *r500
+  /api/v1/inv/lots:
+    get:
+      operationId: searchLots
+      summary: "API-INV-040 — search, list, custom (near-expiry view) — search lots"
+      x-api-id: API-INV-040
+      x-traces: [REQ-INV-109, REQ-INV-115, REQ-INV-116, REQ-INV-117, DBF-INV-027, DBF-INV-031, DBF-INV-176, DBF-INV-177, DBF-INV-179, DBF-INV-180, DBF-INV-181]
+      x-paginated: true
+      parameters:
+        - {name: variantPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: code, in: query, required: false, schema: {type: string, maxLength: 40}}
+        - {name: warehousePk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: expiryFrom, in: query, required: false, schema: {type: string, format: date}}
+        - {name: expiryTo, in: query, required: false, schema: {type: string, format: date}}
+        - {name: nearExpiryOnly, in: query, required: false, schema: {type: boolean, default: false}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/LotRowPageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+  /api/v1/inv/lots/{id}:
+    get:
+      operationId: readLot
+      summary: "API-INV-041 — read lot"
+      x-api-id: API-INV-041
+      x-traces: [REQ-INV-109, DBF-INV-176]
+      parameters: [*pid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/LotEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-LOT-NOT-FOUND], content: *ec}
+        '500': *r500
+    patch:
+      operationId: correctLot
+      summary: "API-INV-042 — update (expiry correction) of a lot"
+      x-api-id: API-INV-042
+      x-traces: [REQ-INV-108, REQ-INV-077, DBF-INV-176, DBF-INV-177, DBF-INV-182, DBF-INV-183, DBF-INV-186]
+      parameters: [*pid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/LotUpdateRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/LotEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-LOT-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-STALE-VERSION], content: *ec}
+        '500': *r500
+  /api/v1/inv/item-stock-settings:
+    get:
+      operationId: searchItemStockSettings
+      summary: "API-INV-043 — search, list Item stock settings"
+      x-api-id: API-INV-043
+      x-traces: [REQ-INV-129, REQ-INV-130, REQ-INV-131, DBF-INV-206, DBF-INV-207, DBF-INV-208, DBF-INV-209]
+      x-paginated: true
+      parameters:
+        - {name: itemPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: term, in: query, required: false, schema: {type: string, maxLength: 100}}
+        - {name: lotTracked, in: query, required: false, schema: {type: boolean}}
+        - {name: dualQuantity, in: query, required: false, schema: {type: boolean}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/ItemStockSettingsPageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+  /api/v1/inv/item-stock-settings/by-item/{itemId}:
+    get:
+      operationId: readItemStockSettings
+      summary: "API-INV-044 — read Item stock settings"
+      x-api-id: API-INV-044
+      x-traces: [REQ-INV-129, DBF-INV-209]
+      parameters: [*pitemid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/ItemStockSettingsEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-ITEM-NOT-FOUND], content: *ec}
+        '500': *r500
+    put:
+      operationId: saveItemStockSettings
+      summary: "API-INV-045 — create, update Item stock settings"
+      x-api-id: API-INV-045
+      x-traces: [REQ-INV-124, REQ-INV-125, REQ-INV-126, REQ-INV-127, REQ-INV-128, DBF-INV-206, DBF-INV-207, DBF-INV-208, DBF-INV-209, DBF-INV-210, DBF-INV-211, DBF-INV-212, DBF-INV-213, DBF-INV-215]
+      parameters: [*pitemid]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ItemStockSettingsRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/ItemStockSettingsEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-ITEM-NOT-FOUND], content: *ec}
+        '409': {description: Conflict, x-error-codes: [INV-409-LOT-TRACKING-IN-USE, INV-409-DUAL-QUANTITY-IN-USE, INV-409-STALE-VERSION], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-CAPABILITY-OFF, INV-422-BUNDLE-SETTINGS, INV-422-MEASURE-UNIT-REQUIRED], content: *ec}
+        '500': *r500
+  /api/v1/inv/opening-stock/sheet:
+    get:
+      operationId: downloadOpeningStockSheet
+      summary: "API-INV-046 — custom (download sheet, bulk load) — download opening stock sheet"
+      x-api-id: API-INV-046
+      x-traces: [REQ-INV-073, DBF-INV-160, DBF-INV-161, DBF-INV-162, DBF-INV-163, DBF-INV-164]
+      responses:
+        '200': {description: "The xlsx opening stock sheet — a file, not wrapped in ApiResponse", content: {application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: {schema: {type: string, contentMediaType: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+  /api/v1/inv/opening-stock:
+    post:
+      operationId: postOpeningStock
+      summary: "API-INV-047 — create (post), custom (download sheet, bulk load) — post opening stock"
+      x-api-id: API-INV-047
+      x-traces: [REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-074, REQ-INV-064, REQ-INV-105, REQ-INV-106, REQ-INV-059, DBF-INV-144, DBF-INV-147, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-160, DBF-INV-161, DBF-INV-162, DBF-INV-163, DBF-INV-164, DBF-INV-166, DBF-INV-167, DBF-INV-171, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/OpeningStockRequest'}}}}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
+        '422': {description: Rule violated — row failures in details, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-LOAD-ROWS, INV-422-LOAD-ROWS-INVALID, INV-422-LOAD-ROW-VARIANT, INV-422-VARIANT-INACTIVE, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '500': *r500
+  /api/v1/inv/settings:
+    get:
+      operationId: readInventorySettings
+      summary: "API-INV-048 — read inventory settings"
+      x-api-id: API-INV-048
+      x-traces: [REQ-INV-066, REQ-INV-118, DBF-INV-027, DBF-INV-177]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/InventorySettingsEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+    put:
+      operationId: updateInventorySettings
+      summary: "API-INV-049 — update inventory settings"
+      x-api-id: API-INV-049
+      x-traces: [REQ-INV-065, REQ-INV-118, REQ-INV-119, DBF-INV-027, DBF-INV-177]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/InventorySettingsRequest'}}}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/InventorySettingsEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '422': {description: Rule violated, x-error-codes: [INV-422-HORIZON-RANGE], content: *ec}
+        '500': *r500
+  /api/v1/inv/stock-valuation:
+    get:
+      operationId: searchStockValuation
+      summary: "API-INV-050 — search, list stock valuation"
+      x-api-id: API-INV-050
+      x-traces: [REQ-INV-063, REQ-INV-059, REQ-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-196, DBF-INV-200]
+      x-paginated: true
+      parameters:
+        - {name: variantPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: term, in: query, required: false, description: a barcode, schema: {type: string, maxLength: 64}}
+        - {name: itemPk, in: query, required: false, schema: {type: integer, format: int64}}
+        - {name: nonZero, in: query, required: false, schema: {type: boolean, default: false}}
+        - *qpage
+        - *qsize
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/ValuationPageEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '500': *r500
+  /api/v1/inv/stock-valuation/{variantId}:
+    get:
+      operationId: readStockValuation
+      summary: "API-INV-051 — read stock valuation of a Variant"
+      x-api-id: API-INV-051
+      x-traces: [REQ-INV-063, REQ-INV-060, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-196]
+      parameters: [*pvariantid]
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/StockValuationEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-VARIANT-NOT-FOUND], content: *ec}
+        '500': *r500
+
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, messageAr, messageEn]
+      properties:
+        code: {type: string, pattern: '^INV-[0-9]{3}(-[A-Z0-9-]+)?$'}
+        messageAr: {type: string}
+        messageEn: {type: string}
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              rowNo: {type: integer, format: int32}
+              code: {type: string}
+              messageAr: {type: string}
+              messageEn: {type: string}
+    ApiResponse:
+      type: object
+      properties:
+        success: {type: boolean}
+        data: {}
+    PageMeta:
+      type: object
+      properties:
+        page: {type: integer}
+        size: {type: integer}
+        totalElements: {type: integer, format: int64}
+        totalPages: {type: integer}
+    Audit:
+      type: object
+      properties:
+        version: {type: integer, format: int64}
+        createdBy: {type: string, maxLength: 100}
+        createdAt: {type: string, format: date-time}
+        updatedBy: {type: string, maxLength: 100}
+        updatedAt: {type: string, format: date-time}
+
+    Warehouse:
+      allOf:
+        - {$ref: '#/components/schemas/Audit'}
+        - type: object
+          properties:
+            warehousePk: {type: integer, format: int64}
+            code: {type: string, maxLength: 20}
+            nameAr: {type: string, maxLength: 100}
+            nameEn: {type: [string, 'null'], maxLength: 100}
+            branchPk: {type: integer, format: int64}
+            isDefaultFl: {type: boolean}
+            isActiveFl: {type: boolean}
+    WarehouseCreateRequest:
+      type: object
+      required: [nameAr]
+      properties:
+        nameAr: {type: string, minLength: 1, maxLength: 100}
+        nameEn: {type: [string, 'null'], maxLength: 100}
+        branchPk: {type: [integer, 'null'], format: int64}
+    WarehouseUpdateRequest:
+      type: object
+      required: [nameAr, branchPk, version]
+      properties:
+        nameAr: {type: string, minLength: 1, maxLength: 100}
+        nameEn: {type: [string, 'null'], maxLength: 100}
+        branchPk: {type: integer, format: int64}
+        version: {type: integer, format: int64}
+        code: {type: string, maxLength: 20}
+    WarehouseEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/Warehouse'}}}]
+    WarehousePageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {content: {type: array, items: {$ref: '#/components/schemas/Warehouse'}}}}]}}}]
+
+    Branch:
+      allOf:
+        - {$ref: '#/components/schemas/Audit'}
+        - type: object
+          properties:
+            branchPk: {type: integer, format: int64}
+            code: {type: string, maxLength: 20}
+            nameAr: {type: string, maxLength: 100}
+            nameEn: {type: [string, 'null'], maxLength: 100}
+            isDefaultFl: {type: boolean}
+            isActiveFl: {type: boolean}
+    BranchCreateRequest:
+      type: object
+      required: [nameAr]
+      properties:
+        nameAr: {type: string, minLength: 1, maxLength: 100}
+        nameEn: {type: [string, 'null'], maxLength: 100}
+    BranchUpdateRequest:
+      type: object
+      required: [nameAr, version]
+      properties:
+        nameAr: {type: string, minLength: 1, maxLength: 100}
+        nameEn: {type: [string, 'null'], maxLength: 100}
+        version: {type: integer, format: int64}
+        code: {type: string, maxLength: 20}
+    BranchEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/Branch'}}}]
+    BranchPageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {content: {type: array, items: {$ref: '#/components/schemas/Branch'}}}}]}}}]
+
+    InventoryContext:
+      type: object
+      properties:
+        activeWarehouseCount: {type: integer}
+        activeBranchCount: {type: integer}
+        lotExpiryFl: {type: boolean}
+        dualQuantityFl: {type: boolean}
+        bundlesFl: {type: boolean}
+    InventoryContextEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/InventoryContext'}}}]
+
+    StockBalanceRow:
+      type: object
+      properties:
+        variantPk: {type: integer, format: int64}
+        variantCode: {type: string}
+        variantNameAr: {type: string}
+        variantNameEn: {type: [string, 'null']}
+        warehousePk: {type: [integer, 'null'], format: int64}
+        lotPk: {type: [integer, 'null'], format: int64}
+        lotCode: {type: [string, 'null'], maxLength: 40}
+        expiryDate: {type: [string, 'null'], format: date}
+        expiredFl: {type: boolean}
+        onHandQty: {type: number}
+        reservedQty: {type: number}
+        availableQty: {type: number}
+        onHandMeasureQty: {type: [number, 'null']}
+        measureUomCode: {type: [string, 'null'], maxLength: 50}
+    StockBalanceRowPageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {content: {type: array, items: {$ref: '#/components/schemas/StockBalanceRow'}}}}]}}}]
+    AvailabilityFigures:
+      type: object
+      properties:
+        onHandQty: {type: number}
+        reservedQty: {type: number}
+        availableQty: {type: number}
+        onHandMeasureQty: {type: [number, 'null']}
+    Availability:
+      type: object
+      properties:
+        variantPk: {type: integer, format: int64}
+        perWarehouse:
+          type: array
+          items:
+            allOf:
+              - {$ref: '#/components/schemas/AvailabilityFigures'}
+              - type: object
+                properties:
+                  warehousePk: {type: integer, format: int64}
+                  measureUomCode: {type: [string, 'null'], maxLength: 50}
+        total: {$ref: '#/components/schemas/AvailabilityFigures'}
+    AvailabilityEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/Availability'}}}]
+
+    StockMove:
+      allOf:
+        - {$ref: '#/components/schemas/Audit'}
+        - type: object
+          properties:
+            stockMovePk: {type: integer, format: int64}
+            docDate: {type: string, format: date}
+            moveTypeCode: {type: string, maxLength: 50}
+            variantPk: {type: integer, format: int64}
+            variantCode: {type: string}
+            variantNameAr: {type: string}
+            variantNameEn: {type: [string, 'null']}
+            warehousePk: {type: integer, format: int64}
+            lotPk: {type: [integer, 'null'], format: int64}
+            quantity: {type: number}
+            measureQty: {type: [number, 'null']}
+            unitCost: {type: number}
+            moveValue: {type: number}
+            currencyCode: {type: string, maxLength: 3}
+            balanceAfterQty: {type: number}
+            sourceDocTypeCode: {type: string, maxLength: 50}
+            sourceDocRef: {type: integer, format: int64}
+            sourceDocNo: {type: string, maxLength: 30}
+            sourceLineRef: {type: [integer, 'null'], format: int64}
+            bundleVariantPk: {type: [integer, 'null'], format: int64}
+            reservationPk: {type: [integer, 'null'], format: int64}
+            offlineFl: {type: boolean}
+    StockMoveEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/StockMove'}}}]
+    StockMovePageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {content: {type: array, items: {$ref: '#/components/schemas/StockMove'}}}}]}}}]
+
+    TransferLine:
+      type: object
+      properties:
+        transferLinePk: {type: integer, format: int64}
+        variantPk: {type: integer, format: int64}
+        lotPk: {type: [integer, 'null'], format: int64}
+        quantity: {type: number}
+        measureQty: {type: [number, 'null']}
+        unitCost: {type: [number, 'null']}
+        currencyCode: {type: string, maxLength: 3}
+    TransferLineRequest:
+      type: object
+      required: [variantPk, quantity]
+      properties:
+        transferLinePk: {type: [integer, 'null'], format: int64}
+        variantPk: {type: integer, format: int64}
+        lotPk: {type: [integer, 'null'], format: int64}
+        quantity: {type: number, exclusiveMinimum: 0}
+        measureQty: {type: [number, 'null']}
+    Transfer:
+      allOf:
+        - {$ref: '#/components/schemas/Audit'}
+        - type: object
+          properties:
+            transferPk: {type: integer, format: int64}
+            docNo: {type: string, maxLength: 30}
+            docDate: {type: string, format: date}
+            statusCode: {type: string, maxLength: 50}
+            fromWarehousePk: {type: integer, format: int64}
+            toWarehousePk: {type: integer, format: int64}
+            noteText: {type: [string, 'null'], maxLength: 500}
+            postedAt: {type: [string, 'null'], format: date-time}
+            lines: {type: array, items: {$ref: '#/components/schemas/TransferLine'}}
+    TransferCreateRequest:
+      type: object
+      required: [fromWarehousePk, toWarehousePk]
+      properties:
+        docDate: {type: [string, 'null'], format: date}
+        fromWarehousePk: {type: integer, format: int64}
+        toWarehousePk: {type: integer, format: int64}
+        noteText: {type: [string, 'null'], maxLength: 500}
+        lines: {type: array, items: {$ref: '#/components/schemas/TransferLineRequest'}}
+    TransferUpdateRequest:
+      allOf:
+        - {$ref: '#/components/schemas/TransferCreateRequest'}
+        - type: object
+          required: [version]
+          properties:
+            version: {type: integer, format: int64}
+            docNo: {type: string, maxLength: 30}
+    TransferEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/Transfer'}}}]
+    TransferPageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {content: {type: array, items: {$ref: '#/components/schemas/Transfer'}}}}]}}}]
+
+    StockCountLine:
+      type: object
+      properties:
+        stockCountLinePk: {type: integer, format: int64}
+        variantPk: {type: integer, format: int64}
+        lotPk: {type: [integer, 'null'], format: int64}
+        countedQty: {type: number}
+        countedMeasureQty: {type: [number, 'null']}
+        systemQty: {type: [number, 'null']}
+        differenceQty: {type: [number, 'null']}
+        version: {type: integer, format: int64}
+    StockCount:
+      allOf:
+        - {$ref: '#/components/schemas/Audit'}
+        - type: object
+          properties:
+            stockCountPk: {type: integer, format: int64}
+            docNo: {type: string, maxLength: 30}
+            docDate: {type: string, format: date}
+            statusCode: {type: string, maxLength: 50}
+            warehousePk: {type: integer, format: int64}
+            noteText: {type: [string, 'null'], maxLength: 500}
+            adjustmentPk: {type: [integer, 'null'], format: int64}
+            postedAt: {type: [string, 'null'], format: date-time}
+            lines: {type: array, items: {$ref: '#/components/schemas/StockCountLine'}}
+    StockCountCreateRequest:
+      type: object
+      properties:
+        warehousePk: {type: [integer, 'null'], format: int64}
+        docDate: {type: [string, 'null'], format: date}
+        noteText: {type: [string, 'null'], maxLength: 500}
+    StockCountLineAddRequest:
+      type: object
+      required: [countedQty]
+      properties:
+        barcode: {type: [string, 'null'], maxLength: 64}
+        variantPk: {type: [integer, 'null'], format: int64}
+        lotPk: {type: [integer, 'null'], format: int64}
+        countedQty: {type: number, minimum: 0}
+        countedMeasureQty: {type: [number, 'null'], minimum: 0}
+    StockCountLineUpdateRequest:
+      type: object
+      required: [countedQty, version]
+      properties:
+        countedQty: {type: number, minimum: 0}
+        countedMeasureQty: {type: [number, 'null'], minimum: 0}
+        version: {type: integer, format: int64}
+    StockCountEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/StockCount'}}}]
+    StockCountPageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {content: {type: array, items: {$ref: '#/components/schemas/StockCount'}}}}]}}}]
+    StockCountLineEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/StockCountLine'}}}]
+    StockCountPostResultEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {type: object, properties: {stockCount: {$ref: '#/components/schemas/StockCount'}, stockAdjustment: {oneOf: [{$ref: '#/components/schemas/StockAdjustment'}, {type: 'null'}]}}}}}]
+
+    StockAdjustmentLine:
+      type: object
+      properties:
+        stockAdjustmentLinePk: {type: integer, format: int64}
+        rowNo: {type: integer, format: int32}
+        variantPk: {type: integer, format: int64}
+        lotNo: {type: [string, 'null'], maxLength: 40}
+        lotExpiryDate: {type: [string, 'null'], format: date}
+        lotPk: {type: [integer, 'null'], format: int64}
+        quantityChange: {type: number}
+        measureQtyChange: {type: [number, 'null']}
+        unitCost: {type: [number, 'null']}
+        lineValue: {type: [number, 'null']}
+        currencyCode: {type: string, maxLength: 3}
+    StockAdjustmentLineRequest:
+      type: object
+      required: [variantPk, quantityChange]
+      properties:
+        rowNo: {type: [integer, 'null'], format: int32, minimum: 1}
+        variantPk: {type: integer, format: int64}
+        lotNo: {type: [string, 'null'], maxLength: 40}
+        lotExpiryDate: {type: [string, 'null'], format: date}
+        quantityChange: {type: number}
+        measureQtyChange: {type: [number, 'null']}
+        unitCost: {type: [number, 'null'], minimum: 0}
+    StockAdjustment:
+      allOf:
+        - {$ref: '#/components/schemas/Audit'}
+        - type: object
+          properties:
+            stockAdjustmentPk: {type: integer, format: int64}
+            docNo: {type: string, maxLength: 30}
+            docDate: {type: string, format: date}
+            statusCode: {type: string, maxLength: 50}
+            warehousePk: {type: integer, format: int64}
+            reasonCode: {type: string, maxLength: 50}
+            noteText: {type: [string, 'null'], maxLength: 500}
+            sourceCountPk: {type: [integer, 'null'], format: int64}
+            postedAt: {type: [string, 'null'], format: date-time}
+            lines: {type: array, items: {$ref: '#/components/schemas/StockAdjustmentLine'}}
+    StockAdjustmentCreateRequest:
+      type: object
+      required: [reasonCode]
+      properties:
+        warehousePk: {type: [integer, 'null'], format: int64}
+        docDate: {type: [string, 'null'], format: date}
+        reasonCode: {type: string, maxLength: 50}
+        noteText: {type: [string, 'null'], maxLength: 500}
+        lines: {type: array, items: {$ref: '#/components/schemas/StockAdjustmentLineRequest'}}
+    StockAdjustmentUpdateRequest:
+      type: object
+      required: [reasonCode, version]
+      properties:
+        reasonCode: {type: string, maxLength: 50}
+        noteText: {type: [string, 'null'], maxLength: 500}
+        version: {type: integer, format: int64}
+        docNo: {type: string, maxLength: 30}
+        lines: {type: array, items: {$ref: '#/components/schemas/StockAdjustmentLineRequest'}}
+    StockAdjustmentEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/StockAdjustment'}}}]
+    StockAdjustmentPageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {content: {type: array, items: {$ref: '#/components/schemas/StockAdjustment'}}}}]}}}]
+    OpeningStockRequest:
+      type: object
+      required: [rows]
+      properties:
+        warehousePk: {type: [integer, 'null'], format: int64}
+        docDate: {type: [string, 'null'], format: date}
+        rows:
+          type: array
+          minItems: 1
+          maxItems: 1000
+          items:
+            type: object
+            required: [rowNo, quantity, unitCost]
+            properties:
+              rowNo: {type: integer, format: int32, minimum: 1}
+              variantPk: {type: [integer, 'null'], format: int64}
+              barcode: {type: [string, 'null'], maxLength: 64}
+              quantity: {type: number, exclusiveMinimum: 0}
+              unitCost: {type: number, minimum: 0}
+              lotNo: {type: [string, 'null'], maxLength: 40}
+              lotExpiryDate: {type: [string, 'null'], format: date}
+              measureQty: {type: [number, 'null']}
+
+    Lot:
+      allOf:
+        - {$ref: '#/components/schemas/Audit'}
+        - type: object
+          properties:
+            lotPk: {type: integer, format: int64}
+            variantPk: {type: integer, format: int64}
+            code: {type: string, maxLength: 40}
+            nameAr: {type: [string, 'null'], maxLength: 100}
+            nameEn: {type: [string, 'null'], maxLength: 100}
+            expiryDate: {type: string, format: date}
+            expiredFl: {type: boolean}
+            firstReceivedAt: {type: string, format: date-time}
+            nearExpiryNotifiedAt: {type: [string, 'null'], format: date-time}
+            isActiveFl: {type: boolean}
+    LotRow:
+      type: object
+      properties:
+        lotPk: {type: integer, format: int64}
+        variantPk: {type: integer, format: int64}
+        code: {type: string, maxLength: 40}
+        nameAr: {type: [string, 'null'], maxLength: 100}
+        nameEn: {type: [string, 'null'], maxLength: 100}
+        expiryDate: {type: string, format: date}
+        daysLeft: {type: integer}
+        expiredFl: {type: boolean}
+        warehousePk: {type: [integer, 'null'], format: int64}
+        onHandQty: {type: number}
+        nearExpiryNotifiedAt: {type: [string, 'null'], format: date-time}
+    VersionedActionRequest:
+      type: object
+      description: "the VERSION the caller read — a state-change PATCH on a record changed since answers 409 INV-409-STALE-VERSION (ADR-INV-032)"
+      required: [version]
+      additionalProperties: false
+      properties:
+        version: {type: integer, format: int64, minimum: 0}
+    LotUpdateRequest:
+      type: object
+      required: [expiryDate, version]
+      properties:
+        expiryDate: {type: string, format: date}
+        nameAr: {type: [string, 'null'], maxLength: 100}
+        nameEn: {type: [string, 'null'], maxLength: 100}
+        version: {type: integer, format: int64}
+    LotEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/Lot'}}}]
+    LotRowPageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {content: {type: array, items: {$ref: '#/components/schemas/LotRow'}}}}]}}}]
+
+    ItemStockSettings:
+      allOf:
+        - {$ref: '#/components/schemas/Audit'}
+        - type: object
+          properties:
+            itemStockSettingsPk: {type: [integer, 'null'], format: int64}
+            itemPk: {type: integer, format: int64}
+            itemCode: {type: string}
+            itemNameAr: {type: string}
+            itemNameEn: {type: [string, 'null']}
+            key: {type: [string, 'null'], maxLength: 40}
+            valueAr: {type: [string, 'null'], maxLength: 100}
+            valueEn: {type: [string, 'null'], maxLength: 100}
+            lotTrackedFl: {type: boolean}
+            dualQuantityFl: {type: boolean}
+            measureUomCode: {type: [string, 'null'], maxLength: 50}
+            isActiveFl: {type: boolean}
+    ItemStockSettingsRequest:
+      type: object
+      required: [lotTrackedFl, dualQuantityFl]
+      properties:
+        lotTrackedFl: {type: boolean}
+        dualQuantityFl: {type: boolean}
+        measureUomCode: {type: [string, 'null'], maxLength: 50}
+        version: {type: [integer, 'null'], format: int64}
+    ItemStockSettingsEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/ItemStockSettings'}}}]
+    ItemStockSettingsPageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {content: {type: array, items: {$ref: '#/components/schemas/ItemStockSettings'}}}}]}}}]
+
+    InventorySettings:
+      type: object
+      properties:
+        allowNegativeStockFl: {type: boolean}
+        nearExpiryDays: {type: integer, minimum: 1, maximum: 365}
+    InventorySettingsRequest:
+      type: object
+      required: [allowNegativeStockFl, nearExpiryDays]
+      properties:
+        allowNegativeStockFl: {type: boolean}
+        nearExpiryDays: {type: integer}
+    InventorySettingsEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/InventorySettings'}}}]
+
+    StockValuation:
+      type: object
+      properties:
+        variantPk: {type: integer, format: int64}
+        variantCode: {type: string}
+        variantNameAr: {type: string}
+        variantNameEn: {type: [string, 'null']}
+        totalOnHandQty: {type: number}
+        averageUnitCost: {type: [number, 'null']}
+        stockValue: {type: number}
+        currencyCode: {type: [string, 'null'], maxLength: 3}
+        lastMoveAt: {type: [string, 'null'], format: date-time}
+    StockValuationEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/StockValuation'}}}]
+    ValuationPageEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {allOf: [{$ref: '#/components/schemas/PageMeta'}, {type: object, properties: {grandTotalValue: {type: number}, content: {type: array, items: {$ref: '#/components/schemas/StockValuation'}}}}]}}}]

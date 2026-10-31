@@ -303,19 +303,166 @@ SRS A8 `module-dependencies` consumes four CAT entities. A HARD-FK dependency is
 
 ```yaml name=xm-register
 records:
-  - {id: XM-INV-001, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-035, REQ-INV-039, REQ-INV-040], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_STOCK_BALANCE · VARIANT_FK (DBF-INV-030)"}
-  - {id: XM-INV-002, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-051, REQ-INV-052, REQ-INV-075], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_STOCK_MOVE · VARIANT_FK (DBF-INV-053)"}
-  - {id: XM-INV-003, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-053], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_STOCK_MOVE · BUNDLE_VARIANT_FK (DBF-INV-056)"}
-  - {id: XM-INV-004, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-043, REQ-INV-050], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_RESERVATION · VARIANT_FK (DBF-INV-076)"}
-  - {id: XM-INV-005, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-049], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_RESERVATION · BUNDLE_VARIANT_FK (DBF-INV-078)"}
-  - {id: XM-INV-006, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-078, REQ-INV-080], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_TRANSFER_LINE · VARIANT_FK (DBF-INV-106)"}
-  - {id: XM-INV-007, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-088, REQ-INV-092], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_STOCK_COUNT_LINE · VARIANT_FK (DBF-INV-135)"}
-  - {id: XM-INV-008, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-070, REQ-INV-072, REQ-INV-097], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_STOCK_ADJUSTMENT_LINE · VARIANT_FK (DBF-INV-167)"}
-  - {id: XM-INV-009, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-106, REQ-INV-109], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_LOT · VARIANT_FK (DBF-INV-180)"}
-  - {id: XM-INV-010, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-002, traces: [REQ-INV-059, REQ-INV-063], state: CONTRACTED, contract_ref: "CON-CAT-002", column: "INV_STOCK_VALUATION · VARIANT_FK (DBF-INV-196)"}
-  - {id: XM-INV-011, type: HARD-FK, target_module: CAT, target_entity: ENT-CAT-001, traces: [REQ-INV-124, REQ-INV-125, REQ-INV-129], state: CONTRACTED, contract_ref: "CON-CAT-001", column: "INV_ITEM_STOCK_SETTINGS · ITEM_FK (DBF-INV-209)"}
-  - {id: XM-INV-012, type: SOFT-READ, target_module: CAT, target_entity: ENT-CAT-007, traces: [REQ-INV-042, REQ-INV-049, REQ-INV-053, REQ-INV-054], state: CONTRACTED, contract_ref: "CON-CAT-006", column: "no column · the bundle availability, reservation and issue services read the Bundle component lines of the bundle Variant's Item through CAT getItem (CON-CAT-007)"}
-  - {id: XM-INV-013, type: SOFT-READ, target_module: CAT, target_entity: ENT-CAT-009, traces: [REQ-INV-072, REQ-INV-088, REQ-INV-091], state: CONTRACTED, contract_ref: "CON-CAT-005", column: "no column · the count-line and opening-stock services resolve a scanned or loaded barcode to its Variant through CAT lookupBarcode (CON-CAT-010)"}
+- id: XM-INV-001
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-035
+  - REQ-INV-039
+  - REQ-INV-040
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_STOCK_BALANCE · VARIANT_FK (DBF-INV-030)
+- id: XM-INV-002
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-051
+  - REQ-INV-052
+  - REQ-INV-075
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_STOCK_MOVE · VARIANT_FK (DBF-INV-053)
+- id: XM-INV-003
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-053
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_STOCK_MOVE · BUNDLE_VARIANT_FK (DBF-INV-056)
+- id: XM-INV-004
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-043
+  - REQ-INV-050
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_RESERVATION · VARIANT_FK (DBF-INV-076)
+- id: XM-INV-005
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-049
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_RESERVATION · BUNDLE_VARIANT_FK (DBF-INV-078)
+- id: XM-INV-006
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-078
+  - REQ-INV-080
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_TRANSFER_LINE · VARIANT_FK (DBF-INV-106)
+- id: XM-INV-007
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-088
+  - REQ-INV-092
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_STOCK_COUNT_LINE · VARIANT_FK (DBF-INV-135)
+- id: XM-INV-008
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-070
+  - REQ-INV-072
+  - REQ-INV-097
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_STOCK_ADJUSTMENT_LINE · VARIANT_FK (DBF-INV-167)
+- id: XM-INV-009
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-106
+  - REQ-INV-109
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_LOT · VARIANT_FK (DBF-INV-180)
+- id: XM-INV-010
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-059
+  - REQ-INV-063
+  state: CONTRACTED
+  contract_ref: CON-CAT-002
+  column: INV_STOCK_VALUATION · VARIANT_FK (DBF-INV-196)
+- id: XM-INV-011
+  type: HARD-FK
+  target_module: CAT
+  target_entity: ENT-CAT-001
+  traces:
+  - REQ-INV-124
+  - REQ-INV-125
+  - REQ-INV-129
+  state: CONTRACTED
+  contract_ref: CON-CAT-001
+  column: INV_ITEM_STOCK_SETTINGS · ITEM_FK (DBF-INV-209)
+- id: XM-INV-012
+  type: SOFT-READ
+  target_module: CAT
+  target_entity: ENT-CAT-007
+  traces:
+  - REQ-INV-042
+  - REQ-INV-049
+  - REQ-INV-053
+  - REQ-INV-054
+  state: CONTRACTED
+  contract_ref: CON-CAT-006
+  column: no column · the bundle availability, reservation and issue services read
+    the Bundle component lines of the bundle Variant's Item through CAT getItem (CON-CAT-007)
+- id: XM-INV-013
+  type: SOFT-READ
+  target_module: CAT
+  target_entity: ENT-CAT-009
+  traces:
+  - REQ-INV-072
+  - REQ-INV-088
+  - REQ-INV-091
+  state: CONTRACTED
+  contract_ref: CON-CAT-005
+  column: no column · the count-line and opening-stock services resolve a scanned
+    or loaded barcode to its Variant through CAT lookupBarcode (CON-CAT-010)
+- id: XM-INV-014
+  type: SOFT-READ
+  target_module: CAT
+  target_entity: ENT-CAT-002
+  traces:
+  - REQ-INV-052
+  - REQ-INV-072
+  - REQ-INV-078
+  - REQ-INV-097
+  state: DELIVERED
+  contract_ref: contract-cat.md#CON-CAT-002
+- id: XM-INV-015
+  type: SOFT-READ
+  target_module: CAT
+  target_entity: ENT-CAT-001
+  traces:
+  - REQ-INV-039
+  - REQ-INV-124
+  - REQ-INV-126
+  - REQ-INV-127
+  - REQ-INV-129
+  state: DELIVERED
+  contract_ref: contract-cat.md#CON-CAT-001
 ```
 
 | XM id | Type | Target | Column / access | SRS A8 row | Traces |
