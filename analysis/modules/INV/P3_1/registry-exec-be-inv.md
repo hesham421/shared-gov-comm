@@ -217,6 +217,8 @@ the ADR-INV-021 row; totals XM 15.
 | ADR-INV-052 | A synchronised offline sale skips the active-state checks and notifies the Warehouse role (G3; extends ADR-INV-045) | ACCEPTED |
 | ADR-INV-053 | An opening stock load carries an idempotency key (G4); its hash is taken over the request as submitted (revise 4, G5) | ACCEPTED (amended) |
 | ADR-INV-054 | A count posts the measure difference of a dual-quantity Item; the system measure is derived, not stored (gate-analysis revise 4, G8) | ACCEPTED |
+| ADR-INV-055 | Releasing a RELEASED reservation returns it unchanged; only a CONSUMED one is refused (gate-analysis revise 5, G4) | ACCEPTED |
+| ADR-INV-056 | A lot received with an expiry already before today is accepted and is expired from creation (gate-analysis revise 5, G8) | ACCEPTED |
 
 Revised in place at gate-analysis revise 1: ADR-INV-022 (G4), ADR-INV-024 (package, G22), ADR-INV-030 (count-difference
 increase valued at 0, G11), ADR-INV-035 (barcode-only sheet, G12), ADR-INV-036 (warehouse labels on the row, G13),
@@ -230,13 +232,15 @@ Revised in place at gate-analysis revise 3: ADR-INV-021 (INV owns the texts of i
 
 Revised in place at gate-analysis revise 4: ADR-INV-021 (INV states the text of every code, the four generic codes included — G3), ADR-INV-026 (referenced reservations locked in ascending reservationPk after the idempotency lock — G4), ADR-INV-048 and ADR-INV-053 (request hash taken over the request as submitted — G5), ADR-INV-027 and ADR-INV-048 point 3 (aligned with ADR-INV-053 — G6).
 
-Next free ADR : ADR-INV-055.
+Revised in place at gate-analysis revise 5: none (the plan's QR-INV-019 lot modes, QR-INV-020 posting order, QR-INV-041 near-expiry claim, API-INV-032 lotNo of generated lines and the CORE after-commit paragraph are plan text, not ADR changes — G1, G3, G5, G7, G9).
+
+Next free ADR : ADR-INV-057.
 
 ### Traceability
 
-REQ covered by ≥ 1 API or DBF : 140 / 140 · orphan REQ : none.
+REQ covered by ≥ 1 API or DBF : 141 / 141 · orphan REQ : none.
 
 ### Event
 
-"P3.1 completed: INV v1 — API 51, QR 46, XM blocks 15 (13 registered + 2 minted), ADR-INV-021 … 032" · "gate-analysis revise 1: root package com.commerce.inv, ADR-INV-041 … 045" · "gate-analysis revise 2: API-INV-052 (InvLookups), RULE-INV-050 / 051 codes, ADR-INV-046 … 050" · "gate-analysis revise 3: texts of every INV code, INV-409-IDEMPOTENCY-KEY-REUSED on API-INV-047, labels on every row, package domain, ADR-INV-051 … 053" · "gate-analysis revise 4: count-generated lines use the counted lot and carry the measure difference, texts of the four generic codes, reservation lock order, request hash as submitted, ADR-INV-054"
+"P3.1 completed: INV v1 — API 51, QR 46, XM blocks 15 (13 registered + 2 minted), ADR-INV-021 … 032" · "gate-analysis revise 1: root package com.commerce.inv, ADR-INV-041 … 045" · "gate-analysis revise 2: API-INV-052 (InvLookups), RULE-INV-050 / 051 codes, ADR-INV-046 … 050" · "gate-analysis revise 3: texts of every INV code, INV-409-IDEMPOTENCY-KEY-REUSED on API-INV-047, labels on every row, package domain, ADR-INV-051 … 053" · "gate-analysis revise 4: count-generated lines use the counted lot and carry the measure difference, texts of the four generic codes, reservation lock order, request hash as submitted, ADR-INV-054" · "gate-analysis revise 5: count-generated lines carry the counted lot code in lotNo, posting-order running balance, idempotent release, near-expiry claim before send, after-commit listeners, QR-INV-019 lot modes, expired-on-receipt lots, ADR-INV-055, 056"
 ══════════════════════════════════════════════════════════════════

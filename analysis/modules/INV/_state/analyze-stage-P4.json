@@ -20,12 +20,12 @@
   "skipped": [],
   "coverage": {
     "C0.1": 18,
-    "C10.1": 290,
-    "C10.2": 159,
+    "C10.1": 295,
+    "C10.2": 160,
     "C10.7": 54,
     "C10.8": 0,
     "C10.9": 0,
-    "C10.10": 290,
+    "C10.10": 295,
     "C10.11": 75
   },
   "vacuous": [
@@ -49,8 +49,8 @@
       "to": [
         "AC"
       ],
-      "total": 140,
-      "covered": 140,
+      "total": 141,
+      "covered": 141,
       "pct": 100.0
     },
     {
@@ -59,9 +59,9 @@
       "to": [
         "API"
       ],
-      "total": 140,
-      "covered": 126,
-      "pct": 90.0
+      "total": 141,
+      "covered": 127,
+      "pct": 90.1
     },
     {
       "id": "req-ux",
@@ -70,9 +70,9 @@
         "SCR",
         "UXD"
       ],
-      "total": 140,
+      "total": 141,
       "covered": 95,
-      "pct": 67.9
+      "pct": 67.4
     },
     {
       "id": "ac-tc",
@@ -80,8 +80,8 @@
       "to": [
         "TC"
       ],
-      "total": 159,
-      "covered": 159,
+      "total": 160,
+      "covered": 160,
       "pct": 100.0
     }
   ],
@@ -115,27 +115,27 @@
       "ui-ux-spec"
     ],
     "inputs": {
-      "api-spec": "f1e5a5759ea08b25d9225ca3a1e4365648f06d7049136202d5adfb77b7beaf0e",
-      "backend-execution-plan": "318c7dcd6b0ccee017139e4ab6925daf6b6509c0123c1f75ee1ef95dfb0ca18d",
-      "backend-test-plan": "467f44f73153cd91a35e98a1fa2246a7253ad4bba127c5280f1740025cefecd5",
+      "api-spec": "a22e5e215bfe6d5cf544e00d875f4e0ee3f791f257813100142707e7a92752eb",
+      "backend-execution-plan": "f0d803da54eb6d2de437cea9b0e9d40f4372bbf1490f90cc7dd20db2899debe1",
+      "backend-test-plan": "b8e12ef5f0c25aa2911b2d94994045a4aa94bcdc77696dbdfafe93d1f62f8905",
       "business-policies": "da99570613ed6f1a0a43584f43f4e90466c691c54de1a1479f2b234547608228",
-      "contract": "55bde0be61227516daceaeb4f60412e58226c057a5036d780817a91a044843dc",
+      "contract": "37368e59eac3af20c1cb0c2414abb079a2d16ef68294e881492aec9a47f7aba2",
       "db-script": "e157fbd7d11a59979ee9b4579a6294995d6c6ea4b3f358e277e8b17fa2ca26d0",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
       "flow-diagram": "3bf29a72b08f12bbf00b87c8673c39441564aecb158dfea4ff5a78f778ee3d59",
-      "frontend-execution-plan": "c32195ee6d90c00a798c72e7e63712a9a5731c8de5887b8cbb897a363d13ab94",
-      "frontend-test-plan": "32023781345d1614a7cab8ba19c77d47bd2cd69c6ea57d4d83f80975fd6d75e7",
+      "frontend-execution-plan": "f697a35637e265ed7cf87c225dce31e40e48946e3b67af0f9955abc2e7549eaa",
+      "frontend-test-plan": "a7f5d87910360b2a48099be35c3fb7fff8c8e068e80f115895ae2d62d8e215fb",
       "module-registry": "be0cc7d8f9d123212c41f03cb3d5e6fbdd20a3dfe5595af077a44410c7a80850",
       "platform-summary": "e8af1d7b85f2baa7f9e31840acb606d15011aa3f2535579f444f8b2ea7e4c0ca",
       "prd": "f52ff7f14312415886002cc46cd742005901217a80eb6c2bdef91325eef0fc67",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
       "registry-db": "6cc377e3ea0da6e473a4349abf6c53a7f133148d2df1a4854d7ccf708009a0a2",
-      "registry-exec-be": "d88717c538883db92af7776926f88eaa8f7fe08bdf15b99efb03fe279b5e4bf3",
-      "registry-exec-fe": "f5bb24649668a8a8c6f0c5bf583e8a1954f1dee8bf35f9fe39776566e3d4feed",
-      "registry-srs": "89db5ebbc7804bf285b9797f78d6784578cafced335c1dfa0eed1dc4059ec43f",
-      "srs": "ebfab6c2166ceb983e1391d668ebf2a0a2f5d8630b34196f3f45dbd991a229d4",
-      "ui-ux-spec": "a91be3219fdb02a3de67491a3956ffd13e67fcbd136a133c139b4b630baaa726"
+      "registry-exec-be": "48b20ba91a972231bee45d3ff89025d3bd6f30ab1d6ce6ef6638c20ae6a1fdd9",
+      "registry-exec-fe": "c2bd4e9994367dbdabe3275c95fd3c5247b894a88bebcf7a22704df138eed516",
+      "registry-srs": "26526079ca5c589953d6dcc6dfb797f3cdf54c534064ba0595a440e9008fb188",
+      "srs": "3588c6e5ffe364cf018b94c103711dd442c726c39f6d90c5a23b00a6d5c88b36",
+      "ui-ux-spec": "c95d7d1897cabafadd2128247d8f7a95ed6052f32577e5957696d2bd299e583e"
     },
-    "at": "2026-10-31T14:07:54+00:00"
+    "at": "2026-10-31T14:42:22+00:00"
   }
 }

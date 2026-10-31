@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : INV   Version : v1   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved 2026-10-29); module-registry-inv, business-policies-inv (P0); contract-cat (CAT v2, P1.5)
-Counts : REQ 140 · AC 159 · ENT 14 · RULE 51 · SCR-REQ 12 · ADR 0 (P1) — gate-analysis revise 3 decisions ADR-INV-051, 052, 053 cited · gate-analysis revise 4 decision ADR-INV-054 cited
+Counts : REQ 141 · AC 160 · ENT 14 · RULE 51 · SCR-REQ 12 · ADR 0 (P1) — gate-analysis revise 3 decisions ADR-INV-051, 052, 053 cited · gate-analysis revise 4 decision ADR-INV-054 cited · gate-analysis revise 5 decisions ADR-INV-055, 056 cited
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -1031,11 +1031,11 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 
 ### REQ-INV-046 — Release a reservation
   Pattern    : event
-  Statement  : When SLS or SFR releases an ACTIVE reservation, the system shall set its status to RELEASED and its remaining quantity to zero.
+  Statement  : When SLS or SFR releases an ACTIVE reservation, the system shall set its status to RELEASED and its remaining quantity to zero; a release of a reservation that is already RELEASED returns it unchanged.
   Traces     : US-INV-003
   Entities   : ENT-INV-005
-  Rationale  : A cancelled order returns its goods to availability.
-  Source     : US-INV-003
+  Rationale  : A cancelled order returns its goods to availability; a release retried after it succeeded is answered as a success, not a failure.
+  Source     : US-INV-003; ADR-INV-055
   Priority   : HIGH
 
 #### AC-INV-051 — [REQ-INV-046]
@@ -1059,17 +1059,17 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 
 ### REQ-INV-048 — Refuse changes to a closed reservation
   Pattern    : unwanted
-  Statement  : If a release or an issue references a reservation that is not ACTIVE, then the system shall refuse the request.
+  Statement  : If a release references a CONSUMED reservation, or an issue references a reservation that is not ACTIVE, then the system shall refuse the request.
   Traces     : US-INV-003
   Entities   : ENT-INV-005
-  Rationale  : A closed reservation cannot be released or consumed twice.
-  Source     : RULE-INV-021
+  Rationale  : A consumed reservation cannot be released, and a closed reservation cannot be consumed; releasing a released one again is harmless and is answered unchanged (REQ-INV-046).
+  Source     : RULE-INV-021; ADR-INV-055
   Priority   : HIGH
 
 #### AC-INV-053 — [REQ-INV-048]
-  Given  : a Reservation with statusCode RELEASED
-  When   : SLS submits an issue referencing it
-  Then   : no Stock move is recorded and the message «الحجز مغلق ولا يمكن استخدامه.» / "The reservation is closed and cannot be used." is returned
+  Given  : a Reservation with statusCode CONSUMED
+  When   : SFR releases it
+  Then   : the Reservation is unchanged and the message «الحجز مغلق ولا يمكن استخدامه.» / "The reservation is closed and cannot be used." is returned
 
 ### REQ-INV-049 — Reserve a bundle through its components
   Pattern    : optional
@@ -1490,17 +1490,17 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 
 ### REQ-INV-076 — Show the running balance
   Pattern    : state
-  Statement  : While the move search is filtered to one Variant and one warehouse, the system shall show on each move the on-hand quantity after that move.
+  Statement  : While the move search is filtered to one Variant and one warehouse, the system shall show on each move the on-hand quantity after that move and list the moves in posting order, newest posted first, so the running balance follows the order in which the moves were posted, whatever their document dates.
   Traces     : US-INV-013
   Entities   : ENT-INV-004
-  Rationale  : A balance is explained line by line.
-  Source     : US-INV-013
+  Rationale  : A balance is explained line by line; a backdated document posted later must not show its running balance out of sequence.
+  Source     : US-INV-013; gate-analysis revise 5 (G3)
   Priority   : HIGH
 
 #### AC-INV-083 — [REQ-INV-076]
-  Given  : moves of V in W: RECEIPT 10, ISSUE 4, ADJUSTMENT_OUT 1
+  Given  : moves of V in W posted in this order: RECEIPT 10, ISSUE 4, ADJUSTMENT_OUT 1
   When   : a Warehouse user filters the search to V and W
-  Then   : the balance-after column shows 10, 6 and 5 for those moves
+  Then   : the moves are listed in posting order, newest posted first — ADJUSTMENT_OUT, ISSUE, RECEIPT — and the balance-after column shows 5, 6 and 10; the balance follows posting order, so a backdated move posted after them is listed first with the balance after it
 
 ### REQ-INV-077 — Record the change history of stock documents
   Pattern    : event
@@ -1978,6 +1978,20 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
   Given  : Variant V with Lot L-77 expiry 2027-02-28
   When   : a receipt names L-77 with expiry 2027-03-31
   Then   : no Stock move is recorded and the message «التشغيلة L-77 مسجّلة بتاريخ صلاحية 2027-02-28.» / "Lot L-77 is recorded with expiry date 2027-02-28." is returned
+
+### REQ-INV-141 — Accept a lot that is already expired on receipt
+  Pattern    : unwanted
+  Statement  : If a receipt or increase line names a new lot whose expiry date is before today in the tenant's time zone, then the system shall record the line, create the lot with that expiry date and treat the lot as expired from its creation.
+  Traces     : US-INV-021, US-INV-024
+  Entities   : ENT-INV-012, ENT-INV-004, ENT-INV-011, ENT-INV-003
+  Rationale  : The goods are physically in the warehouse and must be accounted for; refusing the receipt would hide them, while treating the lot as expired keeps them out of every sale until they are written off (RULE-INV-038).
+  Source     : RULE-INV-038; POL-INV-022; ADR-INV-056
+  Priority   : MEDIUM
+
+#### AC-INV-160 — [REQ-INV-141]
+  Given  : lotExpiry on; today 2026-11-01; lot-tracked Variant V with no lot L-OLD in Warehouse W
+  When   : PUR submits a receipt line of 6 of V naming lot L-OLD with expiry 2026-10-25
+  Then   : 1 RECEIPT move of 6 under L-OLD is recorded with no refusal; Lot L-OLD exists with expiryDate 2026-10-25 and is shown with the mark «منتهية الصلاحية» / "Expired"; V available in W excludes the 6, and a sale issue of V never draws from L-OLD
 
 ### REQ-INV-108 — Correct the expiry date of a lot
   Pattern    : event
@@ -2641,14 +2655,15 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
   Data source: ENT-INV-003.onHandQty, ENT-INV-005.reservedQty, ENT-INV-005.shortfallQty
   Source     : POL-INV-001, POL-INV-018; DEFAULT D-11
 
-### RULE-INV-021 — Only an active reservation is released or consumed
+### RULE-INV-021 — A consumed reservation is never released; only an active reservation is consumed
   Scope      : ENT-INV-005
   Trigger    : on release; on issue that references a reservation
-  Statement  : The system shall prevent a release or a consumption of a reservation whose statusCode is not ACTIVE.
+  Statement  : The system shall prevent the release of a reservation whose statusCode is CONSUMED and the consumption of a reservation whose statusCode is not ACTIVE; the release of a reservation whose statusCode is already RELEASED returns it unchanged and records nothing.
   Message    : ar: الحجز مغلق ولا يمكن استخدامه. · en: The reservation is closed and cannot be used.
   Traces     : REQ-INV-048, REQ-INV-046, REQ-INV-047
-  Data source: ENT-INV-005.statusCode, ENT-INV-004.reservationFk
-  Source     : A7 reservation lifecycle
+  Data source: ENT-INV-005.statusCode, ENT-INV-005.closedAt, ENT-INV-004.reservationFk
+  Test-Hint  : a release retried after it succeeded answers the RELEASED reservation with its first closedAt, never this rule's code.
+  Source     : A7 reservation lifecycle; ADR-INV-055
 
 ### RULE-INV-022 — A bundle needs active components
   Scope      : ENT-INV-004, ENT-INV-005
@@ -2800,12 +2815,12 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 ### RULE-INV-038 — Expired lots are excluded from sale
   Scope      : ENT-INV-012, ENT-INV-004
   Trigger    : on submit of a sale issue; on FEFO selection; on availability read
-  Statement  : The system shall exclude from sale issue, FEFO selection and available quantity every lot whose expiryDate is before today in the tenant's time zone.
+  Statement  : The system shall exclude from sale issue, FEFO selection and available quantity every lot whose expiryDate is before today in the tenant's time zone, including a lot that a receipt or increase creates with an expiry date already before today, which is accepted and is expired from its creation (REQ-INV-141).
   Message    : ar: التشغيلة منتهية الصلاحية ولا تُباع. · en: The lot has expired and cannot be sold.
-  Traces     : REQ-INV-113, REQ-INV-038, REQ-INV-110
+  Traces     : REQ-INV-113, REQ-INV-038, REQ-INV-110, REQ-INV-141
   Data source: ENT-INV-012.expiryDate
-  Source     : POL-INV-022; INV-P10
-  Test-Hint  : a lot expiring today is still sellable today.
+  Source     : POL-INV-022; INV-P10; ADR-INV-056
+  Test-Hint  : a lot expiring today is still sellable today; a lot received with yesterday's expiry is never sellable, from its first receipt.
 
 ### RULE-INV-039 — An expired lot leaves stock only by adjustment
   Scope      : ENT-INV-004
@@ -3037,7 +3052,7 @@ INV consumes no other business module. PUR, SLS and SFR call INV (edges PUR → 
 | reserve | variantPk, warehousePk, quantity, source document, idempotency key | Reservation(s) with shortfall | RULE-INV-007, 008, 017, 018, 020, 022, 024, 050 | REQ-INV-043, REQ-INV-044, REQ-INV-045, REQ-INV-049 | SLS, SFR |
 | release reservation | reservationPk | Reservation | RULE-INV-021 | REQ-INV-046 | SLS, SFR |
 | reservations of a document | source document type + identifier | Reservations | — | REQ-INV-050 | SLS, SFR |
-| receive stock | warehouse, move type RECEIPT / RETURN_IN, lines {variantPk, quantity, unitCost, lot number, expiry date, measure}, source document, idempotency key | Stock moves | RULE-INV-007, 008, 017, 018, 024, 025, 035, 036, 040, 050 | REQ-INV-051, REQ-INV-105, REQ-INV-106, REQ-INV-120 | PUR, SLS |
+| receive stock | warehouse, move type RECEIPT / RETURN_IN, lines {variantPk, quantity, unitCost, lot number, expiry date, measure}, source document, idempotency key | Stock moves | RULE-INV-007, 008, 017, 018, 024, 025, 035, 036, 040, 050 | REQ-INV-051, REQ-INV-105, REQ-INV-106, REQ-INV-120, REQ-INV-141 | PUR, SLS |
 | issue stock | warehouse, move type ISSUE / RETURN_OUT, sale flag, offline flag, lines {variantPk, quantity, lot (non-sale), measure, reservationPk}, source document, idempotency key | Stock moves | RULE-INV-007, 008, 017, 018, 019, 021, 022, 024, 038, 039, 040, 049, 050 | REQ-INV-052, REQ-INV-053, REQ-INV-069, REQ-INV-110, REQ-INV-111 | PUR, SLS, SFR |
 | read valuation | variantPk | total quantity, average unit cost, stock value | — | REQ-INV-063 | SLS, INS |
 | read lot | lotPk | Lot | — | REQ-INV-109 | PUR, SLS |
@@ -3567,10 +3582,10 @@ Every story → ≥ 1 REQ; every REQ → ≥ 1 AC; every RULE → ≥ 1 REQ; eve
 | US-INV-018 | REQ-INV-068 | AC-INV-074 | — | ENT-INV-003, ENT-INV-004 | — (cross-module) |
 | US-INV-019 | REQ-INV-058, REQ-INV-069 | AC-INV-064, AC-INV-075, AC-INV-157 | RULE-INV-007, RULE-INV-008, RULE-INV-018, RULE-INV-019, RULE-INV-024, RULE-INV-050 | ENT-INV-001, ENT-INV-004, ENT-INV-005 | — (cross-module) |
 | US-INV-020 | REQ-INV-042, REQ-INV-049, REQ-INV-053, REQ-INV-054 | AC-INV-047, AC-INV-054, AC-INV-059, AC-INV-060 | RULE-INV-022 | ENT-INV-003, ENT-INV-004, ENT-INV-005 | SCR-REQ-INV-003 |
-| US-INV-021 | REQ-INV-084, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-108, REQ-INV-109, REQ-INV-124, REQ-INV-129, REQ-INV-134, REQ-INV-139 | AC-INV-092, AC-INV-093, AC-INV-117, AC-INV-118, AC-INV-119, AC-INV-120, AC-INV-121, AC-INV-122, AC-INV-138, AC-INV-139, AC-INV-145, AC-INV-150, AC-INV-155, AC-INV-156 | RULE-INV-035, RULE-INV-036, RULE-INV-037, RULE-INV-044, RULE-INV-045 | ENT-INV-003, ENT-INV-004, ENT-INV-007, ENT-INV-009, ENT-INV-011, ENT-INV-012, ENT-INV-014 | SCR-REQ-INV-005, SCR-REQ-INV-006, SCR-REQ-INV-007, SCR-REQ-INV-008, SCR-REQ-INV-009 |
+| US-INV-021 | REQ-INV-084, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-108, REQ-INV-109, REQ-INV-124, REQ-INV-129, REQ-INV-134, REQ-INV-139, REQ-INV-141 | AC-INV-092, AC-INV-093, AC-INV-117, AC-INV-118, AC-INV-119, AC-INV-120, AC-INV-121, AC-INV-122, AC-INV-138, AC-INV-139, AC-INV-145, AC-INV-150, AC-INV-155, AC-INV-156, AC-INV-160 | RULE-INV-035, RULE-INV-036, RULE-INV-037, RULE-INV-038, RULE-INV-044, RULE-INV-045 | ENT-INV-003, ENT-INV-004, ENT-INV-007, ENT-INV-009, ENT-INV-011, ENT-INV-012, ENT-INV-014 | SCR-REQ-INV-005, SCR-REQ-INV-006, SCR-REQ-INV-007, SCR-REQ-INV-008, SCR-REQ-INV-009 |
 | US-INV-022 | REQ-INV-110, REQ-INV-111, REQ-INV-112 | AC-INV-123, AC-INV-124, AC-INV-125 | RULE-INV-038 | ENT-INV-003, ENT-INV-004, ENT-INV-012 | — (cross-module) |
 | US-INV-023 | REQ-INV-116, REQ-INV-117, REQ-INV-118, REQ-INV-119 | AC-INV-130, AC-INV-131, AC-INV-132, AC-INV-133 | — | ENT-INV-003, ENT-INV-012 | SCR-REQ-INV-008, SCR-REQ-INV-011 |
-| US-INV-024 | REQ-INV-113, REQ-INV-114, REQ-INV-115 | AC-INV-126, AC-INV-127, AC-INV-128, AC-INV-129 | RULE-INV-038, RULE-INV-039 | ENT-INV-003, ENT-INV-004, ENT-INV-012 | SCR-REQ-INV-003, SCR-REQ-INV-007, SCR-REQ-INV-008 |
+| US-INV-024 | REQ-INV-113, REQ-INV-114, REQ-INV-115, REQ-INV-141 | AC-INV-126, AC-INV-127, AC-INV-128, AC-INV-129, AC-INV-160 | RULE-INV-038, RULE-INV-039 | ENT-INV-003, ENT-INV-004, ENT-INV-012 | SCR-REQ-INV-003, SCR-REQ-INV-007, SCR-REQ-INV-008 |
 | US-INV-025 | REQ-INV-120, REQ-INV-121, REQ-INV-122, REQ-INV-123, REQ-INV-125, REQ-INV-129, REQ-INV-135 | AC-INV-134, AC-INV-135, AC-INV-136, AC-INV-137, AC-INV-140, AC-INV-141, AC-INV-145, AC-INV-151 | RULE-INV-034, RULE-INV-040, RULE-INV-041, RULE-INV-044, RULE-INV-045 | ENT-INV-003, ENT-INV-004, ENT-INV-007, ENT-INV-009, ENT-INV-011, ENT-INV-014 | SCR-REQ-INV-003, SCR-REQ-INV-007, SCR-REQ-INV-009 |
 | US-INV-026 | REQ-INV-126, REQ-INV-127, REQ-INV-130, REQ-INV-131 | AC-INV-142, AC-INV-143, AC-INV-146, AC-INV-147 | RULE-INV-042, RULE-INV-043, RULE-INV-046 | ENT-INV-003, ENT-INV-012, ENT-INV-014 | SCR-REQ-INV-009 |
 | US-INV-027 | REQ-INV-128, REQ-INV-132, REQ-INV-133, REQ-INV-134, REQ-INV-135 | AC-INV-144, AC-INV-148, AC-INV-149, AC-INV-150, AC-INV-151 | RULE-INV-044 | ENT-INV-003, ENT-INV-012, ENT-INV-014 | SCR-REQ-INV-009 |

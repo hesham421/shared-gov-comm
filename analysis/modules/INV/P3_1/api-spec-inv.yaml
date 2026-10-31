@@ -309,6 +309,7 @@ paths:
     get:
       operationId: searchStockMoves
       summary: "API-INV-018 — search, list stock moves"
+      description: "Newest first by document date; while variantPk and warehousePk are both given (the running-balance view), ordered by posting order, newest posted first, so balanceAfterQty follows the order the moves were posted in (REQ-INV-076)."
       x-api-id: API-INV-018
       x-traces: [REQ-INV-075, REQ-INV-076, REQ-INV-016, REQ-INV-056, REQ-INV-110, REQ-INV-111, REQ-INV-112, DBF-INV-041, DBF-INV-042, DBF-INV-043, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-053, DBF-INV-054, DBF-INV-055, DBF-INV-058]
       x-paginated: true
@@ -557,7 +558,7 @@ paths:
       operationId: postStockCount
       summary: "API-INV-032 — post stock count"
       x-api-id: API-INV-032
-      x-traces: [REQ-INV-092, REQ-INV-093, REQ-INV-090, REQ-INV-068, REQ-INV-139, DBF-INV-117, DBF-INV-119, DBF-INV-122, DBF-INV-124, DBF-INV-028, DBF-INV-131, DBF-INV-132, DBF-INV-133, DBF-INV-144, DBF-INV-146, DBF-INV-147, DBF-INV-148, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-162, DBF-INV-163, DBF-INV-166, DBF-INV-167, DBF-INV-168, DBF-INV-171]
+      x-traces: [REQ-INV-092, REQ-INV-093, REQ-INV-090, REQ-INV-068, REQ-INV-139, DBF-INV-117, DBF-INV-119, DBF-INV-122, DBF-INV-124, DBF-INV-028, DBF-INV-131, DBF-INV-132, DBF-INV-133, DBF-INV-144, DBF-INV-146, DBF-INV-147, DBF-INV-148, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-160, DBF-INV-162, DBF-INV-163, DBF-INV-166, DBF-INV-167, DBF-INV-168, DBF-INV-171]
       parameters: [*pid]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
       responses:
@@ -654,7 +655,7 @@ paths:
       operationId: postStockAdjustment
       summary: "API-INV-038 — post stock adjustment"
       x-api-id: API-INV-038
-      x-traces: [REQ-INV-099, REQ-INV-102, REQ-INV-114, REQ-INV-139, REQ-INV-123, REQ-INV-067, REQ-INV-068, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-036, REQ-INV-057, REQ-INV-059, REQ-INV-060, REQ-INV-061, DBF-INV-146, DBF-INV-151, DBF-INV-153, DBF-INV-165, DBF-INV-168, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-220, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
+      x-traces: [REQ-INV-099, REQ-INV-141, REQ-INV-102, REQ-INV-114, REQ-INV-139, REQ-INV-123, REQ-INV-067, REQ-INV-068, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-036, REQ-INV-057, REQ-INV-059, REQ-INV-060, REQ-INV-061, DBF-INV-146, DBF-INV-151, DBF-INV-153, DBF-INV-165, DBF-INV-168, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-220, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
       parameters: [*pid]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
       responses:
@@ -784,7 +785,7 @@ paths:
       operationId: postOpeningStock
       summary: "API-INV-047 — create (post), custom (download sheet, bulk load) — post opening stock"
       x-api-id: API-INV-047
-      x-traces: [REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-074, REQ-INV-140, REQ-INV-064, REQ-INV-105, REQ-INV-106, REQ-INV-059, DBF-INV-144, DBF-INV-147, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-160, DBF-INV-161, DBF-INV-162, DBF-INV-163, DBF-INV-164, DBF-INV-166, DBF-INV-167, DBF-INV-171, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-220, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
+      x-traces: [REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-074, REQ-INV-140, REQ-INV-141, REQ-INV-064, REQ-INV-105, REQ-INV-106, REQ-INV-059, DBF-INV-144, DBF-INV-147, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-160, DBF-INV-161, DBF-INV-162, DBF-INV-163, DBF-INV-164, DBF-INV-166, DBF-INV-167, DBF-INV-171, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-220, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/OpeningStockRequest'}}}}
       responses:
         '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentEnvelope'}}}}
@@ -1200,7 +1201,7 @@ components:
         stockAdjustmentLinePk: {type: integer, format: int64}
         rowNo: {type: integer, format: int32}
         variantPk: {type: integer, format: int64}
-        lotNo: {type: [string, 'null'], maxLength: 40}
+        lotNo: {type: [string, 'null'], maxLength: 40, description: "the entered lot number; on a line of a count-generated adjustment, the code of the counted lot (lotPk), null for a line without a lot — the line is resolved by lotPk, never by lotNo"}
         lotExpiryDate: {type: [string, 'null'], format: date}
         lotPk: {type: [integer, 'null'], format: int64}
         lotCode: {type: [string, 'null'], maxLength: 40, description: the label of lotPk — the resolved lot's code (CORE label rule)}

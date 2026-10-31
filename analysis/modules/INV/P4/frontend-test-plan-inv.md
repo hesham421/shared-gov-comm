@@ -1,14 +1,14 @@
 # FRONTEND TEST PLAN — Inventory / المخزون (INV)
 ══════════════════════════════════════════════════════════════════
-Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 4
+Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 5
 Track  : frontend · plan test · lane test-gen · prepared by claude:opus
-Sources: _state/current-srs.md (INV v1 — REQ 140 · AC 159 · SCR-REQ 12)
+Sources: _state/current-srs.md (INV v1 — REQ 141 · AC 160 · SCR-REQ 12)
          _state/current-frontend-execution-plan.md (P3.2 — SCR-INV-001 … 012, UXD-INV-001 … 011, F1 … F4, SEC-FE)
          _state/current-api-spec (api-spec-inv.yaml — the document the mock server serves)
          _state/current-backend-execution-plan.md (Error Catalog texts) · _state/current-registry-srs.md
-Owns   : TC-INV-173 … TC-INV-241, TC-INV-262 … TC-INV-263 and TC-INV-285 (this file) — the backend cases are in
-         backend-test-plan-inv.md (TC-INV-001 … 172, 242 … 261, 264 … 284); TC-INV-262, 263 were added at
-         gate-analysis revise 1, TC-INV-285 at gate-analysis revise 2 (G2)
+Owns   : TC-INV-173 … TC-INV-241, TC-INV-262 … TC-INV-263, TC-INV-285 and TC-INV-294 (this file) — the backend cases are
+         in backend-test-plan-inv.md (TC-INV-001 … 172, 242 … 261, 264 … 284, 286 … 293, 295); TC-INV-262, 263 were added
+         at gate-analysis revise 1, TC-INV-285 at gate-analysis revise 2 (G2), TC-INV-294 at gate-analysis revise 5 (G6)
 ADRs   : raised here ADR-INV-037 (track placement and package), ADR-INV-038 (asserted texts and codes),
          ADR-INV-039 (acceptance of F3-SCR-INV-012 and F4-SCR-INV-011 — repair round 1) — ACCEPTED, non-breaking · cited from P3.2: ADR-INV-033 (reads outside the document), ADR-INV-034 (count commits per
          line), ADR-INV-035 (browser reads the sheet — barcode only in v1), ADR-INV-036 (warehouse label for a
@@ -667,7 +667,20 @@ Steps        : 1. Open TR-0007 and Post.
 Expected     : the V2 line is highlighted in the lines pane and carries ar «متغيّر الصنف غير نشط.» · en «The Variant is inactive.»; the V1 and V3 lines carry no message; the status shows DRAFT.
 Test data    : lineRef P2, lineRefKind LINE_PK
 <!-- TC:TC-INV-285:END -->
-<!-- SUB:UI-FLOWS:END -->
+
+<!-- TC:TC-INV-294:START traces=AC-INV-044,REQ-INV-039,SCR-INV-003 -->
+### TC-INV-294 — Reserved and available are shown once per warehouse when a pair has two lot rows
+Derived from : AC-INV-044  (REQ-INV-039)
+Exercises    : SCR-INV-003 /inventory/stock-balances
+Rule / code  : — → —
+Package      : F4-SCR-INV-003
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: Warehouse user session; lotExpiry on; the context answers activeWarehouseCount 2; the server answers 2 rows of Variant V in Warehouse W1 — Lot L1 on-hand 4 and Lot L2 on-hand 6, each carrying the pair's reservedQty 3 and availableQty 7 — and 1 row of V in W2 (no lot, on-hand 5, reserved 0, available 5)
+Host data    : none
+Steps        : 1. Search balances for V. 2. Read the column headers.
+Expected     : 1 → the L1 row (first row of the V × W1 pair) shows reserved 3 and available 7; the L2 row shows on-hand 6 and «—» in the reserved and available cells; the W2 row shows reserved 0 and available 5; adding the available column gives 12, never 19. 2 → the headers read «محجوز في المستودع» / "Reserved in warehouse" and «متاح في المستودع» / "Available in warehouse" (gate-analysis revise 5, G6).
+Test data    : pair V × W1 with two lot rows
+<!-- TC:TC-INV-294:END --><!-- SUB:UI-FLOWS:END -->
 
 <!-- SUB:INT-FLOW:START traces=AC-INV-018,AC-INV-037,AC-INV-076,AC-INV-100,AC-INV-128,REQ-INV-015,REQ-INV-032,REQ-INV-070,REQ-INV-090,REQ-INV-114 -->
 ### INT-FLOW — flows across screens
@@ -1116,14 +1129,14 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-041 | TC-INV-073 | — |
 | AC-INV-042 | TC-INV-074, TC-INV-251 | — |
 | AC-INV-043 | TC-INV-075 | — |
-| AC-INV-044 | TC-INV-076, TC-INV-259 | TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-262 |
+| AC-INV-044 | TC-INV-076, TC-INV-259 | TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-262, TC-INV-294 |
 | AC-INV-045 | TC-INV-077 | — |
 | AC-INV-046 | TC-INV-078 | — |
 | AC-INV-047 | TC-INV-079 | — |
 | AC-INV-048 | TC-INV-080 | — |
 | AC-INV-049 | TC-INV-011 | — |
 | AC-INV-050 | TC-INV-081 | — |
-| AC-INV-051 | TC-INV-082 | — |
+| AC-INV-051 | TC-INV-082, TC-INV-293 | — |
 | AC-INV-052 | TC-INV-083, TC-INV-255 | — |
 | AC-INV-053 | TC-INV-012 | — |
 | AC-INV-054 | TC-INV-084 | — |
@@ -1155,7 +1168,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-080 | TC-INV-101 | — |
 | AC-INV-081 | TC-INV-275 | TC-INV-186 |
 | AC-INV-082 | TC-INV-102 | TC-INV-224, TC-INV-225 |
-| AC-INV-083 | TC-INV-103 | TC-INV-187 |
+| AC-INV-083 | TC-INV-103, TC-INV-292 | TC-INV-187 |
 | AC-INV-084 | TC-INV-104 | — |
 | AC-INV-085 | TC-INV-105, TC-INV-280 | TC-INV-226, TC-INV-227 |
 | AC-INV-086 | TC-INV-106, TC-INV-270 | — |
@@ -1174,7 +1187,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-099 | TC-INV-113 | — |
 | AC-INV-100 | — | TC-INV-216 |
 | AC-INV-101 | TC-INV-028 | TC-INV-193 |
-| AC-INV-102 | TC-INV-114, TC-INV-258, TC-INV-265, TC-INV-289 | — |
+| AC-INV-102 | TC-INV-114, TC-INV-258, TC-INV-265, TC-INV-289, TC-INV-291 | — |
 | AC-INV-103 | TC-INV-029 | TC-INV-194 |
 | AC-INV-104 | TC-INV-115 | — |
 | AC-INV-105 | TC-INV-116 | — |
@@ -1232,6 +1245,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-157 | TC-INV-287 | — |
 | AC-INV-158 | TC-INV-288 | — |
 | AC-INV-159 | TC-INV-290 | — |
+| AC-INV-160 | TC-INV-295 | — |
 
 ### REQ → TC
 
@@ -1249,7 +1263,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | REQ-INV-029 | TC-INV-183 |
 | REQ-INV-030 | TC-INV-184 |
 | REQ-INV-032 | TC-INV-214 |
-| REQ-INV-039 | TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-262 |
+| REQ-INV-039 | TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-262, TC-INV-294 |
 | REQ-INV-056 | TC-INV-263 |
 | REQ-INV-063 | TC-INV-238, TC-INV-239, TC-INV-240 |
 | REQ-INV-065 | TC-INV-241 |
@@ -1295,7 +1309,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 |---|---|
 | SCR-INV-001 | TC-INV-173, TC-INV-174, TC-INV-175, TC-INV-176, TC-INV-183, TC-INV-184, TC-INV-213, TC-INV-214 |
 | SCR-INV-002 | TC-INV-180, TC-INV-181, TC-INV-182, TC-INV-214 |
-| SCR-INV-003 | TC-INV-179, TC-INV-203, TC-INV-209, TC-INV-210, TC-INV-211, TC-INV-213, TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-222, TC-INV-223, TC-INV-262 |
+| SCR-INV-003 | TC-INV-179, TC-INV-203, TC-INV-209, TC-INV-210, TC-INV-211, TC-INV-213, TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-222, TC-INV-223, TC-INV-262, TC-INV-294 |
 | SCR-INV-004 | TC-INV-187, TC-INV-210, TC-INV-213, TC-INV-224, TC-INV-225, TC-INV-263 |
 | SCR-INV-005 | TC-INV-178, TC-INV-188, TC-INV-189, TC-INV-190, TC-INV-191, TC-INV-210, TC-INV-213, TC-INV-226, TC-INV-227, TC-INV-263, TC-INV-285 |
 | SCR-INV-006 | TC-INV-192, TC-INV-193, TC-INV-194, TC-INV-195, TC-INV-210, TC-INV-216, TC-INV-228, TC-INV-229 |
@@ -1411,7 +1425,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | F3-SCR-INV-012 | TC-INV-238 |
 | F4-SCR-INV-001 | TC-INV-183, TC-INV-184 |
 | F4-SCR-INV-002 | TC-INV-214 |
-| F4-SCR-INV-003 | TC-INV-179, TC-INV-203, TC-INV-209, TC-INV-220, TC-INV-222, TC-INV-262 |
+| F4-SCR-INV-003 | TC-INV-179, TC-INV-203, TC-INV-209, TC-INV-220, TC-INV-222, TC-INV-262, TC-INV-294 |
 | F4-SCR-INV-004 | TC-INV-187 |
 | F4-SCR-INV-005 | TC-INV-178, TC-INV-226, TC-INV-263 |
 | F4-SCR-INV-006 | TC-INV-216, TC-INV-228 |
@@ -1427,13 +1441,14 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 
 | Measure | Result |
 |---|---|
-| AC covered (both tracks) | ✓ 159/159 · gaps: none |
-| AC covered on this track | 57/159 (the rest on the other track; 50 ACs on both; AC-INV-155 … 158 of gate-analysis revise 3 are backend cases TC-INV-286 … 288, AC-INV-159 of revise 4 is backend case TC-INV-290) |
-| REQ covered (both tracks) | ✓ 140/140 · gaps: none |
-| REQ covered on this track | 51/140 |
+| AC covered (both tracks) | ✓ 160/160 · gaps: none |
+| AC covered on this track | 57/160 (AC-INV-160 of gate-analysis revise 5 is backend case TC-INV-295; the rest on the other track; 50 ACs on both; AC-INV-155 … 158 of gate-analysis revise 3 are backend cases TC-INV-286 … 288, AC-INV-159 of revise 4 is backend case TC-INV-290) |
+| REQ covered (both tracks) | ✓ 141/141 · gaps: none |
+| REQ covered on this track | 51/141 |
 | SCR covered | ✓ 12/12 · gaps: none |
 | UXD covered | ✓ 11/11 (rendered + empty/failure each) · gaps: none |
 | Split units with no TC | 13 of 50: F1-SCR-INV-001, F1-SCR-INV-002, F1-SCR-INV-003, F1-SCR-INV-004, F1-SCR-INV-005, F1-SCR-INV-006, F1-SCR-INV-007, F1-SCR-INV-008, F1-SCR-INV-009, F1-SCR-INV-010, F1-SCR-INV-011, F1-SCR-INV-012, ALIGN-FE · no AC, XM or UXD derives a case for them (ADR-INV-037); F3-SCR-INV-012 and F4-SCR-INV-011 carry TC-INV-238 and TC-INV-241 (ADR-INV-039) |
 | Line refusals (gate-analysis revise 2) | TC-INV-285: a post refused for line 2 of 3 places the text on that line through `details[0].lineRef` (ADR-INV-046) |
-| Over-engineering guard | 72 TCs for 57 ACs + 11 UXD (ratio 1.06 ≤ 2) |
+| Pair figures on lot rows (gate-analysis revise 5) | TC-INV-294: reserved and available, figures of the Variant × warehouse pair, are shown once on the pair's first lot row and labelled per warehouse |
+| Over-engineering guard | 73 TCs for 57 ACs + 11 UXD (ratio 1.07 ≤ 2) |
 

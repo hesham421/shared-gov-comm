@@ -95,13 +95,13 @@ Cited at gate-analysis revise 3: ADR-INV-051 («بدون تشغيلة» / "Witho
 
 Cited at gate-analysis revise 4: ADR-INV-054 (system measure of a posted dual-quantity count line, SCR-INV-006); the SCR-INV-005 guard now hides only the menu entry and the create action while one warehouse is active (G7).
 
-Filed under analysis/decisions/INV/. BLOCKED: none. Next free ADR: ADR-INV-055 (module-wide).
+Filed under analysis/decisions/INV/. BLOCKED: none. Next free ADR: ADR-INV-057 (module-wide).
 
 ### Traceability
 
-REQ covered by ≥ 1 SCR / F-block: **107 / 140** (REQ-INV-139 on SCR-INV-005 … 007, REQ-INV-140 on SCR-INV-010 — gate-analysis revise 3). Orphan REQ: **none**.
+REQ covered by ≥ 1 SCR / F-block: **107 / 141** (REQ-INV-139 on SCR-INV-005 … 007, REQ-INV-140 on SCR-INV-010 — gate-analysis revise 3). Orphan REQ: **none**.
 
-The other 33 REQs have no SRS screen. In the SRS traceability their stories are "— (cross-module)", or the REQ
+The other 34 REQs have no SRS screen. In the SRS traceability their stories are "— (cross-module)", or the REQ
 is a backend effect with no screen requirement. They are served by P3.1 (InventoryApi, events, provisioning,
 scheduled check, audit), and the frontend has nothing to build for them:
 - provisioning seeds: REQ-INV-001, 002, 020, 021;
@@ -114,11 +114,12 @@ scheduled check, audit), and the frontend has nothing to build for them:
 - audit: REQ-INV-077;
 - FEFO issue: REQ-INV-110, 111, 112;
 - measure recording on cross-module moves: REQ-INV-120;
-- capability turn-off check (flag owner): REQ-INV-130, 131.
+- capability turn-off check (flag owner): REQ-INV-130, 131;
+- a lot received or loaded already past its expiry, accepted and expired from creation (a posting effect — the screens show it through the existing expired mark): REQ-INV-141.
 
 Stories in flows: 23 / 28. US-INV-004, 009, 018, 019 and 022 have no SRS screen and no flow (reconciliation B1).
 
 ### Event
 
-"P3.2 completed: INV v1 — SCR 12, UXD 11, F-blocks 48 (F1–F4) + SEC-FE + ALIGN-FE, API 51/51 bound, ADR-INV-033 … 036" · "gate-analysis revise 2: API 52/52 bound (lookups through API-INV-052), line refusals routed by details[0].lineRef" · "gate-analysis revise 3: labels from the rows, Without a lot option, opening stock idempotency key"
+"P3.2 completed: INV v1 — SCR 12, UXD 11, F-blocks 48 (F1–F4) + SEC-FE + ALIGN-FE, API 51/51 bound, ADR-INV-033 … 036" · "gate-analysis revise 2: API 52/52 bound (lookups through API-INV-052), line refusals routed by details[0].lineRef" · "gate-analysis revise 3: labels from the rows, Without a lot option, opening stock idempotency key" · "gate-analysis revise 5: reserved and available shown once per Variant × warehouse pair on SCR-INV-003"
 ══════════════════════════════════════════════════════════════════

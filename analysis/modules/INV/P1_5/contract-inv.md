@@ -145,9 +145,12 @@ Notes     : while negative stock is allowed (tenant default) a request beyond av
 Traces    : REQ-INV-043, REQ-INV-044, REQ-INV-045, REQ-INV-049
 
 ### CON-INV-012 — تحرير حجز / Release a reservation (ar / en)
-Signature : releaseReservation(reservationPk: BIGINT) → {reservationPk, statusCode RELEASED, reservedQty 0, closedAt} · errors: not found, reservation closed
+Signature : releaseReservation(reservationPk: BIGINT) → {reservationPk, statusCode RELEASED, reservedQty 0, closedAt} · errors: not found, reservation closed (a CONSUMED reservation only)
 Entity    : ENT-INV-003
-Notes     : only an ACTIVE reservation is released (RULE-INV-021); availability rises at once.
+Notes     : an ACTIVE reservation is released and availability rises at once. Releasing a reservation that is
+            already RELEASED returns it unchanged (statusCode RELEASED, reservedQty 0, its first closedAt) and
+            records nothing, so a caller that retries a release it never saw answered gets a success; only a
+            CONSUMED reservation is refused as "reservation closed" (RULE-INV-021, ADR-INV-055).
 Traces    : REQ-INV-046, REQ-INV-048
 
 ### CON-INV-013 — حجوزات مستند / Read the reservations of a source document (ar / en)
@@ -261,6 +264,9 @@ numbers in `sequence`, users and roles in `sec`, the tenant in `tenant`.
   refusal of a bundle receipt (CON-INV-014) and of a lot decrease beyond the lot (CON-INV-015).
   Gate-analysis revise 3 widened, still ADDITIVE, the offline promise of CON-INV-015: an offline sale
   is recorded although a record it names became inactive (fewer refusals, never more).
+  Gate-analysis revise 5 narrowed, still ADDITIVE, the refusal of CON-INV-012: a release of a
+  reservation that is already RELEASED is answered unchanged, and only a CONSUMED one is refused
+  (ADR-INV-055 — fewer refusals, never more; no signature change).
 - Items may be added freely. Changing or removing an item a consumer depends on — an identifier
   type, a key column, a signature input or output, an error meaning, an event field — happens
   only in a BREAKING version with an ADR; `gov.py graph` then raises a resolution event on every
