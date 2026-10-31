@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : INV   Version : v1   Stage : P3.2 (Frontend — UX Design + Execution Plan)   Profile : commerce
 Source : analysis/modules/INV/P3_2/flow-diagram-inv.md · ui-ux-spec-inv.md · frontend-execution-plan-inv.md · Date : 2026-10-31
-Bound  : api-spec-inv.yaml (OpenAPI 3.1.0 — 51 operations)
+Bound  : api-spec-inv.yaml (OpenAPI 3.1.0 — 52 operations)
 ══════════════════════════════════════════════════════════════════
 
 ### ID ranges
@@ -57,17 +57,16 @@ artifacts (ADR-INV-033).
 
 ### API coverage
 
-Documented endpoints used: **51 / 51** (API-INV-001 … API-INV-051). Unused: none. The operations coverage table
+Documented endpoints used: **52 / 52** (API-INV-001 … API-INV-052 — API-INV-052 serves INV's lookup keys, added at gate-analysis revise 2). Unused: none. The operations coverage table
 is in ALIGN-FE.
 Reads outside the document, none of them a `read` hook (ADR-INV-033):
 - CAT reads, through the UXDs;
-- INV_* lookup values, from the given `mdl`;
 - the session permissions, from the given `sec`.
 Values absent from the document: none. `StockBalanceRow` and `Availability.perWarehouse` carry `warehouseCode`,
 `warehouseNameAr` and `warehouseNameEn`, so every role reads the warehouse label from the row (ADR-INV-036, closed at
 gate-analysis revise 1).
 
-Runtime codes bound to a RULE in `api-surface`: 39. Codes routed with the catalogue text and no RULE:
+Runtime codes bound to a RULE in `api-surface`: 40 (INV-422-DOC-DATE-FUTURE → RULE-INV-051 added at gate-analysis revise 2). A line-level refusal is placed on the line `details[0]` names (ADR-INV-046). Codes routed with the catalogue text and no RULE:
 - INV-400, INV-401, INV-403, INV-500;
 - the `INV-404-*` not-found codes and INV-409-STALE-VERSION (ADR-INV-021, ADR-INV-032);
 - INV-422-HORIZON-RANGE (DEFAULT D-04);
@@ -88,7 +87,9 @@ and SCR-INV-007 to SCR-INV-004 seed `sourceDocTypeCode` + `sourceDocRef`), G12 (
 | ADR-INV-035 | The browser reads the opening stock sheet | ACCEPTED |
 | ADR-INV-036 | Warehouse and lot labels on the stock balance screen for a Seller/Cashier | ACCEPTED (open item closed at gate-analysis revise 1 — the label is on the row) |
 
-Filed under analysis/decisions/INV/. BLOCKED: none. Next free ADR: ADR-INV-037.
+Cited from P3.1 at gate-analysis revise 2: ADR-INV-046 (line refusals in `details`), ADR-INV-047 (OPENING_STOCK not offered on SCR-INV-007); ADR-INV-033 amended (INV lookup values through API-INV-052).
+
+Filed under analysis/decisions/INV/. BLOCKED: none. Next free ADR: ADR-INV-051 (module-wide).
 
 ### Traceability
 
@@ -113,5 +114,5 @@ Stories in flows: 23 / 28. US-INV-004, 009, 018, 019 and 022 have no SRS screen 
 
 ### Event
 
-"P3.2 completed: INV v1 — SCR 12, UXD 11, F-blocks 48 (F1–F4) + SEC-FE + ALIGN-FE, API 51/51 bound, ADR-INV-033 … 036"
+"P3.2 completed: INV v1 — SCR 12, UXD 11, F-blocks 48 (F1–F4) + SEC-FE + ALIGN-FE, API 51/51 bound, ADR-INV-033 … 036" · "gate-analysis revise 2: API 52/52 bound (lookups through API-INV-052), line refusals routed by details[0].lineRef"
 ══════════════════════════════════════════════════════════════════

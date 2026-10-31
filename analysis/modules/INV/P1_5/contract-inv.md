@@ -35,8 +35,10 @@ Status : DRAFT — P1.5 pass 1, round 1 · prepared by claude:opus
   - When `variants` is off the caller passes the Item's default Variant (CON-CAT-002); INV
     always keys on a Variant (SRS D-27).
   - Every receipt, issue and reservation request carries a caller-supplied idempotency key
-    (text, ≤ 64); a repeated key returns the first result and records nothing new
-    (RULE-INV-024, REQ-INV-058). This is not an error.
+    (text, ≤ 64); a key repeated with the same request returns the first result and records
+    nothing new (RULE-INV-024, REQ-INV-058) — this is not an error. A key repeated with a different
+    request is refused, so a caller never mistakes a new request for one already recorded
+    (RULE-INV-050).
   - Source documents are passed as type (INV_SOURCE_DOC_TYPE — open lookup; calling modules add
     their document types as data), identifier (BIGINT), number (text ≤ 30) and optional line
     identifier (BIGINT). INV keeps them as SOFT references with no FK (ENT-INV-004.sourceDocRef).
@@ -131,7 +133,7 @@ Notes     : per active warehouse and in total. Available = on-hand outside expir
 Traces    : REQ-INV-040, REQ-INV-041, REQ-INV-042, REQ-INV-121
 
 ### CON-INV-011 — حجز مخزون / Reserve stock (ar / en)
-Signature : reserve(variantPk: BIGINT, warehousePk?: BIGINT, quantity, sourceDoc {typeCode, ref, no, lineRef?}, idempotencyKey) → {reservations: [{reservationPk: BIGINT, variantPk, warehousePk, statusCode, originalQty, reservedQty, shortfallQty, bundleVariantPk?}]} · errors: warehouse required, warehouse inactive, Variant inactive, invalid quantity, not enough available (negative stock disallowed), bundle without active components
+Signature : reserve(variantPk: BIGINT, warehousePk?: BIGINT, quantity, sourceDoc {typeCode, ref, no, lineRef?}, idempotencyKey) → {reservations: [{reservationPk: BIGINT, variantPk, warehousePk, statusCode, originalQty, reservedQty, shortfallQty, bundleVariantPk?}]} · errors: warehouse required, warehouse inactive, Variant inactive, invalid quantity, not enough available (negative stock disallowed), bundle without active components, idempotency key already used for a different request
 Entity    : ENT-INV-003
 Notes     : while negative stock is allowed (tenant default) a request beyond availability is
             accepted with its shortfall recorded; the caller decides what to do with it
@@ -139,7 +141,7 @@ Notes     : while negative stock is allowed (tenant default) a request beyond av
             component (REQ-INV-049). The caller keeps reservationPk as a SOFT reference (no FK) to
             release or consume it; the Reservation itself is private. Reservations do not expire
             automatically in v1 — the owning module releases them (SRS D-24).
-            RULE-INV-007, 008, 017, 018, 020, 022, 024.
+            RULE-INV-007, 008, 017, 018, 020, 022, 024, 050.
 Traces    : REQ-INV-043, REQ-INV-044, REQ-INV-045, REQ-INV-049
 
 ### CON-INV-012 — تحرير حجز / Release a reservation (ar / en)
@@ -154,7 +156,7 @@ Entity    : ENT-INV-003
 Traces    : REQ-INV-050
 
 ### CON-INV-014 — استلام مخزون / Receive stock (ar / en)
-Signature : receiveStock(warehousePk?: BIGINT, moveTypeCode RECEIPT | RETURN_IN, lines: [{variantPk, quantity, unitCost?, lotNo?, lotExpiryDate?, measureQty?, sourceLineRef?}], sourceDoc {typeCode, ref, no}, idempotencyKey) → {moves: [{stockMovePk: BIGINT, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost, moveValue}]} · errors: warehouse required, warehouse inactive, Variant inactive or of a BUNDLE Item, invalid quantity, no known cost, lot number and expiry required, lot recorded with a different expiry, measure required
+Signature : receiveStock(warehousePk?: BIGINT, moveTypeCode RECEIPT | RETURN_IN, lines: [{variantPk, quantity, unitCost?, lotNo?, lotExpiryDate?, measureQty?, sourceLineRef?}], sourceDoc {typeCode, ref, no}, idempotencyKey) → {moves: [{stockMovePk: BIGINT, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost, moveValue}]} · errors: warehouse required, warehouse inactive, Variant inactive or of a BUNDLE Item, invalid quantity, no known cost, lot number and expiry required, lot recorded with a different expiry, measure required, idempotency key already used for a different request
 Entity    : ENT-INV-003
 Notes     : one move per line at the line's unit cost; a line without a cost takes the current
             average and is refused when the Variant was never valued (RULE-INV-025). Each receipt
@@ -162,11 +164,13 @@ Notes     : one move per line at the line's unit cost; a line without a cost tak
             Flag `lotExpiry` on: lot-tracked Items require lot number and expiry; the Lot is reused
             or created (REQ-INV-105, REQ-INV-106). Flag `dualQuantity` on: dual-quantity Items
             require the measure (REQ-INV-120). Whether an Item needs a lot or a measure is read
-            beforehand through CON-INV-018. RULE-INV-007, 008, 017, 018, 024, 025, 035, 036, 040.
+            beforehand through CON-INV-018. A bundle Variant is never received or returned in: the
+            line is refused as "of a BUNDLE Item" (RULE-INV-018). RULE-INV-007, 008, 017, 018, 024,
+            025, 035, 036, 040, 050.
 Traces    : REQ-INV-051, REQ-INV-064, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-120
 
 ### CON-INV-015 — صرف مخزون / Issue stock (ar / en)
-Signature : issueStock(warehousePk?: BIGINT, moveTypeCode ISSUE | RETURN_OUT, saleFl, offlineFl, lines: [{variantPk, quantity, lotPk? (non-sale only), measureQty?, reservationPk?, sourceLineRef?}], sourceDoc {typeCode, ref, no}, idempotencyKey) → {moves: [{stockMovePk: BIGINT, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost, moveValue, bundleVariantPk?}]} · errors: warehouse required, warehouse inactive, Variant inactive, invalid quantity, not enough stock (online, negative stock disallowed), reservation closed, reservation not of this line (Variant, warehouse or source document differs), bundle without active components, lot expired, measure required
+Signature : issueStock(warehousePk?: BIGINT, moveTypeCode ISSUE | RETURN_OUT, saleFl, offlineFl, lines: [{variantPk, quantity, lotPk? (non-sale only), measureQty?, reservationPk?, sourceLineRef?}], sourceDoc {typeCode, ref, no}, idempotencyKey) → {moves: [{stockMovePk: BIGINT, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost, moveValue, bundleVariantPk?}]} · errors: warehouse required, warehouse inactive, Variant inactive, invalid quantity, not enough stock (online, negative stock disallowed), reservation closed, reservation not of this line (Variant, warehouse or source document differs), bundle without active components, lot expired, measure required, idempotency key already used for a different request
 Entity    : ENT-INV-003
 Notes     : moves are valued at the Variant's current average cost (REQ-INV-061). An issue that
             references a reservation consumes it (REQ-INV-047). A synchronised offline POS sale
@@ -180,7 +184,9 @@ Notes     : moves are valued at the Variant's current average cost (REQ-INV-061)
             A referenced reservation must be of the line's Variant and warehouse and of the request's source
             document (RULE-INV-049). A repeated idempotency key submitted concurrently waits for the first
             submission and returns its answer.
-            RULE-INV-007, 008, 017, 018, 019, 021, 022, 024, 038, 039, 040, 049.
+            While negative stock is disallowed, a line that names a lot is also refused when that lot's
+            on-hand in the warehouse does not cover it (RULE-INV-019).
+            RULE-INV-007, 008, 017, 018, 019, 021, 022, 024, 038, 039, 040, 049, 050.
 Traces    : REQ-INV-052, REQ-INV-053, REQ-INV-067, REQ-INV-069, REQ-INV-110, REQ-INV-111, REQ-INV-114
 
 ### CON-INV-016 — قراءة التقييم / Read the valuation of a Variant (ar / en)
@@ -208,11 +214,12 @@ Notes     : called by the capability-flag owner (P-02); not allowed while any It
 Traces    : REQ-INV-130, REQ-INV-131
 
 ### CON-INV-020 — حدث حركة المخزون / Stock-move event (ar / en)
-Signature : event StockMoveRecorded {stockMovePk: BIGINT, docDate, moveTypeCode, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost, moveValue, sourceDocTypeCode, sourceDocRef, sourceDocNo, sourceLineRef?, bundleVariantPk?, offlineFl} → delivered once per committed move, after commit · errors: none (never delivered when the transaction rolls back)
+Signature : event StockMoveRecorded {stockMovePk: BIGINT, docDate, moveTypeCode, variantPk, warehousePk, lotPk?, quantity, measureQty?, unitCost, moveValue, currencyCode, sourceDocTypeCode, sourceDocRef, sourceDocNo, sourceLineRef?, bundleVariantPk?, offlineFl} → delivered once per committed move, after commit · errors: none (never delivered when the transaction rolls back)
 Entity    : ENT-INV-013 (the cost it carries); the move itself stays private
 Notes     : consumers ACC (posting), SWR, INS; stockMovePk lets a consumer process each event
             once. Moves are never changed or deleted (RULE-INV-023), so no correction event exists —
-            a correction arrives as a new ADJUSTMENT_IN / ADJUSTMENT_OUT move.
+            a correction arrives as a new ADJUSTMENT_IN / ADJUSTMENT_OUT move. `currencyCode` (ISO
+            4217, the tenant base currency of unitCost and moveValue) is ADDITIVE in v1 (ADR-INV-015).
 Traces    : REQ-INV-057, REQ-INV-055
 
 ### CON-INV-021 — حدث تغيّر بيانات المخزون الأساسية / Inventory master-change event (ar / en)
@@ -230,7 +237,7 @@ rows:
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "issue the codes INV_WAREHOUSE and INV_BRANCH and the document numbers INV_TRANSFER, INV_COUNT and INV_ADJUSTMENT (RULE-INV-001, RULE-INV-010, RULE-INV-030)"}
   - {given: erp-core, module: modules.events, via: com.erp.events.OutboxPublisher, purpose: "record the stock-move event and the inventory master-change event in the change transaction and deliver them after commit (REQ-INV-057, REQ-INV-034)"}
   - {given: erp-core, module: modules.audit, via: com.erp.audit.crossmodule.AuditApi, purpose: "record the change history of stock documents, warehouses, branches, lots and Item stock settings (REQ-INV-077)"}
-  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "load the values of the INV_* lookup keys and the CAT unit-of-measure key at runtime (A6)"}
+  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "load the values of the INV_* lookup keys and the CAT unit-of-measure key at runtime, and serve INV's six lookup keys to INV's screens through the common helper OwnedLookups.read over this interface (A6)"}
   - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "seed the default branch and the default warehouse of each new tenant (REQ-INV-020, REQ-INV-001)"}
   - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantRunner, purpose: "run the daily near-expiry check once per tenant (REQ-INV-117)"}
   - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "register the INV page codes so the security module derives their VIEW/CREATE/UPDATE/DELETE permissions, and the grants of the Owner, Seller/Cashier and Warehouse role presets (REQ-INV-136, REQ-INV-137)"}
@@ -245,7 +252,10 @@ numbers in `sequence`, users and roles in `sec`, the tenant in `tenant`.
 
 ## 3 — Stability
 
-- v1 is the first contract of INV; every item above is ADDITIVE.
+- v1 is the first contract of INV; every item above is ADDITIVE. The gate-analysis revisions
+  added, still ADDITIVE: the error meaning "idempotency key already used for a different
+  request" on CON-INV-011, 014 and 015, the field `currencyCode` of CON-INV-020, and the stated
+  refusal of a bundle receipt (CON-INV-014) and of a lot decrease beyond the lot (CON-INV-015).
 - Items may be added freely. Changing or removing an item a consumer depends on — an identifier
   type, a key column, a signature input or output, an error meaning, an event field — happens
   only in a BREAKING version with an ADR; `gov.py graph` then raises a resolution event on every

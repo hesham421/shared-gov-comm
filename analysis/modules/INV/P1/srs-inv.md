@@ -2,7 +2,7 @@
 ══════════════════════════════════════════════════════════════════
 Module : INV   Version : v1   Profile : commerce
 Inputs : prd, domain-profile, project-registry (PRD approved 2026-10-29); module-registry-inv, business-policies-inv (P0); contract-cat (CAT v2, P1.5)
-Counts : REQ 138 · AC 154 · ENT 14 · RULE 49 · SCR-REQ 12 · ADR 0
+Counts : REQ 138 · AC 154 · ENT 14 · RULE 51 · SCR-REQ 12 · ADR 0
 ══════════════════════════════════════════════════════════════════
 
 # PART A — MODULE FOUNDATION
@@ -174,6 +174,7 @@ Derived in every read (not held): `reservedQty` (sum of ACTIVE reservations of t
 | reservationFk | reference → ENT-INV-005 | no | Reservation | issue that consumes a reservation | الحجز | Reservation |
 | offlineFl | flag | yes | — | true for a synchronised offline POS sale (POL-INV-020) | بيع دون اتصال | Offline sale |
 | idempotencyKey | text (64) | yes | caller-supplied | one recording per key (RULE-INV-024) | مفتاح عدم التكرار | Idempotency key |
+| requestHash | text (64) | yes | system-filled | SHA-256 of the canonical request, recorded with idempotencyKey; a key repeated with a different request is refused (RULE-INV-050) | بصمة الطلب | Request fingerprint |
 
 ### ENT-INV-005 — Reservation / حجز المخزون
 
@@ -198,6 +199,7 @@ Derived in every read (not held): `reservedQty` (sum of ACTIVE reservations of t
 | sourceLineRef | reference (BIGINT, no FK) | no | — | — | معرّف السطر | Line identifier |
 | closedAt | date-time | no | — | set on CONSUMED or RELEASED | تاريخ الإغلاق | Closed at |
 | idempotencyKey | text (64) | yes | caller-supplied | one recording per key (RULE-INV-024) | مفتاح عدم التكرار | Idempotency key |
+| requestHash | text (64) | yes | system-filled | SHA-256 of the canonical request, recorded with idempotencyKey; a key repeated with a different request is refused (RULE-INV-050) | بصمة الطلب | Request fingerprint |
 
 ### ENT-INV-006 — Transfer / تحويل مخزني
 
@@ -209,7 +211,7 @@ Derived in every read (not held): `reservedQty` (sum of ACTIVE reservations of t
 |---|---|---|---|---|---|---|
 | transferPk | reference (BIGINT) | yes | identity | — | المعرّف | Identifier |
 | docNo | text (30) | yes | series INV_TRANSFER | RULE-INV-030 | رقم التحويل | Transfer number |
-| docDate | date | yes | today by default | — | تاريخ التحويل | Transfer date |
+| docDate | date | yes | today by default | not after today in the tenant time zone (RULE-INV-051) | تاريخ التحويل | Transfer date |
 | statusCode | lookup | yes | INV_DOC_STATUS | A7 | حالة المستند | Document status |
 | fromWarehouseFk | reference → ENT-INV-001 | yes | active Warehouse | RULE-INV-016 | من المستودع | From warehouse |
 | toWarehouseFk | reference → ENT-INV-001 | yes | active Warehouse | RULE-INV-016 | إلى المستودع | To warehouse |
@@ -220,7 +222,7 @@ Derived in every read (not held): `reservedQty` (sum of ACTIVE reservations of t
 
 | Kind | Ownership | Business number | Operations | Cross-module | Source |
 |---|---|---|---|---|---|
-| transactional (line) | PRIVATE | no — part of the Transfer | create, update, remove while the Transfer is DRAFT | — | child of ENT-INV-006 |
+| transactional (line) | PRIVATE | no — part of the Transfer | read (always with its Transfer — reading a Transfer returns its lines); create, update, remove while the Transfer is DRAFT — the lines saved with a DRAFT Transfer replace the stored ones, and a stored line left out is deleted (REQ-INV-079) | — | child of ENT-INV-006 |
 
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
@@ -242,7 +244,7 @@ Derived in every read (not held): `reservedQty` (sum of ACTIVE reservations of t
 |---|---|---|---|---|---|---|
 | stockCountPk | reference (BIGINT) | yes | identity | — | المعرّف | Identifier |
 | docNo | text (30) | yes | series INV_COUNT | RULE-INV-030 | رقم الجرد | Count number |
-| docDate | date | yes | today by default | — | تاريخ الجرد | Count date |
+| docDate | date | yes | today by default | not after today in the tenant time zone (RULE-INV-051) | تاريخ الجرد | Count date |
 | statusCode | lookup | yes | INV_DOC_STATUS | A7 | حالة المستند | Document status |
 | warehouseFk | reference → ENT-INV-001 | yes | active Warehouse | default warehouse while one is active (REQ-INV-013) | المستودع | Warehouse |
 | noteText | text (500) | no | — | Advanced | ملاحظات | Notes |
@@ -276,7 +278,7 @@ Derived in every read (not held): `reservedQty` (sum of ACTIVE reservations of t
 |---|---|---|---|---|---|---|
 | stockAdjustmentPk | reference (BIGINT) | yes | identity | — | المعرّف | Identifier |
 | docNo | text (30) | yes | series INV_ADJUSTMENT | RULE-INV-030 | رقم التسوية | Adjustment number |
-| docDate | date | yes | today by default | — | تاريخ التسوية | Adjustment date |
+| docDate | date | yes | today by default | not after today in the tenant time zone (RULE-INV-051) | تاريخ التسوية | Adjustment date |
 | statusCode | lookup | yes | INV_DOC_STATUS | A7 | حالة المستند | Document status |
 | warehouseFk | reference → ENT-INV-001 | yes | active Warehouse | default warehouse while one is active | المستودع | Warehouse |
 | reasonCode | lookup | yes | INV_ADJUSTMENT_REASON | RULE-INV-033 | سبب التسوية | Adjustment reason |
@@ -288,7 +290,7 @@ Derived in every read (not held): `reservedQty` (sum of ACTIVE reservations of t
 
 | Kind | Ownership | Business number | Operations | Cross-module | Source |
 |---|---|---|---|---|---|
-| transactional (line) | PRIVATE | no — part of the Stock adjustment | create, update, remove while the Stock adjustment is DRAFT | — | child of ENT-INV-010 |
+| transactional (line) | PRIVATE | no — part of the Stock adjustment | read (always with its Stock adjustment — reading an adjustment returns its lines ordered by rowNo); create, update, remove while the Stock adjustment is DRAFT — the lines saved with a DRAFT adjustment replace the stored ones, and a stored line left out is deleted (REQ-INV-098) | — | child of ENT-INV-010 |
 
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
@@ -300,7 +302,7 @@ Derived in every read (not held): `reservedQty` (sum of ACTIVE reservations of t
 | lotExpiryDate | date | no | — | required with a new lot number on an increase (RULE-INV-035) | تاريخ الصلاحية | Expiry date |
 | lotFk | reference → ENT-INV-012 | no | — | resolved from lotNo | التشغيلة | Lot |
 | quantityChange | decimal (3) | yes | ≠ 0 unless measureQtyChange ≠ 0 | positive = increase, negative = decrease (RULE-INV-034) | التغيّر في الكمية | Quantity change |
-| measureQtyChange | decimal (3) | no | — | dual-quantity Items | التغيّر في القياس | Measure change |
+| measureQtyChange | decimal (3) | no | — | dual-quantity Items; required with a non-zero quantityChange of a dual-quantity Item while dualQuantity is on (RULE-INV-040) | التغيّر في القياس | Measure change |
 | unitCost | decimal (4) | no | ≥ 0 | increases; required for OPENING_STOCK (RULE-INV-025, RULE-INV-026) | تكلفة الوحدة | Unit cost |
 | lineValue | decimal (2) | no | — | set at posting | قيمة السطر | Line value |
 
@@ -326,7 +328,7 @@ Derived in every read (not held): `reservedQty` (sum of ACTIVE reservations of t
 
 | Kind | Ownership | Business number | Operations | Cross-module | Source |
 |---|---|---|---|---|---|
-| transactional | SHARED (owner) | no | read, search (system-maintained by stock moves) | read by SLS (margin), INS; ACC receives costs through the stock-move event | module-registry ENTITIES OWNED; POL-INV-021; INV-P09 |
+| transactional | SHARED (owner) | no | read, search — read-only: the record of a Variant is created by its first valued incoming move and changed by every later move of the Variant (REQ-INV-059 … REQ-INV-062); no user and no other module creates, changes or deletes it, and it is never deleted | read by SLS (margin), INS; ACC receives costs through the stock-move event | module-registry ENTITIES OWNED; POL-INV-021; INV-P09 |
 
 One record per Variant across the tenant.
 
@@ -346,7 +348,7 @@ One record per Variant across the tenant.
 |---|---|---|---|---|---|
 | config | PRIVATE (read by other modules only through INV receipt and issue checks) | no | create, read, update | — | POL-INV-006, 009, 010; DEFAULT D-03 (CAT declares no lot or dual-quantity marker — contract-cat CON-CAT-001, CON-CAT-008) |
 
-One record per STANDARD Item; an Item without a record is neither lot-tracked nor dual-quantity.
+One record per STANDARD Item; an Item without a record is neither lot-tracked nor dual-quantity. A record is never deleted and its isActiveFl stays true: the Owner clears an Item's settings by saving lotTrackedFl false and dualQuantityFl false (RULE-INV-042 and RULE-INV-043 apply), after which the Item is treated exactly as an Item without a record.
 
 | Field | Logical type | Required | Values / source | Notes | Label-ar | Label-en |
 |---|---|---|---|---|---|---|
@@ -1204,11 +1206,11 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 
 ### REQ-INV-058 — Record a repeated submission once
   Pattern    : unwanted
-  Statement  : If a receipt, issue or reservation request repeats an idempotency key already recorded, then the system shall return the first result and record nothing new.
+  Statement  : If a receipt, issue or reservation request repeats an idempotency key already recorded with the same request, then the system shall return the first result and record nothing new.
   Traces     : US-INV-019, US-INV-001
   Entities   : ENT-INV-004, ENT-INV-005
   Rationale  : An offline sale synchronised twice is never counted twice.
-  Source     : RULE-INV-024; erp-core common idempotency
+  Source     : RULE-INV-024, RULE-INV-050; erp-core common idempotency
   Priority   : HIGH
 
 #### AC-INV-064 — [REQ-INV-058]
@@ -1750,7 +1752,7 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 #### AC-INV-104 — [REQ-INV-094]
   Given  : a DRAFT count with 3 lines
   When   : the user cancels it
-  Then   : its statusCode is CANCELLED and no Stock adjustment references it
+  Then   : its statusCode is CANCELLED, its adjustmentPk is null, and the count of Stock moves with its sourceDocRef is 0
 
 ### REQ-INV-095 — Search and read stock counts
   Pattern    : event
@@ -1830,7 +1832,7 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
   Then   : the adjustment is POSTED, 1 ADJUSTMENT_OUT of 2 at 23.0000 is recorded and V on-hand in W is 8
 
 #### AC-INV-111 — [REQ-INV-099]
-  Given  : a DRAFT adjustment with 1 line whose quantityChange is 0 and whose measureQtyChange is empty
+  Given  : dualQuantity on; a DRAFT adjustment saved with 1 line of Item I's Variant whose quantityChange is 0 and whose measureQtyChange is −0.500, while I was dual-quantity; I's dual quantity then cleared (no balance of I holds a measure)
   When   : the user posts it
   Then   : it stays DRAFT and the message «أدخل تغيّرًا في الكمية أو القياس لا يساوي صفرًا.» / "Enter a non-zero change of quantity or measure." is shown (RULE-INV-034)
 
@@ -2158,9 +2160,9 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 
 ### REQ-INV-122 — Refuse a dual-quantity move without its measure
   Pattern    : unwanted
-  Statement  : If a receipt, issue, transfer line or count line of a dual-quantity Item carries no measure quantity while the dualQuantity capability flag is on, then the system shall refuse it.
+  Statement  : If a receipt, issue, transfer line or count line of a dual-quantity Item carries no measure quantity, or an adjustment or opening stock line of a dual-quantity Item has a non-zero quantity change and no non-zero measure change, while the dualQuantity capability flag is on, then the system shall refuse it.
   Traces     : US-INV-025
-  Entities   : ENT-INV-004, ENT-INV-007, ENT-INV-009
+  Entities   : ENT-INV-004, ENT-INV-007, ENT-INV-009, ENT-INV-011
   Rationale  : Both quantities stay complete.
   Source     : RULE-INV-040
   Priority   : LOW
@@ -2264,7 +2266,7 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 #### AC-INV-144 — [REQ-INV-128]
   Given  : lotExpiry off
   When   : the Owner sends a request marking "Milk 1L" as tracked by lot
-  Then   : nothing is saved and the message «فعِّل مفتاح القدرة «التشغيلة والصلاحية» أولًا.» / "Switch on the lot and expiry capability flag first." is returned
+  Then   : nothing is saved and the message «فعِّل مفتاح القدرة الخاص بهذا الإعداد أولًا.» / "Switch on the capability flag for this setting first." is returned (RULE-INV-044)
 
 ### REQ-INV-129 — Read Item stock settings
   Pattern    : event
@@ -2278,7 +2280,7 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 #### AC-INV-145 — [REQ-INV-129]
   Given  : Item "Rice 5kg" with no Item stock settings
   When   : PUR requests its stock settings
-  Then   : the answer is lotTrackedFl false, dualQuantityFl false and an empty measure unit
+  Then   : the answer holds exactly 3 values — lotTrackedFl false, dualQuantityFl false and measureUomCode empty — and 0 Item stock settings records exist for "Rice 5kg" afterwards
 
 ### REQ-INV-130 — Answer the capability turn-off check
   Pattern    : event
@@ -2306,7 +2308,7 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 #### AC-INV-147 — [REQ-INV-131]
   Given  : 3 Items with lotTrackedFl true
   When   : the flag owner asks whether lotExpiry can be turned off
-  Then   : the answer is allowed false, dependent count 3, the 3 Items, and the message «لا يمكن إيقاف «التشغيلة والصلاحية»: 3 أصناف تُتتبَّع بالتشغيلة. ألغِ تتبع التشغيلة لها أولًا.» / "Lot and expiry cannot be switched off: 3 Items are tracked by lot. Clear their lot tracking first."
+  Then   : the answer is allowed false, dependent count 3, the 3 Items, and the message «لا يمكن إيقاف «التشغيلة والصلاحية»: 3 أصناف تعتمد عليه. ألغِ الإعداد لها أولًا.» / "Lot and expiry cannot be switched off: 3 Items depend on it. Clear the setting on them first." (RULE-INV-046 with {flag} «التشغيلة والصلاحية» / "Lot and expiry" and {count} 3)
 
 ### REQ-INV-132 — Read capability flags through FeatureFlags only
   Pattern    : ubiquitous
@@ -2334,7 +2336,7 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 #### AC-INV-149 — [REQ-INV-133]
   Given  : a tenant with activity "Grocery & food", lotExpiry on, and lot-tracked Variant V
   When   : the activity changes to "Cleaning supplies, feed" with lotExpiry still on, and PUR then receives V
-  Then   : the receipt still requires a lot number and expiry date, exactly as before the change
+  Then   : the receipt without a lot number is refused with code INV-422-LOT-EXPIRY-REQUIRED and 0 Stock moves are recorded, exactly as before the change
 
 ### REQ-INV-134 — Hide lot surfaces while lotExpiry is off
   Pattern    : optional
@@ -2569,20 +2571,21 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 ### RULE-INV-018 — Stock lines name an active Variant of a STANDARD Item
   Scope      : ENT-INV-004, ENT-INV-005, ENT-INV-007, ENT-INV-009, ENT-INV-011
   Trigger    : on submit; on save; on post
-  Statement  : The system shall prevent a stock line whose Variant or Item is inactive in CAT, and a transfer, count or adjustment line whose Variant belongs to a BUNDLE Item.
+  Statement  : The system shall prevent a stock line whose Variant or Item is inactive in CAT, and a receipt, customer return (RETURN_IN), transfer, count or adjustment line whose Variant belongs to a BUNDLE Item; only an issue or a reservation names a bundle Variant, and it is moved through its components (REQ-INV-049, REQ-INV-053).
   Message    : ar: متغيّر الصنف غير نشط. · en: The Variant is inactive.
   Traces     : REQ-INV-043, REQ-INV-051, REQ-INV-052, REQ-INV-078, REQ-INV-088, REQ-INV-097, REQ-INV-070
   Data source: ENT-INV-004.variantFk, ENT-INV-005.variantFk, ENT-INV-007.variantFk, ENT-INV-009.variantFk, ENT-INV-011.variantFk
   Source     : CON-CAT-007, CON-CAT-008 (isActiveFl, itemKindCode); POL-INV-014 (a bundle holds no stock)
-  Test-Hint  : the Variant's active state is read from CAT at the moment of the request.
+  Test-Hint  : the Variant's active state is read from CAT at the moment of the request; a receipt of a bundle Variant is refused, never exploded.
 
 ### RULE-INV-019 — No online decrease below zero while negative stock is disallowed
   Scope      : ENT-INV-004, ENT-INV-006, ENT-INV-010
   Trigger    : on submit of an issue; on post of a transfer or adjustment
-  Statement  : The system shall prevent an online stock decrease that would take the on-hand quantity of a Variant in a warehouse below zero when the cu setting INV_ALLOW_NEGATIVE_STOCK is false, and shall never apply this check to a move with offlineFl true.
+  Statement  : The system shall prevent an online stock decrease that would take the on-hand quantity of a Variant in a warehouse below zero, or a decrease that names a lot and would take that lot's on-hand quantity in the warehouse below zero, when the cu setting INV_ALLOW_NEGATIVE_STOCK is false, and shall never apply this check to a move with offlineFl true.
   Message    : ar: الرصيد لا يكفي: المتاح في المستودع {onHand}. الرصيد السالب غير مسموح. · en: Not enough stock: {onHand} on hand in this warehouse. Negative stock is not allowed.
   Traces     : REQ-INV-067, REQ-INV-083, REQ-INV-069
-  Data source: ENT-INV-003.onHandQty, ENT-INV-004.offlineFl
+  Data source: ENT-INV-003.onHandQty, ENT-INV-003.lotFk, ENT-INV-004.offlineFl
+  Test-Hint  : for a decrease that names a lot, {onHand} is the on-hand of that lot in the warehouse — a warehouse total that covers the decrease does not let a lot go below zero.
   Source     : POL-INV-018, POL-INV-020; INV-P08
 
 ### RULE-INV-020 — No reservation beyond availability while negative stock is disallowed
@@ -2705,9 +2708,10 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
 ### RULE-INV-033 — An adjustment has an active reason
   Scope      : ENT-INV-010
   Trigger    : on save; on post
-  Statement  : The system shall require reasonCode to be an active value of INV_ADJUSTMENT_REASON.
+  Statement  : The system shall require reasonCode to be an active value of INV_ADJUSTMENT_REASON other than OPENING_STOCK on every adjustment saved or posted from the stock adjustment screen, and shall not check the reason of a system-generated adjustment — the COUNT_DIFFERENCE adjustment of a count posting and the OPENING_STOCK adjustment of an opening stock load — whose reason the system writes itself.
   Message    : ar: اختر سبب التسوية. · en: Choose the adjustment reason.
-  Traces     : REQ-INV-101
+  Traces     : REQ-INV-101, REQ-INV-092, REQ-INV-070
+  Test-Hint  : a tenant that deactivates COUNT_DIFFERENCE can still post a count; OPENING_STOCK is reachable only through the opening stock load (REQ-INV-070), whose page action only the Owner holds.
   Data source: ENT-INV-010.reasonCode
   Source     : US-INV-015; registry LOOKUPS OWNED
 
@@ -2767,12 +2771,12 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
   Source     : INV-P10
 
 ### RULE-INV-040 — Lines of Dual quantity Items carry their measure
-  Scope      : ENT-INV-004, ENT-INV-007, ENT-INV-009
+  Scope      : ENT-INV-004, ENT-INV-007, ENT-INV-009, ENT-INV-011
   Trigger    : on submit; on save; on post
-  Statement  : The system shall require a measure quantity greater than zero on every receipt, issue and transfer line, and a counted measure on every count line, of an Item whose dualQuantityFl is true while the dualQuantity capability flag is on.
+  Statement  : The system shall require a measure quantity greater than zero on every receipt, issue and transfer line, a counted measure on every count line, and a non-zero measure change on every adjustment or opening stock line with a non-zero quantity change, of an Item whose dualQuantityFl is true while the dualQuantity capability flag is on.
   Message    : ar: أدخل القياس (الوزن أو الطول) لهذا الصنف. · en: Enter the measure (weight or length) for this Item.
   Traces     : REQ-INV-122, REQ-INV-120
-  Data source: ENT-INV-014.dualQuantityFl, ENT-INV-004.measureQty, ENT-INV-007.measureQty, ENT-INV-009.countedMeasureQty
+  Data source: ENT-INV-014.dualQuantityFl, ENT-INV-004.measureQty, ENT-INV-007.measureQty, ENT-INV-009.countedMeasureQty, ENT-INV-011.quantityChange, ENT-INV-011.measureQtyChange
   Source     : POL-INV-009
 
 ### RULE-INV-041 — A dual-quantity Item has a measure unit
@@ -2857,8 +2861,27 @@ Priorities come from the stories (INV-P11). Capability flags are read through th
   Source     : A7 reservation lifecycle; domain best practice (a reservation is consumed only by its own document)
   Test-Hint  : an unrelated reservation keeps its reservedQty and the available quantity is unchanged.
 
-## A6 — Lookups
+### RULE-INV-050 — A reused idempotency key carries the same request
+  Scope      : ENT-INV-004, ENT-INV-005
+  Trigger    : on submit of a receipt, issue or reservation whose idempotency key is already recorded
+  Statement  : The system shall record with every idempotency key a hash of the request it came with, and prevent a receipt, issue or reservation request that repeats a recorded key with a different request hash.
+  Message    : ar: مفتاح عدم التكرار مستخدم لطلب آخر. استخدم مفتاحًا جديدًا لهذا الطلب. · en: This idempotency key was already used for a different request. Use a new key for this request.
+  Traces     : REQ-INV-058
+  Data source: ENT-INV-004.idempotencyKey, ENT-INV-004.requestHash, ENT-INV-005.idempotencyKey, ENT-INV-005.requestHash
+  Source     : domain best practice (idempotent request handling); RULE-INV-024
+  Test-Hint  : the records of the first request are unchanged and nothing new is recorded; the same key with the same request still returns the first result (RULE-INV-024).
 
+### RULE-INV-051 — A stock document is not dated after today
+  Scope      : ENT-INV-006, ENT-INV-008, ENT-INV-010
+  Trigger    : on save of a transfer, count or adjustment; on submit of an opening stock load
+  Statement  : The system shall prevent a transfer, stock count, stock adjustment or opening stock load whose docDate is after today in the tenant's time zone.
+  Message    : ar: تاريخ المستند لا يكون بعد اليوم. · en: The document date cannot be after today.
+  Traces     : REQ-INV-078, REQ-INV-079, REQ-INV-087, REQ-INV-097, REQ-INV-070
+  Data source: ENT-INV-006.docDate, ENT-INV-008.docDate, ENT-INV-010.docDate
+  Source     : domain best practice (a stock document records what has already happened)
+  Test-Hint  : a document dated today is accepted; "today" uses the same tenant time zone as RULE-INV-038.
+
+## A6 — Lookups
 All values are loaded at runtime from the core lookup module (`mdl`); no enumeration is hard-coded in an API or field specification (profile LOOKUPS rule).
 
 ```yaml name=lookups
@@ -2906,7 +2929,7 @@ Labels per language:
 | | STOREFRONT_ORDER | طلب المتجر الإلكتروني | Storefront order |
 | INV_CHANGE_KIND | CREATED / UPDATED / DEACTIVATED / REACTIVATED / DEFAULT_CHANGED | أُنشئ / عُدِّل / أُوقف / أُعيد تفعيله / أصبح افتراضيًا | Created / Updated / Deactivated / Reactivated / Set as default |
 
-Rationale: each closed set above is fixed by a requirement of this SRS; INV_ADJUSTMENT_REASON and INV_SOURCE_DOC_TYPE are open because tenants add reasons and calling modules add document types as data. COUNT_DIFFERENCE, OPENING_STOCK and EXPIRY_WRITE_OFF are used by REQ-INV-092, REQ-INV-070 and REQ-INV-114 and stay active.
+Rationale: each closed set above is fixed by a requirement of this SRS; INV_ADJUSTMENT_REASON and INV_SOURCE_DOC_TYPE are open because tenants add reasons and calling modules add document types as data. COUNT_DIFFERENCE and OPENING_STOCK are written by the system (REQ-INV-092, REQ-INV-070), which does not check that the tenant keeps them active (RULE-INV-033), so a tenant that deactivates either still posts counts and opening stock; EXPIRY_WRITE_OFF (REQ-INV-114) is chosen by the user and offered while active. A seeded value that a tenant cannot deactivate is asked of the core lookup module (business-policies-inv PLATFORM FINDINGS row 5).
 
 **Lookups consumed:**
 
@@ -2965,11 +2988,11 @@ INV consumes no other business module. PUR, SLS and SFR call INV (edges PUR → 
 | read branch | branchPk | Branch | — | REQ-INV-028 | PUR, SLS, STL, TAX, INS |
 | list active branches | — | active Branches + active count | — | REQ-INV-033 | PUR, SLS, STL, TAX |
 | read availability | variantPk, warehousePk (optional) | on-hand, reserved, available, measure per warehouse and total | RULE-INV-038 | REQ-INV-040, REQ-INV-041, REQ-INV-042, REQ-INV-121 | SLS, SFR, INS |
-| reserve | variantPk, warehousePk, quantity, source document, idempotency key | Reservation(s) with shortfall | RULE-INV-007, 008, 017, 018, 020, 022, 024 | REQ-INV-043, REQ-INV-044, REQ-INV-045, REQ-INV-049 | SLS, SFR |
+| reserve | variantPk, warehousePk, quantity, source document, idempotency key | Reservation(s) with shortfall | RULE-INV-007, 008, 017, 018, 020, 022, 024, 050 | REQ-INV-043, REQ-INV-044, REQ-INV-045, REQ-INV-049 | SLS, SFR |
 | release reservation | reservationPk | Reservation | RULE-INV-021 | REQ-INV-046 | SLS, SFR |
 | reservations of a document | source document type + identifier | Reservations | — | REQ-INV-050 | SLS, SFR |
-| receive stock | warehouse, move type RECEIPT / RETURN_IN, lines {variantPk, quantity, unitCost, lot number, expiry date, measure}, source document, idempotency key | Stock moves | RULE-INV-007, 008, 017, 018, 024, 025, 035, 036, 040 | REQ-INV-051, REQ-INV-105, REQ-INV-106, REQ-INV-120 | PUR, SLS |
-| issue stock | warehouse, move type ISSUE / RETURN_OUT, sale flag, offline flag, lines {variantPk, quantity, lot (non-sale), measure, reservationPk}, source document, idempotency key | Stock moves | RULE-INV-007, 008, 017, 018, 019, 021, 022, 024, 038, 039, 040, 049 | REQ-INV-052, REQ-INV-053, REQ-INV-069, REQ-INV-110, REQ-INV-111 | PUR, SLS, SFR |
+| receive stock | warehouse, move type RECEIPT / RETURN_IN, lines {variantPk, quantity, unitCost, lot number, expiry date, measure}, source document, idempotency key | Stock moves | RULE-INV-007, 008, 017, 018, 024, 025, 035, 036, 040, 050 | REQ-INV-051, REQ-INV-105, REQ-INV-106, REQ-INV-120 | PUR, SLS |
+| issue stock | warehouse, move type ISSUE / RETURN_OUT, sale flag, offline flag, lines {variantPk, quantity, lot (non-sale), measure, reservationPk}, source document, idempotency key | Stock moves | RULE-INV-007, 008, 017, 018, 019, 021, 022, 024, 038, 039, 040, 049, 050 | REQ-INV-052, REQ-INV-053, REQ-INV-069, REQ-INV-110, REQ-INV-111 | PUR, SLS, SFR |
 | read valuation | variantPk | total quantity, average unit cost, stock value | — | REQ-INV-063 | SLS, INS |
 | read lot | lotPk | Lot | — | REQ-INV-109 | PUR, SLS |
 | read Item stock settings | itemPk | lotTrackedFl, dualQuantityFl, measure unit | — | REQ-INV-129 | PUR, SLS |
@@ -2989,7 +3012,7 @@ rows:
   - {given: erp-core, module: modules.sequence, via: com.erp.sequence.crossmodule.NumberSeriesApi, purpose: "issue the codes INV_WAREHOUSE and INV_BRANCH and the document numbers INV_TRANSFER, INV_COUNT and INV_ADJUSTMENT (RULE-INV-001, RULE-INV-010, RULE-INV-030)"}
   - {given: erp-core, module: modules.events, via: com.erp.events.OutboxPublisher, purpose: "record the stock-move event and the inventory master-change event in the change transaction and deliver them after commit (REQ-INV-057, REQ-INV-034)"}
   - {given: erp-core, module: modules.audit, via: com.erp.audit.crossmodule.AuditApi, purpose: "record the change history of stock documents, warehouses, branches, lots and Item stock settings (REQ-INV-077)"}
-  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "load the values of the INV_* lookup keys and the CAT unit-of-measure key at runtime (A6)"}
+  - {given: erp-core, module: modules.mdl, via: com.erp.mdl.crossmodule.MdlLookupApi, purpose: "load the values of the INV_* lookup keys and the CAT unit-of-measure key at runtime, and serve INV's six lookup keys to INV's screens through the common helper OwnedLookups.read over this interface (A6)"}
   - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantProvisioningContributor, purpose: "seed the default branch and the default warehouse of each new tenant (REQ-INV-020, REQ-INV-001)"}
   - {given: erp-core, module: modules.tenant, via: com.erp.tenant.TenantRunner, purpose: "run the daily near-expiry check once per tenant (REQ-INV-117)"}
   - {given: erp-core, module: modules.sec, via: com.erp.sec.permission.PermissionContributor, purpose: "register the INV page codes so the security module derives their VIEW/CREATE/UPDATE/DELETE permissions, and the grants of the Owner, Seller/Cashier and Warehouse role presets (REQ-INV-136, REQ-INV-137)"}
@@ -3008,16 +3031,14 @@ Every screen reads the capability flags and the active warehouse and branch coun
 ## SCR-REQ-INV-001 — المستودعات / Warehouses
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | Add, maintain, deactivate and reactivate warehouses and choose the default |
-| Entities | ENT-INV-001 |
-| Operations | search, list, create, read, update, deactivate, reactivate, set as default |
-| Users | Owner (maintain); Warehouse (view) |
-| Navigation | Inventory → Setup → Warehouses; from: inventory home; to: SCR-REQ-INV-003 (balances of a warehouse) |
-| Content shape | flat record |
-| Traces | REQ-INV-003, REQ-INV-004, REQ-INV-005, REQ-INV-006, REQ-INV-007, REQ-INV-008, REQ-INV-009, REQ-INV-015, REQ-INV-030, REQ-INV-031 |
-| Composite | Search + Entry — one screen requirement |
+  Purpose      : Add, maintain, deactivate and reactivate warehouses and choose the default
+  Entities     : ENT-INV-001
+  Operations   : search, list, create, read, update, deactivate, reactivate, set as default
+  Users        : Owner (maintain); Warehouse (view)
+  Navigation   : Inventory → Setup → Warehouses; from: inventory home; to: SCR-REQ-INV-003 (balances of a warehouse)
+  Content shape: flat record
+  Traces       : REQ-INV-003, REQ-INV-004, REQ-INV-005, REQ-INV-006, REQ-INV-007, REQ-INV-008, REQ-INV-009, REQ-INV-015, REQ-INV-030, REQ-INV-031
+  Composite    : Search + Entry — one screen requirement
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3056,16 +3077,14 @@ Page code `INV_WAREHOUSES` · VIEW: Owner, Warehouse · CREATE: Owner · UPDATE:
 ## SCR-REQ-INV-002 — الفروع / Branches
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | Add, maintain, deactivate and reactivate branches and choose the default |
-| Entities | ENT-INV-002 |
-| Operations | search, list, create, read, update, deactivate, reactivate, set as default |
-| Users | Owner (maintain); Warehouse (view) |
-| Navigation | Inventory → Setup → Branches; from: inventory home; to: SCR-REQ-INV-001 (warehouses of a branch) |
-| Content shape | flat record |
-| Traces | REQ-INV-022, REQ-INV-023, REQ-INV-024, REQ-INV-025, REQ-INV-026, REQ-INV-027, REQ-INV-028, REQ-INV-032 |
-| Composite | Search + Entry — one screen requirement |
+  Purpose      : Add, maintain, deactivate and reactivate branches and choose the default
+  Entities     : ENT-INV-002
+  Operations   : search, list, create, read, update, deactivate, reactivate, set as default
+  Users        : Owner (maintain); Warehouse (view)
+  Navigation   : Inventory → Setup → Branches; from: inventory home; to: SCR-REQ-INV-001 (warehouses of a branch)
+  Content shape: flat record
+  Traces       : REQ-INV-022, REQ-INV-023, REQ-INV-024, REQ-INV-025, REQ-INV-026, REQ-INV-027, REQ-INV-028, REQ-INV-032
+  Composite    : Search + Entry — one screen requirement
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3102,16 +3121,14 @@ Page code `INV_BRANCHES` · VIEW: Owner, Warehouse · CREATE: Owner · UPDATE: O
 ## SCR-REQ-INV-003 — أرصدة المخزون / Stock balances
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | See on-hand, reserved and available stock per Variant and warehouse, with lot, expiry and measure where their flags are on |
-| Entities | ENT-INV-003, ENT-INV-005, ENT-INV-012 |
-| Operations | search, list, read |
-| Users | Owner, Warehouse, Seller/Cashier |
-| Navigation | Inventory → Stock balances; from: inventory home, SCR-REQ-INV-001; to: SCR-REQ-INV-004 (moves of a row) |
-| Content shape | flat record (inquiry list) |
-| Traces | REQ-INV-035, REQ-INV-038, REQ-INV-039, REQ-INV-041, REQ-INV-042, REQ-INV-115, REQ-INV-121, REQ-INV-012 |
-| Composite | Search + read-only result — one screen requirement |
+  Purpose      : See on-hand, reserved and available stock per Variant and warehouse, with lot, expiry and measure where their flags are on
+  Entities     : ENT-INV-003, ENT-INV-005, ENT-INV-012
+  Operations   : search, list, read
+  Users        : Owner, Warehouse, Seller/Cashier
+  Navigation   : Inventory → Stock balances; from: inventory home, SCR-REQ-INV-001; to: SCR-REQ-INV-004 (moves of a row)
+  Content shape: flat record (inquiry list)
+  Traces       : REQ-INV-035, REQ-INV-038, REQ-INV-039, REQ-INV-041, REQ-INV-042, REQ-INV-115, REQ-INV-121, REQ-INV-012
+  Composite    : Search + read-only result — one screen requirement
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3140,16 +3157,14 @@ Page code `INV_STOCK_BALANCES` · VIEW: Owner, Warehouse, Seller/Cashier · CREA
 ## SCR-REQ-INV-004 — سجل حركات المخزون / Stock move history
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | Explain any balance through every move and the document that caused it |
-| Entities | ENT-INV-004 |
-| Operations | search, list, read |
-| Users | Owner, Warehouse |
-| Navigation | Inventory → Stock moves; from: SCR-REQ-INV-003 (row), SCR-REQ-INV-005, 006, 007 (document); to: — |
-| Content shape | other (journal of moves with running balance) |
-| Traces | REQ-INV-075, REQ-INV-076, REQ-INV-056, REQ-INV-055, REQ-INV-016 |
-| Composite | Search + read-only result — one screen requirement |
+  Purpose      : Explain any balance through every move and the document that caused it
+  Entities     : ENT-INV-004
+  Operations   : search, list, read
+  Users        : Owner, Warehouse
+  Navigation   : Inventory → Stock moves; from: SCR-REQ-INV-003 (row), SCR-REQ-INV-005, 006, 007 (document); to: —
+  Content shape: other (journal of moves with running balance)
+  Traces       : REQ-INV-075, REQ-INV-076, REQ-INV-056, REQ-INV-055, REQ-INV-016
+  Composite    : Search + read-only result — one screen requirement
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3178,16 +3193,14 @@ Page code `INV_STOCK_MOVES` · VIEW: Owner, Warehouse · CREATE / UPDATE / DELET
 ## SCR-REQ-INV-005 — التحويلات بين المستودعات / Transfers
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | Move stock between warehouses at unchanged cost |
-| Entities | ENT-INV-006, ENT-INV-007 |
-| Operations | search, list, create, read, update, post, cancel |
-| Users | Owner, Warehouse |
-| Navigation | Inventory → Transfers (shown only with 2 or more active warehouses — REQ-INV-011, REQ-INV-015); from: inventory home; to: SCR-REQ-INV-004 (moves of the transfer) |
-| Content shape | header + repeating lines |
-| Traces | REQ-INV-078, REQ-INV-079, REQ-INV-080, REQ-INV-081, REQ-INV-082, REQ-INV-083, REQ-INV-084, REQ-INV-085, REQ-INV-086, REQ-INV-062, REQ-INV-014 |
-| Composite | Search + Entry (header + lines) — one screen requirement |
+  Purpose      : Move stock between warehouses at unchanged cost
+  Entities     : ENT-INV-006, ENT-INV-007
+  Operations   : search, list, create, read, update, post, cancel
+  Users        : Owner, Warehouse
+  Navigation   : Inventory → Transfers (shown only with 2 or more active warehouses — REQ-INV-011, REQ-INV-015); from: inventory home; to: SCR-REQ-INV-004 (moves of the transfer)
+  Content shape: header + repeating lines
+  Traces       : REQ-INV-078, REQ-INV-079, REQ-INV-080, REQ-INV-081, REQ-INV-082, REQ-INV-083, REQ-INV-084, REQ-INV-085, REQ-INV-086, REQ-INV-062, REQ-INV-014
+  Composite    : Search + Entry (header + lines) — one screen requirement
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3203,7 +3216,7 @@ Header: fromWarehouseFk (mandatory), toWarehouseFk (mandatory), docDate (default
 
 | Action | Operation | RULEs |
 |---|---|---|
-| Save | create / update (REQ-INV-078, REQ-INV-079) | RULE-INV-016, RULE-INV-017, RULE-INV-018, RULE-INV-030, RULE-INV-037, RULE-INV-040, RULE-INV-048 |
+| Save | create / update (REQ-INV-078, REQ-INV-079) | RULE-INV-016, RULE-INV-017, RULE-INV-018, RULE-INV-030, RULE-INV-037, RULE-INV-040, RULE-INV-048, RULE-INV-051 |
 | Post | post (REQ-INV-080, REQ-INV-083, REQ-INV-084) | RULE-INV-016, RULE-INV-018, RULE-INV-019, RULE-INV-029, RULE-INV-031, RULE-INV-037, RULE-INV-040 |
 | Cancel | cancel (REQ-INV-081) | RULE-INV-029 |
 
@@ -3215,24 +3228,22 @@ Page code `INV_TRANSFERS` · VIEW: Owner, Warehouse · CREATE: Owner, Warehouse 
 |---|---|---|---|---|---|---|
 | search transfers | GET | /api/v1/inv/transfers | docNo, dateFrom, dateTo, fromWarehousePk, toWarehousePk, statusCode, page | Page<Transfer> | — | REQ-INV-086 |
 | read transfer | GET | /api/v1/inv/transfers/{id} | id | Transfer with lines | — | REQ-INV-086 |
-| create transfer | POST | /api/v1/inv/transfers | header, lines | Transfer | RULE-INV-016, 017, 018, 030, 037, 040, 048 | REQ-INV-078, REQ-INV-014, REQ-INV-082 |
-| update transfer | PUT | /api/v1/inv/transfers/{id} | header, lines | Transfer | RULE-INV-016, 017, 018, 029, 037, 040, 048 | REQ-INV-079, REQ-INV-085 |
+| create transfer | POST | /api/v1/inv/transfers | header, lines | Transfer | RULE-INV-016, 017, 018, 030, 037, 040, 048, 051 | REQ-INV-078, REQ-INV-014, REQ-INV-082 |
+| update transfer | PUT | /api/v1/inv/transfers/{id} | header, lines | Transfer | RULE-INV-016, 017, 018, 029, 037, 040, 048, 051 | REQ-INV-079, REQ-INV-085 |
 | post transfer | PATCH | /api/v1/inv/transfers/{id}/post | id | Transfer | RULE-INV-016, 019, 029, 031 | REQ-INV-080, REQ-INV-083, REQ-INV-084, REQ-INV-062 |
 | cancel transfer | DELETE | /api/v1/inv/transfers/{id} | id | confirmation | RULE-INV-029 | REQ-INV-081 |
 
 ## SCR-REQ-INV-006 — جرد المخزون / Stock counts
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | Count stock on the shelf from a phone's web browser and post the differences |
-| Entities | ENT-INV-008, ENT-INV-009, ENT-INV-010 |
-| Operations | search, list, create, read, update (lines), post, cancel |
-| Users | Owner, Warehouse |
-| Navigation | Inventory → Stock counts; from: inventory home; to: SCR-REQ-INV-007 (resulting adjustment) |
-| Content shape | header + repeating lines (scan list) |
-| Traces | REQ-INV-087, REQ-INV-088, REQ-INV-089, REQ-INV-090, REQ-INV-091, REQ-INV-092, REQ-INV-093, REQ-INV-094, REQ-INV-095, REQ-INV-096 |
-| Composite | Search + Entry (header + lines) — one screen requirement; mobile-first (REQ-INV-090) |
+  Purpose      : Count stock on the shelf from a phone's web browser and post the differences
+  Entities     : ENT-INV-008, ENT-INV-009, ENT-INV-010
+  Operations   : search, list, create, read, update (lines), post, cancel
+  Users        : Owner, Warehouse
+  Navigation   : Inventory → Stock counts; from: inventory home; to: SCR-REQ-INV-007 (resulting adjustment)
+  Content shape: header + repeating lines (scan list)
+  Traces       : REQ-INV-087, REQ-INV-088, REQ-INV-089, REQ-INV-090, REQ-INV-091, REQ-INV-092, REQ-INV-093, REQ-INV-094, REQ-INV-095, REQ-INV-096
+  Composite    : Search + Entry (header + lines) — one screen requirement; mobile-first (REQ-INV-090)
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3247,7 +3258,7 @@ Header: warehouseFk (mandatory; hidden and defaulted while one — REQ-INV-013),
 
 | Action | Operation | RULEs |
 |---|---|---|
-| Start count | create (REQ-INV-087) | RULE-INV-007, RULE-INV-008, RULE-INV-030 |
+| Start count | create (REQ-INV-087) | RULE-INV-007, RULE-INV-008, RULE-INV-030, RULE-INV-051 |
 | Scan / add line | update lines (REQ-INV-088, REQ-INV-091) | RULE-INV-018, RULE-INV-032, RULE-INV-037, RULE-INV-040, RULE-INV-047, RULE-INV-029 |
 | Change / remove line | update lines (REQ-INV-089) | RULE-INV-047, RULE-INV-029 |
 | Post | post (REQ-INV-092, REQ-INV-093) | RULE-INV-007, RULE-INV-018, RULE-INV-019, RULE-INV-029, RULE-INV-031, RULE-INV-037, RULE-INV-040 |
@@ -3261,7 +3272,7 @@ Page code `INV_COUNTS` · VIEW: Owner, Warehouse · CREATE: Owner, Warehouse · 
 |---|---|---|---|---|---|---|
 | search counts | GET | /api/v1/inv/stock-counts | docNo, dateFrom, dateTo, warehousePk, statusCode, page | Page<Stock count> | — | REQ-INV-095 |
 | read count | GET | /api/v1/inv/stock-counts/{id} | id | Stock count with lines | — | REQ-INV-095 |
-| create count | POST | /api/v1/inv/stock-counts | warehousePk, noteText | Stock count | RULE-INV-007, 008, 030 | REQ-INV-087 |
+| create count | POST | /api/v1/inv/stock-counts | warehousePk, noteText | Stock count | RULE-INV-007, 008, 030, 051 | REQ-INV-087 |
 | add counted quantity | POST | /api/v1/inv/stock-counts/{id}/lines | barcode or variantPk, countedQty, lotPk, countedMeasureQty | Stock count line | RULE-INV-018, 029, 032, 037, 040, 047 | REQ-INV-088, REQ-INV-091, REQ-INV-096 |
 | change line | PUT | /api/v1/inv/stock-counts/{id}/lines/{lineId} | countedQty, countedMeasureQty | Stock count line | RULE-INV-029, 047 | REQ-INV-089 |
 | remove line | DELETE | /api/v1/inv/stock-counts/{id}/lines/{lineId} | lineId | confirmation | RULE-INV-029 | REQ-INV-089 |
@@ -3271,16 +3282,14 @@ Page code `INV_COUNTS` · VIEW: Owner, Warehouse · CREATE: Owner, Warehouse · 
 ## SCR-REQ-INV-007 — تسويات المخزون / Stock adjustments
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | Correct stock with a stated reason, including the write-off of expired lots |
-| Entities | ENT-INV-010, ENT-INV-011 |
-| Operations | search, list, create, read, update, post, cancel |
-| Users | Owner, Warehouse |
-| Navigation | Inventory → Stock adjustments; from: inventory home, SCR-REQ-INV-006, SCR-REQ-INV-008 (write off a lot); to: SCR-REQ-INV-004 |
-| Content shape | header + repeating lines with totals (line value) |
-| Traces | REQ-INV-097, REQ-INV-098, REQ-INV-099, REQ-INV-100, REQ-INV-101, REQ-INV-102, REQ-INV-103, REQ-INV-104, REQ-INV-114, REQ-INV-123, REQ-INV-067 |
-| Composite | Search + Entry (header + lines) — one screen requirement |
+  Purpose      : Correct stock with a stated reason, including the write-off of expired lots
+  Entities     : ENT-INV-010, ENT-INV-011
+  Operations   : search, list, create, read, update, post, cancel
+  Users        : Owner, Warehouse
+  Navigation   : Inventory → Stock adjustments; from: inventory home, SCR-REQ-INV-006, SCR-REQ-INV-008 (write off a lot); to: SCR-REQ-INV-004
+  Content shape: header + repeating lines with totals (line value)
+  Traces       : REQ-INV-097, REQ-INV-098, REQ-INV-099, REQ-INV-100, REQ-INV-101, REQ-INV-102, REQ-INV-103, REQ-INV-104, REQ-INV-114, REQ-INV-123, REQ-INV-067
+  Composite    : Search + Entry (header + lines) — one screen requirement
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3296,8 +3305,8 @@ Header: reasonCode (mandatory), warehouseFk (hidden and defaulted while one), no
 
 | Action | Operation | RULEs |
 |---|---|---|
-| Save | create / update (REQ-INV-097, REQ-INV-098) | RULE-INV-007, RULE-INV-008, RULE-INV-017, RULE-INV-018, RULE-INV-025, RULE-INV-030, RULE-INV-033, RULE-INV-034, RULE-INV-037, RULE-INV-048 |
-| Post | post (REQ-INV-099, REQ-INV-102, REQ-INV-114, REQ-INV-123) | RULE-INV-007, RULE-INV-008, RULE-INV-017, RULE-INV-018, RULE-INV-019, RULE-INV-025, RULE-INV-029, RULE-INV-031, RULE-INV-034, RULE-INV-035, RULE-INV-036, RULE-INV-037 |
+| Save | create / update (REQ-INV-097, REQ-INV-098) | RULE-INV-007, RULE-INV-008, RULE-INV-017, RULE-INV-018, RULE-INV-025, RULE-INV-030, RULE-INV-033, RULE-INV-034, RULE-INV-037, RULE-INV-040, RULE-INV-048, RULE-INV-051 |
+| Post | post (REQ-INV-099, REQ-INV-102, REQ-INV-114, REQ-INV-123) | RULE-INV-007, RULE-INV-008, RULE-INV-017, RULE-INV-018, RULE-INV-019, RULE-INV-025, RULE-INV-029, RULE-INV-031, RULE-INV-033, RULE-INV-034, RULE-INV-035, RULE-INV-036, RULE-INV-037, RULE-INV-040 |
 | Cancel | cancel (REQ-INV-100) | RULE-INV-029 |
 
 ### B4 — Access
@@ -3308,24 +3317,22 @@ Page code `INV_ADJUSTMENTS` · VIEW: Owner, Warehouse · CREATE: Owner, Warehous
 |---|---|---|---|---|---|---|
 | search adjustments | GET | /api/v1/inv/stock-adjustments | docNo, dateFrom, dateTo, warehousePk, reasonCode, statusCode, page | Page<Stock adjustment> | — | REQ-INV-104 |
 | read adjustment | GET | /api/v1/inv/stock-adjustments/{id} | id | Stock adjustment with lines | — | REQ-INV-104 |
-| create adjustment | POST | /api/v1/inv/stock-adjustments | header, lines | Stock adjustment | RULE-INV-007, 008, 018, 030, 033, 034, 037, 048 | REQ-INV-097, REQ-INV-101 |
-| update adjustment | PUT | /api/v1/inv/stock-adjustments/{id} | header, lines | Stock adjustment | RULE-INV-018, 029, 033, 034, 037, 048 | REQ-INV-098, REQ-INV-103 |
-| post adjustment | PATCH | /api/v1/inv/stock-adjustments/{id}/post | id | Stock adjustment | RULE-INV-019, 025, 029, 031, 034, 035, 036 | REQ-INV-099, REQ-INV-102, REQ-INV-114, REQ-INV-123, REQ-INV-067 |
+| create adjustment | POST | /api/v1/inv/stock-adjustments | header, lines | Stock adjustment | RULE-INV-007, 008, 018, 030, 033, 034, 037, 040, 048, 051 | REQ-INV-097, REQ-INV-101 |
+| update adjustment | PUT | /api/v1/inv/stock-adjustments/{id} | header, lines | Stock adjustment | RULE-INV-018, 029, 033, 034, 037, 040, 048 | REQ-INV-098, REQ-INV-103 |
+| post adjustment | PATCH | /api/v1/inv/stock-adjustments/{id}/post | id | Stock adjustment | RULE-INV-019, 025, 029, 031, 033, 034, 035, 036, 040 | REQ-INV-099, REQ-INV-102, REQ-INV-114, REQ-INV-123, REQ-INV-067 |
 | cancel adjustment | DELETE | /api/v1/inv/stock-adjustments/{id} | id | confirmation | RULE-INV-029 | REQ-INV-100 |
 
 ## SCR-REQ-INV-008 — التشغيلات وقرب انتهاء الصلاحية / Lots and near expiry
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | See the lots held, which are near expiry or expired, and correct a lot's expiry date |
-| Entities | ENT-INV-012, ENT-INV-003 |
-| Operations | search, list, read, update (expiry correction), custom (near-expiry view) |
-| Users | Owner (update), Warehouse (view) |
-| Navigation | Inventory → Lots (shown only with lotExpiry on — REQ-INV-134); from: inventory home, near-expiry notification; to: SCR-REQ-INV-007 (write off an expired lot), SCR-REQ-INV-003 |
-| Content shape | flat record (list with a near-expiry view) |
-| Traces | REQ-INV-108, REQ-INV-109, REQ-INV-115, REQ-INV-116, REQ-INV-117 |
-| Composite | Search + Entry — one screen requirement |
+  Purpose      : See the lots held, which are near expiry or expired, and correct a lot's expiry date
+  Entities     : ENT-INV-012, ENT-INV-003
+  Operations   : search, list, read, update (expiry correction), custom (near-expiry view)
+  Users        : Owner (update), Warehouse (view)
+  Navigation   : Inventory → Lots (shown only with lotExpiry on — REQ-INV-134); from: inventory home, near-expiry notification; to: SCR-REQ-INV-007 (write off an expired lot), SCR-REQ-INV-003
+  Content shape: flat record (list with a near-expiry view)
+  Traces       : REQ-INV-108, REQ-INV-109, REQ-INV-115, REQ-INV-116, REQ-INV-117
+  Composite    : Search + Entry — one screen requirement
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3359,16 +3366,14 @@ Page code `INV_LOTS` · VIEW: Owner, Warehouse · UPDATE: Owner · CREATE / DELE
 ## SCR-REQ-INV-009 — إعدادات مخزون الصنف / Item stock settings
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | Mark Items as tracked by lot or as dual-quantity |
-| Entities | ENT-INV-014 |
-| Operations | search, list, create, read, update |
-| Users | Owner (maintain), Warehouse (view) |
-| Navigation | Inventory → Setup → Item stock settings (shown only with lotExpiry or dualQuantity on — REQ-INV-134, REQ-INV-135); from: inventory home; to: — |
-| Content shape | flat record |
-| Traces | REQ-INV-124, REQ-INV-125, REQ-INV-126, REQ-INV-127, REQ-INV-128, REQ-INV-129 |
-| Composite | Search + Entry — one screen requirement |
+  Purpose      : Mark Items as tracked by lot or as dual-quantity
+  Entities     : ENT-INV-014
+  Operations   : search, list, create, read, update
+  Users        : Owner (maintain), Warehouse (view)
+  Navigation   : Inventory → Setup → Item stock settings (shown only with lotExpiry or dualQuantity on — REQ-INV-134, REQ-INV-135); from: inventory home; to: —
+  Content shape: flat record
+  Traces       : REQ-INV-124, REQ-INV-125, REQ-INV-126, REQ-INV-127, REQ-INV-128, REQ-INV-129
+  Composite    : Search + Entry — one screen requirement
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3397,16 +3402,14 @@ Page code `INV_ITEM_STOCK_SETTINGS` · VIEW: Owner, Warehouse · CREATE: Owner �
 ## SCR-REQ-INV-010 — المخزون الافتتاحي / Opening stock
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | Load the quantities and cost of stock already held, one line at a time or up to 1000 rows from the opening stock sheet |
-| Entities | ENT-INV-010, ENT-INV-011 |
-| Operations | create (post), custom (download sheet, bulk load) |
-| Users | Owner |
-| Navigation | Inventory → Setup → Opening stock; from: setup wizard step 5, inventory home; to: SCR-REQ-INV-007 (the posted OPENING_STOCK adjustment) |
-| Content shape | header + repeating lines with totals |
-| Traces | REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-073, REQ-INV-074 |
-| Composite | Entry + bulk load — one screen requirement |
+  Purpose      : Load the quantities and cost of stock already held, one line at a time or up to 1000 rows from the opening stock sheet
+  Entities     : ENT-INV-010, ENT-INV-011
+  Operations   : create (post), custom (download sheet, bulk load)
+  Users        : Owner
+  Navigation   : Inventory → Setup → Opening stock; from: setup wizard step 5, inventory home; to: SCR-REQ-INV-007 (the posted OPENING_STOCK adjustment)
+  Content shape: header + repeating lines with totals
+  Traces       : REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-073, REQ-INV-074
+  Composite    : Entry + bulk load — one screen requirement
 
 ### B2 — Search / list
 Not applicable — posted loads are found on SCR-REQ-INV-007 with reason OPENING_STOCK.
@@ -3417,7 +3420,7 @@ Header: warehouseFk (hidden and defaulted while one). Lines (ENT-INV-011): barco
 | Action | Operation | RULEs |
 |---|---|---|
 | Download sheet | custom (REQ-INV-073) | — |
-| Post / Load | create and post (REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-074) | RULE-INV-017, RULE-INV-018, RULE-INV-025, RULE-INV-026, RULE-INV-027, RULE-INV-028, RULE-INV-035, RULE-INV-036, RULE-INV-040 |
+| Post / Load | create and post (REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-074) | RULE-INV-017, RULE-INV-018, RULE-INV-025, RULE-INV-026, RULE-INV-027, RULE-INV-028, RULE-INV-035, RULE-INV-036, RULE-INV-040, RULE-INV-051 |
 
 ### B4 — Access
 Page code `INV_OPENING_STOCK` · VIEW: Owner · CREATE: Owner · UPDATE / DELETE: not applicable
@@ -3426,21 +3429,19 @@ Page code `INV_OPENING_STOCK` · VIEW: Owner · CREATE: Owner · UPDATE / DELETE
 | Operation | Verb | Path | Inputs | Outputs | RULEs | Traces (REQ) |
 |---|---|---|---|---|---|---|
 | download opening stock sheet | GET | /api/v1/inv/opening-stock/sheet | — | xlsx file | — | REQ-INV-073 |
-| post opening stock | POST | /api/v1/inv/opening-stock | warehousePk, rows (1–1000) | Stock adjustment, or row errors | RULE-INV-018, 025, 026, 027, 028, 035, 036, 040 | REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-074 |
+| post opening stock | POST | /api/v1/inv/opening-stock | warehousePk, rows (1–1000) | Stock adjustment, or row errors | RULE-INV-018, 025, 026, 027, 028, 035, 036, 040, 051 | REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-074 |
 
 ## SCR-REQ-INV-011 — إعدادات المخزون / Inventory settings
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | Choose whether negative stock is allowed and the near-expiry horizon |
-| Entities | — (given `cu` settings INV_ALLOW_NEGATIVE_STOCK, INV_NEAR_EXPIRY_DAYS) |
-| Operations | read, update |
-| Users | Owner |
-| Navigation | Inventory → Setup → Inventory settings; from: inventory home; to: — |
-| Content shape | flat record |
-| Traces | REQ-INV-065, REQ-INV-066, REQ-INV-118, REQ-INV-119 |
-| Composite | Entry — one screen requirement |
+  Purpose      : Choose whether negative stock is allowed and the near-expiry horizon
+  Entities     : — (given `cu` settings INV_ALLOW_NEGATIVE_STOCK, INV_NEAR_EXPIRY_DAYS)
+  Operations   : read, update
+  Users        : Owner
+  Navigation   : Inventory → Setup → Inventory settings; from: inventory home; to: —
+  Content shape: flat record
+  Traces       : REQ-INV-065, REQ-INV-066, REQ-INV-118, REQ-INV-119
+  Composite    : Entry — one screen requirement
 
 ### B2 — Search / list
 Not applicable.
@@ -3464,16 +3465,14 @@ Page code `INV_SETTINGS` · VIEW: Owner · UPDATE: Owner · CREATE / DELETE: not
 ## SCR-REQ-INV-012 — تقييم المخزون / Stock valuation
 
 ### B1 — Definition
-| Item | Value |
-|---|---|
-| Purpose | See what stock is worth: total quantity, weighted-average cost and value per Variant |
-| Entities | ENT-INV-013 |
-| Operations | search, list, read |
-| Users | Owner |
-| Navigation | Inventory → Stock valuation; from: inventory home; to: SCR-REQ-INV-004 (moves of a Variant) |
-| Content shape | flat record (inquiry list with a total value) |
-| Traces | REQ-INV-063, REQ-INV-059, REQ-INV-061 |
-| Composite | Search + read-only result — one screen requirement |
+  Purpose      : See what stock is worth: total quantity, weighted-average cost and value per Variant
+  Entities     : ENT-INV-013
+  Operations   : search, list, read
+  Users        : Owner
+  Navigation   : Inventory → Stock valuation; from: inventory home; to: SCR-REQ-INV-004 (moves of a Variant)
+  Content shape: flat record (inquiry list with a total value)
+  Traces       : REQ-INV-063, REQ-INV-059, REQ-INV-061
+  Composite    : Search + read-only result — one screen requirement
 
 ### B2 — Search / list
 | Filter | Result column | Source |
@@ -3502,25 +3501,25 @@ Every story → ≥ 1 REQ; every REQ → ≥ 1 AC; every RULE → ≥ 1 REQ; eve
 
 | P0.5 | REQ | AC | RULE | ENT | SCR-REQ |
 |---|---|---|---|---|---|
-| US-INV-001 | REQ-INV-035, REQ-INV-036, REQ-INV-037, REQ-INV-040, REQ-INV-051, REQ-INV-052, REQ-INV-058 | AC-INV-040, AC-INV-041, AC-INV-042, AC-INV-045, AC-INV-056, AC-INV-057, AC-INV-058, AC-INV-064 | RULE-INV-017, RULE-INV-018, RULE-INV-024 | ENT-INV-003, ENT-INV-004, ENT-INV-005, ENT-INV-013 | SCR-REQ-INV-003 |
+| US-INV-001 | REQ-INV-035, REQ-INV-036, REQ-INV-037, REQ-INV-040, REQ-INV-051, REQ-INV-052, REQ-INV-058 | AC-INV-040, AC-INV-041, AC-INV-042, AC-INV-045, AC-INV-056, AC-INV-057, AC-INV-058, AC-INV-064 | RULE-INV-017, RULE-INV-018, RULE-INV-024, RULE-INV-050 | ENT-INV-003, ENT-INV-004, ENT-INV-005, ENT-INV-013 | SCR-REQ-INV-003 |
 | US-INV-002 | REQ-INV-036, REQ-INV-038, REQ-INV-039, REQ-INV-040, REQ-INV-041, REQ-INV-137 | AC-INV-041, AC-INV-043, AC-INV-044, AC-INV-045, AC-INV-046, AC-INV-153 | RULE-INV-038 | ENT-INV-003, ENT-INV-004, ENT-INV-005, ENT-INV-012 | SCR-REQ-INV-003 |
 | US-INV-003 | REQ-INV-038, REQ-INV-043, REQ-INV-044, REQ-INV-045, REQ-INV-046, REQ-INV-047, REQ-INV-048, REQ-INV-050 | AC-INV-043, AC-INV-048, AC-INV-049, AC-INV-050, AC-INV-051, AC-INV-052, AC-INV-053, AC-INV-055 | RULE-INV-017, RULE-INV-018, RULE-INV-020, RULE-INV-021, RULE-INV-038, RULE-INV-049 | ENT-INV-003, ENT-INV-004, ENT-INV-005, ENT-INV-012 | SCR-REQ-INV-003 |
 | US-INV-004 | REQ-INV-001, REQ-INV-002 | AC-INV-001, AC-INV-002 | — | ENT-INV-001, ENT-INV-002 | — (cross-module) |
 | US-INV-005 | REQ-INV-013, REQ-INV-016, REQ-INV-017, REQ-INV-018 | AC-INV-016, AC-INV-019, AC-INV-020, AC-INV-021 | RULE-INV-007, RULE-INV-008 | ENT-INV-001, ENT-INV-004, ENT-INV-005, ENT-INV-008, ENT-INV-010 | SCR-REQ-INV-004 |
 | US-INV-006 | REQ-INV-008, REQ-INV-010, REQ-INV-011, REQ-INV-012, REQ-INV-013, REQ-INV-014, REQ-INV-019 | AC-INV-010, AC-INV-011, AC-INV-013, AC-INV-014, AC-INV-015, AC-INV-016, AC-INV-017, AC-INV-022 | RULE-INV-006, RULE-INV-008, RULE-INV-016 | ENT-INV-001, ENT-INV-003, ENT-INV-004, ENT-INV-005, ENT-INV-006, ENT-INV-008, ENT-INV-010, ENT-INV-012 | SCR-REQ-INV-001, SCR-REQ-INV-003, SCR-REQ-INV-005 |
 | US-INV-007 | REQ-INV-003, REQ-INV-004, REQ-INV-005, REQ-INV-006, REQ-INV-007, REQ-INV-008, REQ-INV-009, REQ-INV-015, REQ-INV-018, REQ-INV-034 | AC-INV-003, AC-INV-004, AC-INV-005, AC-INV-006, AC-INV-007, AC-INV-008, AC-INV-009, AC-INV-010, AC-INV-011, AC-INV-012, AC-INV-018, AC-INV-021, AC-INV-039 | RULE-INV-001, RULE-INV-002, RULE-INV-003, RULE-INV-004, RULE-INV-005, RULE-INV-006, RULE-INV-007, RULE-INV-009, RULE-INV-014 | ENT-INV-001, ENT-INV-002, ENT-INV-003, ENT-INV-005 | SCR-REQ-INV-001 |
-| US-INV-008 | REQ-INV-062, REQ-INV-078, REQ-INV-079, REQ-INV-080, REQ-INV-081, REQ-INV-082, REQ-INV-083, REQ-INV-084, REQ-INV-085, REQ-INV-086 | AC-INV-068, AC-INV-085, AC-INV-086, AC-INV-087, AC-INV-088, AC-INV-089, AC-INV-090, AC-INV-091, AC-INV-092, AC-INV-093, AC-INV-094, AC-INV-095 | RULE-INV-016, RULE-INV-017, RULE-INV-018, RULE-INV-019, RULE-INV-029, RULE-INV-030, RULE-INV-031, RULE-INV-037, RULE-INV-048 | ENT-INV-003, ENT-INV-004, ENT-INV-006, ENT-INV-007, ENT-INV-012, ENT-INV-013 | SCR-REQ-INV-005 |
+| US-INV-008 | REQ-INV-062, REQ-INV-078, REQ-INV-079, REQ-INV-080, REQ-INV-081, REQ-INV-082, REQ-INV-083, REQ-INV-084, REQ-INV-085, REQ-INV-086 | AC-INV-068, AC-INV-085, AC-INV-086, AC-INV-087, AC-INV-088, AC-INV-089, AC-INV-090, AC-INV-091, AC-INV-092, AC-INV-093, AC-INV-094, AC-INV-095 | RULE-INV-016, RULE-INV-017, RULE-INV-018, RULE-INV-019, RULE-INV-029, RULE-INV-030, RULE-INV-031, RULE-INV-037, RULE-INV-048, RULE-INV-051 | ENT-INV-003, ENT-INV-004, ENT-INV-006, ENT-INV-007, ENT-INV-012, ENT-INV-013 | SCR-REQ-INV-005 |
 | US-INV-009 | REQ-INV-020, REQ-INV-021 | AC-INV-023, AC-INV-024 | — | ENT-INV-002 | — (cross-module) |
 | US-INV-010 | REQ-INV-029, REQ-INV-030, REQ-INV-031, REQ-INV-033 | AC-INV-034, AC-INV-035, AC-INV-036, AC-INV-038 | RULE-INV-009 | ENT-INV-001, ENT-INV-002 | SCR-REQ-INV-001 |
 | US-INV-011 | REQ-INV-022, REQ-INV-023, REQ-INV-024, REQ-INV-025, REQ-INV-026, REQ-INV-027, REQ-INV-028, REQ-INV-032, REQ-INV-034 | AC-INV-025, AC-INV-026, AC-INV-027, AC-INV-028, AC-INV-029, AC-INV-030, AC-INV-031, AC-INV-032, AC-INV-033, AC-INV-037, AC-INV-039 | RULE-INV-005, RULE-INV-010, RULE-INV-011, RULE-INV-012, RULE-INV-013, RULE-INV-014, RULE-INV-015 | ENT-INV-001, ENT-INV-002 | SCR-REQ-INV-002 |
-| US-INV-012 | REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-073, REQ-INV-074 | AC-INV-076, AC-INV-077, AC-INV-078, AC-INV-079, AC-INV-080, AC-INV-081 | RULE-INV-018, RULE-INV-026, RULE-INV-027, RULE-INV-028 | ENT-INV-004, ENT-INV-010, ENT-INV-011, ENT-INV-013 | SCR-REQ-INV-010 |
+| US-INV-012 | REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-073, REQ-INV-074 | AC-INV-076, AC-INV-077, AC-INV-078, AC-INV-079, AC-INV-080, AC-INV-081 | RULE-INV-018, RULE-INV-026, RULE-INV-027, RULE-INV-028, RULE-INV-033, RULE-INV-051 | ENT-INV-004, ENT-INV-010, ENT-INV-011, ENT-INV-013 | SCR-REQ-INV-010 |
 | US-INV-013 | REQ-INV-055, REQ-INV-056, REQ-INV-075, REQ-INV-076, REQ-INV-077 | AC-INV-061, AC-INV-062, AC-INV-082, AC-INV-083, AC-INV-084 | RULE-INV-023 | ENT-INV-001, ENT-INV-002, ENT-INV-004, ENT-INV-006, ENT-INV-008, ENT-INV-010, ENT-INV-012, ENT-INV-014 | SCR-REQ-INV-004 |
-| US-INV-014 | REQ-INV-087, REQ-INV-088, REQ-INV-089, REQ-INV-090, REQ-INV-091, REQ-INV-092, REQ-INV-093, REQ-INV-094, REQ-INV-095, REQ-INV-096 | AC-INV-096, AC-INV-097, AC-INV-098, AC-INV-099, AC-INV-100, AC-INV-101, AC-INV-102, AC-INV-103, AC-INV-104, AC-INV-105, AC-INV-106 | RULE-INV-018, RULE-INV-029, RULE-INV-030, RULE-INV-031, RULE-INV-032, RULE-INV-047 | ENT-INV-008, ENT-INV-009, ENT-INV-010, ENT-INV-011 | SCR-REQ-INV-006 |
-| US-INV-015 | REQ-INV-092, REQ-INV-097, REQ-INV-098, REQ-INV-099, REQ-INV-100, REQ-INV-101, REQ-INV-102, REQ-INV-103, REQ-INV-104 | AC-INV-102, AC-INV-107, AC-INV-108, AC-INV-109, AC-INV-110, AC-INV-111, AC-INV-112, AC-INV-113, AC-INV-114, AC-INV-115, AC-INV-116 | RULE-INV-018, RULE-INV-025, RULE-INV-029, RULE-INV-030, RULE-INV-031, RULE-INV-033, RULE-INV-034, RULE-INV-037, RULE-INV-048 | ENT-INV-004, ENT-INV-008, ENT-INV-009, ENT-INV-010, ENT-INV-011, ENT-INV-013 | SCR-REQ-INV-006, SCR-REQ-INV-007 |
+| US-INV-014 | REQ-INV-087, REQ-INV-088, REQ-INV-089, REQ-INV-090, REQ-INV-091, REQ-INV-092, REQ-INV-093, REQ-INV-094, REQ-INV-095, REQ-INV-096 | AC-INV-096, AC-INV-097, AC-INV-098, AC-INV-099, AC-INV-100, AC-INV-101, AC-INV-102, AC-INV-103, AC-INV-104, AC-INV-105, AC-INV-106 | RULE-INV-018, RULE-INV-029, RULE-INV-030, RULE-INV-031, RULE-INV-032, RULE-INV-033, RULE-INV-047, RULE-INV-051 | ENT-INV-008, ENT-INV-009, ENT-INV-010, ENT-INV-011 | SCR-REQ-INV-006 |
+| US-INV-015 | REQ-INV-092, REQ-INV-097, REQ-INV-098, REQ-INV-099, REQ-INV-100, REQ-INV-101, REQ-INV-102, REQ-INV-103, REQ-INV-104 | AC-INV-102, AC-INV-107, AC-INV-108, AC-INV-109, AC-INV-110, AC-INV-111, AC-INV-112, AC-INV-113, AC-INV-114, AC-INV-115, AC-INV-116 | RULE-INV-018, RULE-INV-025, RULE-INV-029, RULE-INV-030, RULE-INV-031, RULE-INV-033, RULE-INV-034, RULE-INV-037, RULE-INV-048, RULE-INV-051 | ENT-INV-004, ENT-INV-008, ENT-INV-009, ENT-INV-010, ENT-INV-011, ENT-INV-013 | SCR-REQ-INV-006, SCR-REQ-INV-007 |
 | US-INV-016 | REQ-INV-051, REQ-INV-052, REQ-INV-057, REQ-INV-059, REQ-INV-060, REQ-INV-061, REQ-INV-062, REQ-INV-063, REQ-INV-064 | AC-INV-056, AC-INV-057, AC-INV-058, AC-INV-063, AC-INV-065, AC-INV-066, AC-INV-067, AC-INV-068, AC-INV-069, AC-INV-070 | RULE-INV-017, RULE-INV-018, RULE-INV-025 | ENT-INV-003, ENT-INV-004, ENT-INV-006, ENT-INV-011, ENT-INV-013 | SCR-REQ-INV-005, SCR-REQ-INV-012 |
 | US-INV-017 | REQ-INV-065, REQ-INV-066, REQ-INV-067 | AC-INV-071, AC-INV-072, AC-INV-073 | RULE-INV-019 | ENT-INV-003, ENT-INV-004 | SCR-REQ-INV-007, SCR-REQ-INV-011 |
 | US-INV-018 | REQ-INV-068 | AC-INV-074 | — | ENT-INV-003, ENT-INV-004 | — (cross-module) |
-| US-INV-019 | REQ-INV-058, REQ-INV-069 | AC-INV-064, AC-INV-075 | RULE-INV-019, RULE-INV-024 | ENT-INV-004, ENT-INV-005 | — (cross-module) |
+| US-INV-019 | REQ-INV-058, REQ-INV-069 | AC-INV-064, AC-INV-075 | RULE-INV-019, RULE-INV-024, RULE-INV-050 | ENT-INV-004, ENT-INV-005 | — (cross-module) |
 | US-INV-020 | REQ-INV-042, REQ-INV-049, REQ-INV-053, REQ-INV-054 | AC-INV-047, AC-INV-054, AC-INV-059, AC-INV-060 | RULE-INV-022 | ENT-INV-003, ENT-INV-004, ENT-INV-005 | SCR-REQ-INV-003 |
 | US-INV-021 | REQ-INV-084, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-108, REQ-INV-109, REQ-INV-124, REQ-INV-129, REQ-INV-134 | AC-INV-092, AC-INV-093, AC-INV-117, AC-INV-118, AC-INV-119, AC-INV-120, AC-INV-121, AC-INV-122, AC-INV-138, AC-INV-139, AC-INV-145, AC-INV-150 | RULE-INV-035, RULE-INV-036, RULE-INV-037, RULE-INV-044, RULE-INV-045 | ENT-INV-003, ENT-INV-004, ENT-INV-007, ENT-INV-011, ENT-INV-012, ENT-INV-014 | SCR-REQ-INV-005, SCR-REQ-INV-008, SCR-REQ-INV-009 |
 | US-INV-022 | REQ-INV-110, REQ-INV-111, REQ-INV-112 | AC-INV-123, AC-INV-124, AC-INV-125 | RULE-INV-038 | ENT-INV-003, ENT-INV-004, ENT-INV-012 | — (cross-module) |

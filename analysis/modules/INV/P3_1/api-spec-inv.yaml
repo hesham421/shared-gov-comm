@@ -20,6 +20,7 @@ x-inprocess-error-codes:
   - {code: INV-409-STOCK-MOVE-IMMUTABLE, rule: RULE-INV-023, http: 409}
   - {code: INV-422-LOT-EXPIRED, rule: RULE-INV-039, http: 422}
   - {code: INV-422-RESERVATION-MISMATCH, rule: RULE-INV-049, http: 422}
+  - {code: INV-409-IDEMPOTENCY-KEY-REUSED, rule: RULE-INV-050, http: 409}
 x-common:
   errorContent: &ec {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}
   r400: &r400 {description: Bad request, x-error-codes: [INV-400], content: *ec}
@@ -378,7 +379,7 @@ paths:
         '401': *r401
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND, INV-404-VARIANT-NOT-FOUND, INV-404-LOT-NOT-FOUND], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-TRANSFER-WAREHOUSES, INV-422-QUANTITY-INVALID, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '422': {description: Rule violated — a line refusal names its line in details (ADR-INV-046), x-error-codes: [INV-422-TRANSFER-WAREHOUSES, INV-422-QUANTITY-INVALID, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE, INV-422-DOC-DATE-FUTURE], content: *ec}
         '500': *r500
   /api/v1/inv/transfers/{id}:
     get:
@@ -408,7 +409,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-TRANSFER-NOT-FOUND, INV-404-WAREHOUSE-NOT-FOUND, INV-404-VARIANT-NOT-FOUND, INV-404-LOT-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-DOC-NO-READONLY, INV-422-TRANSFER-WAREHOUSES, INV-422-QUANTITY-INVALID, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '422': {description: Rule violated — a line refusal names its line in details (ADR-INV-046), x-error-codes: [INV-422-DOC-NO-READONLY, INV-422-TRANSFER-WAREHOUSES, INV-422-QUANTITY-INVALID, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE, INV-422-DOC-DATE-FUTURE], content: *ec}
         '500': *r500
     delete:
       operationId: cancelTransfer
@@ -429,7 +430,7 @@ paths:
       operationId: postTransfer
       summary: "API-INV-024 — post transfer"
       x-api-id: API-INV-024
-      x-traces: [REQ-INV-080, REQ-INV-083, REQ-INV-084, REQ-INV-062, REQ-INV-014, REQ-INV-068, REQ-INV-036, REQ-INV-037, REQ-INV-057, REQ-INV-061, DBF-INV-089, DBF-INV-094, DBF-INV-096, DBF-INV-104, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-194, DBF-INV-195]
+      x-traces: [REQ-INV-080, REQ-INV-083, REQ-INV-084, REQ-INV-062, REQ-INV-014, REQ-INV-068, REQ-INV-036, REQ-INV-037, REQ-INV-057, REQ-INV-061, DBF-INV-089, DBF-INV-094, DBF-INV-096, DBF-INV-104, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-220, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-194, DBF-INV-195]
       parameters: [*pid]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
       responses:
@@ -439,7 +440,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-TRANSFER-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-TRANSFER-WAREHOUSES, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED], content: *ec}
+        '422': {description: Rule violated — a line refusal names its line in details (ADR-INV-046), x-error-codes: [INV-422-NO-LINES, INV-422-TRANSFER-WAREHOUSES, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED], content: *ec}
         '500': *r500
   /api/v1/inv/stock-counts:
     get:
@@ -474,7 +475,7 @@ paths:
         '401': *r401
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED], content: *ec}
+        '422': {description: Rule violated, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-DOC-DATE-FUTURE], content: *ec}
         '500': *r500
   /api/v1/inv/stock-counts/{id}:
     get:
@@ -519,7 +520,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND, INV-404-VARIANT-NOT-FOUND, INV-404-LOT-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-BARCODE-UNKNOWN, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-COUNTED-NEGATIVE], content: *ec}
+        '422': {description: Rule violated — a line refusal names its line in details (ADR-INV-046), x-error-codes: [INV-422-BARCODE-UNKNOWN, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED, INV-422-COUNTED-NEGATIVE], content: *ec}
         '500': *r500
   /api/v1/inv/stock-counts/{id}/lines/{lineId}:
     put:
@@ -536,7 +537,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND, INV-404-STOCK-COUNT-LINE-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-COUNTED-NEGATIVE, INV-422-MEASURE-REQUIRED], content: *ec}
+        '422': {description: Rule violated — a line refusal names its line in details (ADR-INV-046), x-error-codes: [INV-422-COUNTED-NEGATIVE, INV-422-MEASURE-REQUIRED], content: *ec}
         '500': *r500
     delete:
       operationId: removeStockCountLine
@@ -567,7 +568,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-STOCK-COUNT-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-WAREHOUSE-INACTIVE, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED], content: *ec}
+        '422': {description: Rule violated — a line refusal names its line in details (ADR-INV-046), x-error-codes: [INV-422-NO-LINES, INV-422-WAREHOUSE-INACTIVE, INV-422-VARIANT-INACTIVE, INV-422-LOT-REQUIRED, INV-422-MEASURE-REQUIRED], content: *ec}
         '500': *r500
   /api/v1/inv/stock-adjustments:
     get:
@@ -603,7 +604,7 @@ paths:
         '401': *r401
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND, INV-404-VARIANT-NOT-FOUND], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '422': {description: Rule violated — a line refusal names its line in details (ADR-INV-046), x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-DOC-DATE-FUTURE, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-ZERO-CHANGE, INV-422-MEASURE-REQUIRED, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
         '500': *r500
   /api/v1/inv/stock-adjustments/{id}:
     get:
@@ -633,7 +634,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-STOCK-ADJUSTMENT-NOT-FOUND, INV-404-VARIANT-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-DOC-NO-READONLY, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-ZERO-CHANGE, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '422': {description: Rule violated — a line refusal names its line in details (ADR-INV-046), x-error-codes: [INV-422-DOC-NO-READONLY, INV-422-REASON-REQUIRED, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-ZERO-CHANGE, INV-422-MEASURE-REQUIRED, INV-422-LOT-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
         '500': *r500
     delete:
       operationId: cancelStockAdjustment
@@ -654,7 +655,7 @@ paths:
       operationId: postStockAdjustment
       summary: "API-INV-038 — post stock adjustment"
       x-api-id: API-INV-038
-      x-traces: [REQ-INV-099, REQ-INV-102, REQ-INV-114, REQ-INV-123, REQ-INV-067, REQ-INV-068, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-036, REQ-INV-057, REQ-INV-059, REQ-INV-060, REQ-INV-061, DBF-INV-146, DBF-INV-151, DBF-INV-153, DBF-INV-165, DBF-INV-168, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
+      x-traces: [REQ-INV-099, REQ-INV-102, REQ-INV-114, REQ-INV-123, REQ-INV-067, REQ-INV-068, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-036, REQ-INV-057, REQ-INV-059, REQ-INV-060, REQ-INV-061, DBF-INV-146, DBF-INV-151, DBF-INV-153, DBF-INV-165, DBF-INV-168, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-220, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
       parameters: [*pid]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
       responses:
@@ -664,7 +665,7 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-STOCK-ADJUSTMENT-NOT-FOUND], content: *ec}
         '409': {description: Conflict, x-error-codes: [INV-409-DOCUMENT-CLOSED, INV-409-NEGATIVE-STOCK, INV-409-STALE-VERSION], content: *ec}
-        '422': {description: Rule violated, x-error-codes: [INV-422-NO-LINES, INV-422-REASON-REQUIRED, INV-422-ZERO-CHANGE, INV-422-WAREHOUSE-INACTIVE, INV-422-VARIANT-INACTIVE, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-LOT-REQUIRED], content: *ec}
+        '422': {description: Rule violated — a line refusal names its line in details (ADR-INV-046), x-error-codes: [INV-422-NO-LINES, INV-422-REASON-REQUIRED, INV-422-ZERO-CHANGE, INV-422-WAREHOUSE-INACTIVE, INV-422-VARIANT-INACTIVE, INV-422-MEASURE-REQUIRED, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-LOT-REQUIRED], content: *ec}
         '500': *r500
   /api/v1/inv/lots:
     get:
@@ -784,7 +785,7 @@ paths:
       operationId: postOpeningStock
       summary: "API-INV-047 — create (post), custom (download sheet, bulk load) — post opening stock"
       x-api-id: API-INV-047
-      x-traces: [REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-074, REQ-INV-064, REQ-INV-105, REQ-INV-106, REQ-INV-059, DBF-INV-144, DBF-INV-147, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-160, DBF-INV-161, DBF-INV-162, DBF-INV-163, DBF-INV-164, DBF-INV-166, DBF-INV-167, DBF-INV-171, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
+      x-traces: [REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-074, REQ-INV-064, REQ-INV-105, REQ-INV-106, REQ-INV-059, DBF-INV-144, DBF-INV-147, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-160, DBF-INV-161, DBF-INV-162, DBF-INV-163, DBF-INV-164, DBF-INV-166, DBF-INV-167, DBF-INV-171, DBF-INV-177, DBF-INV-178, DBF-INV-180, DBF-INV-181, DBF-INV-184, DBF-INV-027, DBF-INV-029, DBF-INV-030, DBF-INV-031, DBF-INV-033, DBF-INV-041, DBF-INV-042, DBF-INV-044, DBF-INV-045, DBF-INV-046, DBF-INV-047, DBF-INV-048, DBF-INV-049, DBF-INV-051, DBF-INV-052, DBF-INV-220, DBF-INV-053, DBF-INV-054, DBF-INV-058, DBF-INV-061, DBF-INV-192, DBF-INV-193, DBF-INV-194, DBF-INV-195, DBF-INV-196, DBF-INV-197, DBF-INV-200]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/OpeningStockRequest'}}}}
       responses:
         '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/StockAdjustmentEnvelope'}}}}
@@ -792,7 +793,7 @@ paths:
         '401': *r401
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-WAREHOUSE-NOT-FOUND], content: *ec}
-        '422': {description: Rule violated — row failures in details, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-LOAD-ROWS, INV-422-LOAD-ROWS-INVALID, INV-422-LOAD-ROW-VARIANT, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
+        '422': {description: Rule violated — row failures in details, x-error-codes: [INV-422-WAREHOUSE-INACTIVE, INV-422-WAREHOUSE-REQUIRED, INV-422-DOC-DATE-FUTURE, INV-422-LOAD-ROWS, INV-422-LOAD-ROWS-INVALID, INV-422-LOAD-ROW-VARIANT, INV-422-VARIANT-INACTIVE, INV-422-QUANTITY-INVALID, INV-422-NO-KNOWN-COST, INV-422-OPENING-COST-REQUIRED, INV-422-LOT-EXPIRY-REQUIRED, INV-422-LOT-EXPIRY-MISMATCH, INV-422-MEASURE-REQUIRED, INV-422-DUPLICATE-LINE], content: *ec}
         '500': *r500
   /api/v1/inv/settings:
     get:
@@ -853,6 +854,21 @@ paths:
         '403': *r403
         '404': {description: Not found, x-error-codes: [INV-404-VARIANT-NOT-FOUND], content: *ec}
         '500': *r500
+  /api/v1/inv/lookups/{key}:
+    get:
+      operationId: readInventoryLookup
+      summary: "API-INV-052 — read an INV lookup key (InvLookups — OwnedLookups)"
+      x-api-id: API-INV-052
+      x-traces: [REQ-INV-101, REQ-INV-075, REQ-INV-086, DBF-INV-041, DBF-INV-047, DBF-INV-094, DBF-INV-144]
+      parameters:
+        - {name: key, in: path, required: true, description: "one of INV_ADJUSTMENT_REASON, INV_MOVE_TYPE, INV_DOC_STATUS, INV_RESERVATION_STATUS, INV_SOURCE_DOC_TYPE, INV_CHANGE_KIND — any other key answers INV-404-LOOKUP-KEY-UNKNOWN", schema: {type: string, maxLength: 50}}
+      responses:
+        '200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/LookupValueListEnvelope'}}}}
+        '400': *r400
+        '401': *r401
+        '403': *r403
+        '404': {description: Not found, x-error-codes: [INV-404-LOOKUP-KEY-UNKNOWN], content: *ec}
+        '500': *r500
 
 components:
   securitySchemes:
@@ -867,9 +883,12 @@ components:
         messageEn: {type: string}
         details:
           type: array
+          description: "API-INV-047 — one entry per failing row (rowNo, ADR-INV-027); API-INV-022, 023, 024, 029, 030, 032, 036, 037, 038 — one entry for the first failing line of a line-level refusal (lineRef, lineRefKind, rowNo on adjustment lines — ADR-INV-046)"
           items:
             type: object
             properties:
+              lineRef: {type: [integer, 'null'], format: int64, description: "the failing line — its identifier (transferLinePk, stockCountLinePk, stockAdjustmentLinePk) when lineRefKind is LINE_PK, its 1-based position in the request's lines when REQUEST_POSITION"}
+              lineRefKind: {type: [string, 'null'], enum: [LINE_PK, REQUEST_POSITION, null]}
               rowNo: {type: integer, format: int32}
               code: {type: string}
               messageAr: {type: string}
@@ -966,6 +985,15 @@ components:
         lotExpiryFl: {type: boolean}
         dualQuantityFl: {type: boolean}
         bundlesFl: {type: boolean}
+    LookupValue:
+      type: object
+      properties:
+        code: {type: string, maxLength: 50}
+        nameAr: {type: string}
+        nameEn: {type: [string, 'null']}
+        sortOrder: {type: integer}
+    LookupValueListEnvelope:
+      allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {type: array, items: {$ref: '#/components/schemas/LookupValue'}}}}]
     InventoryContextEnvelope:
       allOf: [{$ref: '#/components/schemas/ApiResponse'}, {type: object, properties: {data: {$ref: '#/components/schemas/InventoryContext'}}}]
 
@@ -1087,7 +1115,7 @@ components:
       type: object
       required: [fromWarehousePk, toWarehousePk]
       properties:
-        docDate: {type: [string, 'null'], format: date}
+        docDate: {type: [string, 'null'], format: date, description: "today when absent; not after today in the tenant time zone — INV-422-DOC-DATE-FUTURE (RULE-INV-051)"}
         fromWarehousePk: {type: integer, format: int64}
         toWarehousePk: {type: integer, format: int64}
         noteText: {type: [string, 'null'], maxLength: 500}
@@ -1134,7 +1162,7 @@ components:
       type: object
       properties:
         warehousePk: {type: [integer, 'null'], format: int64}
-        docDate: {type: [string, 'null'], format: date}
+        docDate: {type: [string, 'null'], format: date, description: "today when absent; not after today — INV-422-DOC-DATE-FUTURE (RULE-INV-051)"}
         noteText: {type: [string, 'null'], maxLength: 500}
     StockCountLineAddRequest:
       type: object
@@ -1184,7 +1212,7 @@ components:
         lotNo: {type: [string, 'null'], maxLength: 40}
         lotExpiryDate: {type: [string, 'null'], format: date}
         quantityChange: {type: number, description: "non-zero unless the measure changes (INV-422-ZERO-CHANGE); at most 3 decimals (INV-422-QUANTITY-INVALID)"}
-        measureQtyChange: {type: [number, 'null'], description: "at most 3 decimals — INV-422-QUANTITY-INVALID"}
+        measureQtyChange: {type: [number, 'null'], description: "at most 3 decimals — INV-422-QUANTITY-INVALID; required, non-zero, with a non-zero quantityChange of a dual-quantity Item while dualQuantity is on — INV-422-MEASURE-REQUIRED (RULE-INV-040)"}
         unitCost: {type: [number, 'null'], description: "≥ 0 with at most 4 decimals — owned by INV-422-NO-KNOWN-COST (RULE-INV-025), described, not enforced (ADR-INV-038)"}
     StockAdjustment:
       allOf:
@@ -1206,8 +1234,8 @@ components:
       required: [reasonCode]
       properties:
         warehousePk: {type: [integer, 'null'], format: int64}
-        docDate: {type: [string, 'null'], format: date}
-        reasonCode: {type: string, maxLength: 50}
+        docDate: {type: [string, 'null'], format: date, description: "today when absent; not after today — INV-422-DOC-DATE-FUTURE (RULE-INV-051)"}
+        reasonCode: {type: string, maxLength: 50, description: "an active value of INV_ADJUSTMENT_REASON other than OPENING_STOCK — INV-422-REASON-REQUIRED (RULE-INV-033, ADR-INV-047)"}
         noteText: {type: [string, 'null'], maxLength: 500}
         lines: {type: array, items: {$ref: '#/components/schemas/StockAdjustmentLineRequest'}}
     StockAdjustmentUpdateRequest:
@@ -1228,7 +1256,7 @@ components:
       required: [rows]
       properties:
         warehousePk: {type: [integer, 'null'], format: int64}
-        docDate: {type: [string, 'null'], format: date}
+        docDate: {type: [string, 'null'], format: date, description: "today when absent; not after today — INV-422-DOC-DATE-FUTURE (RULE-INV-051)"}
         rows:
           type: array
           description: "1 to 1000 rows — owned by INV-422-LOAD-ROWS (RULE-INV-027), described, not enforced (ADR-INV-038)"

@@ -1,35 +1,41 @@
 # FRONTEND TEST PLAN — Inventory / المخزون (INV)
 ══════════════════════════════════════════════════════════════════
-Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1
+Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 2
 Track  : frontend · plan test · lane test-gen · prepared by claude:opus
 Sources: _state/current-srs.md (INV v1 — REQ 138 · AC 154 · SCR-REQ 12)
          _state/current-frontend-execution-plan.md (P3.2 — SCR-INV-001 … 012, UXD-INV-001 … 011, F1 … F4, SEC-FE)
          _state/current-api-spec (api-spec-inv.yaml — the document the mock server serves)
          _state/current-backend-execution-plan.md (Error Catalog texts) · _state/current-registry-srs.md
-Owns   : TC-INV-173 … TC-INV-241 and TC-INV-262 … TC-INV-263 (this file) — the backend cases are in
-         backend-test-plan-inv.md (TC-INV-001 … 172, 242 … 261); TC-INV-262, 263 were added at gate-analysis revise 1
+Owns   : TC-INV-173 … TC-INV-241, TC-INV-262 … TC-INV-263 and TC-INV-285 (this file) — the backend cases are in
+         backend-test-plan-inv.md (TC-INV-001 … 172, 242 … 261, 264 … 284); TC-INV-262, 263 were added at
+         gate-analysis revise 1, TC-INV-285 at gate-analysis revise 2 (G2)
 ADRs   : raised here ADR-INV-037 (track placement and package), ADR-INV-038 (asserted texts and codes),
          ADR-INV-039 (acceptance of F3-SCR-INV-012 and F4-SCR-INV-011 — repair round 1) — ACCEPTED, non-breaking · cited from P3.2: ADR-INV-033 (reads outside the document), ADR-INV-034 (count commits per
          line), ADR-INV-035 (browser reads the sheet — barcode only in v1), ADR-INV-036 (warehouse label for a
-         Seller/Cashier read from the row — closed at gate-analysis revise 1; TC-INV-262 asserts it)
+         Seller/Cashier read from the row — closed at gate-analysis revise 1; TC-INV-262 asserts it) · cited from
+         gate-analysis revise 2: ADR-INV-046 (a line refusal names its line in `details`; TC-INV-285 asserts it),
+         ADR-INV-047 (OPENING_STOCK not offered on the adjustment screen), ADR-INV-033 as amended (INV lookup values
+         through API-INV-052)
 ══════════════════════════════════════════════════════════════════
 
 ## How to read this plan
 
 - **Framework.** `profile.stack.testing` is agnostic. Each TC block below is the whole contract. The consumer
   repository chooses its tool and turns each block into one test.
-- **Server.** The screens run against a mock server that serves `api-spec-inv.yaml`. The CAT, `mdl` and session
-  fixtures come from ADR-INV-033. "The server answers X" in Preconditions sets the mock's answer for that call.
-- **Texts.** A refusal is asserted by the text the frontend plan binds to its code ("text: RULE-INV-nnn" = the
-  SRS A5 message, ar and en). Each text is asserted in both languages, by switching the UI language.
+- **Server.** The screens run against a mock server that serves `api-spec-inv.yaml`, including the INV lookup values
+  (API-INV-052). The CAT and session fixtures come from ADR-INV-033. "The server answers X" in Preconditions sets the mock's answer for that call.
+- **Texts.** A refusal is asserted by the text the frontend plan binds to its code ("text: RULE-INV-nnn message
+  (SRS)" = the SRS A5 message, ar and en). `Expected` writes it as `ar «…» · en «…»`, copied from the SRS with its
+  placeholders filled. Each text is asserted in both languages, by switching the UI language. A screen label (a
+  chip, a status, a lookup name) is written `«…» / "…"` and is not a refusal text.
 - **Routes.** Each TC cites the screen (`SCR-INV-*`) and its route. Drawers are search params (`entry`, `line`,
   `move`, `variant`).
 - **Catalogue data.** Every lookup value a case names is seeded by INV. No case needs host data.
 
-<!-- PHASE:TEST-PLAN-FE:START traces=AC-INV-044,AC-INV-062,REQ-INV-039,REQ-INV-056,AC-INV-004,AC-INV-007,AC-INV-008,AC-INV-011,AC-INV-013,AC-INV-014,AC-INV-015,AC-INV-018,AC-INV-026,AC-INV-029,AC-INV-030,AC-INV-034,AC-INV-035,AC-INV-037,AC-INV-069,AC-INV-071,AC-INV-076,AC-INV-079,AC-INV-081,AC-INV-083,AC-INV-088,AC-INV-090,AC-INV-091,AC-INV-093,AC-INV-098,AC-INV-100,AC-INV-101,AC-INV-103,AC-INV-106,AC-INV-109,AC-INV-111,AC-INV-113,AC-INV-128,AC-INV-129,AC-INV-130,AC-INV-132,AC-INV-133,AC-INV-135,AC-INV-139,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-150,AC-INV-151,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-003,REQ-INV-006,REQ-INV-008,REQ-INV-010,REQ-INV-011,REQ-INV-012,REQ-INV-015,REQ-INV-022,REQ-INV-025,REQ-INV-029,REQ-INV-030,REQ-INV-032,REQ-INV-063,REQ-INV-065,REQ-INV-070,REQ-INV-072,REQ-INV-074,REQ-INV-076,REQ-INV-080,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-088,REQ-INV-090,REQ-INV-091,REQ-INV-093,REQ-INV-096,REQ-INV-098,REQ-INV-099,REQ-INV-101,REQ-INV-114,REQ-INV-115,REQ-INV-116,REQ-INV-118,REQ-INV-119,REQ-INV-121,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-134,REQ-INV-135,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
+<!-- PHASE:TEST-PLAN-FE:START traces=AC-INV-044,AC-INV-062,REQ-INV-039,REQ-INV-056,AC-INV-004,AC-INV-007,AC-INV-008,AC-INV-011,AC-INV-013,AC-INV-014,AC-INV-015,AC-INV-018,AC-INV-026,AC-INV-029,AC-INV-030,AC-INV-034,AC-INV-035,AC-INV-037,AC-INV-069,AC-INV-071,AC-INV-076,AC-INV-079,AC-INV-081,AC-INV-083,AC-INV-087,AC-INV-088,AC-INV-090,AC-INV-091,AC-INV-093,AC-INV-098,AC-INV-100,AC-INV-101,AC-INV-103,AC-INV-106,AC-INV-109,AC-INV-111,AC-INV-113,AC-INV-128,AC-INV-129,AC-INV-130,AC-INV-132,AC-INV-133,AC-INV-135,AC-INV-139,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-150,AC-INV-151,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-003,REQ-INV-006,REQ-INV-008,REQ-INV-010,REQ-INV-011,REQ-INV-012,REQ-INV-015,REQ-INV-022,REQ-INV-025,REQ-INV-029,REQ-INV-030,REQ-INV-032,REQ-INV-063,REQ-INV-065,REQ-INV-070,REQ-INV-072,REQ-INV-074,REQ-INV-076,REQ-INV-080,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-088,REQ-INV-090,REQ-INV-091,REQ-INV-093,REQ-INV-096,REQ-INV-098,REQ-INV-099,REQ-INV-101,REQ-INV-114,REQ-INV-115,REQ-INV-116,REQ-INV-118,REQ-INV-119,REQ-INV-121,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-134,REQ-INV-135,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
 ## TEST-PLAN-FE — module test cases
 
-<!-- SUB:UI-FLOWS:START traces=AC-INV-044,AC-INV-062,REQ-INV-039,REQ-INV-056,AC-INV-004,AC-INV-007,AC-INV-008,AC-INV-011,AC-INV-013,AC-INV-014,AC-INV-015,AC-INV-026,AC-INV-029,AC-INV-030,AC-INV-034,AC-INV-035,AC-INV-069,AC-INV-071,AC-INV-079,AC-INV-081,AC-INV-083,AC-INV-088,AC-INV-090,AC-INV-091,AC-INV-093,AC-INV-098,AC-INV-101,AC-INV-103,AC-INV-106,AC-INV-109,AC-INV-111,AC-INV-113,AC-INV-129,AC-INV-130,AC-INV-132,AC-INV-133,AC-INV-135,AC-INV-139,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-150,AC-INV-151,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-003,REQ-INV-006,REQ-INV-008,REQ-INV-010,REQ-INV-011,REQ-INV-012,REQ-INV-022,REQ-INV-025,REQ-INV-029,REQ-INV-030,REQ-INV-063,REQ-INV-065,REQ-INV-072,REQ-INV-074,REQ-INV-076,REQ-INV-080,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-088,REQ-INV-091,REQ-INV-093,REQ-INV-096,REQ-INV-098,REQ-INV-099,REQ-INV-101,REQ-INV-115,REQ-INV-116,REQ-INV-118,REQ-INV-119,REQ-INV-121,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-134,REQ-INV-135,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
+<!-- SUB:UI-FLOWS:START traces=AC-INV-044,AC-INV-062,REQ-INV-039,REQ-INV-056,AC-INV-004,AC-INV-007,AC-INV-008,AC-INV-011,AC-INV-013,AC-INV-014,AC-INV-015,AC-INV-026,AC-INV-029,AC-INV-030,AC-INV-034,AC-INV-035,AC-INV-069,AC-INV-071,AC-INV-079,AC-INV-081,AC-INV-083,AC-INV-087,AC-INV-088,AC-INV-090,AC-INV-091,AC-INV-093,AC-INV-098,AC-INV-101,AC-INV-103,AC-INV-106,AC-INV-109,AC-INV-111,AC-INV-113,AC-INV-129,AC-INV-130,AC-INV-132,AC-INV-133,AC-INV-135,AC-INV-139,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-150,AC-INV-151,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-003,REQ-INV-006,REQ-INV-008,REQ-INV-010,REQ-INV-011,REQ-INV-012,REQ-INV-022,REQ-INV-025,REQ-INV-029,REQ-INV-030,REQ-INV-063,REQ-INV-065,REQ-INV-072,REQ-INV-074,REQ-INV-076,REQ-INV-080,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-088,REQ-INV-091,REQ-INV-093,REQ-INV-096,REQ-INV-098,REQ-INV-099,REQ-INV-101,REQ-INV-115,REQ-INV-116,REQ-INV-118,REQ-INV-119,REQ-INV-121,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-134,REQ-INV-135,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
 ### UI-FLOWS — per-screen flows
 
 <!-- TC:TC-INV-173:START traces=AC-INV-004,REQ-INV-003,SCR-INV-001 -->
@@ -56,7 +62,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; the default Warehouse D listed; the server answers 409 INV-409-WAREHOUSE-DEFAULT
 Host data    : none
 Steps        : 1. Open D's row menu, choose Deactivate, confirm.
-Expected     : message «لا يمكن إيقاف المستودع الافتراضي. اجعل مستودعًا آخر افتراضيًا أولًا.» / "The default warehouse cannot be deactivated. Set another warehouse as the default first." with the next action "Set as default" on another row; D stays active with its default badge.
+Expected     : message ar «لا يمكن إيقاف المستودع الافتراضي. اجعل مستودعًا آخر افتراضيًا أولًا.» · en «The default warehouse cannot be deactivated. Set another warehouse as the default first.» with the next action "Set as default" on another row; D stays active with its default badge.
 Test data    : —
 <!-- TC:TC-INV-174:END -->
 
@@ -70,7 +76,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; a non-default Warehouse W2 with on-hand 5 of one Variant; the server answers 409 INV-409-WAREHOUSE-IN-USE
 Host data    : none
 Steps        : 1. Deactivate W2 and confirm. 2. Choose the offered "View balances".
-Expected     : 1 → message «لا يمكن إيقاف مستودع فيه مخزون أو حجوزات قائمة. انقل المخزون أو سوِّه أولًا.» / "A warehouse that holds stock or open reservations cannot be deactivated. Transfer or adjust the stock first."; W2 stays active. 2 → SCR-INV-003 opens filtered on W2.
+Expected     : 1 → message ar «لا يمكن إيقاف مستودع فيه مخزون أو حجوزات قائمة. انقل المخزون أو سوِّه أولًا.» · en «A warehouse that holds stock or open reservations cannot be deactivated. Transfer or adjust the stock first.»; W2 stays active. 2 → SCR-INV-003 opens filtered on W2.
 Test data    : —
 <!-- TC:TC-INV-175:END -->
 
@@ -84,7 +90,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; inactive Warehouse C listed; the server answers 409 INV-409-WAREHOUSE-DEFAULT-INACTIVE
 Host data    : none
 Steps        : 1. Choose Set as default on C's row.
-Expected     : message «المستودع الافتراضي يجب أن يكون نشطًا.» / "The default warehouse must be active."; the default badge stays on the previous default.
+Expected     : message ar «المستودع الافتراضي يجب أن يكون نشطًا.» · en «The default warehouse must be active.»; the default badge stays on the previous default.
 Test data    : —
 <!-- TC:TC-INV-176:END -->
 
@@ -112,7 +118,7 @@ Scenario     : STATE · data class VALID · language ALL
 Preconditions: Warehouse user session; the context answers activeWarehouseCount 1
 Host data    : none
 Steps        : 1. Open the inventory menu. 2. Deep-link to /inventory/transfers.
-Expected     : 1 → no transfer entry. 2 → the route shows «التحويل يحتاج إلى مستودعين نشطين مختلفين.» / "A transfer needs two different active warehouses." with a link to Warehouses, not the transfer search.
+Expected     : 1 → no transfer entry. 2 → the route shows ar «التحويل يحتاج إلى مستودعين نشطين مختلفين.» · en «A transfer needs two different active warehouses.» with a link to Warehouses, not the transfer search.
 Test data    : —
 <!-- TC:TC-INV-178:END -->
 
@@ -140,7 +146,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; an active Branch «فرع المعادي»; the server answers 409 INV-409-BRANCH-NAME-TAKEN
 Host data    : none
 Steps        : 1. Open the new-branch drawer, type nameAr «فرع المعادي», Save.
-Expected     : the drawer stays open; nameAr shows «يوجد فرع آخر بهذا الاسم.» / "Another branch already has this name.".
+Expected     : the drawer stays open; nameAr shows ar «يوجد فرع آخر بهذا الاسم.» · en «Another branch already has this name.».
 Test data    : nameAr «فرع المعادي»
 <!-- TC:TC-INV-180:END -->
 
@@ -154,7 +160,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; the default Branch listed; the server answers 409 INV-409-BRANCH-DEFAULT
 Host data    : none
 Steps        : 1. Deactivate the default Branch and confirm.
-Expected     : message «لا يمكن إيقاف الفرع الافتراضي. اجعل فرعًا آخر افتراضيًا أولًا.» / "The default branch cannot be deactivated. Set another branch as the default first."; the Branch stays active.
+Expected     : message ar «لا يمكن إيقاف الفرع الافتراضي. اجعل فرعًا آخر افتراضيًا أولًا.» · en «The default branch cannot be deactivated. Set another branch as the default first.»; the Branch stays active.
 Test data    : —
 <!-- TC:TC-INV-181:END -->
 
@@ -168,7 +174,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; a non-default Branch B2 with 1 active Warehouse; the server answers 409 INV-409-BRANCH-IN-USE
 Host data    : none
 Steps        : 1. Deactivate B2 and confirm. 2. Choose "View warehouses".
-Expected     : 1 → message «لا يمكن إيقاف فرع تتبعه مستودعات نشطة. انقل المستودعات إلى فرع آخر أو أوقفها أولًا.» / "A branch with active warehouses cannot be deactivated. Move the warehouses to another branch or deactivate them first."; B2 stays active. 2 → SCR-INV-001 opens filtered on B2.
+Expected     : 1 → message ar «لا يمكن إيقاف فرع تتبعه مستودعات نشطة. انقل المستودعات إلى فرع آخر أو أوقفها أولًا.» · en «A branch with active warehouses cannot be deactivated. Move the warehouses to another branch or deactivate them first.»; B2 stays active. 2 → SCR-INV-001 opens filtered on B2.
 Test data    : —
 <!-- TC:TC-INV-182:END -->
 
@@ -210,7 +216,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; 20 rows in the form, row 7 with barcode V-404; the server answers 422 INV-422-LOAD-ROWS-INVALID with details [rowNo 7, INV-422-LOAD-ROW-VARIANT]
 Host data    : none
 Steps        : 1. Post.
-Expected     : the row failures list shows row 7 with «لا يطابق هذا السطر متغيّر صنف نشطًا.» / "This row matches no active Variant."; the screen stays on opening stock (nothing posted, no navigation); the 20 rows are kept.
+Expected     : the row failures list shows row 7 with ar «لا يطابق هذا السطر متغيّر صنف نشطًا.» · en «This row matches no active Variant.»; the screen stays on opening stock (nothing posted, no navigation); the 20 rows are kept.
 Test data    : row 7 barcode "V-404"
 <!-- TC:TC-INV-185:END -->
 
@@ -224,7 +230,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session
 Host data    : none
 Steps        : 1. Add 1 line of 10 of V with an empty unit cost. 2. Post.
-Expected     : the line shows «أدخل تكلفة الوحدة للمخزون الافتتاحي.» / "Enter the unit cost of the opening stock."; no opening stock request is sent (nothing posted).
+Expected     : the line shows ar «أدخل تكلفة الوحدة للمخزون الافتتاحي.» · en «Enter the unit cost of the opening stock.»; no opening stock request is sent (nothing posted).
 Test data    : quantity 10, unit cost empty
 <!-- TC:TC-INV-186:END -->
 
@@ -252,7 +258,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Warehouse user session; 2 active Warehouses; a saved DRAFT transfer with no lines; the server answers 422 INV-422-NO-LINES to a post
 Host data    : none
 Steps        : 1. Open the transfer. 2. Post.
-Expected     : message «أضف سطرًا واحدًا على الأقل قبل الترحيل.» / "Add at least one line before posting."; the status shows DRAFT.
+Expected     : message ar «أضف سطرًا واحدًا على الأقل قبل الترحيل.» · en «Add at least one line before posting.»; the status shows DRAFT.
 Test data    : —
 <!-- TC:TC-INV-188:END -->
 
@@ -266,7 +272,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Warehouse user session; 2 active Warehouses W1, W2
 Host data    : none
 Steps        : 1. Choose from W1 and to W1, add a line, Save.
-Expected     : toWarehousePk shows «التحويل يحتاج إلى مستودعين نشطين مختلفين.» / "A transfer needs two different active warehouses."; no create request is sent.
+Expected     : toWarehousePk shows ar «التحويل يحتاج إلى مستودعين نشطين مختلفين.» · en «A transfer needs two different active warehouses.»; no create request is sent.
 Test data    : from = to = W1
 <!-- TC:TC-INV-189:END -->
 
@@ -280,7 +286,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: a saved DRAFT transfer W1 → W2 of 5 of V; the server answers 409 INV-409-NEGATIVE-STOCK with the texts for on-hand 3
 Host data    : none
 Steps        : 1. Post.
-Expected     : message «الرصيد لا يكفي: المتاح في المستودع 3. الرصيد السالب غير مسموح.» / "Not enough stock: 3 on hand in this warehouse. Negative stock is not allowed."; the status shows DRAFT.
+Expected     : message ar «الرصيد لا يكفي: المتاح في المستودع 3. الرصيد السالب غير مسموح.» · en «Not enough stock: 3 on hand in this warehouse. Negative stock is not allowed.»; the status shows DRAFT.
 Test data    : on-hand 3
 <!-- TC:TC-INV-190:END -->
 
@@ -294,7 +300,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: lotExpiry on; Variant V whose Item settings answer lotTrackedFl true; 2 active Warehouses
 Host data    : none
 Steps        : 1. In the line drawer pick V, enter a quantity, leave the lot empty, confirm. 2. Save.
-Expected     : 1 → the lot field shows «اختر التشغيلة لهذا الصنف.» / "Choose the lot for this Item." and the line is not returned to the form. 2 → nothing is saved.
+Expected     : 1 → the lot field shows ar «اختر التشغيلة لهذا الصنف.» · en «Choose the lot for this Item.» and the line is not returned to the form. 2 → nothing is saved.
 Test data    : —
 <!-- TC:TC-INV-191:END -->
 
@@ -308,7 +314,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Warehouse user session; a DRAFT count open
 Host data    : none
 Steps        : 1. Enter a barcode and counted quantity −1, submit.
-Expected     : countedQty shows «الكمية المعدودة لا تكون سالبة.» / "The counted quantity cannot be negative."; no line call is sent; no line changes.
+Expected     : countedQty shows ar «الكمية المعدودة لا تكون سالبة.» · en «The counted quantity cannot be negative.»; no line call is sent; no line changes.
 Test data    : countedQty −1
 <!-- TC:TC-INV-192:END -->
 
@@ -322,7 +328,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: a DRAFT count open; CAT knows no barcode 999; the server answers 422 INV-422-BARCODE-UNKNOWN to a line with barcode 999
 Host data    : none
 Steps        : 1. Scan 999.
-Expected     : the barcode field shows «الباركود غير معروف. اختر متغيّر الصنف يدويًا.» / "Unknown barcode. Pick the Variant by hand."; the Variant picker replaces the barcode field; no line is added.
+Expected     : the barcode field shows ar «الباركود غير معروف. اختر متغيّر الصنف يدويًا.» · en «Unknown barcode. Pick the Variant by hand.»; the Variant picker replaces the barcode field; no line is added.
 Test data    : barcode "999"
 <!-- TC:TC-INV-193:END -->
 
@@ -336,7 +342,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: a DRAFT count with no line; the server answers 422 INV-422-NO-LINES
 Host data    : none
 Steps        : 1. Post and confirm.
-Expected     : message «أضف سطرًا واحدًا على الأقل قبل الترحيل.» / "Add at least one line before posting."; status DRAFT.
+Expected     : message ar «أضف سطرًا واحدًا على الأقل قبل الترحيل.» · en «Add at least one line before posting.»; status DRAFT.
 Test data    : —
 <!-- TC:TC-INV-194:END -->
 
@@ -350,7 +356,7 @@ Scenario     : STATE · data class INVALID · language ALL
 Preconditions: a count opened while DRAFT, then posted in another session (ADR-INV-038); the server answers 409 INV-409-DOCUMENT-CLOSED to the next line call and POSTED to the re-read
 Host data    : none
 Steps        : 1. Scan a barcode.
-Expected     : message «المستند مُرحَّل أو ملغى ولا يمكن تعديله.» / "The document is posted or cancelled and cannot be changed."; the entry reloads read-only (scan bar hidden); no line changes.
+Expected     : message ar «المستند مُرحَّل أو ملغى ولا يمكن تعديله.» · en «The document is posted or cancelled and cannot be changed.»; the entry reloads read-only (scan bar hidden); no line changes.
 Test data    : —
 <!-- TC:TC-INV-195:END -->
 
@@ -364,7 +370,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: a DRAFT adjustment with a line of V −2 and no lot
 Host data    : none
 Steps        : 1. Add a second line of V −1 with no lot. 2. Save.
-Expected     : the second line shows «هذا المتغيّر مذكور في سطر آخر بالتشغيلة نفسها.» / "This Variant is already on another line with the same lot."; no update request is sent.
+Expected     : the second line shows ar «هذا المتغيّر مذكور في سطر آخر بالتشغيلة نفسها.» · en «This Variant is already on another line with the same lot.»; no update request is sent.
 Test data    : —
 <!-- TC:TC-INV-196:END -->
 
@@ -378,7 +384,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: the server answers a DRAFT adjustment with 1 line whose quantityChange is 0 and measureQtyChange empty, and 422 INV-422-ZERO-CHANGE (details rowNo 1) to a post
 Host data    : none
 Steps        : 1. Open the adjustment. 2. Post.
-Expected     : the line's quantityChange shows «أدخل تغيّرًا في الكمية أو القياس لا يساوي صفرًا.» / "Enter a non-zero change of quantity or measure."; status DRAFT.
+Expected     : the line's quantityChange shows ar «أدخل تغيّرًا في الكمية أو القياس لا يساوي صفرًا.» · en «Enter a non-zero change of quantity or measure.»; status DRAFT.
 Test data    : —
 <!-- TC:TC-INV-197:END -->
 
@@ -392,7 +398,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Warehouse user session
 Host data    : none
 Steps        : 1. Add lines, leave the reason empty, Save.
-Expected     : reasonCode shows «اختر سبب التسوية.» / "Choose the adjustment reason."; no create request is sent.
+Expected     : reasonCode shows ar «اختر سبب التسوية.» · en «Choose the adjustment reason.»; no create request is sent.
 Test data    : —
 <!-- TC:TC-INV-198:END -->
 
@@ -448,7 +454,7 @@ Scenario     : BOUNDARY · data class BOUNDARY · language ALL
 Preconditions: Owner session; lotExpiry on; saved horizon 30
 Host data    : none
 Steps        : 1. Enter 0 and Save. 2. Reload the screen.
-Expected     : 1 → the field shows «أدخل عدد أيام من 1 إلى 365.» / "Enter a number of days from 1 to 365."; no save request is sent. 2 → the horizon shows 30.
+Expected     : 1 → the field shows ar «أدخل عدد أيام من 1 إلى 365.» · en «Enter a number of days from 1 to 365.»; no save request is sent. 2 → the horizon shows 30.
 Test data    : 0
 <!-- TC:TC-INV-202:END -->
 
@@ -476,7 +482,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; lotExpiry on; a BUNDLE Item B offered by the Item pick; the server answers 422 INV-422-BUNDLE-SETTINGS
 Host data    : none
 Steps        : 1. Pick B, switch on "Tracked by lot", Save.
-Expected     : the Item field shows «الحزمة لا تحمل مخزونًا؛ تُضبط إعدادات المخزون على مكوّناتها.» / "A bundle holds no stock; set stock settings on its components."; nothing saved.
+Expected     : the Item field shows ar «الحزمة لا تحمل مخزونًا؛ تُضبط إعدادات المخزون على مكوّناتها.» · en «A bundle holds no stock; set stock settings on its components.»; nothing saved.
 Test data    : —
 <!-- TC:TC-INV-204:END -->
 
@@ -490,7 +496,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; dualQuantity on; Item "Steel bar" with no settings
 Host data    : none
 Steps        : 1. Switch on "Dual quantity", leave the measure unit empty, Save.
-Expected     : measureUomCode shows «اختر وحدة القياس الثانية (وزن أو طول).» / "Choose the measure unit (weight or length)."; no save request is sent.
+Expected     : measureUomCode shows ar «اختر وحدة القياس الثانية (وزن أو طول).» · en «Choose the measure unit (weight or length).»; no save request is sent.
 Test data    : —
 <!-- TC:TC-INV-205:END -->
 
@@ -504,7 +510,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; lotExpiry on; "Milk 1L" lot-tracked; the server answers 409 INV-409-LOT-TRACKING-IN-USE with the texts for count 1
 Host data    : none
 Steps        : 1. Switch off "Tracked by lot", Save.
-Expected     : "Tracked by lot" shows «لا يمكن إلغاء تتبع التشغيلة: توجد تشغيلات فيها مخزون (1). اشطبها أو اصرفها أولًا.» / "Lot tracking cannot be cleared: lots still hold stock (1). Write them off or issue them first."; after reload the control is on.
+Expected     : "Tracked by lot" shows ar «لا يمكن إلغاء تتبع التشغيلة: توجد تشغيلات فيها مخزون (1). اشطبها أو اصرفها أولًا.» · en «Lot tracking cannot be cleared: lots still hold stock (1). Write them off or issue them first.»; after reload the control is on.
 Test data    : —
 <!-- TC:TC-INV-206:END -->
 
@@ -518,7 +524,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; dualQuantity on; "Cotton fabric" dual-quantity; the server answers 409 INV-409-DUAL-QUANTITY-IN-USE
 Host data    : none
 Steps        : 1. Switch off "Dual quantity", Save.
-Expected     : "Dual quantity" shows «لا يمكن إلغاء الكمية المزدوجة: يوجد مخزون بقياس غير صفري. سوِّ القياس إلى صفر أولًا.» / "Dual quantity cannot be cleared: stock still holds a non-zero measure. Adjust the measure to zero first."; after reload the control is on.
+Expected     : "Dual quantity" shows ar «لا يمكن إلغاء الكمية المزدوجة: يوجد مخزون بقياس غير صفري. سوِّ القياس إلى صفر أولًا.» · en «Dual quantity cannot be cleared: stock still holds a non-zero measure. Adjust the measure to zero first.»; after reload the control is on.
 Test data    : —
 <!-- TC:TC-INV-207:END -->
 
@@ -588,7 +594,7 @@ Scenario     : PERMISSION · data class ATTACK · language ALL
 Preconditions: a user holding only the Seller/Cashier role; for step 2, a session whose cached permissions still list PERM_INV_ADJUSTMENTS_VIEW / _CREATE while the server answers 403 INV-403
 Host data    : none
 Steps        : 1. Deep-link to /inventory/stock-adjustments/new. 2. With the stale session, fill a valid adjustment and Save.
-Expected     : 1 → the unauthorized view; no create request. 2 → message «ليست لديك صلاحية لهذا الإجراء.» / "You do not have permission for this action." (never a raw status); nothing saved.
+Expected     : 1 → the unauthorized view; no create request. 2 → message, text: catalogue INV-403 (bound by the frontend plan's SEC-FE forbidden-response row) — ar «ليست لديك صلاحية لهذا الإجراء.» · en "You do not have permission for this action." (never a raw status); nothing saved.
 Test data    : reasonCode DAMAGE
 <!-- TC:TC-INV-212:END -->
 
@@ -647,6 +653,20 @@ Steps        : 1. Open the transfer and choose "Stock moves".
 Expected     : the route becomes /inventory/stock-moves?sourceDocTypeCode=INV_TRANSFER&sourceDocRef=T; the move search is sent with sourceDocTypeCode INV_TRANSFER and sourceDocRef T (not docNo); the filter area shows the chip «المستند المصدر» / "Source document" with the transfer's type and number TR-0005.
 Test data    : —
 <!-- TC:TC-INV-263:END -->
+
+<!-- TC:TC-INV-285:START traces=AC-INV-087,REQ-INV-080,SCR-INV-005 -->
+### TC-INV-285 — A transfer post refused for one line of three shows the refusal on that line
+Derived from : AC-INV-087  (REQ-INV-080)
+Exercises    : SCR-INV-005 /inventory/transfers/:id — Post
+Rule / code  : RULE-INV-018 → INV-422-VARIANT-INACTIVE
+Package      : F2-SCR-INV-005
+Scenario     : VIOLATION · data class INVALID · language ALL
+Preconditions: Warehouse user session; 2 active Warehouses; a saved DRAFT Transfer TR-0007 W1 → W2 with 3 lines — V1 (transferLinePk P1), V2 (P2), V3 (P3), 1 each; the server answers the post with 422 INV-422-VARIANT-INACTIVE and `details` [{lineRef P2, lineRefKind LINE_PK, code INV-422-VARIANT-INACTIVE, messageAr, messageEn}] (ADR-INV-046)
+Host data    : none
+Steps        : 1. Open TR-0007 and Post.
+Expected     : the V2 line is highlighted in the lines pane and carries ar «متغيّر الصنف غير نشط.» · en «The Variant is inactive.»; the V1 and V3 lines carry no message; the status shows DRAFT.
+Test data    : lineRef P2, lineRefKind LINE_PK
+<!-- TC:TC-INV-285:END -->
 <!-- SUB:UI-FLOWS:END -->
 
 <!-- SUB:INT-FLOW:START traces=AC-INV-018,AC-INV-037,AC-INV-076,AC-INV-100,AC-INV-128,REQ-INV-015,REQ-INV-032,REQ-INV-070,REQ-INV-090,REQ-INV-114 -->
@@ -899,7 +919,7 @@ Scenario     : INTEGRATION · data class EDGE · language ALL
 Preconditions: a DRAFT count; the CAT barcode lookup answers "not found"
 Host data    : none
 Steps        : 1. Scan the barcode.
-Expected     : the barcode field shows «الباركود غير معروف. اختر متغيّر الصنف يدويًا.» / "Unknown barcode. Pick the Variant by hand."; no line is added; no crash.
+Expected     : the barcode field shows ar «الباركود غير معروف. اختر متغيّر الصنف يدويًا.» · en «Unknown barcode. Pick the Variant by hand.»; no line is added; no crash.
 Test data    : —
 <!-- TC:TC-INV-229:END -->
 
@@ -1057,8 +1077,8 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-002 | TC-INV-048 | — |
 | AC-INV-003 | TC-INV-049 | — |
 | AC-INV-004 | TC-INV-001 | TC-INV-173 |
-| AC-INV-005 | TC-INV-050 | — |
-| AC-INV-006 | TC-INV-051 | — |
+| AC-INV-005 | TC-INV-050, TC-INV-269, TC-INV-273 | — |
+| AC-INV-006 | TC-INV-051, TC-INV-276 | — |
 | AC-INV-007 | TC-INV-002 | TC-INV-174 |
 | AC-INV-008 | TC-INV-003, TC-INV-252 | TC-INV-175 |
 | AC-INV-009 | TC-INV-052 | — |
@@ -1072,23 +1092,23 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-017 | TC-INV-005 | — |
 | AC-INV-018 | TC-INV-057 | TC-INV-213 |
 | AC-INV-019 | TC-INV-058 | — |
-| AC-INV-020 | TC-INV-006 | — |
-| AC-INV-021 | TC-INV-007 | — |
+| AC-INV-020 | TC-INV-006, TC-INV-274 | — |
+| AC-INV-021 | TC-INV-007, TC-INV-274 | — |
 | AC-INV-022 | TC-INV-059 | — |
 | AC-INV-023 | TC-INV-060 | — |
 | AC-INV-024 | TC-INV-061 | — |
 | AC-INV-025 | TC-INV-062 | — |
 | AC-INV-026 | TC-INV-008 | TC-INV-180 |
-| AC-INV-027 | TC-INV-063 | — |
+| AC-INV-027 | TC-INV-063, TC-INV-273 | — |
 | AC-INV-028 | TC-INV-064 | — |
 | AC-INV-029 | TC-INV-009 | TC-INV-181 |
 | AC-INV-030 | TC-INV-010 | TC-INV-182 |
 | AC-INV-031 | TC-INV-065 | — |
-| AC-INV-032 | TC-INV-066 | — |
+| AC-INV-032 | TC-INV-066, TC-INV-272, TC-INV-282 | — |
 | AC-INV-033 | TC-INV-067 | — |
 | AC-INV-034 | — | TC-INV-183 |
 | AC-INV-035 | — | TC-INV-184 |
-| AC-INV-036 | TC-INV-068 | — |
+| AC-INV-036 | TC-INV-068, TC-INV-272 | — |
 | AC-INV-037 | TC-INV-069 | TC-INV-214 |
 | AC-INV-038 | TC-INV-070 | — |
 | AC-INV-039 | TC-INV-071 | — |
@@ -1108,7 +1128,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-053 | TC-INV-012 | — |
 | AC-INV-054 | TC-INV-084 | — |
 | AC-INV-055 | TC-INV-085 | — |
-| AC-INV-056 | TC-INV-086 | — |
+| AC-INV-056 | TC-INV-086, TC-INV-267 | — |
 | AC-INV-057 | TC-INV-087 | — |
 | AC-INV-058 | TC-INV-013 | — |
 | AC-INV-059 | TC-INV-088 | — |
@@ -1116,7 +1136,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-061 | TC-INV-015 | — |
 | AC-INV-062 | TC-INV-089, TC-INV-260 | TC-INV-263 |
 | AC-INV-063 | TC-INV-090 | — |
-| AC-INV-064 | TC-INV-091, TC-INV-245 | — |
+| AC-INV-064 | TC-INV-091, TC-INV-245, TC-INV-278 | — |
 | AC-INV-065 | TC-INV-092 | — |
 | AC-INV-066 | TC-INV-093 | — |
 | AC-INV-067 | TC-INV-094 | — |
@@ -1125,7 +1145,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-070 | TC-INV-016 | — |
 | AC-INV-071 | TC-INV-017 | TC-INV-241 |
 | AC-INV-072 | TC-INV-097 | — |
-| AC-INV-073 | TC-INV-018 | — |
+| AC-INV-073 | TC-INV-018, TC-INV-266 | — |
 | AC-INV-074 | TC-INV-098 | — |
 | AC-INV-075 | TC-INV-019 | — |
 | AC-INV-076 | TC-INV-099, TC-INV-257 | TC-INV-215 |
@@ -1133,13 +1153,13 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-078 | TC-INV-020 | — |
 | AC-INV-079 | TC-INV-021 | TC-INV-185 |
 | AC-INV-080 | TC-INV-101 | — |
-| AC-INV-081 | — | TC-INV-186 |
+| AC-INV-081 | TC-INV-275 | TC-INV-186 |
 | AC-INV-082 | TC-INV-102 | TC-INV-224, TC-INV-225 |
 | AC-INV-083 | TC-INV-103 | TC-INV-187 |
 | AC-INV-084 | TC-INV-104 | — |
-| AC-INV-085 | TC-INV-105 | TC-INV-226, TC-INV-227 |
-| AC-INV-086 | TC-INV-106 | — |
-| AC-INV-087 | TC-INV-107, TC-INV-246, TC-INV-253 | — |
+| AC-INV-085 | TC-INV-105, TC-INV-280 | TC-INV-226, TC-INV-227 |
+| AC-INV-086 | TC-INV-106, TC-INV-270 | — |
+| AC-INV-087 | TC-INV-107, TC-INV-246, TC-INV-253, TC-INV-264 | TC-INV-285 |
 | AC-INV-088 | TC-INV-022 | TC-INV-188 |
 | AC-INV-089 | TC-INV-108, TC-INV-247 | — |
 | AC-INV-090 | TC-INV-023 | TC-INV-189 |
@@ -1154,7 +1174,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-099 | TC-INV-113 | — |
 | AC-INV-100 | — | TC-INV-216 |
 | AC-INV-101 | TC-INV-028 | TC-INV-193 |
-| AC-INV-102 | TC-INV-114, TC-INV-258 | — |
+| AC-INV-102 | TC-INV-114, TC-INV-258, TC-INV-265 | — |
 | AC-INV-103 | TC-INV-029 | TC-INV-194 |
 | AC-INV-104 | TC-INV-115 | — |
 | AC-INV-105 | TC-INV-116 | — |
@@ -1165,7 +1185,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-110 | TC-INV-119 | — |
 | AC-INV-111 | TC-INV-032 | TC-INV-197 |
 | AC-INV-112 | TC-INV-120 | — |
-| AC-INV-113 | TC-INV-033 | TC-INV-198 |
+| AC-INV-113 | TC-INV-033, TC-INV-281, TC-INV-284 | TC-INV-198 |
 | AC-INV-114 | TC-INV-121 | — |
 | AC-INV-115 | TC-INV-034 | — |
 | AC-INV-116 | TC-INV-122 | — |
@@ -1173,22 +1193,22 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-118 | TC-INV-035 | — |
 | AC-INV-119 | TC-INV-124, TC-INV-249 | — |
 | AC-INV-120 | TC-INV-036 | — |
-| AC-INV-121 | TC-INV-125 | — |
+| AC-INV-121 | TC-INV-125, TC-INV-271, TC-INV-279 | — |
 | AC-INV-122 | TC-INV-126 | TC-INV-232, TC-INV-233 |
 | AC-INV-123 | TC-INV-127 | — |
 | AC-INV-124 | TC-INV-128 | — |
 | AC-INV-125 | TC-INV-129 | — |
-| AC-INV-126 | TC-INV-037 | — |
+| AC-INV-126 | TC-INV-037, TC-INV-279 | — |
 | AC-INV-127 | TC-INV-038 | — |
 | AC-INV-128 | TC-INV-130 | TC-INV-217 |
 | AC-INV-129 | TC-INV-131 | TC-INV-199 |
 | AC-INV-130 | TC-INV-132 | TC-INV-200 |
-| AC-INV-131 | TC-INV-133 | — |
+| AC-INV-131 | TC-INV-133, TC-INV-283 | — |
 | AC-INV-132 | TC-INV-134 | TC-INV-201 |
 | AC-INV-133 | TC-INV-039 | TC-INV-202 |
 | AC-INV-134 | TC-INV-135 | — |
 | AC-INV-135 | TC-INV-136 | TC-INV-203, TC-INV-222, TC-INV-223 |
-| AC-INV-136 | TC-INV-040 | — |
+| AC-INV-136 | TC-INV-040, TC-INV-268 | — |
 | AC-INV-137 | TC-INV-137 | — |
 | AC-INV-138 | TC-INV-138 | TC-INV-234, TC-INV-235 |
 | AC-INV-139 | TC-INV-041 | TC-INV-204 |
@@ -1206,7 +1226,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-151 | — | TC-INV-209 |
 | AC-INV-152 | TC-INV-144 | TC-INV-210 |
 | AC-INV-153 | TC-INV-145, TC-INV-261 | TC-INV-211 |
-| AC-INV-154 | TC-INV-146 | TC-INV-212 |
+| AC-INV-154 | TC-INV-146, TC-INV-277 | TC-INV-212 |
 
 ### REQ → TC
 
@@ -1234,7 +1254,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | REQ-INV-075 | TC-INV-224, TC-INV-225 |
 | REQ-INV-076 | TC-INV-187 |
 | REQ-INV-078 | TC-INV-226, TC-INV-227 |
-| REQ-INV-080 | TC-INV-188 |
+| REQ-INV-080 | TC-INV-188, TC-INV-285 |
 | REQ-INV-082 | TC-INV-189 |
 | REQ-INV-083 | TC-INV-190 |
 | REQ-INV-084 | TC-INV-191 |
@@ -1272,7 +1292,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | SCR-INV-002 | TC-INV-180, TC-INV-181, TC-INV-182, TC-INV-214 |
 | SCR-INV-003 | TC-INV-179, TC-INV-203, TC-INV-209, TC-INV-210, TC-INV-211, TC-INV-213, TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-222, TC-INV-223, TC-INV-262 |
 | SCR-INV-004 | TC-INV-187, TC-INV-210, TC-INV-213, TC-INV-224, TC-INV-225, TC-INV-263 |
-| SCR-INV-005 | TC-INV-178, TC-INV-188, TC-INV-189, TC-INV-190, TC-INV-191, TC-INV-210, TC-INV-213, TC-INV-226, TC-INV-227, TC-INV-263 |
+| SCR-INV-005 | TC-INV-178, TC-INV-188, TC-INV-189, TC-INV-190, TC-INV-191, TC-INV-210, TC-INV-213, TC-INV-226, TC-INV-227, TC-INV-263, TC-INV-285 |
 | SCR-INV-006 | TC-INV-192, TC-INV-193, TC-INV-194, TC-INV-195, TC-INV-210, TC-INV-216, TC-INV-228, TC-INV-229 |
 | SCR-INV-007 | TC-INV-177, TC-INV-196, TC-INV-197, TC-INV-198, TC-INV-208, TC-INV-210, TC-INV-212, TC-INV-213, TC-INV-215, TC-INV-217, TC-INV-230, TC-INV-231 |
 | SCR-INV-008 | TC-INV-199, TC-INV-200, TC-INV-210, TC-INV-217, TC-INV-232, TC-INV-233 |
@@ -1294,6 +1314,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | RULE-INV-012 | TC-INV-181 |
 | RULE-INV-013 | TC-INV-182 |
 | RULE-INV-016 | TC-INV-178, TC-INV-189 |
+| RULE-INV-018 | TC-INV-285 |
 | RULE-INV-019 | TC-INV-190 |
 | RULE-INV-026 | TC-INV-186, TC-INV-215 |
 | RULE-INV-028 | TC-INV-185 |
@@ -1328,14 +1349,15 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | INV-422-COUNTED-NEGATIVE | TC-INV-192 |
 | INV-422-DUPLICATE-LINE | TC-INV-196 |
 | INV-422-HORIZON-RANGE | TC-INV-202 |
-| INV-422-LOAD-ROWS-INVALID | TC-INV-185 |
 | INV-422-LOAD-ROW-VARIANT | TC-INV-185 |
+| INV-422-LOAD-ROWS-INVALID | TC-INV-185 |
 | INV-422-LOT-REQUIRED | TC-INV-191 |
 | INV-422-MEASURE-UNIT-REQUIRED | TC-INV-205 |
 | INV-422-NO-LINES | TC-INV-188, TC-INV-194 |
 | INV-422-OPENING-COST-REQUIRED | TC-INV-186 |
 | INV-422-REASON-REQUIRED | TC-INV-198 |
 | INV-422-TRANSFER-WAREHOUSES | TC-INV-189 |
+| INV-422-VARIANT-INACTIVE | TC-INV-285 |
 | INV-422-ZERO-CHANGE | TC-INV-197 |
 
 ### UXD → TC
@@ -1362,7 +1384,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | F2-SCR-INV-002 | TC-INV-181, TC-INV-182 |
 | F2-SCR-INV-003 | TC-INV-219, TC-INV-221, TC-INV-223 |
 | F2-SCR-INV-004 | TC-INV-225 |
-| F2-SCR-INV-005 | TC-INV-188, TC-INV-190, TC-INV-227 |
+| F2-SCR-INV-005 | TC-INV-188, TC-INV-190, TC-INV-227, TC-INV-285 |
 | F2-SCR-INV-006 | TC-INV-193, TC-INV-194, TC-INV-195, TC-INV-229 |
 | F2-SCR-INV-007 | TC-INV-197, TC-INV-231 |
 | F2-SCR-INV-008 | TC-INV-200, TC-INV-233 |
@@ -1401,11 +1423,12 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | Measure | Result |
 |---|---|
 | AC covered (both tracks) | ✓ 154/154 · gaps: none |
-| AC covered on this track | 56/154 (the rest on the other track; 48 ACs on both) |
+| AC covered on this track | 57/154 (the rest on the other track; 50 ACs on both) |
 | REQ covered (both tracks) | ✓ 138/138 · gaps: none |
 | REQ covered on this track | 51/138 |
 | SCR covered | ✓ 12/12 · gaps: none |
 | UXD covered | ✓ 11/11 (rendered + empty/failure each) · gaps: none |
 | Split units with no TC | 13 of 50: F1-SCR-INV-001, F1-SCR-INV-002, F1-SCR-INV-003, F1-SCR-INV-004, F1-SCR-INV-005, F1-SCR-INV-006, F1-SCR-INV-007, F1-SCR-INV-008, F1-SCR-INV-009, F1-SCR-INV-010, F1-SCR-INV-011, F1-SCR-INV-012, ALIGN-FE · no AC, XM or UXD derives a case for them (ADR-INV-037); F3-SCR-INV-012 and F4-SCR-INV-011 carry TC-INV-238 and TC-INV-241 (ADR-INV-039) |
-| Over-engineering guard | 71 TCs for 56 ACs + 11 UXD (ratio 1.06 ≤ 2) |
+| Line refusals (gate-analysis revise 2) | TC-INV-285: a post refused for line 2 of 3 places the text on that line through `details[0].lineRef` (ADR-INV-046) |
+| Over-engineering guard | 72 TCs for 57 ACs + 11 UXD (ratio 1.06 ≤ 2) |
 

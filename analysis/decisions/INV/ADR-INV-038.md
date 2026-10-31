@@ -26,9 +26,9 @@ A test case copies messages from the SRS and asserts the catalogue code. Four pl
    read-only, and hides its scan bar.
 
 ## Decision
-1. TC-INV-045 and TC-INV-046 assert the code and the RULE message. That is the SRS A5 text the server returns
-   and the frontend plan binds. Each TC states the AC wording as a recorded divergence. The SRS owner aligns the
-   two ACs at the next INV delta.
+1. *Narrowed at gate-analysis revise 2 (G1):* the SRS now words AC-INV-144 and AC-INV-147 with the RULE-INV-044
+   and RULE-INV-046 texts, so there is no divergence left to record. TC-INV-045 and TC-INV-046 assert the code and
+   that one text.
 2. The TCs assert the catalogue code (INV-422-…). Where the AC data allows, a TC satisfies the schema and still
    triggers the rule: TC-INV-033 sends `reasonCode` as an empty string for "no reason".
    **Derivation rule (gate-analysis revise 1, G14 — the conflict is no longer deferred):** a bound that a catalogue
@@ -42,14 +42,17 @@ A test case copies messages from the SRS and asserts the catalogue code. Four pl
    (INV-422-HORIZON-RANGE). Type, format, `maxLength` of a text and the paging bounds of `page` / `size`, which no
    catalogue code owns, stay enforced (INV-400). A validating server or mock therefore answers the rule's 422 code,
    as TC-INV-020, TC-INV-027 and the frontend mock expect. The rule is stated in the backend plan's DOC phase.
-3. TC-INV-032 asserts the save-time refusal through API-INV-036. It then builds the AC's DRAFT below the API (a
-   persisted fixture) and asserts the post-time refusal through API-INV-038.
+3. TC-INV-032 asserts the save-time refusal through API-INV-036. *Revised at gate-analysis revise 2 (G17):*
+   AC-INV-111 now starts from a state the API can reach — a DRAFT line with quantityChange 0 and a measure change,
+   saved while the Item was dual-quantity, whose dual quantity is then cleared — so TC-INV-032 builds it through
+   API-INV-045 and API-INV-036 and no fixture is needed.
 4. The frontend TC of AC-INV-106 covers the reachable path. The count is open as DRAFT and is posted in another
    session. The scan then gets INV-409-DOCUMENT-CLOSED, routed by F2 (text RULE-INV-029, entry reloads read-only).
 
 ## Consequences
 - No message is paraphrased. Every asserted text is an SRS text that a plan binds.
-- Two SRS ACs carry wording the system will not produce. They are reported, not hidden.
+- No SRS AC carries wording the system will not produce (AC-INV-144 and AC-INV-147 aligned at gate-analysis
+  revise 2).
 - No REQ, RULE, API, SCR or code changes.
 
 ## Status

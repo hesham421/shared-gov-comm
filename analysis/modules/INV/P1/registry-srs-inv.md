@@ -75,14 +75,16 @@ Given (no XM edge — SRS A9 `given-usage`): erp-core modules.cu, modules.sequen
 | REQ | 138 | REQ-INV-001 … REQ-INV-138 | 138 |
 | AC | 154 | AC-INV-001 … AC-INV-154 | 154 |
 | ENT | 14 | ENT-INV-001 … ENT-INV-014 | 14 |
-| RULE | 49 | RULE-INV-001 … RULE-INV-049 | 49 |
+| RULE | 51 | RULE-INV-001 … RULE-INV-051 | 51 |
 | SCR-REQ | 12 | SCR-REQ-INV-001 … SCR-REQ-INV-012 | 12 |
 
-Last sequence per atom: (REQ: 138, AC: 154, ENT: 14, RULE: 49, SCR-REQ: 12). Each sequence continues from the next number after its last sequence.
+Last sequence per atom: (REQ: 138, AC: 154, ENT: 14, RULE: 51, SCR-REQ: 12). Each sequence continues from the next number after its last sequence.
 
-Coverage: 28 / 28 stories covered by ≥ 1 REQ; 138 / 138 REQ carry ≥ 1 AC; 49 / 49 RULE trace to ≥ 1 REQ; 12 / 12 SCR-REQ trace to ≥ 1 REQ.
+Coverage: 28 / 28 stories covered by ≥ 1 REQ; 138 / 138 REQ carry ≥ 1 AC; 51 / 51 RULE trace to ≥ 1 REQ; 12 / 12 SCR-REQ trace to ≥ 1 REQ.
 
 RULE-INV-049 (an issue consumes only its own reservation — REQ-INV-047, REQ-INV-048) was added at gate-analysis revise 1 (G9). The same revise extended the triggers of RULE-INV-004, 007, 008, 017, 018, 025, 028, 037, 040 and 047 in place, with no id change.
+
+Gate-analysis revise 2 added RULE-INV-050 (a reused idempotency key carries the same request — REQ-INV-058, G9) and RULE-INV-051 (a stock document is not dated after today — REQ-INV-078, 079, 087, 097, 070, G14). It extended in place, with no id change, RULE-INV-018 (bundle receipts refused, G5), RULE-INV-019 (the lot-level check, G4), RULE-INV-033 (system-generated reasons not checked; OPENING_STOCK refused on the adjustment screen, G3, G18) and RULE-INV-040 with REQ-INV-122 (adjustment and opening stock lines, G6). It reworded AC-INV-104, 111, 144, 145, 147 and 149, added the field requestHash to ENT-INV-004 and ENT-INV-005, and stated the read and delete lifecycle of ENT-INV-007, 011, 013 and 014.
 
 ### Decisions
 
@@ -94,5 +96,5 @@ RULE-INV-049 (an issue consumes only its own reservation — REQ-INV-047, REQ-IN
 
 ### Event
 
-"P1 completed: INV v1 — REQ 138 · AC 154 · ENT 14 · RULE 48 · SCR-REQ 12 · ADR 0" · "gate-analysis revise 1: RULE-INV-049 added (RULE 49)"
+"P1 completed: INV v1 — REQ 138 · AC 154 · ENT 14 · RULE 48 · SCR-REQ 12 · ADR 0" · "gate-analysis revise 1: RULE-INV-049 added (RULE 49)" · "gate-analysis revise 2: RULE-INV-050, RULE-INV-051 added (RULE 51)"
 ══════════════════════════════════════════════════════════════════

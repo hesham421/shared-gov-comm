@@ -2,8 +2,8 @@
 ══════════════════════════════════════════════════════════════════
 Module : INV   Version : v1   Profile : commerce   Stage : P2 (Database) · pass 1 · round 1
 Inputs : srs (srs-inv.md, P1 commit 8afe84c — REQ 138 · AC 154 · ENT 14 · RULE 48), registry-srs, contract (contract-inv.md, P1.5 commit 2d5372b), contracts (contract-cat.md CAT v2 — consumed; contract-pty.md — read, INV consumes nothing from PTY)
-Counts : tables 14 · DBF 219 (DBF-INV-001 … DBF-INV-219) · XM 15 (XM-INV-001 … XM-INV-015: 11 HARD-FK · 4 SOFT-READ — 13 registered at P2 + XM-INV-014, 015 minted at P3.1 and back-registered) · intra-module FK 19 (composite with TENANT_ID) · tenant FK 14 · lookups seeded 6 keys / 34 values · number series 5 · notification templates 2 · settings defaults 3 · ADR 7 raised at P2 (ADR-INV-014 … ADR-INV-020, all ACCEPTED)
-Status : COMPLETE — P2 pass 1 · repair round 2 · no question raised · ADR-INV-019 resolved by ADR-INV-020 (ACCEPTED); gate-analysis revise 1: XM-INV-014 / 015 back-registered as minted, setting INV_MEASURE_UOM_KEY seeded (ADR-INV-043)
+Counts : tables 14 · DBF 221 (DBF-INV-001 … DBF-INV-221 — DBF-INV-220, 221 added at gate-analysis revise 2) · XM 15 (XM-INV-001 … XM-INV-015: 11 HARD-FK · 4 SOFT-READ — 13 registered at P2 + XM-INV-014, 015 minted at P3.1 and back-registered) · intra-module FK 19 (composite with TENANT_ID) · tenant FK 14 · lookups seeded 6 keys / 34 values · number series 5 · notification templates 2 · settings defaults 3 · ADR 7 raised at P2 (ADR-INV-014 … ADR-INV-020, all ACCEPTED)
+Status : COMPLETE — P2 pass 1 · repair round 2 · no question raised · ADR-INV-019 resolved by ADR-INV-020 (ACCEPTED); gate-analysis revise 1: XM-INV-014 / 015 back-registered as minted, setting INV_MEASURE_UOM_KEY seeded (ADR-INV-043); gate-analysis revise 2: REQUEST_HASH on INV_STOCK_MOVE and INV_RESERVATION (DBF-INV-220, 221 — ADR-INV-048), stock-move immutability trigger (ADR-INV-049)
 ══════════════════════════════════════════════════════════════════
 
 ## 1 — Header
@@ -268,9 +268,11 @@ rows:
   - {id: DBF-INV-217, table: INV_ITEM_STOCK_SETTINGS, column: CREATED_AT, type: "TIMESTAMPTZ", entity_field: ENT-INV-014.createdAt, traces: [REQ-INV-124, REQ-INV-077], nullable: "NOT NULL", default: "—"}
   - {id: DBF-INV-218, table: INV_ITEM_STOCK_SETTINGS, column: UPDATED_BY, type: "VARCHAR(100)", entity_field: ENT-INV-014.updatedBy, traces: [REQ-INV-125, REQ-INV-077], nullable: "NOT NULL", default: "—"}
   - {id: DBF-INV-219, table: INV_ITEM_STOCK_SETTINGS, column: UPDATED_AT, type: "TIMESTAMPTZ", entity_field: ENT-INV-014.updatedAt, traces: [REQ-INV-125, REQ-INV-077], nullable: "NOT NULL", default: "—"}
+  - {id: DBF-INV-220, table: INV_STOCK_MOVE, column: REQUEST_HASH, type: "VARCHAR(64)", entity_field: ENT-INV-004.requestHash, traces: [REQ-INV-058], nullable: "NOT NULL", default: "—"}
+  - {id: DBF-INV-221, table: INV_RESERVATION, column: REQUEST_HASH, type: "VARCHAR(64)", entity_field: ENT-INV-005.requestHash, traces: [REQ-INV-058], nullable: "NOT NULL", default: "—"}
 ```
 
-Total: 219 DBF ids across 14 tables (INV_WAREHOUSE 13 · INV_BRANCH 12 · INV_STOCK_BALANCE 14 · INV_STOCK_MOVE 26 · INV_RESERVATION 21 · INV_TRANSFER 14 · INV_TRANSFER_LINE 14 · INV_STOCK_COUNT 14 · INV_STOCK_COUNT_LINE 14 · INV_STOCK_ADJUSTMENT 15 · INV_STOCK_ADJUSTMENT_LINE 18 · INV_LOT 15 · INV_STOCK_VALUATION 14 · INV_ITEM_STOCK_SETTINGS 15).
+Total: 221 DBF ids across 14 tables (INV_WAREHOUSE 13 · INV_BRANCH 12 · INV_STOCK_BALANCE 14 · INV_STOCK_MOVE 27 · INV_RESERVATION 22 · INV_TRANSFER 14 · INV_TRANSFER_LINE 14 · INV_STOCK_COUNT 14 · INV_STOCK_COUNT_LINE 14 · INV_STOCK_ADJUSTMENT 15 · INV_STOCK_ADJUSTMENT_LINE 18 · INV_LOT 15 · INV_STOCK_VALUATION 14 · INV_ITEM_STOCK_SETTINGS 15). DBF-INV-220 (INV_STOCK_MOVE.REQUEST_HASH) and DBF-INV-221 (INV_RESERVATION.REQUEST_HASH) were added at gate-analysis revise 2 (ADR-INV-048); they continue the sequence at its end instead of being renumbered into their tables.
 
 Every SRS A3 field is a column; no A3 field is left out. Derived values that SRS A3 marks "derived in every read (not held)" — ENT-INV-003 `reservedQty`, `availableQty` (REQ-INV-038) — are not columns.
 
@@ -644,6 +646,7 @@ CREATE TABLE INV_RESERVATION (
     SOURCE_LINE_REF          BIGINT,
     CLOSED_AT                TIMESTAMPTZ,
     IDEMPOTENCY_KEY          VARCHAR(64)   NOT NULL,
+    REQUEST_HASH             VARCHAR(64)   NOT NULL,
     VARIANT_FK               BIGINT        NOT NULL, -- constraint → XM-INV-004
     WAREHOUSE_FK             BIGINT        NOT NULL,
     BUNDLE_VARIANT_FK        BIGINT,                 -- constraint → XM-INV-005
@@ -671,6 +674,7 @@ CREATE TABLE INV_STOCK_MOVE (
     SOURCE_LINE_REF          BIGINT,
     OFFLINE_FL               BOOLEAN       DEFAULT FALSE NOT NULL,
     IDEMPOTENCY_KEY          VARCHAR(64)   NOT NULL,
+    REQUEST_HASH             VARCHAR(64)   NOT NULL,
     VARIANT_FK               BIGINT        NOT NULL, -- constraint → XM-INV-002
     WAREHOUSE_FK             BIGINT        NOT NULL,
     LOT_FK                   BIGINT,
@@ -856,6 +860,7 @@ COMMENT ON COLUMN INV_STOCK_MOVE.SOURCE_DOC_NO IS 'DBF-INV-049 · ENT-INV-004.so
 COMMENT ON COLUMN INV_STOCK_MOVE.SOURCE_LINE_REF IS 'DBF-INV-050 · ENT-INV-004.sourceLineRef · source line identifier; SOFT reference, no FK';
 COMMENT ON COLUMN INV_STOCK_MOVE.OFFLINE_FL IS 'DBF-INV-051 · ENT-INV-004.offlineFl · true for a synchronised offline POS sale; never checked against negative stock (POL-INV-020, RULE-INV-019)';
 COMMENT ON COLUMN INV_STOCK_MOVE.IDEMPOTENCY_KEY IS 'DBF-INV-052 · ENT-INV-004.idempotencyKey · caller-supplied; one recording per key and request, which may hold several moves (RULE-INV-024)';
+COMMENT ON COLUMN INV_STOCK_MOVE.REQUEST_HASH IS 'DBF-INV-220 · ENT-INV-004.requestHash · lower-case hex SHA-256 of the canonical request recorded with IDEMPOTENCY_KEY; the same key with a different hash is refused (RULE-INV-050, ADR-INV-048)';
 COMMENT ON COLUMN INV_STOCK_MOVE.VARIANT_FK IS 'DBF-INV-053 · ENT-INV-004.variantFk · CAT Variant identifier (BIGINT, CON-CAT-002), a component Variant for a bundle issue; cross-module HARD-FK, column only (XM-INV-002)';
 COMMENT ON COLUMN INV_STOCK_MOVE.WAREHOUSE_FK IS 'DBF-INV-054 · ENT-INV-004.warehouseFk · intra-module FK (TENANT_ID, WAREHOUSE_FK) to INV_WAREHOUSE; recorded on every move (POL-INV-002, REQ-INV-016)';
 COMMENT ON COLUMN INV_STOCK_MOVE.LOT_FK IS 'DBF-INV-055 · ENT-INV-004.lotFk · intra-module FK (TENANT_ID, LOT_FK) to INV_LOT; lot-tracked Items (RULE-INV-039)';
@@ -881,6 +886,7 @@ COMMENT ON COLUMN INV_RESERVATION.SOURCE_DOC_NO IS 'DBF-INV-072 · ENT-INV-005.s
 COMMENT ON COLUMN INV_RESERVATION.SOURCE_LINE_REF IS 'DBF-INV-073 · ENT-INV-005.sourceLineRef · source line identifier; SOFT reference, no FK';
 COMMENT ON COLUMN INV_RESERVATION.CLOSED_AT IS 'DBF-INV-074 · ENT-INV-005.closedAt · set on CONSUMED or RELEASED';
 COMMENT ON COLUMN INV_RESERVATION.IDEMPOTENCY_KEY IS 'DBF-INV-075 · ENT-INV-005.idempotencyKey · caller-supplied; one recording per key and request, which may hold one reservation per bundle component (RULE-INV-024)';
+COMMENT ON COLUMN INV_RESERVATION.REQUEST_HASH IS 'DBF-INV-221 · ENT-INV-005.requestHash · lower-case hex SHA-256 of the canonical request recorded with IDEMPOTENCY_KEY; the same key with a different hash is refused (RULE-INV-050, ADR-INV-048)';
 COMMENT ON COLUMN INV_RESERVATION.VARIANT_FK IS 'DBF-INV-076 · ENT-INV-005.variantFk · CAT Variant identifier (BIGINT, CON-CAT-002), a component Variant when exploded from a bundle; cross-module HARD-FK, column only (XM-INV-004)';
 COMMENT ON COLUMN INV_RESERVATION.WAREHOUSE_FK IS 'DBF-INV-077 · ENT-INV-005.warehouseFk · intra-module FK (TENANT_ID, WAREHOUSE_FK) to INV_WAREHOUSE (RULE-INV-004)';
 COMMENT ON COLUMN INV_RESERVATION.BUNDLE_VARIANT_FK IS 'DBF-INV-078 · ENT-INV-005.bundleVariantFk · CAT bundle Variant identifier (BIGINT, CON-CAT-002); cross-module HARD-FK, column only (XM-INV-005)';
@@ -1301,13 +1307,27 @@ ALTER TABLE INV_STOCK_ADJUSTMENT_LINE ADD CONSTRAINT FK_INV_STOCK_ADJUSTMENT_LIN
 -- REQ-INV-088, REQ-INV-091.
 
 -- ---------------------------------------------------------------------
--- BLOCK 6 — TRIGGERS
--- none: no SRS RULE requires a database trigger. Change history
--- (REQ-INV-077) is the given audit module (AuditApi); the immutability of
--- stock moves (RULE-INV-023), the read-only codes and numbers (RULE-INV-001,
--- 010, 030), the balance and valuation updates (REQ-INV-036, 059) and the
--- read-only posted documents (RULE-INV-029) are service behaviour (P3.1).
+-- BLOCK 6 — TRIGGERS (and the one routine they call, created first)
+-- RULE-INV-023: a stock move is never changed or deleted. The service exposes
+-- no update or delete and the entity is @Immutable; this trigger also stops
+-- direct SQL (ADR-INV-049, gate-analysis revise 2). Change history
+-- (REQ-INV-077) is the given audit module (AuditApi); the read-only codes and
+-- numbers (RULE-INV-001, 010, 030), the balance and valuation updates
+-- (REQ-INV-036, 059) and the read-only posted documents (RULE-INV-029) stay
+-- service behaviour (P3.1).
 -- ---------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION INV_STOCK_MOVE_IMMUTABLE_FN() RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+BEGIN
+    RAISE EXCEPTION USING ERRCODE = 'P0001', MESSAGE = 'INV-409-STOCK-MOVE-IMMUTABLE',
+        DETAIL = 'stock move ' || OLD.STOCK_MOVE_PK || ' cannot be changed or deleted (RULE-INV-023)';
+END;
+$$;
+
+CREATE TRIGGER TRG_INV_STOCK_MOVE_IMMUTABLE
+    BEFORE UPDATE OR DELETE ON INV_STOCK_MOVE
+    FOR EACH ROW EXECUTE FUNCTION INV_STOCK_MOVE_IMMUTABLE_FN();
 
 -- ---------------------------------------------------------------------
 -- BLOCK 7 — INDEXES (non-PK). One index per table is led by TENANT_ID.
@@ -1518,7 +1538,8 @@ WHERE NOT EXISTS (SELECT 1 FROM CU_APP_CONFIGURATION c WHERE c.TENANT_ID IS NULL
 
 -- ---------------------------------------------------------------------
 -- BLOCK 10 — FUNCTIONS / PROCEDURES
--- none: no SRS requirement needs a stored routine.
+-- one routine, INV_STOCK_MOVE_IMMUTABLE_FN() — created in BLOCK 6, just before
+-- the trigger that calls it (ADR-INV-049); no other stored routine.
 -- ---------------------------------------------------------------------
 ```
 
@@ -1541,20 +1562,20 @@ TENANCY       ✓ 14 / 14 tables: TENANT_ID NOT NULL · FK_<TABLE>_TENANT · IDX
               ✓ 24 / 24 UNIQUE (22 constraints, 2 unique indexes) lead with TENANT_ID · 19 / 19 intra-module FKs composite with TENANT_ID
 ORDER         ✓ parents before children · PK and tenant-scoped UNIQUE before FK · given DDL before the seed INSERTs
               ✓ the count ↔ adjustment cycle is two nullable FKs added after both tables exist
-COMPLETENESS  ✓ 14 / 14 ENT → table · every A3 field → DBF (219) · derived reservedQty / availableQty not held (SRS A3)
+COMPLETENESS  ✓ 14 / 14 ENT → table · every A3 field → DBF (221) · derived reservedQty / availableQty not held (SRS A3)
               ✓ 6 / 6 owned lookup keys seeded (34 values) · 5 / 5 number series · 2 / 2 notification templates · 3 / 3 settings defaults
               ✓ indexes on every FK column (direct or via a leading UNIQUE), every B2 filter column, every UNIQUE business key
               ✓ shared lookup tables (MDL_*) not re-created
 CROSS-MODULE  ✓ 11 / 11 HARD-FK XM have their column (BIGINT, per CON-CAT-001 / CON-CAT-002) and their pointer "constraint → XM-INV-0nn"
               ✓ 2 / 2 SOFT-READ XM have their commentary block (after 5d) · no cross-module constraint, live or commented
-TRACE         ✓ 219 / 219 DBF trace to ENT.field + ≥ 1 REQ · 15 / 15 XM trace to ≥ 1 REQ and to an SRS A8 row (XM-INV-014, 015 minted at P3.1) · no orphan, no dangling id
+TRACE         ✓ 221 / 221 DBF trace to ENT.field + ≥ 1 REQ · 15 / 15 XM trace to ≥ 1 REQ and to an SRS A8 row (XM-INV-014, 015 minted at P3.1) · no orphan, no dangling id
 PROFILE       ✓ CM-3 every flag column ends with _FL (IS_DEFAULT_FL, IS_ACTIVE_FL, OFFLINE_FL, LOT_TRACKED_FL, DUAL_QUANTITY_FL)
               ✓ CM-8 every stock-bearing row carries its warehouse (INV_STOCK_BALANCE, INV_STOCK_MOVE, INV_RESERVATION; documents on the
                     header — lines inherit it through their composite FK); every monetary row carries CURRENCY_CODE
                     (INV_STOCK_MOVE, INV_TRANSFER_LINE, INV_STOCK_ADJUSTMENT_LINE, INV_STOCK_VALUATION); INV holds no price (ADR-INV-015)
 ```
 
-Counts: 14 tables · 14 PK · 22 UNIQUE constraints + 2 unique indexes · 34 CHECK · 19 intra-module FK + 14 tenant FK · 0 cross-module constraint (11 column-only HARD-FK) · 0 trigger · 45 non-unique indexes · 6 lookup types / 34 values · 5 number series · 2 notification templates · 3 settings defaults · 0 view · 0 routine.
+Counts: 14 tables · 14 PK · 22 UNIQUE constraints + 2 unique indexes · 34 CHECK · 19 intra-module FK + 14 tenant FK · 0 cross-module constraint (11 column-only HARD-FK) · 1 trigger (TRG_INV_STOCK_MOVE_IMMUTABLE) · 45 non-unique indexes · 6 lookup types / 34 values · 5 number series · 2 notification templates · 3 settings defaults · 0 view · 1 routine (INV_STOCK_MOVE_IMMUTABLE_FN).
 
 ---
 
@@ -1568,8 +1589,8 @@ Counts: 14 tables · 14 PK · 22 UNIQUE constraints + 2 unique indexes · 34 CHE
 | D-P2-02 | Column order per table: PK → entity fields in SRS order → FK fields → kind standard fields → TENANT_ID, VERSION → CURRENCY_CODE → audit fields; DBF sequence continuous across tables in ENT order | engine §2 ASSIGNMENT RULES |
 | D-P2-03 | Audit user columns CREATED_BY / UPDATED_BY are `VARCHAR(100)` holding the platform principal, filled by the given auditing — never a client value, never a numeric FK | engine §3 AUDIT COLUMNS; SRS A3 ("system-filled") |
 | D-P2-04 | Closed lookups that hold behaviour (INV_MOVE_TYPE, INV_DOC_STATUS, INV_RESERVATION_STATUS) are CHECK-constrained; open lookups (INV_ADJUSTMENT_REASON, INV_SOURCE_DOC_TYPE) and the consumed CAT unit of measure are validated against active `mdl` values at runtime; INV_CHANGE_KIND is an event field with no column, seeded only | SRS A6, A7; engine §1 (A7 → check constraints); profile LOOKUPS |
-| D-P2-05 | IDEMPOTENCY_KEY is indexed, not unique: one cross-module request records several moves or reservations under one key (multi-line receipts and issues, bundle explosion REQ-INV-049 / 053, FEFO split REQ-INV-110); "first result, nothing new" is a service lookup by key (RULE-INV-024). INV-internal documents fill the key from the document (for example the transfer type and identifier) because the column is NOT NULL in SRS A3 | SRS ENT-INV-004, ENT-INV-005; RULE-INV-024 |
-| D-P2-06 | No trigger and no routine: stock-move immutability (RULE-INV-023), read-only codes and numbers (RULE-INV-001, 010, 030), read-only posted documents (RULE-INV-029), balance / valuation maintenance (REQ-INV-036, 059) and audit (REQ-INV-077, given AuditApi) are service behaviour | engine BLOCK 6, BLOCK 10 |
+| D-P2-05 | IDEMPOTENCY_KEY is indexed, not unique: one cross-module request records several moves or reservations under one key (multi-line receipts and issues, bundle explosion REQ-INV-049 / 053, FEFO split REQ-INV-110); "first result, nothing new" is a service lookup by key (RULE-INV-024); the rows a key returns carry REQUEST_HASH, and a different hash is refused (RULE-INV-050, ADR-INV-048). INV-internal documents fill the key from the document (for example the transfer type and identifier) because the column is NOT NULL in SRS A3 | SRS ENT-INV-004, ENT-INV-005; RULE-INV-024 |
+| D-P2-06 | One trigger only, on the stock-move ledger: stock-move immutability (RULE-INV-023) is enforced by TRG_INV_STOCK_MOVE_IMMUTABLE as well as by the service (narrowed by ADR-INV-049). Read-only codes and numbers (RULE-INV-001, 010, 030), read-only posted documents (RULE-INV-029), balance / valuation maintenance (REQ-INV-036, 059) and audit (REQ-INV-077, given AuditApi) are service behaviour | engine BLOCK 6, BLOCK 10 |
 | D-P2-07 | RULE-INV-034 (an adjustment line changes something) is not a CHECK: AC-INV-111 starts from a saved DRAFT line whose change is zero and expects the posting to refuse it, so the rule is enforced by the service on save and post | SRS AC-INV-111, RULE-INV-034 |
 | D-P2-08 | Uniqueness over a nullable lot uses `UNIQUE NULLS NOT DISTINCT` (postgresql15+): stock without a lot is one balance, and two lines of the same Variant without a lot collide (AC-INV-109) | REQ-INV-035; RULE-INV-048; SRS D-14 |
 | D-P2-09 | Column defaults only where the SRS states the initial value: IS_ACTIVE_FL TRUE, IS_DEFAULT_FL / OFFLINE_FL / LOT_TRACKED_FL / DUAL_QUANTITY_FL FALSE (A3 "false by default"), STATUS_CODE 'DRAFT' (REQ-INV-078, 087, 097) and 'ACTIVE' (REQ-INV-043), VERSION 0. DOC_DATE "today by default" is service-filled in the tenant time zone (RULE-INV-038's time-zone rule), not a database default; CURRENCY_CODE is service-filled from the tenant base currency | SRS A3, A7 |
@@ -1581,7 +1602,7 @@ Counts: 14 tables · 14 PK · 22 UNIQUE constraints + 2 unique indexes · 34 CHE
 
 ### 5.2 ADRs raised by this stage (ADR-INV-014 … ADR-INV-020)
 
-All seven are NON-BREAKING with status ACCEPTED. ADR-INV-014 … 018 were accepted when raised. ADR-INV-019 (repair round 2) was raised BLOCKED, because the only remaining findings were on P1 SRS text, which P2 could not write; it is now ACCEPTED, resolved by ADR-INV-020, and P2 is complete. It was never a structural conflict, and no DBF, XM or SQL depends on it. The write scope of the first run was the two P2 files, so ADR-INV-014 … 017 are recorded here in full (Context · Decision · Consequences · Traces · Status) for the orchestrator to file under `analysis/decisions/INV/ADR-INV-{seq}.md`. ADR-INV-018, ADR-INV-019 and ADR-INV-020 are recorded here and are filed as `analysis/decisions/INV/ADR-INV-018.md`, `ADR-INV-019.md` and `ADR-INV-020.md`. ADR-INV-020 (ACCEPTED) rewords the two SRS cells and so meets the unblock condition of ADR-INV-019, which is ACCEPTED (resolved). The next free ADR id after P2 was ADR-INV-021 (the module's next free id is now ADR-INV-046).
+All seven are NON-BREAKING with status ACCEPTED. ADR-INV-014 … 018 were accepted when raised. ADR-INV-019 (repair round 2) was raised BLOCKED, because the only remaining findings were on P1 SRS text, which P2 could not write; it is now ACCEPTED, resolved by ADR-INV-020, and P2 is complete. It was never a structural conflict, and no DBF, XM or SQL depends on it. The write scope of the first run was the two P2 files, so ADR-INV-014 … 017 are recorded here in full (Context · Decision · Consequences · Traces · Status) for the orchestrator to file under `analysis/decisions/INV/ADR-INV-{seq}.md`. ADR-INV-018, ADR-INV-019 and ADR-INV-020 are recorded here and are filed as `analysis/decisions/INV/ADR-INV-018.md`, `ADR-INV-019.md` and `ADR-INV-020.md`. ADR-INV-020 (ACCEPTED) rewords the two SRS cells and so meets the unblock condition of ADR-INV-019, which is ACCEPTED (resolved). The next free ADR id after P2 was ADR-INV-021 (the module's next free id is now ADR-INV-051).
 
 #### ADR-INV-014 — Platform columns TENANT_ID and VERSION on every INV table
 - **Context.** SRS A3 lists no tenant or version field. The given `erp-core` 1.6.0 states the tenancy rule "every table carries TENANT_ID" and requires every business entity to extend its `AuditableEntity` (TENANT_ID as Hibernate `@TenantId`, VERSION as the optimistic lock): every table has `TENANT_ID BIGINT NOT NULL`, `FK_<TABLE>_TENANT → CORE_TENANT(ID)`, an index led by TENANT_ID, every UNIQUE composite with TENANT_ID, and `VERSION BIGINT NOT NULL DEFAULT 0`. The SRS per-tenant rules (RULE-INV-002, 006, 011, 015, 030, 036, 045) need a tenant column to hold. NO-COLUMN-INVENTION admits a column the platform mandates for the entity. The project applied the same rule to PTY (ADR-PTY-035).
@@ -1678,7 +1699,8 @@ The registry of this stage is `analysis/modules/INV/P2/registry-db-inv.md` (same
 | INV_LOT | ENT-INV-012 | master | DBF-INV-176 … DBF-INV-190 |
 | INV_STOCK_VALUATION | ENT-INV-013 | transactional | DBF-INV-191 … DBF-INV-204 |
 | INV_ITEM_STOCK_SETTINGS | ENT-INV-014 | config | DBF-INV-205 … DBF-INV-219 |
+| INV_STOCK_MOVE · INV_RESERVATION (added) | ENT-INV-004, ENT-INV-005 | — | DBF-INV-220, DBF-INV-221 (REQUEST_HASH — ADR-INV-048) |
 
-XM : XM-INV-001 … XM-INV-015 (13 + 2 minted at P3.1) · Last DBF : DBF-INV-219 · Last XM : XM-INV-015 · Decisions : ADR-INV-014 … ADR-INV-020, all ACCEPTED (ADR-INV-019 resolved by ADR-INV-020) · DEFAULTs D-P2-01 … D-P2-14
+XM : XM-INV-001 … XM-INV-015 (13 + 2 minted at P3.1) · Last DBF : DBF-INV-221 · Last XM : XM-INV-015 · Decisions : ADR-INV-014 … ADR-INV-020, all ACCEPTED (ADR-INV-019 resolved by ADR-INV-020); P2 deltas at gate-analysis revise 2: ADR-INV-048 (request hash), ADR-INV-049 (immutability trigger) · DEFAULTs D-P2-01 … D-P2-14
 
-Event : "P2 completed: INV v1 — 14 tables, 219 DBF, 15 XM (13 + 2 minted at P3.1) — ADR-INV-019 resolved by ADR-INV-020"
+Event : "P2 completed: INV v1 — 14 tables, 219 DBF, 15 XM (13 + 2 minted at P3.1) — ADR-INV-019 resolved by ADR-INV-020" · "gate-analysis revise 2: DBF-INV-220, 221 (REQUEST_HASH), trigger TRG_INV_STOCK_MOVE_IMMUTABLE — ADR-INV-048, ADR-INV-049"

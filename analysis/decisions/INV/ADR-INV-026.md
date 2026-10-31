@@ -3,7 +3,7 @@ Status      : ACCEPTED
 Stage       : P3.1 (Backend Execution Plan)        Module: INV        Version: v1
 Lane        : analysis · claude:opus
 Decided     : 2026-10-31
-traces      : REQ-INV-037, REQ-INV-008, REQ-INV-027, REQ-INV-006, REQ-INV-044, REQ-INV-088, SRS D-09, QR-INV-002, QR-INV-005, QR-INV-012, QR-INV-017, QR-INV-023, QR-INV-024, QR-INV-031, QR-INV-040, QR-INV-041
+traces      : ADR-INV-050, REQ-INV-108, QR-INV-039, REQ-INV-037, REQ-INV-008, REQ-INV-027, REQ-INV-006, REQ-INV-044, REQ-INV-088, SRS D-09, QR-INV-002, QR-INV-005, QR-INV-012, QR-INV-017, QR-INV-023, QR-INV-024, QR-INV-031, QR-INV-040, QR-INV-041
 
 ## Context
 Parallel channels move the same Variant in the same warehouse (REQ-INV-037); the negative-stock and
@@ -18,7 +18,8 @@ of one Variant and a deactivation racing a post must all stay consistent. "Valid
 - Reservations and issues of a Variant × warehouse serialise on the lot-less balance row of the pair.
 - Posting paths read the warehouse FOR SHARE; deactivation takes it FOR UPDATE before its usage probe. The
   same pattern guards a branch against a concurrent warehouse save.
-- Default switches lock the current default first (partial unique indexes back them).
+- Default switches first take the tenant's default-switch advisory lock (`pg_advisory_xact_lock(hashtextextended(:tenantId || ':INV_WAREHOUSE_DEFAULT' | ':INV_BRANCH_DEFAULT', 0))`), then lock the current default and the target; the partial unique indexes back them (amended by ADR-INV-050, gate-analysis revise 2 G19 — locking only the current default row lost the race, because its WHERE no longer matched after the first switch committed).
+- Lots: an expiry correction (API-INV-042) locks the lot FOR UPDATE; an issue and a FEFO selection read the lots they draw from FOR SHARE, after the balance rows and in ascending LOT_PK order, so a sale and a correction serialise. The lot's active flag is recomputed after commit in its own short transaction, never under the posting locks (gate-analysis revise 2 G13).
 - Document headers are locked FOR UPDATE before any status check (post / cancel / line change).
 - Lots: SELECT … FOR UPDATE by (VARIANT_FK, CODE) and insert-if-absent on UQ_INV_LOT_VAR_CODE.
 - Numbers come atomically from NumberSeriesApi; masters use optimistic VERSION for edits.

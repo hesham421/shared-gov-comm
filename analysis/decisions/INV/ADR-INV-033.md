@@ -16,6 +16,8 @@ read that INV screens need are not in that document, and cannot be:
    read Item (CON-CAT-007). The CAT unit-of-measure lookup labels `measureUomCode` (SRS A6, lookups consumed).
 2. **Lookup values** of the INV_* keys (INV_ADJUSTMENT_REASON, INV_MOVE_TYPE, INV_DOC_STATUS,
    INV_SOURCE_DOC_TYPE). SRS A6: they are loaded at runtime from the given core lookup module `mdl`.
+   *Amended at gate-analysis revise 2 (G7):* INV now serves its own six keys itself (below), so this kind of
+   read is an operation of the document.
 3. **The user's permissions.** The platform security module (`sec`, given) derives `PERM_<PAGE_CODE>_<ACTION>`
    and the session carries them. No INV operation returns them.
 
@@ -24,8 +26,11 @@ read that INV screens need are not in that document, and cannot be:
   The UXD names the owner module and the CAT contract (CON-CAT-xxx). It cites no CAT API id and no CAT path.
   The id and path are CAT's and resolve in CAT's own artifacts at build time. In the screen-hooks blocks
   these reads are `kind: lookup` hooks with no `api` binding.
-- INV_* lookup values are read through one shared `kind: lookup` hook per key. The hook is served by the given
-  `mdl` surface and has no `api` binding.
+- INV_* lookup values are read through one shared `kind: lookup` hook per key, bound to **API-INV-052**
+  (`GET /api/v1/inv/lookups/{key}`). The backend component `InvLookups` (CORE) serves exactly the six keys INV owns
+  — INV_ADJUSTMENT_REASON, INV_MOVE_TYPE, INV_DOC_STATUS, INV_RESERVATION_STATUS, INV_SOURCE_DOC_TYPE,
+  INV_CHANGE_KIND — through the given common helper `OwnedLookups.read` over `MdlLookupApi`, and answers
+  INV-404-LOOKUP-KEY-UNKNOWN for any other key (erp-core checklist C6; the same pattern as ADR-PTY-048).
 - Permissions are read from the authenticated session (given `sec`) by each screen's `SCREEN-INIT` hook. That hook
   is bound to API-INV-008 (active counts and capability flags) for the rest of its job.
 - The frontend executor's mock server serves `api-spec-inv.yaml`. It also stubs the CAT reads, the `mdl` lookup
@@ -35,7 +40,7 @@ read that INV screens need are not in that document, and cannot be:
 - No hook of kind `read` cites an operation outside `api-spec-inv.yaml`.
 - A user without a CAT read grant gets no picker results. The picker shows the INV-403 catalogue message. INV does
   not widen CAT's grants.
-- No REQ, RULE, field, permission or API changes.
+- No REQ, RULE, field or permission changes. API-INV-052 was added at gate-analysis revise 2 for the lookup reads.
 
 ## Status
 ACCEPTED — non-breaking.
