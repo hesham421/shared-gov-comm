@@ -51,7 +51,13 @@
         1
       ],
       "current_version": 1,
-      "delivery": {}
+      "delivery": {
+        "backend": {
+          "version": 1,
+          "exec": "backend/modules/INV/packages/backend-execution",
+          "test": "backend/modules/INV/packages/backend-test"
+        }
+      }
     }
   }
 }

@@ -98,7 +98,7 @@
     {
       "from": "APR",
       "to": "INV",
-      "state": "READY",
+      "state": "DELIVERED",
       "source": "platform"
     },
     {
@@ -140,7 +140,7 @@
     {
       "from": "INS",
       "to": "INV",
-      "state": "READY",
+      "state": "DELIVERED",
       "source": "platform"
     },
     {
@@ -404,8 +404,8 @@
       "entity": "ENT-CAT-002",
       "type": "SOFT-READ",
       "state": "DELIVERED",
-      "declared": "DELIVERED",
-      "contract_ref": "contract-cat.md#CON-CAT-002",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-002",
       "traces": [
         "REQ-INV-052",
         "REQ-INV-072",
@@ -421,8 +421,8 @@
       "entity": "ENT-CAT-001",
       "type": "SOFT-READ",
       "state": "DELIVERED",
-      "declared": "DELIVERED",
-      "contract_ref": "contract-cat.md#CON-CAT-001",
+      "declared": "CONTRACTED",
+      "contract_ref": "CON-CAT-001",
       "traces": [
         "REQ-INV-039",
         "REQ-INV-124",
@@ -447,7 +447,7 @@
     {
       "from": "PUR",
       "to": "INV",
-      "state": "READY",
+      "state": "DELIVERED",
       "source": "platform"
     },
     {
@@ -465,7 +465,7 @@
     {
       "from": "SFR",
       "to": "INV",
-      "state": "READY",
+      "state": "DELIVERED",
       "source": "platform"
     },
     {
@@ -513,7 +513,7 @@
     {
       "from": "SLS",
       "to": "INV",
-      "state": "READY",
+      "state": "DELIVERED",
       "source": "platform"
     },
     {
@@ -549,7 +549,7 @@
     {
       "from": "SWR",
       "to": "INV",
-      "state": "READY",
+      "state": "DELIVERED",
       "source": "platform"
     },
     {
