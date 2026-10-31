@@ -1,0 +1,17 @@
+<!-- source: PHASE:F1 — preamble before the first SUB -->
+<!-- traces: REQ-INV-140, SCR-INV-001, SCR-INV-002, SCR-INV-003, SCR-INV-004, SCR-INV-005, SCR-INV-006, SCR-INV-007, SCR-INV-008, SCR-INV-009, SCR-INV-010, SCR-INV-011, SCR-INV-012, UXD-INV-001, UXD-INV-002, UXD-INV-003, UXD-INV-004, UXD-INV-005, UXD-INV-006, UXD-INV-007, UXD-INV-008, UXD-INV-009, UXD-INV-010, UXD-INV-011, REQ-INV-003, REQ-INV-004, REQ-INV-005, REQ-INV-006, REQ-INV-007, REQ-INV-008, REQ-INV-009, REQ-INV-010, REQ-INV-011, REQ-INV-012, REQ-INV-013, REQ-INV-014, REQ-INV-015, REQ-INV-016, REQ-INV-017, REQ-INV-018, REQ-INV-022, REQ-INV-023, REQ-INV-024, REQ-INV-025, REQ-INV-026, REQ-INV-027, REQ-INV-028, REQ-INV-029, REQ-INV-030, REQ-INV-031, REQ-INV-032, REQ-INV-035, REQ-INV-038, REQ-INV-039, REQ-INV-040, REQ-INV-041, REQ-INV-042, REQ-INV-055, REQ-INV-056, REQ-INV-059, REQ-INV-061, REQ-INV-062, REQ-INV-063, REQ-INV-064, REQ-INV-065, REQ-INV-066, REQ-INV-067, REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-073, REQ-INV-074, REQ-INV-075, REQ-INV-076, REQ-INV-078, REQ-INV-079, REQ-INV-080, REQ-INV-081, REQ-INV-082, REQ-INV-083, REQ-INV-084, REQ-INV-085, REQ-INV-086, REQ-INV-087, REQ-INV-088, REQ-INV-089, REQ-INV-090, REQ-INV-091, REQ-INV-092, REQ-INV-093, REQ-INV-094, REQ-INV-095, REQ-INV-096, REQ-INV-097, REQ-INV-098, REQ-INV-099, REQ-INV-100, REQ-INV-101, REQ-INV-102, REQ-INV-103, REQ-INV-104, REQ-INV-105, REQ-INV-106, REQ-INV-107, REQ-INV-108, REQ-INV-109, REQ-INV-113, REQ-INV-114, REQ-INV-115, REQ-INV-116, REQ-INV-117, REQ-INV-118, REQ-INV-119, REQ-INV-121, REQ-INV-122, REQ-INV-123, REQ-INV-124, REQ-INV-125, REQ-INV-126, REQ-INV-127, REQ-INV-128, REQ-INV-129, REQ-INV-134, REQ-INV-135, REQ-INV-137, API-INV-001, API-INV-002, API-INV-003, API-INV-004, API-INV-005, API-INV-006, API-INV-007, API-INV-008, API-INV-009, API-INV-010, API-INV-011, API-INV-012, API-INV-013, API-INV-014, API-INV-015, API-INV-016, API-INV-017, API-INV-018, API-INV-019, API-INV-020, API-INV-021, API-INV-022, API-INV-023, API-INV-024, API-INV-025, API-INV-026, API-INV-027, API-INV-028, API-INV-029, API-INV-030, API-INV-031, API-INV-032, API-INV-033, API-INV-034, API-INV-035, API-INV-036, API-INV-037, API-INV-038, API-INV-039, API-INV-040, API-INV-041, API-INV-042, API-INV-043, API-INV-044, API-INV-045, API-INV-046, API-INV-047, API-INV-048, API-INV-049, API-INV-050, API-INV-051, API-INV-052 -->
+## F1 — Models & Types
+
+**RF1.** The field and DTO binding is `api-spec-inv.yaml`. TypeScript types are generated from
+`components.schemas` of the document. They are not hand-written, and none is restated here. Each SUB names the
+schemas its screen uses and the client-only types it adds: filter objects, form state and option shapes.
+Shared client types live in the module's `types` folder:
+- `Envelope<T>` and `Page<T>` from `ApiResponse` / `PageMeta`;
+- `InvError` from `ErrorResponse`;
+- `LookupOption {code, labelAr, labelEn}` for INV_* lookup keys and the CAT unit-of-measure key;
+- `CatVariantRef {variantPk, itemPk, code, nameAr, nameEn}` and `CatItemRef {itemPk, code, nameAr, nameEn,
+  itemKindCode}`, the shapes the CAT reads return to INV screens (UXD, ADR-INV-033);
+- `InventoryContext` from the schema of the same name.
+Quantities and measures are decimal strings in form state, with 3 places. Costs have 4 places and values have 2.
+They are converted to numbers only at the request boundary, so rounding never happens in the browser
+(DEFAULT D-06).
