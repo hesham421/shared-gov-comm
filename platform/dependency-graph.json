@@ -8,6 +8,7 @@
     },
     "srs": {
       "CAT": "v2",
+      "INV": "v1",
       "PTY": "v1"
     }
   },
@@ -199,8 +200,34 @@
     {
       "from": "INV",
       "to": "CAT",
+      "entity": "ENT-CAT-001",
+      "type": "HARD-FK",
       "state": "DELIVERED",
-      "source": "platform"
+      "source": "module"
+    },
+    {
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "HARD-FK",
+      "state": "DELIVERED",
+      "source": "module"
+    },
+    {
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-007",
+      "type": "SOFT-READ",
+      "state": "DELIVERED",
+      "source": "module"
+    },
+    {
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-009",
+      "type": "SOFT-READ",
+      "state": "DELIVERED",
+      "source": "module"
     },
     {
       "from": "PRC",
