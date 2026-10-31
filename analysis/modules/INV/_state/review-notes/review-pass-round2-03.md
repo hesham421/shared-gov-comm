@@ -1,7 +1,7 @@
-# Add G23 — the module registry's events row contradicts D-23 and F11
+# G19 is added as MAJOR. The FOR UPDATE on `IS_DEFAULT_FL = TRUE` returns no row to the second of two concurrent default switches, which contradicts TC-INV-248. The fix is a per-tenant advisory lock, the same pattern as ADR-INV-044.
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: INV        Version: v1
-Written: 2026-10-31T11:33:08+00:00
+Written: 2026-10-31T12:23:59+00:00
 
-The P0 module registry DEPENDENCIES still lists `DomainEventPublisher` and `OutboxSubscriber` for offline POS and SLS/PUR documents. SRS D-23 and the plan chose call-in only, which matches F11. The upstream registry row should be corrected. Severity is MINOR because D-23 records the override.
+

@@ -5,7 +5,7 @@
   "counts": {
     "CRITICAL": 0,
     "MAJOR": 0,
-    "MINOR": 8
+    "MINOR": 7
   },
   "clean": true,
   "blocking": [
@@ -42,9 +42,9 @@
     "C5.3": 138,
     "C5.4": 138,
     "C5.5": 154,
-    "C5.6": 48,
-    "C5.8": 354,
-    "C5.13": 340,
+    "C5.6": 49,
+    "C5.8": 355,
+    "C5.13": 341,
     "C5.14": 154,
     "C5.15": 14,
     "C5.16": 28,
@@ -69,7 +69,7 @@
     "C7.21": 38,
     "C7.23": 0,
     "C7.20": 69,
-    "C7.19": 73,
+    "C7.19": 72,
     "C7.18": 4,
     "C7.24": 0,
     "C7.25": 16,
@@ -92,12 +92,12 @@
     "C9.24": 24,
     "C9.22": 12,
     "C9.23": 6,
-    "C10.1": 241,
+    "C10.1": 263,
     "C10.2": 154,
     "C10.7": 0,
     "C10.8": 0,
     "C10.9": 0,
-    "C10.10": 241,
+    "C10.10": 263,
     "C10.11": 75,
     "C13.5": 21,
     "C-GIVEN-1": 28,
@@ -221,14 +221,6 @@
       "message": "`ENT-INV-014` has 15 requirement(s) and none of them states how it is deleted \u2014 the plan will decide that lifecycle on its own",
       "artifact": "srs",
       "line": 343
-    },
-    {
-      "severity": "MINOR",
-      "clause": "C5.17",
-      "check": "glossary",
-      "message": "`Dual-quantity` appears 1\u00d7 where the glossary term is `Dual quantity` (lines 2767)",
-      "artifact": "srs",
-      "line": 2767
     }
   ],
   "provenance": {
@@ -260,27 +252,27 @@
       "ui-ux-spec"
     ],
     "inputs": {
-      "api-spec": "685845d5db92244b0954391c1c67b225df1fdecced13cb631d9afc0263171ac2",
-      "backend-execution-plan": "2d857790d3ec479f8e658c1e7d0e4ecf9954ec7868a4874646b3b6afa220bafb",
-      "backend-test-plan": "eedb46bfff8c367e1d7bd55ed3930652ceb284a8b0d7e67489d25f301d86039d",
-      "business-policies": "74322aee561ded58fd6f3f1cd75b079e53cf93129f307937646d5316cb991c88",
-      "contract": "ee8dbb303f5b313b11e97561c8ed4a9b107466a91bf7d6df5bdad333029045c1",
-      "db-script": "4c9043f1bc3dcdbde790af94193b5a0524ee8edbc5092cb9a89f213731ee87df",
+      "api-spec": "bfae1168cc7e252ecc92e35cf520426262bb538396851f9390bfc71f6782cfba",
+      "backend-execution-plan": "008b544e24dfde4f96bc650e76c1e31adf10e2153610e4b0d69ccedaf0d72d9f",
+      "backend-test-plan": "b896375952b8768496ab11a0df5e6a44e558f8d8ef5b24143c0c971feee85da8",
+      "business-policies": "a09b30fd6f33491f5e03086dbc81b115dfa256faeae339a954a5be2ac5437e65",
+      "contract": "0c11b7295dfd4958261cedfa430a86e477a8a4e99ae7db1f2bb6cf23c2927e50",
+      "db-script": "5cf6023ca7dae2fec257c4f0acce37bce4544d642cb39c307c62a16f0a10933a",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
-      "flow-diagram": "2db6a8757ee57b3543d190403afacf8a1650a1afed5543222b27dddf69f1e176",
-      "frontend-execution-plan": "2a54c634c1f3d63275542eeae42eed0cc235413ae20e5fd57def34be60f10777",
-      "frontend-test-plan": "4cc85a79887171b5b12e46593dc63ac2b21529ce39f33c1432b68048bb5df554",
-      "module-registry": "4ea9ff45863d757e4f0ed8a7e2a75768b6ae9cf7274b1e7ddce7940221172d39",
-      "platform-summary": "90c450b5039e514baf64b2e30c5ec8e2b92adb0542fe8d57180ca5633300b77e",
+      "flow-diagram": "1b096f25ff17197f1418cea26c362deab57d0d7082fd1bc390b11594b92245bb",
+      "frontend-execution-plan": "7c2b46ae8f3d8995f82aa2f3b800891e6568cd90af83bd99684b3a008374670d",
+      "frontend-test-plan": "323f3f1232f7438c28a380976b818657ef9c1925a8f3fe318911b3d036c38c9e",
+      "module-registry": "be0cc7d8f9d123212c41f03cb3d5e6fbdd20a3dfe5595af077a44410c7a80850",
+      "platform-summary": "e8af1d7b85f2baa7f9e31840acb606d15011aa3f2535579f444f8b2ea7e4c0ca",
       "prd": "f52ff7f14312415886002cc46cd742005901217a80eb6c2bdef91325eef0fc67",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
-      "registry-db": "d5fdb8811b450c55f9e0a7f67aa4eb59dc184f7e19daa7f4de26cb99341ff794",
-      "registry-exec-be": "1f030ef6501791f224b41788aa28d30a5e8762e30f4b368c720326df95b050a6",
-      "registry-exec-fe": "b80a5ca8db7c828b9be0b9e5c19fe0116efd889dd9673bf0180060d58916d604",
-      "registry-srs": "5d2f3e8aacd93d825bc60353dfb64c7786da9f78201505fe2176decab27fe21f",
-      "srs": "da749cebcc2a26a7bd215679c930ac26c1549526da49c9452d06bcdde9a13aad",
-      "ui-ux-spec": "a311771963dd962f971efd6903806cc21680cf56f59cd5fce4c15f49557ec0fd"
+      "registry-db": "6ca022a72f75cb84acfc0a3254b033d34832b35ced1ecbfe7011a2c11e322651",
+      "registry-exec-be": "05777a6de8c81aed8adbc91e8a547402285cada4c420b66c072540b4e3783b78",
+      "registry-exec-fe": "2be122f84442b0fe5fb42fe4c3e20b6d46168f40967152b68c89528af11c95e0",
+      "registry-srs": "7c3d9698300078f998e42f27b9b1a2e42318508a2584cb02c4af1ab72944614e",
+      "srs": "df8b40bb409f1c92df6fa294aae26adde07a0a9bf548bad6d99568d809f4c2aa",
+      "ui-ux-spec": "038075b640319bee63fc9dd6c11f9bc9aab95be98c987eba04849ff1c0f3b88e"
     },
-    "at": "2026-10-31T11:25:52+00:00"
+    "at": "2026-10-31T12:18:27+00:00"
   }
 }

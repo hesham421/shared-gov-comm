@@ -1,7 +1,7 @@
-# Previous-round findings G1–G21 confirmed
+# Round-1 findings G1–G18 confirmed. I checked each one against the artifacts. G17 is narrowed: AC-INV-106 is reachable through the API (TC-INV-030), so only AC-INV-111 needs rewording.
 
 Lane   : review-pass · round 2 · claude:opus
 Stage  : P4        Module: INV        Version: v1
-Written: 2026-10-31T11:33:08+00:00
+Written: 2026-10-31T12:23:59+00:00
 
-Each finding was checked against the artifacts and against `.claude/skills/erp-core-usage@1.6.0/templates/checklist.md`. C3, C12, C13, C14, C18 and C20 are the checklist's own wording, and F2/F5 are the matching forbidden items. All 21 findings stand at the severity given, except for the two fix changes below.
+
