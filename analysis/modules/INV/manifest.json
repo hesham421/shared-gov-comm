@@ -53,6 +53,136 @@
         "trigger": "delivered",
         "resolution": "OPEN",
         "raised_at": "2026-10-29T10:34:41+00:00"
+      },
+      {
+        "id": "XM-INV-001",
+        "key": "XM-INV-001@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-002",
+        "key": "XM-INV-002@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-003",
+        "key": "XM-INV-003@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-004",
+        "key": "XM-INV-004@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-005",
+        "key": "XM-INV-005@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-006",
+        "key": "XM-INV-006@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-007",
+        "key": "XM-INV-007@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-008",
+        "key": "XM-INV-008@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-009",
+        "key": "XM-INV-009@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-010",
+        "key": "XM-INV-010@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-011",
+        "key": "XM-INV-011@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-012",
+        "key": "XM-INV-012@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-013",
+        "key": "XM-INV-013@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T09:40:36+00:00"
       }
     ]
   },

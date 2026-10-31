@@ -3,9 +3,9 @@
   "version": 1,
   "scope": "all",
   "counts": {
-    "CRITICAL": 10,
-    "MAJOR": 6,
-    "MINOR": 0
+    "CRITICAL": 16,
+    "MAJOR": 197,
+    "MINOR": 8
   },
   "clean": false,
   "blocking": [
@@ -32,40 +32,40 @@
   ],
   "skipped": [],
   "coverage": {
-    "C0.1": 4,
+    "C0.1": 10,
     "C1.4": 9,
     "C2.2": 10,
     "C3.7": 22,
     "C3.8": 22,
     "C4.4": 28,
     "C4.7": 1,
-    "C5.2": 0,
-    "C5.3": 0,
-    "C5.4": 0,
-    "C5.5": 0,
-    "C5.6": 0,
-    "C5.8": 0,
-    "C5.13": 0,
-    "C5.14": 0,
-    "C5.15": 0,
-    "C5.16": 0,
-    "C5.17": 0,
-    "C6.2": 0,
-    "C6.3": 0,
-    "C6.5": 0,
-    "C6.6": 0,
-    "C6.10": 0,
-    "C6.11": 2,
+    "C5.2": 138,
+    "C5.3": 138,
+    "C5.4": 138,
+    "C5.5": 154,
+    "C5.6": 48,
+    "C5.8": 354,
+    "C5.13": 340,
+    "C5.14": 154,
+    "C5.15": 14,
+    "C5.16": 28,
+    "C5.17": 1,
+    "C6.2": 219,
+    "C6.3": 13,
+    "C6.5": 232,
+    "C6.6": 14,
+    "C6.10": 13,
+    "C6.11": 14,
     "C6.12": 0,
-    "C6.13": 2,
-    "C6.14": 2,
-    "C6.15": 0,
+    "C6.13": 14,
+    "C6.14": 14,
+    "C6.15": 24,
     "C7.2": 0,
     "C7.3": 0,
     "C7.4": 0,
     "C7.5": 0,
     "C7.5b": 0,
-    "C7.6": 0,
+    "C7.6": 138,
     "C7.22": 0,
     "C7.21": 0,
     "C7.23": 0,
@@ -94,46 +94,25 @@
     "C9.22": 0,
     "C9.23": 6,
     "C10.1": 0,
-    "C10.2": 0,
+    "C10.2": 154,
     "C10.7": 0,
     "C10.8": 0,
     "C10.9": 0,
     "C10.10": 0,
     "C10.11": 0,
-    "C13.5": 0,
-    "C-GIVEN-1": 0,
-    "C-GIVEN-2": 0,
+    "C13.5": 21,
+    "C-GIVEN-1": 28,
+    "C-GIVEN-2": 12,
     "C-GIVEN-3": 27
   },
   "vacuous": [
-    "C-GIVEN-1",
-    "C-GIVEN-2",
     "C10.1",
     "C10.10",
     "C10.11",
-    "C10.2",
     "C10.7",
     "C10.8",
     "C10.9",
-    "C13.5",
-    "C5.13",
-    "C5.14",
-    "C5.15",
-    "C5.16",
-    "C5.17",
-    "C5.2",
-    "C5.3",
-    "C5.4",
-    "C5.5",
-    "C5.6",
-    "C5.8",
-    "C6.10",
     "C6.12",
-    "C6.15",
-    "C6.2",
-    "C6.3",
-    "C6.5",
-    "C6.6",
     "C7.18",
     "C7.19",
     "C7.2",
@@ -153,7 +132,6 @@
     "C7.4",
     "C7.5",
     "C7.5b",
-    "C7.6",
     "C9.15",
     "C9.16",
     "C9.17",
@@ -175,8 +153,8 @@
         "REQ"
       ],
       "total": 28,
-      "covered": 0,
-      "pct": 0.0
+      "covered": 28,
+      "pct": 100.0
     },
     {
       "id": "req-ac",
@@ -184,9 +162,9 @@
       "to": [
         "AC"
       ],
-      "total": 0,
-      "covered": 0,
-      "pct": null
+      "total": 138,
+      "covered": 138,
+      "pct": 100.0
     },
     {
       "id": "req-api",
@@ -194,9 +172,9 @@
       "to": [
         "API"
       ],
-      "total": 0,
+      "total": 138,
       "covered": 0,
-      "pct": null
+      "pct": 0.0
     },
     {
       "id": "req-ux",
@@ -205,9 +183,9 @@
         "SCR",
         "UXD"
       ],
-      "total": 0,
+      "total": 138,
       "covered": 0,
-      "pct": null
+      "pct": 0.0
     },
     {
       "id": "ac-tc",
@@ -215,9 +193,9 @@
       "to": [
         "TC"
       ],
-      "total": 0,
+      "total": 154,
       "covered": 0,
-      "pct": null
+      "pct": 0.0
     }
   ],
   "findings": [
@@ -239,30 +217,6 @@
     },
     {
       "severity": "CRITICAL",
-      "clause": "C13.1",
-      "check": "exists",
-      "message": "`contract` is missing or empty",
-      "artifact": "contract",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C5.1",
-      "check": "exists",
-      "message": "`srs` is missing or empty",
-      "artifact": "srs",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
-      "clause": "C6.1",
-      "check": "exists",
-      "message": "`db-script` is missing or empty",
-      "artifact": "db-script",
-      "line": 0
-    },
-    {
-      "severity": "CRITICAL",
       "clause": "C7.1",
       "check": "markers",
       "message": "`backend-execution-plan` missing",
@@ -271,10 +225,82 @@
     },
     {
       "severity": "CRITICAL",
-      "clause": "C7.10",
-      "check": "value-agreement",
-      "message": "binding artifact `db-script` missing",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-014` is cited in `contract` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-014.md does not exist",
+      "artifact": "contract",
+      "line": 0
+    },
+    {
+      "severity": "CRITICAL",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-014` is cited in `db-script` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-014.md does not exist",
       "artifact": "db-script",
+      "line": 0
+    },
+    {
+      "severity": "CRITICAL",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-015` is cited in `db-script` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-015.md does not exist",
+      "artifact": "db-script",
+      "line": 0
+    },
+    {
+      "severity": "CRITICAL",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-016` is cited in `db-script` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-016.md does not exist",
+      "artifact": "db-script",
+      "line": 0
+    },
+    {
+      "severity": "CRITICAL",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-017` is cited in `db-script` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-017.md does not exist",
+      "artifact": "db-script",
+      "line": 0
+    },
+    {
+      "severity": "CRITICAL",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-014` is cited in `registry-db` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-014.md does not exist",
+      "artifact": "registry-db",
+      "line": 0
+    },
+    {
+      "severity": "CRITICAL",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-015` is cited in `registry-db` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-015.md does not exist",
+      "artifact": "registry-db",
+      "line": 0
+    },
+    {
+      "severity": "CRITICAL",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-016` is cited in `registry-db` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-016.md does not exist",
+      "artifact": "registry-db",
+      "line": 0
+    },
+    {
+      "severity": "CRITICAL",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-017` is cited in `registry-db` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-017.md does not exist",
+      "artifact": "registry-db",
+      "line": 0
+    },
+    {
+      "severity": "CRITICAL",
+      "clause": "C7.13",
+      "check": "refs-exist",
+      "message": "`ADR-INV-014` is cited in `srs` but governance-shared\\analysis\\decisions\\INV\\ADR-INV-014.md does not exist",
+      "artifact": "srs",
       "line": 0
     },
     {
@@ -303,19 +329,1251 @@
     },
     {
       "severity": "MAJOR",
-      "clause": "C5.8",
-      "check": "registry-agree",
-      "message": "registry `registry-srs` missing",
-      "artifact": "registry-srs",
+      "clause": "C-GIVEN-2",
+      "check": "given-via-extension",
+      "message": "`srs` names `OutboxSubscriber` (erp-core:modules.events extension_points) and no `given-usage` row declares that use \u2014 add the row (erp-core \u00b7 events \u00b7 com.erp.events.OutboxSubscriber \u00b7 purpose) to the `given-usage` block of `srs` and repeat it in `contract`, or stop using it",
+      "artifact": "srs",
       "line": 0
     },
     {
       "severity": "MAJOR",
-      "clause": "C6.5",
-      "check": "registry-agree",
-      "message": "registry `registry-db` missing",
-      "artifact": "registry-db",
+      "clause": "C-GIVEN-2",
+      "check": "given-via-extension",
+      "message": "`srs` names `FilePrivateStoreApi` (erp-core:modules.file interfaces) and no `given-usage` row declares that use \u2014 add the row (erp-core \u00b7 file \u00b7 com.erp.file.crossmodule.FilePrivateStoreApi \u00b7 purpose) to the `given-usage` block of `srs` and repeat it in `contract`, or stop using it",
+      "artifact": "srs",
       "line": 0
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-001` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 378
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-002` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 392
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-003` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 406
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-004` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 411
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-005` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 425
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-006` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 439
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-007` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 453
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-008` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 458
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-009` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 472
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-010` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 486
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-011` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 491
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-012` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 505
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-013` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 519
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-014` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 533
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-015` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 547
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-016` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 561
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-017` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 575
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-018` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 589
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-019` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 603
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-020` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 617
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-021` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 631
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-022` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 645
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-023` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 661
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-024` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 675
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-025` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 689
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-026` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 694
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-027` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 708
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-028` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 722
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-029` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 736
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-030` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 741
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-031` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 755
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-032` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 769
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-033` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 783
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-034` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 797
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-035` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 811
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-036` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 825
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-037` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 839
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-038` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 853
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-039` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 867
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-040` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 883
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-041` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 897
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-042` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 911
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-043` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 925
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-044` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 939
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-045` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 953
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-046` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 967
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-047` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 981
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-048` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 997
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-049` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1011
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-050` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1025
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-051` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1039
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-052` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1053
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-053` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1067
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-054` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1081
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-055` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1095
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-056` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1111
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-057` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1125
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-058` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1130
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-059` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1144
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-060` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1158
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-061` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1172
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-062` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1186
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-063` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1200
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-064` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1214
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-065` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1230
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-066` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1244
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-067` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1258
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-068` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1272
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-069` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1286
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-070` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1300
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-071` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1316
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-072` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1330
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-073` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1344
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-074` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1358
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-075` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1372
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-076` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1388
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-077` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1402
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-078` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1407
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-079` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1421
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-080` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1435
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-081` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1449
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-082` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1465
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-083` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1479
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-084` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1493
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-085` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1509
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-086` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1523
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-087` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1537
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-088` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1542
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-089` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1556
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-090` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1570
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-091` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1584
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-092` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1598
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-093` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1603
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-094` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1617
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-095` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1631
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-096` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1647
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-097` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1661
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-098` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1666
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-099` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1680
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-100` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1694
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-101` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1708
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-102` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1722
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-103` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1736
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-104` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1750
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-105` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1764
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-106` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1778
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-107` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1794
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-108` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1808
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-109` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1813
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-110` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1827
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-111` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1832
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-112` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1846
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-113` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1860
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-114` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1874
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-115` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1888
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-116` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1902
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-117` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1918
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-118` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1923
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-119` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1937
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-120` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1951
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-121` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1965
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-122` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1979
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-123` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 1993
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-124` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2007
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-125` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2021
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-126` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2035
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-127` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2049
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-128` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2054
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-129` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2068
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-130` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2082
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-131` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2096
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-132` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2110
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-133` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2124
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-134` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2140
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-135` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2154
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-136` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2168
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-137` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2182
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-138` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2198
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-139` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2203
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-140` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2217
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-141` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2222
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-142` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2236
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-143` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2250
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-144` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2264
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-145` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2278
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-146` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2292
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-147` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2306
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-148` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2320
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-149` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2334
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-150` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2348
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-151` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2362
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-152` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2378
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-153` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2392
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C10.2",
+      "check": "orphans",
+      "message": "`AC-INV-154` is referenced by 0 of ['TC'], needs \u22651",
+      "artifact": "",
+      "line": 2406
     },
     {
       "severity": "MAJOR",
@@ -335,6 +1593,302 @@
     },
     {
       "severity": "MAJOR",
+      "clause": "C7.5",
+      "check": "registry-agree",
+      "message": "artifact `backend-execution-plan` missing",
+      "artifact": "backend-execution-plan",
+      "line": 0
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-002` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 383
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-011` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 524
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-012` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 538
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-014` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 566
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-015` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 580
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-019` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 636
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-021` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 666
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-029` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 788
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-030` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 802
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-032` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 830
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-033` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 844
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-034` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 858
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-041` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 958
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-042` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 972
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-044` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1002
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-054` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1149
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-065` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1307
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-066` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1321
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-068` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1349
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-073` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1426
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-083` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1575
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-090` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1685
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-111` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 1998
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-112` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2012
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-115` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2059
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-118` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2101
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-119` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2115
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-128` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2255
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-130` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2283
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-132` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2311
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-133` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2325
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-134` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2339
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-135` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2353
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-136` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2369
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-137` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2383
+    },
+    {
+      "severity": "MAJOR",
+      "clause": "C7.6",
+      "check": "orphans",
+      "message": "`REQ-INV-138` is referenced by 0 of ['API', 'DBF'], needs \u22651",
+      "artifact": "",
+      "line": 2397
+    },
+    {
+      "severity": "MAJOR",
       "clause": "C9.2",
       "check": "traces",
       "message": "`frontend-execution-plan` missing",
@@ -348,6 +1902,70 @@
       "message": "registry `registry-exec-fe` missing",
       "artifact": "registry-exec-fe",
       "line": 0
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-INV-104` `Then: its statusCode is CANCELLED and no Stock adjustment references it` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 1750
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-INV-145` `Then: the answer is lotTrackedFl false, dualQuantityFl false and an empty me` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 2278
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.14",
+      "check": "ac-measurable",
+      "message": "`AC-INV-149` `Then: the receipt still requires a lot number and expiry date, exactly as be` names no number, limit, id or enumerable outcome \u2014 no test can fail it; say what is created, rejected, returned or shown, and how much",
+      "artifact": "srs",
+      "line": 2334
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.15",
+      "check": "crud-covered",
+      "message": "`ENT-INV-007` has 5 requirement(s) and none of them states how it is read, deleted \u2014 the plan will decide that lifecycle on its own",
+      "artifact": "srs",
+      "line": 219
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.15",
+      "check": "crud-covered",
+      "message": "`ENT-INV-011` has 13 requirement(s) and none of them states how it is read, deleted \u2014 the plan will decide that lifecycle on its own",
+      "artifact": "srs",
+      "line": 287
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.15",
+      "check": "crud-covered",
+      "message": "`ENT-INV-013` has 9 requirement(s) and none of them states how it is read, deleted \u2014 the plan will decide that lifecycle on its own",
+      "artifact": "srs",
+      "line": 325
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.15",
+      "check": "crud-covered",
+      "message": "`ENT-INV-014` has 15 requirement(s) and none of them states how it is deleted \u2014 the plan will decide that lifecycle on its own",
+      "artifact": "srs",
+      "line": 343
+    },
+    {
+      "severity": "MINOR",
+      "clause": "C5.17",
+      "check": "glossary",
+      "message": "`Dual-quantity` appears 1\u00d7 where the glossary term is `Dual quantity` (lines 2767)",
+      "artifact": "srs",
+      "line": 2767
     }
   ],
   "provenance": {
@@ -358,20 +1976,30 @@
     },
     "resolvable": [
       "business-policies",
+      "contract",
+      "db-script",
       "domain-profile",
       "module-registry",
       "platform-summary",
       "prd",
-      "project-registry"
+      "project-registry",
+      "registry-db",
+      "registry-srs",
+      "srs"
     ],
     "inputs": {
       "business-policies": "74322aee561ded58fd6f3f1cd75b079e53cf93129f307937646d5316cb991c88",
+      "contract": "ee8dbb303f5b313b11e97561c8ed4a9b107466a91bf7d6df5bdad333029045c1",
+      "db-script": "03f1d999db00a0d17830aaa5b692b8add04dca7b2701ef1688fbd152a8b01b6e",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
       "module-registry": "4ea9ff45863d757e4f0ed8a7e2a75768b6ae9cf7274b1e7ddce7940221172d39",
       "platform-summary": "90c450b5039e514baf64b2e30c5ec8e2b92adb0542fe8d57180ca5633300b77e",
       "prd": "f52ff7f14312415886002cc46cd742005901217a80eb6c2bdef91325eef0fc67",
-      "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877"
+      "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
+      "registry-db": "62fa7f642b2b6cbfdd66e48446974839c1ac54616e722e0597450b00485020a5",
+      "registry-srs": "5d2f3e8aacd93d825bc60353dfb64c7786da9f78201505fe2176decab27fe21f",
+      "srs": "7c9fa32fa906462c32c564566c910563de9953c72cdcceb3575bf7c68f59e02e"
     },
-    "at": "2026-10-31T08:05:48+00:00"
+    "at": "2026-10-31T09:44:12+00:00"
   }
 }

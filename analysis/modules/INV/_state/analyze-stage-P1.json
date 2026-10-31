@@ -19,7 +19,7 @@
   ],
   "skipped": [],
   "coverage": {
-    "C0.1": 7,
+    "C0.1": 10,
     "C5.2": 138,
     "C5.3": 138,
     "C5.4": 138,
@@ -160,24 +160,30 @@
     },
     "resolvable": [
       "business-policies",
+      "contract",
+      "db-script",
       "domain-profile",
       "module-registry",
       "platform-summary",
       "prd",
       "project-registry",
+      "registry-db",
       "registry-srs",
       "srs"
     ],
     "inputs": {
       "business-policies": "74322aee561ded58fd6f3f1cd75b079e53cf93129f307937646d5316cb991c88",
+      "contract": "ee8dbb303f5b313b11e97561c8ed4a9b107466a91bf7d6df5bdad333029045c1",
+      "db-script": "858467b1028935979e6453a7d0df99e12ddeeed50f7b47eded3beb473926f241",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
       "module-registry": "4ea9ff45863d757e4f0ed8a7e2a75768b6ae9cf7274b1e7ddce7940221172d39",
       "platform-summary": "90c450b5039e514baf64b2e30c5ec8e2b92adb0542fe8d57180ca5633300b77e",
       "prd": "f52ff7f14312415886002cc46cd742005901217a80eb6c2bdef91325eef0fc67",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
+      "registry-db": "ab7a0c661b94014ebdd9a47b1d5c1d5b369743e63ffcbac292e171f6837a9fbe",
       "registry-srs": "5d2f3e8aacd93d825bc60353dfb64c7786da9f78201505fe2176decab27fe21f",
-      "srs": "7c9fa32fa906462c32c564566c910563de9953c72cdcceb3575bf7c68f59e02e"
+      "srs": "da749cebcc2a26a7bd215679c930ac26c1549526da49c9452d06bcdde9a13aad"
     },
-    "at": "2026-10-31T08:31:55+00:00"
+    "at": "2026-10-31T09:50:00+00:00"
   }
 }
