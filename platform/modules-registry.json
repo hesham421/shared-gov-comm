@@ -56,6 +56,11 @@
           "version": 1,
           "exec": "backend/modules/INV/packages/backend-execution",
           "test": "backend/modules/INV/packages/backend-test"
+        },
+        "frontend": {
+          "version": 1,
+          "exec": "frontend/modules/INV/packages/frontend-execution",
+          "test": "frontend/modules/INV/packages/frontend-test"
         }
       }
     }
