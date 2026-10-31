@@ -398,6 +398,41 @@
       "source": "xm"
     },
     {
+      "id": "XM-INV-014",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-002",
+      "type": "SOFT-READ",
+      "state": "DELIVERED",
+      "declared": "DELIVERED",
+      "contract_ref": "contract-cat.md#CON-CAT-002",
+      "traces": [
+        "REQ-INV-052",
+        "REQ-INV-072",
+        "REQ-INV-078",
+        "REQ-INV-097"
+      ],
+      "source": "xm"
+    },
+    {
+      "id": "XM-INV-015",
+      "from": "INV",
+      "to": "CAT",
+      "entity": "ENT-CAT-001",
+      "type": "SOFT-READ",
+      "state": "DELIVERED",
+      "declared": "DELIVERED",
+      "contract_ref": "contract-cat.md#CON-CAT-001",
+      "traces": [
+        "REQ-INV-039",
+        "REQ-INV-124",
+        "REQ-INV-126",
+        "REQ-INV-127",
+        "REQ-INV-129"
+      ],
+      "source": "xm"
+    },
+    {
       "from": "PRC",
       "to": "CAT",
       "state": "DELIVERED",

@@ -183,6 +183,26 @@
         "trigger": "delivered",
         "resolution": "OPEN",
         "raised_at": "2026-10-31T09:40:36+00:00"
+      },
+      {
+        "id": "XM-INV-014",
+        "key": "XM-INV-014@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T10:38:25+00:00"
+      },
+      {
+        "id": "XM-INV-015",
+        "key": "XM-INV-015@CATv2:delivered",
+        "target": "CAT",
+        "target_version": 2,
+        "version": 1,
+        "trigger": "delivered",
+        "resolution": "OPEN",
+        "raised_at": "2026-10-31T10:38:25+00:00"
       }
     ]
   },
