@@ -64,11 +64,13 @@ Reads outside the document, none of them a `read` hook (ADR-INV-033):
 - the session permissions, from the given `sec`.
 Values absent from the document: none. `StockBalanceRow` and `Availability.perWarehouse` carry `warehouseCode`,
 `warehouseNameAr` and `warehouseNameEn`, so every role reads the warehouse label from the row (ADR-INV-036, closed at
-gate-analysis revise 1).
+gate-analysis revise 1). Lot and document labels are on the rows too (gate-analysis revise 3, G6): `lotCode` on transfer,
+count and adjustment lines and on stock moves, `adjustmentDocNo` on a stock count, `sourceCountDocNo` on a stock
+adjustment; the bundle label of a move goes through UXD-INV-004.
 
-Runtime codes bound to a RULE in `api-surface`: 40 (INV-422-DOC-DATE-FUTURE → RULE-INV-051 added at gate-analysis revise 2). A line-level refusal is placed on the line `details[0]` names (ADR-INV-046). Codes routed with the catalogue text and no RULE:
+Runtime codes bound to a RULE in `api-surface`: 41 (INV-422-DOC-DATE-FUTURE → RULE-INV-051 added at gate-analysis revise 2, INV-409-IDEMPOTENCY-KEY-REUSED → RULE-INV-050 at revise 3). A line-level refusal is placed on the line `details[0]` names (ADR-INV-046). Codes routed with the catalogue text and no RULE:
 - INV-400, INV-401, INV-403, INV-500;
-- the `INV-404-*` not-found codes and INV-409-STALE-VERSION (ADR-INV-021, ADR-INV-032);
+- the `INV-404-*` not-found codes (each with INV's own text since gate-analysis revise 3) and INV-409-STALE-VERSION (ADR-INV-021 amended, ADR-INV-032);
 - INV-422-HORIZON-RANGE (DEFAULT D-04);
 - INV-422-LOAD-ROWS-INVALID (wrapper of row failures).
 
@@ -89,11 +91,13 @@ and SCR-INV-007 to SCR-INV-004 seed `sourceDocTypeCode` + `sourceDocRef`), G12 (
 
 Cited from P3.1 at gate-analysis revise 2: ADR-INV-046 (line refusals in `details`), ADR-INV-047 (OPENING_STOCK not offered on SCR-INV-007); ADR-INV-033 amended (INV lookup values through API-INV-052).
 
-Filed under analysis/decisions/INV/. BLOCKED: none. Next free ADR: ADR-INV-051 (module-wide).
+Cited at gate-analysis revise 3: ADR-INV-051 («بدون تشغيلة» / "Without a lot" on transfer, count and decrease lines), ADR-INV-053 (one idempotency key per opening stock load); ADR-INV-021 amended.
+
+Filed under analysis/decisions/INV/. BLOCKED: none. Next free ADR: ADR-INV-054 (module-wide).
 
 ### Traceability
 
-REQ covered by ≥ 1 SCR / F-block: **105 / 138**. Orphan REQ: **none**.
+REQ covered by ≥ 1 SCR / F-block: **107 / 140** (REQ-INV-139 on SCR-INV-005 … 007, REQ-INV-140 on SCR-INV-010 — gate-analysis revise 3). Orphan REQ: **none**.
 
 The other 33 REQs have no SRS screen. In the SRS traceability their stories are "— (cross-module)", or the REQ
 is a backend effect with no screen requirement. They are served by P3.1 (InventoryApi, events, provisioning,
@@ -114,5 +118,5 @@ Stories in flows: 23 / 28. US-INV-004, 009, 018, 019 and 022 have no SRS screen 
 
 ### Event
 
-"P3.2 completed: INV v1 — SCR 12, UXD 11, F-blocks 48 (F1–F4) + SEC-FE + ALIGN-FE, API 51/51 bound, ADR-INV-033 … 036" · "gate-analysis revise 2: API 52/52 bound (lookups through API-INV-052), line refusals routed by details[0].lineRef"
+"P3.2 completed: INV v1 — SCR 12, UXD 11, F-blocks 48 (F1–F4) + SEC-FE + ALIGN-FE, API 51/51 bound, ADR-INV-033 … 036" · "gate-analysis revise 2: API 52/52 bound (lookups through API-INV-052), line refusals routed by details[0].lineRef" · "gate-analysis revise 3: labels from the rows, Without a lot option, opening stock idempotency key"
 ══════════════════════════════════════════════════════════════════

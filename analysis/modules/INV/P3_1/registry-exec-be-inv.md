@@ -94,7 +94,7 @@ QR ids : QR-INV-001, QR-INV-002, QR-INV-003, QR-INV-004, QR-INV-005, QR-INV-006,
 | QR-INV-016 | ENT-INV-003 | NATIVE (AGGREGATE) | API-INV-016, 017 |
 | QR-INV-017 | ENT-INV-003 | NATIVE + FIND_ONE | API-INV-024, 032, 038, 047 |
 | QR-INV-018 | ENT-INV-003 | UPDATE | API-INV-024, 032, 038, 047 |
-| QR-INV-019 | ENT-INV-003 | AGGREGATE | API-INV-024, 032, 038, 047 |
+| QR-INV-019 | ENT-INV-003 | AGGREGATE | API-INV-022, 023, 024, 029, 032, 036, 037, 038, 047 |
 | QR-INV-020 | ENT-INV-004 | FIND_BY_CRITERIA | API-INV-018 |
 | QR-INV-021 | ENT-INV-004 | FIND_ONE | API-INV-019 |
 | QR-INV-022 | ENT-INV-004 | SAVE (insert only) | API-INV-024, 032, 038, 047 |
@@ -106,15 +106,15 @@ QR ids : QR-INV-001, QR-INV-002, QR-INV-003, QR-INV-004, QR-INV-005, QR-INV-006,
 | QR-INV-028 | ENT-INV-006 | FIND_ONE | API-INV-021, 023, 024, 025 |
 | QR-INV-029 | ENT-INV-006 | SAVE / UPDATE | API-INV-022, 023, 024, 025 |
 | QR-INV-030 | ENT-INV-008 | FIND_BY_CRITERIA | API-INV-026 |
-| QR-INV-031 | ENT-INV-008 | FIND_ONE | API-INV-027, 029, 030, 031, 032, 033 |
+| QR-INV-031 | ENT-INV-008 | FIND_ONE | API-INV-027, 029, 030, 031, 032, 033, 035 |
 | QR-INV-032 | ENT-INV-008 | SAVE / UPDATE | API-INV-028, 032, 033 |
 | QR-INV-033 | ENT-INV-009 | FIND_ONE | API-INV-029 |
 | QR-INV-034 | ENT-INV-009 | SAVE / UPDATE / DELETE | API-INV-029, 030, 031, 032 |
 | QR-INV-035 | ENT-INV-010 | FIND_BY_CRITERIA | API-INV-034 |
-| QR-INV-036 | ENT-INV-010 | FIND_ONE | API-INV-035, 037, 038, 039 |
+| QR-INV-036 | ENT-INV-010 | FIND_ONE | API-INV-027, 035, 037, 038, 039, 047 |
 | QR-INV-037 | ENT-INV-010 | SAVE / UPDATE | API-INV-032, 036, 037, 038, 039, 047 |
 | QR-INV-038 | ENT-INV-012 | NATIVE (AGGREGATE) | API-INV-040 |
-| QR-INV-039 | ENT-INV-012 | FIND_ONE | API-INV-022, 023, 024, 029, 032, 038, 041, 042 |
+| QR-INV-039 | ENT-INV-012 | FIND_ONE | API-INV-018, 019, 021, 022, 023, 024, 027, 029, 032, 035, 038, 041, 042 |
 | QR-INV-040 | ENT-INV-012 | FIND_ONE | API-INV-038, 047 |
 | QR-INV-041 | ENT-INV-012 | NATIVE / UPDATE | API-INV-038, 042, 047 |
 | QR-INV-042 | ENT-INV-014 | FIND_BY_CRITERIA | API-INV-043 |
@@ -165,9 +165,9 @@ Honours: CON-INV-001, CON-INV-002, CON-INV-003, CON-INV-004, CON-INV-005, CON-IN
 
 ### Catalog
 
-Error codes : 58 HTTP catalog rows (`error-catalog` block — INV-422-DOC-DATE-FUTURE and INV-404-LOOKUP-KEY-UNKNOWN added at gate-analysis revise 2) + 6 in-process-only codes (§5.1 — INV-422-RESERVATION-MISMATCH added at revise 1, INV-409-IDEMPOTENCY-KEY-REUSED at revise 2) · format `{MOD}-{http}[-{SLUG}]`
-Rules with a code : 46 (40 in the HTTP catalog, 6 in-process only) · effect / answer rules without a code : RULE-INV-005, 014, 024, 038, 046 (messages kept in §1.3)
-Rules without a message in a language : none · PLATFORM-STD rows without SRS text : 14 → ADR-INV-021 (INV-403 carries the AC-INV-154 text)
+Error codes : 59 HTTP catalog rows (`error-catalog` block — INV-422-DOC-DATE-FUTURE and INV-404-LOOKUP-KEY-UNKNOWN added at gate-analysis revise 2, INV-409-IDEMPOTENCY-KEY-REUSED moved in at revise 3 for API-INV-047) + 5 in-process-only codes (§5.1 — INV-422-RESERVATION-MISMATCH added at revise 1) · format `{MOD}-{http}[-{SLUG}]`
+Rules with a code : 46 (41 in the HTTP catalog, 5 in-process only) · effect / answer rules without a code : RULE-INV-005, 014, 024, 038, 046 (messages kept in §1.3)
+Rules without a message in a language : none · codes without an INV text : 4 (INV-400, INV-401, INV-500, INV-409-STALE-VERSION — the platform's texts, ADR-INV-021 amended); every other PLATFORM-STD row — INV-403, the ten `INV-404-*-NOT-FOUND`, INV-404-LOOKUP-KEY-UNKNOWN — and INV-422-LOAD-ROWS-INVALID carry INV's ar / en text (gate-analysis revise 3, G1)
 
 ### API document
 
@@ -213,6 +213,9 @@ the ADR-INV-021 row; totals XM 15.
 | ADR-INV-048 | The idempotency key is recorded with a hash of its request; a reused key with another request is refused (G9) | ACCEPTED |
 | ADR-INV-049 | Stock-move immutability also enforced by a database trigger and an `@Immutable` entity (G12, P2 delta) | ACCEPTED |
 | ADR-INV-050 | Default switches serialise on a tenant advisory lock (G19) | ACCEPTED |
+| ADR-INV-051 | A lot-less line of a lot-tracked Item is accepted up to the lot-less on-hand (gate-analysis revise 3, G2) | ACCEPTED |
+| ADR-INV-052 | A synchronised offline sale skips the active-state checks and notifies the Warehouse role (G3; extends ADR-INV-045) | ACCEPTED |
+| ADR-INV-053 | An opening stock load carries an idempotency key (G4) | ACCEPTED |
 
 Revised in place at gate-analysis revise 1: ADR-INV-022 (G4), ADR-INV-024 (package, G22), ADR-INV-030 (count-difference
 increase valued at 0, G11), ADR-INV-035 (barcode-only sheet, G12), ADR-INV-036 (warehouse labels on the row, G13),
@@ -222,13 +225,15 @@ Filed under analysis/decisions/INV/. BLOCKED : none. ADR-INV-019 (P2) is ACCEPTE
 ADR-INV-014 … 017 (P2, recorded in db-script §5.2) were filed there in repair round 1, unchanged, so the plan's citations resolve.
 Revised in place at gate-analysis revise 2: ADR-INV-026 (lot locks, default-switch lock — G13, G19), ADR-INV-033 (lookup values through API-INV-052 — G7), ADR-INV-038 (AC-INV-144 / 147 aligned, AC-INV-111 reachable — G1, G17).
 
-Next free ADR : ADR-INV-051.
+Revised in place at gate-analysis revise 3: ADR-INV-021 (INV owns the texts of its module-specific codes — G1).
+
+Next free ADR : ADR-INV-054.
 
 ### Traceability
 
-REQ covered by ≥ 1 API or DBF : 138 / 138 · orphan REQ : none.
+REQ covered by ≥ 1 API or DBF : 140 / 140 · orphan REQ : none.
 
 ### Event
 
-"P3.1 completed: INV v1 — API 51, QR 46, XM blocks 15 (13 registered + 2 minted), ADR-INV-021 … 032" · "gate-analysis revise 1: root package com.commerce.inv, ADR-INV-041 … 045" · "gate-analysis revise 2: API-INV-052 (InvLookups), RULE-INV-050 / 051 codes, ADR-INV-046 … 050"
+"P3.1 completed: INV v1 — API 51, QR 46, XM blocks 15 (13 registered + 2 minted), ADR-INV-021 … 032" · "gate-analysis revise 1: root package com.commerce.inv, ADR-INV-041 … 045" · "gate-analysis revise 2: API-INV-052 (InvLookups), RULE-INV-050 / 051 codes, ADR-INV-046 … 050" · "gate-analysis revise 3: texts of every INV code, INV-409-IDEMPOTENCY-KEY-REUSED on API-INV-047, labels on every row, package domain, ADR-INV-051 … 053"
 ══════════════════════════════════════════════════════════════════

@@ -1,8 +1,8 @@
 # FRONTEND TEST PLAN — Inventory / المخزون (INV)
 ══════════════════════════════════════════════════════════════════
-Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 2
+Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 3
 Track  : frontend · plan test · lane test-gen · prepared by claude:opus
-Sources: _state/current-srs.md (INV v1 — REQ 138 · AC 154 · SCR-REQ 12)
+Sources: _state/current-srs.md (INV v1 — REQ 140 · AC 158 · SCR-REQ 12)
          _state/current-frontend-execution-plan.md (P3.2 — SCR-INV-001 … 012, UXD-INV-001 … 011, F1 … F4, SEC-FE)
          _state/current-api-spec (api-spec-inv.yaml — the document the mock server serves)
          _state/current-backend-execution-plan.md (Error Catalog texts) · _state/current-registry-srs.md
@@ -1227,6 +1227,10 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-152 | TC-INV-144 | TC-INV-210 |
 | AC-INV-153 | TC-INV-145, TC-INV-261 | TC-INV-211 |
 | AC-INV-154 | TC-INV-146, TC-INV-277 | TC-INV-212 |
+| AC-INV-155 | TC-INV-286 | — |
+| AC-INV-156 | TC-INV-286 | — |
+| AC-INV-157 | TC-INV-287 | — |
+| AC-INV-158 | TC-INV-288 | — |
 
 ### REQ → TC
 
@@ -1422,10 +1426,10 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 
 | Measure | Result |
 |---|---|
-| AC covered (both tracks) | ✓ 154/154 · gaps: none |
-| AC covered on this track | 57/154 (the rest on the other track; 50 ACs on both) |
-| REQ covered (both tracks) | ✓ 138/138 · gaps: none |
-| REQ covered on this track | 51/138 |
+| AC covered (both tracks) | ✓ 158/158 · gaps: none |
+| AC covered on this track | 57/158 (the rest on the other track; 50 ACs on both; AC-INV-155 … 158 of gate-analysis revise 3 are backend cases TC-INV-286 … 288) |
+| REQ covered (both tracks) | ✓ 140/140 · gaps: none |
+| REQ covered on this track | 51/140 |
 | SCR covered | ✓ 12/12 · gaps: none |
 | UXD covered | ✓ 11/11 (rendered + empty/failure each) · gaps: none |
 | Split units with no TC | 13 of 50: F1-SCR-INV-001, F1-SCR-INV-002, F1-SCR-INV-003, F1-SCR-INV-004, F1-SCR-INV-005, F1-SCR-INV-006, F1-SCR-INV-007, F1-SCR-INV-008, F1-SCR-INV-009, F1-SCR-INV-010, F1-SCR-INV-011, F1-SCR-INV-012, ALIGN-FE · no AC, XM or UXD derives a case for them (ADR-INV-037); F3-SCR-INV-012 and F4-SCR-INV-011 carry TC-INV-238 and TC-INV-241 (ADR-INV-039) |

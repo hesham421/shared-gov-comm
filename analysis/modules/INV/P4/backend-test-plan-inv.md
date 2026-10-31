@@ -1,13 +1,13 @@
 # BACKEND TEST PLAN — Inventory / المخزون (INV)
 ══════════════════════════════════════════════════════════════════
-Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 2
+Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 3
 Track  : backend · plan test · lane test-gen · prepared by claude:opus
-Sources: _state/current-srs.md (INV v1 — REQ 138 · AC 154 · RULE 51 · SCR-REQ 12)
+Sources: _state/current-srs.md (INV v1 — REQ 140 · AC 158 · RULE 51 · SCR-REQ 12)
          _state/current-registry-srs.md (P1) · _state/current-registry-db.md (P2 — XM-INV-001 … XM-INV-015)
          _state/current-backend-execution-plan.md (P3.1 — API-INV-001 … 052, Error Catalog §5 / §5.1, INT-C)
          _state/current-frontend-execution-plan.md (P3.2) · _state/current-api-spec (api-spec-inv.yaml, OpenAPI 3.1.0)
          _state/current-dependency-graph.json (INV → CAT edges DELIVERED)
-Owns   : TC-INV-001 … TC-INV-172, TC-INV-242 … TC-INV-261 and TC-INV-264 … TC-INV-284 (this file) — TC-INV-173 … 241,
+Owns   : TC-INV-001 … TC-INV-172, TC-INV-242 … TC-INV-261 and TC-INV-264 … TC-INV-284 and TC-INV-286 … TC-INV-288 (this file) — TC-INV-173 … 241,
          262, 263 and 285 are in frontend-test-plan-inv.md; TC-INV-242 … 261 were added at gate-analysis revise 1 (G5,
          G16 and the cases of G1, G3, G6 … G13, G15), TC-INV-264 … 284 at gate-analysis revise 2 (G2 … G9, G13, G14,
          G17 … G19), continuing the module's TC sequence
@@ -42,7 +42,7 @@ ADRs   : raised here ADR-INV-037 (track placement and package), ADR-INV-038 (ass
 - **Line refusals.** A refusal raised for one line names it in `details` (`lineRef`, `lineRefKind`, `rowNo` —
   ADR-INV-046); a TC that refuses a line asserts that entry.
 
-<!-- PHASE:TEST-PLAN-BE:START traces=AC-INV-001,AC-INV-002,AC-INV-003,AC-INV-004,AC-INV-005,AC-INV-006,AC-INV-007,AC-INV-008,AC-INV-009,AC-INV-010,AC-INV-011,AC-INV-012,AC-INV-013,AC-INV-016,AC-INV-017,AC-INV-018,AC-INV-019,AC-INV-020,AC-INV-021,AC-INV-022,AC-INV-023,AC-INV-024,AC-INV-025,AC-INV-026,AC-INV-027,AC-INV-028,AC-INV-029,AC-INV-030,AC-INV-031,AC-INV-032,AC-INV-033,AC-INV-036,AC-INV-037,AC-INV-038,AC-INV-039,AC-INV-040,AC-INV-041,AC-INV-042,AC-INV-043,AC-INV-044,AC-INV-045,AC-INV-046,AC-INV-047,AC-INV-048,AC-INV-049,AC-INV-050,AC-INV-051,AC-INV-052,AC-INV-053,AC-INV-054,AC-INV-055,AC-INV-056,AC-INV-057,AC-INV-058,AC-INV-059,AC-INV-060,AC-INV-061,AC-INV-062,AC-INV-063,AC-INV-064,AC-INV-065,AC-INV-066,AC-INV-067,AC-INV-068,AC-INV-069,AC-INV-070,AC-INV-071,AC-INV-072,AC-INV-073,AC-INV-074,AC-INV-075,AC-INV-076,AC-INV-077,AC-INV-078,AC-INV-079,AC-INV-080,AC-INV-081,AC-INV-082,AC-INV-083,AC-INV-084,AC-INV-085,AC-INV-086,AC-INV-087,AC-INV-088,AC-INV-089,AC-INV-090,AC-INV-091,AC-INV-092,AC-INV-093,AC-INV-094,AC-INV-095,AC-INV-096,AC-INV-097,AC-INV-098,AC-INV-099,AC-INV-101,AC-INV-102,AC-INV-103,AC-INV-104,AC-INV-105,AC-INV-106,AC-INV-107,AC-INV-108,AC-INV-109,AC-INV-110,AC-INV-111,AC-INV-112,AC-INV-113,AC-INV-114,AC-INV-115,AC-INV-116,AC-INV-117,AC-INV-118,AC-INV-119,AC-INV-120,AC-INV-121,AC-INV-122,AC-INV-123,AC-INV-124,AC-INV-125,AC-INV-126,AC-INV-127,AC-INV-128,AC-INV-129,AC-INV-130,AC-INV-131,AC-INV-132,AC-INV-133,AC-INV-134,AC-INV-135,AC-INV-136,AC-INV-137,AC-INV-138,AC-INV-139,AC-INV-140,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-144,AC-INV-145,AC-INV-146,AC-INV-147,AC-INV-148,AC-INV-149,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-001,REQ-INV-002,REQ-INV-003,REQ-INV-004,REQ-INV-005,REQ-INV-006,REQ-INV-007,REQ-INV-008,REQ-INV-009,REQ-INV-010,REQ-INV-013,REQ-INV-014,REQ-INV-015,REQ-INV-016,REQ-INV-017,REQ-INV-018,REQ-INV-019,REQ-INV-020,REQ-INV-021,REQ-INV-022,REQ-INV-023,REQ-INV-024,REQ-INV-025,REQ-INV-026,REQ-INV-027,REQ-INV-028,REQ-INV-031,REQ-INV-032,REQ-INV-033,REQ-INV-034,REQ-INV-035,REQ-INV-036,REQ-INV-037,REQ-INV-038,REQ-INV-039,REQ-INV-040,REQ-INV-041,REQ-INV-042,REQ-INV-043,REQ-INV-044,REQ-INV-045,REQ-INV-046,REQ-INV-047,REQ-INV-048,REQ-INV-049,REQ-INV-050,REQ-INV-051,REQ-INV-052,REQ-INV-053,REQ-INV-054,REQ-INV-055,REQ-INV-056,REQ-INV-057,REQ-INV-058,REQ-INV-059,REQ-INV-060,REQ-INV-061,REQ-INV-062,REQ-INV-063,REQ-INV-064,REQ-INV-065,REQ-INV-066,REQ-INV-067,REQ-INV-068,REQ-INV-069,REQ-INV-070,REQ-INV-071,REQ-INV-072,REQ-INV-073,REQ-INV-074,REQ-INV-075,REQ-INV-076,REQ-INV-077,REQ-INV-078,REQ-INV-079,REQ-INV-080,REQ-INV-081,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-085,REQ-INV-086,REQ-INV-087,REQ-INV-088,REQ-INV-089,REQ-INV-091,REQ-INV-092,REQ-INV-093,REQ-INV-094,REQ-INV-095,REQ-INV-096,REQ-INV-097,REQ-INV-098,REQ-INV-099,REQ-INV-100,REQ-INV-101,REQ-INV-102,REQ-INV-103,REQ-INV-104,REQ-INV-105,REQ-INV-106,REQ-INV-107,REQ-INV-108,REQ-INV-109,REQ-INV-110,REQ-INV-111,REQ-INV-112,REQ-INV-113,REQ-INV-114,REQ-INV-115,REQ-INV-116,REQ-INV-117,REQ-INV-118,REQ-INV-119,REQ-INV-120,REQ-INV-121,REQ-INV-122,REQ-INV-123,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-128,REQ-INV-129,REQ-INV-130,REQ-INV-131,REQ-INV-132,REQ-INV-133,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
+<!-- PHASE:TEST-PLAN-BE:START traces=AC-INV-155,AC-INV-156,AC-INV-157,AC-INV-158,REQ-INV-139,REQ-INV-140,AC-INV-001,AC-INV-002,AC-INV-003,AC-INV-004,AC-INV-005,AC-INV-006,AC-INV-007,AC-INV-008,AC-INV-009,AC-INV-010,AC-INV-011,AC-INV-012,AC-INV-013,AC-INV-016,AC-INV-017,AC-INV-018,AC-INV-019,AC-INV-020,AC-INV-021,AC-INV-022,AC-INV-023,AC-INV-024,AC-INV-025,AC-INV-026,AC-INV-027,AC-INV-028,AC-INV-029,AC-INV-030,AC-INV-031,AC-INV-032,AC-INV-033,AC-INV-036,AC-INV-037,AC-INV-038,AC-INV-039,AC-INV-040,AC-INV-041,AC-INV-042,AC-INV-043,AC-INV-044,AC-INV-045,AC-INV-046,AC-INV-047,AC-INV-048,AC-INV-049,AC-INV-050,AC-INV-051,AC-INV-052,AC-INV-053,AC-INV-054,AC-INV-055,AC-INV-056,AC-INV-057,AC-INV-058,AC-INV-059,AC-INV-060,AC-INV-061,AC-INV-062,AC-INV-063,AC-INV-064,AC-INV-065,AC-INV-066,AC-INV-067,AC-INV-068,AC-INV-069,AC-INV-070,AC-INV-071,AC-INV-072,AC-INV-073,AC-INV-074,AC-INV-075,AC-INV-076,AC-INV-077,AC-INV-078,AC-INV-079,AC-INV-080,AC-INV-081,AC-INV-082,AC-INV-083,AC-INV-084,AC-INV-085,AC-INV-086,AC-INV-087,AC-INV-088,AC-INV-089,AC-INV-090,AC-INV-091,AC-INV-092,AC-INV-093,AC-INV-094,AC-INV-095,AC-INV-096,AC-INV-097,AC-INV-098,AC-INV-099,AC-INV-101,AC-INV-102,AC-INV-103,AC-INV-104,AC-INV-105,AC-INV-106,AC-INV-107,AC-INV-108,AC-INV-109,AC-INV-110,AC-INV-111,AC-INV-112,AC-INV-113,AC-INV-114,AC-INV-115,AC-INV-116,AC-INV-117,AC-INV-118,AC-INV-119,AC-INV-120,AC-INV-121,AC-INV-122,AC-INV-123,AC-INV-124,AC-INV-125,AC-INV-126,AC-INV-127,AC-INV-128,AC-INV-129,AC-INV-130,AC-INV-131,AC-INV-132,AC-INV-133,AC-INV-134,AC-INV-135,AC-INV-136,AC-INV-137,AC-INV-138,AC-INV-139,AC-INV-140,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-144,AC-INV-145,AC-INV-146,AC-INV-147,AC-INV-148,AC-INV-149,AC-INV-152,AC-INV-153,AC-INV-154,REQ-INV-001,REQ-INV-002,REQ-INV-003,REQ-INV-004,REQ-INV-005,REQ-INV-006,REQ-INV-007,REQ-INV-008,REQ-INV-009,REQ-INV-010,REQ-INV-013,REQ-INV-014,REQ-INV-015,REQ-INV-016,REQ-INV-017,REQ-INV-018,REQ-INV-019,REQ-INV-020,REQ-INV-021,REQ-INV-022,REQ-INV-023,REQ-INV-024,REQ-INV-025,REQ-INV-026,REQ-INV-027,REQ-INV-028,REQ-INV-031,REQ-INV-032,REQ-INV-033,REQ-INV-034,REQ-INV-035,REQ-INV-036,REQ-INV-037,REQ-INV-038,REQ-INV-039,REQ-INV-040,REQ-INV-041,REQ-INV-042,REQ-INV-043,REQ-INV-044,REQ-INV-045,REQ-INV-046,REQ-INV-047,REQ-INV-048,REQ-INV-049,REQ-INV-050,REQ-INV-051,REQ-INV-052,REQ-INV-053,REQ-INV-054,REQ-INV-055,REQ-INV-056,REQ-INV-057,REQ-INV-058,REQ-INV-059,REQ-INV-060,REQ-INV-061,REQ-INV-062,REQ-INV-063,REQ-INV-064,REQ-INV-065,REQ-INV-066,REQ-INV-067,REQ-INV-068,REQ-INV-069,REQ-INV-070,REQ-INV-071,REQ-INV-072,REQ-INV-073,REQ-INV-074,REQ-INV-075,REQ-INV-076,REQ-INV-077,REQ-INV-078,REQ-INV-079,REQ-INV-080,REQ-INV-081,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-085,REQ-INV-086,REQ-INV-087,REQ-INV-088,REQ-INV-089,REQ-INV-091,REQ-INV-092,REQ-INV-093,REQ-INV-094,REQ-INV-095,REQ-INV-096,REQ-INV-097,REQ-INV-098,REQ-INV-099,REQ-INV-100,REQ-INV-101,REQ-INV-102,REQ-INV-103,REQ-INV-104,REQ-INV-105,REQ-INV-106,REQ-INV-107,REQ-INV-108,REQ-INV-109,REQ-INV-110,REQ-INV-111,REQ-INV-112,REQ-INV-113,REQ-INV-114,REQ-INV-115,REQ-INV-116,REQ-INV-117,REQ-INV-118,REQ-INV-119,REQ-INV-120,REQ-INV-121,REQ-INV-122,REQ-INV-123,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-128,REQ-INV-129,REQ-INV-130,REQ-INV-131,REQ-INV-132,REQ-INV-133,REQ-INV-136,REQ-INV-137,REQ-INV-138 -->
 ## TEST-PLAN-BE — module test cases
 
 <!-- SUB:RULE-SCENARIOS:START traces=AC-INV-004,AC-INV-007,AC-INV-008,AC-INV-011,AC-INV-017,AC-INV-020,AC-INV-021,AC-INV-026,AC-INV-029,AC-INV-030,AC-INV-049,AC-INV-053,AC-INV-058,AC-INV-060,AC-INV-061,AC-INV-070,AC-INV-071,AC-INV-073,AC-INV-075,AC-INV-078,AC-INV-079,AC-INV-088,AC-INV-090,AC-INV-091,AC-INV-093,AC-INV-094,AC-INV-098,AC-INV-101,AC-INV-103,AC-INV-106,AC-INV-109,AC-INV-111,AC-INV-113,AC-INV-115,AC-INV-118,AC-INV-120,AC-INV-126,AC-INV-127,AC-INV-133,AC-INV-136,AC-INV-139,AC-INV-141,AC-INV-142,AC-INV-143,AC-INV-144,AC-INV-147,REQ-INV-003,REQ-INV-006,REQ-INV-008,REQ-INV-014,REQ-INV-017,REQ-INV-018,REQ-INV-022,REQ-INV-025,REQ-INV-044,REQ-INV-048,REQ-INV-052,REQ-INV-054,REQ-INV-055,REQ-INV-064,REQ-INV-065,REQ-INV-067,REQ-INV-069,REQ-INV-071,REQ-INV-072,REQ-INV-080,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-085,REQ-INV-088,REQ-INV-091,REQ-INV-093,REQ-INV-096,REQ-INV-098,REQ-INV-099,REQ-INV-101,REQ-INV-103,REQ-INV-105,REQ-INV-107,REQ-INV-113,REQ-INV-114,REQ-INV-119,REQ-INV-122,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-128,REQ-INV-131 -->
@@ -338,7 +338,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; one active Warehouse; no active Variant has barcode V-404
 Host data    : none
 Steps        : 1. POST opening stock with 20 rows, row 7 naming barcode V-404 and rows 1–6, 8–20 valid. 2. GET adjustments with reasonCode OPENING_STOCK.
-Expected     : 1 → 422, code INV-422-LOAD-ROWS-INVALID; `details` lists rowNo 7 with code INV-422-LOAD-ROW-VARIANT, messageAr «لا يطابق هذا السطر متغيّر صنف نشطًا.», messageEn "This row matches no active Variant.", and no other row. 2 → nothing posted.
+Expected     : 1 → 422, code INV-422-LOAD-ROWS-INVALID, messageAr «بعض أسطر التحميل غير صالحة؛ راجع الأسطر المذكورة.», messageEn "Some rows of the load are invalid; see the listed rows."; `details` lists rowNo 7 with code INV-422-LOAD-ROW-VARIANT, messageAr «لا يطابق هذا السطر متغيّر صنف نشطًا.», messageEn "This row matches no active Variant.", and no other row. 2 → nothing posted.
 Test data    : row 7 barcode "V-404" (v1 names a Variant by barcode only — ADR-INV-035); other rows: active barcodes of active Variants, with quantity > 0 and a unit cost
 <!-- TC:TC-INV-021:END -->
 
@@ -2324,7 +2324,7 @@ Scenario     : BOUNDARY · data class BOUNDARY · language ALL
 Preconditions: Owner session; one active Warehouse; Variant V with an active barcode, never valued
 Host data    : none
 Steps        : 1. POST opening stock with 1 row of V, quantity 10, unit cost 12.34567. 2. POST it with unit cost 12.3456. 3. GET adjustments with reasonCode OPENING_STOCK.
-Expected     : 1 → 422, code INV-422-LOAD-ROWS-INVALID; `details` rowNo 1 with code INV-422-NO-KNOWN-COST, messageAr «لا توجد تكلفة معروفة لهذا المتغيّر. أدخل تكلفة الوحدة.», messageEn "This Variant has no known cost. Enter the unit cost."; nothing posted or rounded. 2 → 201; the ADJUSTMENT_IN carries unitCost 12.3456. 3 → exactly one posted adjustment.
+Expected     : 1 → 422, code INV-422-LOAD-ROWS-INVALID, messageAr «بعض أسطر التحميل غير صالحة؛ راجع الأسطر المذكورة.», messageEn "Some rows of the load are invalid; see the listed rows."; `details` rowNo 1 with code INV-422-NO-KNOWN-COST, messageAr «لا توجد تكلفة معروفة لهذا المتغيّر. أدخل تكلفة الوحدة.», messageEn "This Variant has no known cost. Enter the unit cost."; nothing posted or rounded. 2 → 201; the ADJUSTMENT_IN carries unitCost 12.3456. 3 → exactly one posted adjustment.
 Test data    : 12.34567 (5 decimals), 12.3456 (4 decimals)
 <!-- TC:TC-INV-257:END -->
 
@@ -2389,8 +2389,10 @@ Test data    : source document type POS_SALE
 ### REVISE2-SCENARIOS — catalogue coverage, line refusals and guards (gate-analysis revise 2)
 
 These cases close the catalogue rule of this plan (every HTTP catalogue row and every §5.1 row is asserted by at
-least one TC) and the gate-analysis revise 2 findings. A code whose text the SRS does not give (PLATFORM-STD rows,
-ADR-INV-021) is asserted by its code and status only.
+least one TC) and the gate-analysis revise 2 findings. Every INV code is asserted with its ar / en text — the
+module-specific PLATFORM-STD codes carry INV's own text since gate-analysis revise 3 (ADR-INV-021 amended); only the
+generic platform codes INV-400, INV-401, INV-500 and INV-409-STALE-VERSION are asserted by code and status, because
+their texts are the platform's.
 
 <!-- TC:TC-INV-264:START traces=AC-INV-087,REQ-INV-080,API-INV-024,API-INV-038,API-INV-021,API-INV-035 -->
 ### TC-INV-264 — A post refused for one line of three names that line in details
@@ -2458,7 +2460,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Warehouse user and Owner sessions; dualQuantity on; one active Warehouse; Item "Cotton fabric" dual-quantity (metre), its Variant V with an active barcode B1 and stock in the warehouse
 Host data    : none
 Steps        : 1. POST an adjustment with reason DAMAGE and 1 line of V, quantityChange −1, no measure change. 2. POST it again with measureQtyChange −40.000. 3. As Owner, POST opening stock with 1 row: barcode B1, quantity 2, unit cost 10.0000, no measure. 4. GET adjustments.
-Expected     : 1 → 422, code INV-422-MEASURE-REQUIRED, messageAr «أدخل القياس (الوزن أو الطول) لهذا الصنف.», messageEn "Enter the measure (weight or length) for this Item."; `details` {lineRef 1, lineRefKind REQUEST_POSITION, rowNo 1}. 2 → 201. 3 → 422, code INV-422-LOAD-ROWS-INVALID; `details` rowNo 1 with code INV-422-MEASURE-REQUIRED and the same texts; nothing posted. 4 → only the adjustment of step 2.
+Expected     : 1 → 422, code INV-422-MEASURE-REQUIRED, messageAr «أدخل القياس (الوزن أو الطول) لهذا الصنف.», messageEn "Enter the measure (weight or length) for this Item."; `details` {lineRef 1, lineRefKind REQUEST_POSITION, rowNo 1}. 2 → 201. 3 → 422, code INV-422-LOAD-ROWS-INVALID, messageAr «بعض أسطر التحميل غير صالحة؛ راجع الأسطر المذكورة.», messageEn "Some rows of the load are invalid; see the listed rows."; `details` rowNo 1 with code INV-422-MEASURE-REQUIRED and the same texts; nothing posted. 4 → only the adjustment of step 2.
 Test data    : quantityChange −1, measureQtyChange −40.000; INV_ADJUSTMENT_REASON DAMAGE (seeded)
 <!-- TC:TC-INV-268:END -->
 
@@ -2556,7 +2558,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; one active Warehouse; Variants V1, V2, V3 with active barcodes
 Host data    : none
 Steps        : 1. POST opening stock with 3 rows: row 1 (V1, 10, 12.0000) valid; row 2 (V2, 5, unit cost −1.0000); row 3 (V3, 3, no unit cost). 2. GET adjustments with reasonCode OPENING_STOCK.
-Expected     : 1 → 422, code INV-422-LOAD-ROWS-INVALID; `details` lists rowNo 2 and 3, each with code INV-422-OPENING-COST-REQUIRED, messageAr «أدخل تكلفة الوحدة للمخزون الافتتاحي.», messageEn "Enter the unit cost of the opening stock.", and no entry for row 1. 2 → nothing posted.
+Expected     : 1 → 422, code INV-422-LOAD-ROWS-INVALID, messageAr «بعض أسطر التحميل غير صالحة؛ راجع الأسطر المذكورة.», messageEn "Some rows of the load are invalid; see the listed rows."; `details` lists rowNo 2 and 3, each with code INV-422-OPENING-COST-REQUIRED, messageAr «أدخل تكلفة الوحدة للمخزون الافتتاحي.», messageEn "Enter the unit cost of the opening stock.", and no entry for row 1. 2 → nothing posted.
 Test data    : the three rows above
 <!-- TC:TC-INV-275:END -->
 
@@ -2570,7 +2572,7 @@ Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Owner session; identifier X exists for no record of the tenant; a DRAFT count C; a line of another count, L2
 Host data    : none
 Steps        : 1. GET warehouse X. 2. GET branch X. 3. GET stock move X. 4. GET transfer X. 5. GET count X. 6. PUT line L2 on count C. 7. GET adjustment X. 8. GET lot X.
-Expected     : 404 each, with the codes in step order: INV-404-WAREHOUSE-NOT-FOUND, INV-404-BRANCH-NOT-FOUND, INV-404-STOCK-MOVE-NOT-FOUND, INV-404-TRANSFER-NOT-FOUND, INV-404-STOCK-COUNT-NOT-FOUND, INV-404-STOCK-COUNT-LINE-NOT-FOUND, INV-404-STOCK-ADJUSTMENT-NOT-FOUND, INV-404-LOT-NOT-FOUND (platform texts — ADR-INV-021).
+Expected     : 404 each, with the codes and texts in step order: 1 INV-404-WAREHOUSE-NOT-FOUND, messageAr «المستودع غير موجود.», messageEn "The warehouse was not found."; 2 INV-404-BRANCH-NOT-FOUND, «الفرع غير موجود.» / "The branch was not found."; 3 INV-404-STOCK-MOVE-NOT-FOUND, «حركة المخزون غير موجودة.» / "The stock move was not found."; 4 INV-404-TRANSFER-NOT-FOUND, «التحويل غير موجود.» / "The transfer was not found."; 5 INV-404-STOCK-COUNT-NOT-FOUND, «الجرد غير موجود.» / "The stock count was not found."; 6 INV-404-STOCK-COUNT-LINE-NOT-FOUND, «سطر الجرد غير موجود في هذا الجرد.» / "The count line was not found on this count."; 7 INV-404-STOCK-ADJUSTMENT-NOT-FOUND, «التسوية غير موجودة.» / "The stock adjustment was not found."; 8 INV-404-LOT-NOT-FOUND, «التشغيلة غير موجودة.» / "The lot was not found." (INV's own texts — ADR-INV-021 amended).
 Test data    : X (placeholder identifier); L2 belongs to another count
 <!-- TC:TC-INV-276:END -->
 
@@ -2592,7 +2594,7 @@ Test data    : —
 ### TC-INV-278 — An idempotency key reused for a different request is refused
 Derived from : AC-INV-064  (REQ-INV-058)
 Exercises    : InventoryApi.issueStock — CON-INV-015 · InventoryApi.reserve — CON-INV-011 (in-process, caller SLS) · read back API-INV-018, API-INV-017
-Rule / code  : RULE-INV-050 → INV-409-IDEMPOTENCY-KEY-REUSED (in-process, §5.1)
+Rule / code  : RULE-INV-050 → INV-409-IDEMPOTENCY-KEY-REUSED (in-process here; also the HTTP code of API-INV-047, TC-INV-288 — ADR-INV-053)
 Package      : SVC-API-INT
 Scenario     : VIOLATION · data class INVALID · language ALL
 Preconditions: Variant V on-hand 10 in Warehouse W; a POS sale already synchronised with key K1 that recorded 1 ISSUE of 2 of V in W
@@ -2682,10 +2684,56 @@ Scenario     : PERMISSION · data class VALID · language ALL
 Preconditions: a newly provisioned tenant; a user holding only the Seller/Cashier role; a user holding no INV permission
 Host data    : none
 Steps        : 1. As the Seller/Cashier, GET each of INV_ADJUSTMENT_REASON, INV_MOVE_TYPE, INV_DOC_STATUS, INV_RESERVATION_STATUS, INV_SOURCE_DOC_TYPE and INV_CHANGE_KIND. 2. GET CAT_UOM. 3. As the user with no INV permission, GET INV_DOC_STATUS.
-Expected     : 1 → 200 each, with the seeded active values in sortOrder and their ar / en names — 5, 8, 3, 3, 10 and 5 values; INV_ADJUSTMENT_REASON lists COUNT_DIFFERENCE, DAMAGE, EXPIRY_WRITE_OFF, OPENING_STOCK, OTHER. 2 → 404, code INV-404-LOOKUP-KEY-UNKNOWN. 3 → 403, code INV-403, messageAr «ليست لديك صلاحية لهذا الإجراء.», messageEn "You do not have permission for this action.".
+Expected     : 1 → 200 each, with the seeded active values in sortOrder and their ar / en names — 5, 8, 3, 3, 10 and 5 values; INV_ADJUSTMENT_REASON lists COUNT_DIFFERENCE, DAMAGE, EXPIRY_WRITE_OFF, OPENING_STOCK, OTHER. 2 → 404, code INV-404-LOOKUP-KEY-UNKNOWN, messageAr «مفتاح القائمة غير معروف.», messageEn "Unknown lookup key.". 3 → 403, code INV-403, messageAr «ليست لديك صلاحية لهذا الإجراء.», messageEn "You do not have permission for this action.".
 Test data    : INV_ADJUSTMENT_REASON, INV_MOVE_TYPE, INV_DOC_STATUS, INV_RESERVATION_STATUS, INV_SOURCE_DOC_TYPE, INV_CHANGE_KIND — all values seeded
 <!-- TC:TC-INV-284:END -->
 <!-- SUB:REVISE2-SCENARIOS:END -->
+
+<!-- SUB:REVISE3-SCENARIOS:START traces=AC-INV-155,AC-INV-156,AC-INV-157,AC-INV-158,REQ-INV-139,REQ-INV-069,REQ-INV-140 -->
+### REVISE3-SCENARIOS — lot-less stock, offline sales on inactive records, opening stock idempotency (gate-analysis revise 3)
+
+<!-- TC:TC-INV-286:START traces=AC-INV-155,AC-INV-156,REQ-INV-139,API-INV-045,API-INV-032,API-INV-024,API-INV-036,API-INV-038,API-INV-016,API-INV-018 -->
+### TC-INV-286 — Stock held without a lot is counted, transferred and written off after lot tracking is switched on
+Derived from : AC-INV-155, AC-INV-156  (REQ-INV-139)
+Exercises    : API-INV-045 PUT /api/v1/inv/item-stock-settings/by-item/{itemId} · API-INV-028 / 029 / 032 (count) · API-INV-022 / 024 (transfer) · API-INV-036 / 038 (adjustment) · read back API-INV-016, API-INV-018
+Rule / code  : RULE-INV-037 (lot-less exception — ADR-INV-051) → INV-422-LOT-REQUIRED beyond the lot-less on-hand
+Package      : SVC-API-CRUD
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: Owner and Warehouse user sessions; lotExpiry on; 2 active Warehouses W1, W2; Item I with no Item stock settings and its Variant V on-hand 5 without a lot in W1 (valued); INV_ALLOW_NEGATIVE_STOCK false
+Host data    : none
+Steps        : 1. As Owner, PUT I's settings with lotTrackedFl true (no lot holds stock — allowed). 2. Start a count in W1, add a line of V with no lot and countedQty 6, then change it to 4, and post. 3. POST a transfer W1 → W2 with 1 line of V, no lot, quantity 2, and post it. 4. POST an adjustment in W1 with reason DAMAGE and 1 line of V, no lot, −3. 5. POST it again with −2 and post it. 6. GET balances of V and moves of V.
+Expected     : 1 → 200. 2 → countedQty 6 is refused with 422, code INV-422-LOT-REQUIRED, messageAr «اختر التشغيلة لهذا الصنف.», messageEn "Choose the lot for this Item." (6 > 5 lot-less); countedQty 4 is accepted; the count posts with systemQty 5, differenceQty −1, and its COUNT_DIFFERENCE adjustment has 1 line (V, no lot, −1). 3 → 201, then 200 POSTED: TRANSFER_OUT of 2 with no lot in W1, TRANSFER_IN of 2 with no lot in W2. 4 → 422, code INV-422-LOT-REQUIRED with the same texts (3 > 2 lot-less remaining in W1); nothing saved. 5 → 201, then 200 POSTED: ADJUSTMENT_OUT of 2 with no lot. 6 → V on-hand without a lot is 0 in W1 and 2 in W2; no lot was created; every move has lotPk null.
+Test data    : reasonCode DAMAGE (seeded); lot-less on-hand 5 → 4 → 2 → 0 in W1
+<!-- TC:TC-INV-286:END -->
+
+<!-- TC:TC-INV-287:START traces=AC-INV-157,REQ-INV-069,API-INV-018 -->
+### TC-INV-287 — An offline sale naming an inactive Variant or warehouse, or no warehouse, is recorded and reported
+Derived from : AC-INV-157  (REQ-INV-069)
+Exercises    : InventoryApi.issueStock — CON-INV-015 (in-process, caller SLS, offlineFl true) · notification INV_OFFLINE_SALE_INACTIVE · read back API-INV-018
+Rule / code  : RULE-INV-007, RULE-INV-008, RULE-INV-018 (offline exception — ADR-INV-052) → —
+Package      : SVC-API-INT
+Scenario     : STATE · data class EDGE · language ALL
+Preconditions: INV_ALLOW_NEGATIVE_STOCK false; active Warehouses W (default) and W3, inactive Warehouse W2; Variant V deactivated in CAT after the POS sold it, active Variant V2; 2 users holding the Warehouse role
+Host data    : none
+Steps        : 1. SLS synchronises offline sale P-77: issueStock with offlineFl true, 1 of V in W. 2. SLS synchronises offline sale P-78: 1 of V2 in W2. 3. SLS synchronises offline sale P-79: 1 of V2 with no warehouse. 4. SLS submits an online issue (offlineFl false) of 1 of V in W. 5. GET moves of V and V2; read each Warehouse-role user's notifications.
+Expected     : 1, 2, 3 → success, each recording 1 ISSUE move with offlineFl true — P-77 in W, P-78 in W2, P-79 in the default warehouse W; no INV-422-VARIANT-INACTIVE, INV-422-WAREHOUSE-INACTIVE or INV-422-WAREHOUSE-REQUIRED is thrown. 4 → code INV-422-VARIANT-INACTIVE, messageAr «متغيّر الصنف غير نشط.», messageEn "The Variant is inactive."; no move. 5 → 3 moves as above; each user received exactly 2 notifications INV_OFFLINE_SALE_INACTIVE — «سُجّل بيع دون اتصال P-77 على {V} غير النشط. راجع المخزون وسوِّه.» / "Offline sale P-77 was recorded against the inactive {V}. Review and adjust the stock." and the same for P-78 naming W2 — and none for P-79.
+Test data    : source document type POS_SALE, numbers P-77, P-78, P-79; three distinct idempotency keys
+<!-- TC:TC-INV-287:END -->
+
+<!-- TC:TC-INV-288:START traces=AC-INV-158,REQ-INV-140,API-INV-047,API-INV-034,API-INV-016 -->
+### TC-INV-288 — A double-submitted opening stock load posts once; a different load with the same key is refused
+Derived from : AC-INV-158  (REQ-INV-140)
+Exercises    : API-INV-047 POST /api/v1/inv/opening-stock (twice at once, then again) · read back API-INV-034, API-INV-016
+Rule / code  : RULE-INV-024 → — · RULE-INV-050 → INV-409-IDEMPOTENCY-KEY-REUSED
+Package      : SVC-API-CRUD
+Scenario     : CONCURRENCY · data class EDGE · language ALL
+Preconditions: Owner session; one active Warehouse; Variants V and V3 with no stock and active barcodes; no load recorded with key K-OS-1 or K-OS-2
+Host data    : none
+Steps        : 1. Send the load {idempotencyKey K-OS-1, rows [(V, 40, 12.5000)]} twice at once. 2. Send {idempotencyKey K-OS-1, rows [(V, 50, 12.5000)]}. 3. Send {idempotencyKey K-OS-2, rows [(V3, 10, -1.0000)]}, then {idempotencyKey K-OS-2, rows [(V3, 10, 1.0000)]}. 4. GET adjustments with reasonCode OPENING_STOCK and the balances of V and V3.
+Expected     : 1 → both answer 201 with the same stockAdjustmentPk (the second waits on the advisory lock, then returns the first answer). 2 → 409, code INV-409-IDEMPOTENCY-KEY-REUSED, messageAr «مفتاح عدم التكرار مستخدم لطلب آخر. استخدم مفتاحًا جديدًا لهذا الطلب.», messageEn "This idempotency key was already used for a different request. Use a new key for this request."; nothing recorded. 3 → the first is refused with 422 INV-422-LOAD-ROWS-INVALID (row 1 INV-422-OPENING-COST-REQUIRED) and records nothing, so the corrected load with the same key K-OS-2 answers 201. 4 → exactly 2 OPENING_STOCK adjustments; V on-hand 40 (one ADJUSTMENT_IN of 40), V3 on-hand 10.
+Test data    : keys K-OS-1, K-OS-2
+<!-- TC:TC-INV-288:END -->
+<!-- SUB:REVISE3-SCENARIOS:END -->
 <!-- PHASE:TEST-PLAN-BE:END -->
 
 <!-- PHASE:INT-XM:START traces=REQ-INV-035,REQ-INV-039,REQ-INV-040,REQ-INV-042,REQ-INV-043,REQ-INV-049,REQ-INV-050,REQ-INV-051,REQ-INV-052,REQ-INV-053,REQ-INV-054,REQ-INV-059,REQ-INV-063,REQ-INV-070,REQ-INV-072,REQ-INV-075,REQ-INV-078,REQ-INV-080,REQ-INV-088,REQ-INV-091,REQ-INV-092,REQ-INV-097,REQ-INV-106,REQ-INV-109,REQ-INV-124,REQ-INV-125,REQ-INV-126,REQ-INV-127,REQ-INV-129,XM-INV-001,XM-INV-002,XM-INV-003,XM-INV-004,XM-INV-005,XM-INV-006,XM-INV-007,XM-INV-008,XM-INV-009,XM-INV-010,XM-INV-011,XM-INV-012,XM-INV-013,XM-INV-014,XM-INV-015 -->
@@ -2725,7 +2773,7 @@ Scenario     : INTEGRATION · data class INVALID · language ALL
 Preconditions: CAT:DELIVERED; XM-INV-001 applied; no CAT Variant has identifier X
 Host data    : none
 Steps        : 1. POST opening stock with 1 row, variantPk X. 2. GET balances with variantPk X. 3. Run the pre-check query.
-Expected     : 1 → 422, code INV-422-LOAD-ROWS-INVALID; `details` rowNo 1, code INV-422-LOAD-ROW-VARIANT, messageAr «لا يطابق هذا السطر متغيّر صنف نشطًا.», messageEn "This row matches no active Variant.". 2 → no row. 3 → 0 orphan rows.
+Expected     : 1 → 422, code INV-422-LOAD-ROWS-INVALID, messageAr «بعض أسطر التحميل غير صالحة؛ راجع الأسطر المذكورة.», messageEn "Some rows of the load are invalid; see the listed rows."; `details` rowNo 1, code INV-422-LOAD-ROW-VARIANT, messageAr «لا يطابق هذا السطر متغيّر صنف نشطًا.», messageEn "This row matches no active Variant.". 2 → no row. 3 → 0 orphan rows.
 Test data    : X = an identifier absent from CAT (placeholder)
 <!-- TC:TC-INV-148:END -->
 
@@ -2753,7 +2801,7 @@ Scenario     : INTEGRATION · data class INVALID · language ALL
 Preconditions: CAT:DELIVERED; XM-INV-002 applied; no CAT Variant has identifier X
 Host data    : none
 Steps        : 1. PUR receives 1 line of X. 2. GET moves with variantPk X. 3. Run the pre-check query.
-Expected     : 1 → code INV-404-VARIANT-NOT-FOUND (platform text, ADR-INV-021). 2 → no move. 3 → 0 orphan rows.
+Expected     : 1 → code INV-404-VARIANT-NOT-FOUND, messageAr «متغيّر الصنف غير موجود.», messageEn "The Variant was not found." (ADR-INV-021 amended). 2 → no move. 3 → 0 orphan rows.
 Test data    : X (placeholder)
 <!-- TC:TC-INV-150:END -->
 
@@ -3005,7 +3053,7 @@ Scenario     : INTEGRATION · data class INVALID · language ALL
 Preconditions: CAT:DELIVERED; XM-INV-011 applied; lotExpiry on; no CAT Item has identifier Y
 Host data    : none
 Steps        : 1. PUT settings of Y with lotTrackedFl true. 2. GET settings with itemPk Y. 3. Run the pre-check query.
-Expected     : 1 → 404, code INV-404-ITEM-NOT-FOUND. 2 → no record. 3 → 0 orphan rows.
+Expected     : 1 → 404, code INV-404-ITEM-NOT-FOUND, messageAr «الصنف غير موجود.», messageEn "The Item was not found.". 2 → no record. 3 → 0 orphan rows.
 Test data    : Y (placeholder)
 <!-- TC:TC-INV-168:END -->
 
@@ -3229,6 +3277,10 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-152 | TC-INV-144 | TC-INV-210 |
 | AC-INV-153 | TC-INV-145, TC-INV-261 | TC-INV-211 |
 | AC-INV-154 | TC-INV-146, TC-INV-277 | TC-INV-212 |
+| AC-INV-155 | TC-INV-286 | — |
+| AC-INV-156 | TC-INV-286 | — |
+| AC-INV-157 | TC-INV-287 | — |
+| AC-INV-158 | TC-INV-288 | — |
 
 ### REQ → TC
 
@@ -3298,7 +3350,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | REQ-INV-066 | TC-INV-097 |
 | REQ-INV-067 | TC-INV-018, TC-INV-266 |
 | REQ-INV-068 | TC-INV-098 |
-| REQ-INV-069 | TC-INV-019 |
+| REQ-INV-069 | TC-INV-019, TC-INV-287 |
 | REQ-INV-070 | TC-INV-099, TC-INV-161, TC-INV-162, TC-INV-257 |
 | REQ-INV-071 | TC-INV-020, TC-INV-100 |
 | REQ-INV-072 | TC-INV-021, TC-INV-161, TC-INV-162, TC-INV-170, TC-INV-171 |
@@ -3365,6 +3417,8 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | REQ-INV-136 | TC-INV-144 |
 | REQ-INV-137 | TC-INV-145, TC-INV-261 |
 | REQ-INV-138 | TC-INV-146, TC-INV-277 |
+| REQ-INV-139 | TC-INV-286 |
+| REQ-INV-140 | TC-INV-288 |
 
 ### API → TC
 
@@ -3385,15 +3439,15 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | API-INV-013 | TC-INV-009, TC-INV-010, TC-INV-064 |
 | API-INV-014 | TC-INV-065, TC-INV-269 |
 | API-INV-015 | TC-INV-066, TC-INV-269, TC-INV-272, TC-INV-282 |
-| API-INV-016 | TC-INV-019, TC-INV-037, TC-INV-072, TC-INV-073, TC-INV-074, TC-INV-076, TC-INV-086, TC-INV-087, TC-INV-097, TC-INV-107, TC-INV-109, TC-INV-114, TC-INV-119, TC-INV-123, TC-INV-124, TC-INV-128, TC-INV-130, TC-INV-136, TC-INV-137, TC-INV-144, TC-INV-145, TC-INV-147, TC-INV-148, TC-INV-170, TC-INV-244, TC-INV-245, TC-INV-249, TC-INV-259, TC-INV-265, TC-INV-266, TC-INV-277 |
+| API-INV-016 | TC-INV-019, TC-INV-037, TC-INV-072, TC-INV-073, TC-INV-074, TC-INV-076, TC-INV-086, TC-INV-087, TC-INV-097, TC-INV-107, TC-INV-109, TC-INV-114, TC-INV-119, TC-INV-123, TC-INV-124, TC-INV-128, TC-INV-130, TC-INV-136, TC-INV-137, TC-INV-144, TC-INV-145, TC-INV-147, TC-INV-148, TC-INV-170, TC-INV-244, TC-INV-245, TC-INV-249, TC-INV-259, TC-INV-265, TC-INV-266, TC-INV-277, TC-INV-286, TC-INV-288 |
 | API-INV-017 | TC-INV-011, TC-INV-075, TC-INV-079, TC-INV-145, TC-INV-153, TC-INV-169, TC-INV-244, TC-INV-251, TC-INV-259, TC-INV-278 |
-| API-INV-018 | TC-INV-006, TC-INV-007, TC-INV-012, TC-INV-013, TC-INV-014, TC-INV-018, TC-INV-019, TC-INV-035, TC-INV-036, TC-INV-037, TC-INV-038, TC-INV-040, TC-INV-056, TC-INV-057, TC-INV-058, TC-INV-073, TC-INV-074, TC-INV-086, TC-INV-087, TC-INV-088, TC-INV-089, TC-INV-091, TC-INV-094, TC-INV-099, TC-INV-102, TC-INV-103, TC-INV-105, TC-INV-107, TC-INV-108, TC-INV-115, TC-INV-117, TC-INV-119, TC-INV-120, TC-INV-121, TC-INV-123, TC-INV-127, TC-INV-128, TC-INV-129, TC-INV-135, TC-INV-143, TC-INV-144, TC-INV-145, TC-INV-149, TC-INV-150, TC-INV-151, TC-INV-152, TC-INV-245, TC-INV-246, TC-INV-247, TC-INV-253, TC-INV-255, TC-INV-258, TC-INV-260, TC-INV-261, TC-INV-267, TC-INV-278, TC-INV-279 |
+| API-INV-018 | TC-INV-006, TC-INV-007, TC-INV-012, TC-INV-013, TC-INV-014, TC-INV-018, TC-INV-019, TC-INV-035, TC-INV-036, TC-INV-037, TC-INV-038, TC-INV-040, TC-INV-056, TC-INV-057, TC-INV-058, TC-INV-073, TC-INV-074, TC-INV-086, TC-INV-087, TC-INV-088, TC-INV-089, TC-INV-091, TC-INV-094, TC-INV-099, TC-INV-102, TC-INV-103, TC-INV-105, TC-INV-107, TC-INV-108, TC-INV-115, TC-INV-117, TC-INV-119, TC-INV-120, TC-INV-121, TC-INV-123, TC-INV-127, TC-INV-128, TC-INV-129, TC-INV-135, TC-INV-143, TC-INV-144, TC-INV-145, TC-INV-149, TC-INV-150, TC-INV-151, TC-INV-152, TC-INV-245, TC-INV-246, TC-INV-247, TC-INV-253, TC-INV-255, TC-INV-258, TC-INV-260, TC-INV-261, TC-INV-267, TC-INV-278, TC-INV-279, TC-INV-286, TC-INV-287 |
 | API-INV-019 | TC-INV-015, TC-INV-089, TC-INV-276 |
 | API-INV-020 | TC-INV-005, TC-INV-023, TC-INV-025, TC-INV-110, TC-INV-144, TC-INV-145, TC-INV-280 |
 | API-INV-021 | TC-INV-022, TC-INV-024, TC-INV-026, TC-INV-105, TC-INV-106, TC-INV-157, TC-INV-158, TC-INV-246, TC-INV-247, TC-INV-253, TC-INV-264, TC-INV-270, TC-INV-276 |
 | API-INV-022 | TC-INV-005, TC-INV-023, TC-INV-025, TC-INV-105, TC-INV-157, TC-INV-280 |
 | API-INV-023 | TC-INV-026, TC-INV-106, TC-INV-158, TC-INV-270, TC-INV-273 |
-| API-INV-024 | TC-INV-022, TC-INV-024, TC-INV-095, TC-INV-107, TC-INV-109, TC-INV-246, TC-INV-247, TC-INV-253, TC-INV-264, TC-INV-270 |
+| API-INV-024 | TC-INV-022, TC-INV-024, TC-INV-095, TC-INV-107, TC-INV-109, TC-INV-246, TC-INV-247, TC-INV-253, TC-INV-264, TC-INV-270, TC-INV-286 |
 | API-INV-025 | TC-INV-108, TC-INV-247 |
 | API-INV-026 | TC-INV-116, TC-INV-144, TC-INV-274 |
 | API-INV-027 | TC-INV-027, TC-INV-028, TC-INV-029, TC-INV-030, TC-INV-112, TC-INV-113, TC-INV-115, TC-INV-159, TC-INV-160, TC-INV-270, TC-INV-276 |
@@ -3401,22 +3455,22 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | API-INV-029 | TC-INV-027, TC-INV-028, TC-INV-030, TC-INV-112, TC-INV-159, TC-INV-160 |
 | API-INV-030 | TC-INV-113, TC-INV-270, TC-INV-276 |
 | API-INV-031 | TC-INV-113 |
-| API-INV-032 | TC-INV-029, TC-INV-114, TC-INV-258, TC-INV-265, TC-INV-270 |
+| API-INV-032 | TC-INV-029, TC-INV-114, TC-INV-258, TC-INV-265, TC-INV-270, TC-INV-286 |
 | API-INV-033 | TC-INV-115, TC-INV-252 |
-| API-INV-034 | TC-INV-020, TC-INV-021, TC-INV-033, TC-INV-122, TC-INV-144, TC-INV-145, TC-INV-146, TC-INV-171, TC-INV-256, TC-INV-257, TC-INV-268, TC-INV-274, TC-INV-275, TC-INV-281 |
+| API-INV-034 | TC-INV-020, TC-INV-021, TC-INV-033, TC-INV-122, TC-INV-144, TC-INV-145, TC-INV-146, TC-INV-171, TC-INV-256, TC-INV-257, TC-INV-268, TC-INV-274, TC-INV-275, TC-INV-281, TC-INV-288 |
 | API-INV-035 | TC-INV-031, TC-INV-032, TC-INV-034, TC-INV-100, TC-INV-114, TC-INV-117, TC-INV-118, TC-INV-161, TC-INV-162, TC-INV-254, TC-INV-264, TC-INV-265, TC-INV-266, TC-INV-270, TC-INV-276, TC-INV-281 |
 | API-INV-036 | TC-INV-032, TC-INV-033, TC-INV-055, TC-INV-094, TC-INV-117, TC-INV-130, TC-INV-145, TC-INV-146, TC-INV-161, TC-INV-171, TC-INV-256, TC-INV-268, TC-INV-274, TC-INV-277, TC-INV-280, TC-INV-281 |
 | API-INV-037 | TC-INV-031, TC-INV-034, TC-INV-104, TC-INV-118, TC-INV-162, TC-INV-270, TC-INV-273, TC-INV-281 |
-| API-INV-038 | TC-INV-032, TC-INV-094, TC-INV-119, TC-INV-121, TC-INV-130, TC-INV-137, TC-INV-254, TC-INV-264, TC-INV-266, TC-INV-270 |
+| API-INV-038 | TC-INV-032, TC-INV-094, TC-INV-119, TC-INV-121, TC-INV-130, TC-INV-137, TC-INV-254, TC-INV-264, TC-INV-266, TC-INV-270, TC-INV-286 |
 | API-INV-039 | TC-INV-120 |
 | API-INV-040 | TC-INV-124, TC-INV-126, TC-INV-131, TC-INV-132, TC-INV-134, TC-INV-144, TC-INV-163, TC-INV-164, TC-INV-244, TC-INV-249 |
 | API-INV-041 | TC-INV-109, TC-INV-125, TC-INV-133, TC-INV-271, TC-INV-276, TC-INV-279, TC-INV-283 |
 | API-INV-042 | TC-INV-125, TC-INV-271, TC-INV-279 |
 | API-INV-043 | TC-INV-138, TC-INV-140, TC-INV-167, TC-INV-168 |
 | API-INV-044 | TC-INV-041, TC-INV-042, TC-INV-043, TC-INV-044, TC-INV-045, TC-INV-140, TC-INV-172, TC-INV-250, TC-INV-271 |
-| API-INV-045 | TC-INV-032, TC-INV-041, TC-INV-042, TC-INV-043, TC-INV-044, TC-INV-045, TC-INV-138, TC-INV-139, TC-INV-167, TC-INV-168, TC-INV-250, TC-INV-254, TC-INV-271 |
+| API-INV-045 | TC-INV-032, TC-INV-041, TC-INV-042, TC-INV-043, TC-INV-044, TC-INV-045, TC-INV-138, TC-INV-139, TC-INV-167, TC-INV-168, TC-INV-250, TC-INV-254, TC-INV-271, TC-INV-286 |
 | API-INV-046 | TC-INV-101, TC-INV-144 |
-| API-INV-047 | TC-INV-020, TC-INV-021, TC-INV-099, TC-INV-100, TC-INV-147, TC-INV-148, TC-INV-165, TC-INV-244, TC-INV-257, TC-INV-268, TC-INV-275, TC-INV-280 |
+| API-INV-047 | TC-INV-020, TC-INV-021, TC-INV-099, TC-INV-100, TC-INV-147, TC-INV-148, TC-INV-165, TC-INV-244, TC-INV-257, TC-INV-268, TC-INV-275, TC-INV-280, TC-INV-288 |
 | API-INV-048 | TC-INV-017, TC-INV-039, TC-INV-097, TC-INV-134, TC-INV-144 |
 | API-INV-049 | TC-INV-011, TC-INV-017, TC-INV-039, TC-INV-134 |
 | API-INV-050 | TC-INV-144, TC-INV-166 |
@@ -3433,8 +3487,8 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | RULE-INV-004 | TC-INV-003, TC-INV-252 |
 | RULE-INV-005 | TC-INV-051, TC-INV-071 |
 | RULE-INV-006 | TC-INV-004, TC-INV-053, TC-INV-248 |
-| RULE-INV-007 | TC-INV-007, TC-INV-274 |
-| RULE-INV-008 | TC-INV-006, TC-INV-055, TC-INV-056, TC-INV-058, TC-INV-274 |
+| RULE-INV-007 | TC-INV-007, TC-INV-274, TC-INV-287 |
+| RULE-INV-008 | TC-INV-006, TC-INV-055, TC-INV-056, TC-INV-058, TC-INV-274, TC-INV-287 |
 | RULE-INV-009 | TC-INV-068, TC-INV-272 |
 | RULE-INV-010 | TC-INV-062, TC-INV-063, TC-INV-273 |
 | RULE-INV-011 | TC-INV-008 |
@@ -3444,13 +3498,13 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | RULE-INV-015 | TC-INV-066, TC-INV-272, TC-INV-282 |
 | RULE-INV-016 | TC-INV-005, TC-INV-023, TC-INV-107 |
 | RULE-INV-017 | TC-INV-256 |
-| RULE-INV-018 | TC-INV-013, TC-INV-253, TC-INV-264, TC-INV-267 |
+| RULE-INV-018 | TC-INV-013, TC-INV-253, TC-INV-264, TC-INV-267, TC-INV-287 |
 | RULE-INV-019 | TC-INV-017, TC-INV-018, TC-INV-019, TC-INV-024, TC-INV-266 |
 | RULE-INV-020 | TC-INV-011, TC-INV-081, TC-INV-251 |
 | RULE-INV-021 | TC-INV-012, TC-INV-082, TC-INV-083 |
 | RULE-INV-022 | TC-INV-014, TC-INV-169 |
 | RULE-INV-023 | TC-INV-015 |
-| RULE-INV-024 | TC-INV-091, TC-INV-245 |
+| RULE-INV-024 | TC-INV-091, TC-INV-245, TC-INV-288 |
 | RULE-INV-025 | TC-INV-016, TC-INV-121, TC-INV-257, TC-INV-258 |
 | RULE-INV-026 | TC-INV-099, TC-INV-275 |
 | RULE-INV-027 | TC-INV-020, TC-INV-100 |
@@ -3463,7 +3517,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | RULE-INV-034 | TC-INV-032, TC-INV-137 |
 | RULE-INV-035 | TC-INV-035, TC-INV-123, TC-INV-143 |
 | RULE-INV-036 | TC-INV-036, TC-INV-124, TC-INV-249 |
-| RULE-INV-037 | TC-INV-025, TC-INV-109, TC-INV-254 |
+| RULE-INV-037 | TC-INV-025, TC-INV-109, TC-INV-254, TC-INV-286 |
 | RULE-INV-038 | TC-INV-037, TC-INV-075, TC-INV-127, TC-INV-131, TC-INV-279 |
 | RULE-INV-039 | TC-INV-038, TC-INV-130 |
 | RULE-INV-040 | TC-INV-040, TC-INV-135, TC-INV-268 |
@@ -3476,7 +3530,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | RULE-INV-047 | TC-INV-027 |
 | RULE-INV-048 | TC-INV-031 |
 | RULE-INV-049 | TC-INV-255 |
-| RULE-INV-050 | TC-INV-278 |
+| RULE-INV-050 | TC-INV-278, TC-INV-288 |
 | RULE-INV-051 | TC-INV-280 |
 | INV-400 | TC-INV-277 |
 | INV-401 | TC-INV-277 |
@@ -3498,7 +3552,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | INV-409-BRANCH-NAME-TAKEN | TC-INV-008 |
 | INV-409-DOCUMENT-CLOSED | TC-INV-026, TC-INV-030, TC-INV-034, TC-INV-246, TC-INV-247 |
 | INV-409-DUAL-QUANTITY-IN-USE | TC-INV-044 |
-| INV-409-IDEMPOTENCY-KEY-REUSED | TC-INV-278 |
+| INV-409-IDEMPOTENCY-KEY-REUSED | TC-INV-278, TC-INV-288 |
 | INV-409-LOT-TRACKING-IN-USE | TC-INV-043, TC-INV-250 |
 | INV-409-NEGATIVE-STOCK | TC-INV-017, TC-INV-018, TC-INV-024, TC-INV-266 |
 | INV-409-RESERVATION-CLOSED | TC-INV-012 |
@@ -3526,7 +3580,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | INV-422-LOT-EXPIRED | TC-INV-038 |
 | INV-422-LOT-EXPIRY-MISMATCH | TC-INV-036, TC-INV-249 |
 | INV-422-LOT-EXPIRY-REQUIRED | TC-INV-035, TC-INV-143 |
-| INV-422-LOT-REQUIRED | TC-INV-025, TC-INV-254 |
+| INV-422-LOT-REQUIRED | TC-INV-025, TC-INV-254, TC-INV-286 |
 | INV-422-MEASURE-REQUIRED | TC-INV-040, TC-INV-268 |
 | INV-422-MEASURE-UNIT-REQUIRED | TC-INV-042 |
 | INV-422-NO-KNOWN-COST | TC-INV-016, TC-INV-257 |
@@ -3572,8 +3626,8 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | DATA-DOM-MASTER | TC-INV-124 |
 | DATA-DOM-TRANSACTIONAL | TC-INV-015, TC-INV-058, TC-INV-244 |
 | SEC-BE | TC-INV-144, TC-INV-145, TC-INV-146, TC-INV-261, TC-INV-277 |
-| SVC-API-CRUD | TC-INV-001, TC-INV-002, TC-INV-003, TC-INV-004, TC-INV-005, TC-INV-008, TC-INV-009, TC-INV-010, TC-INV-017, TC-INV-020, TC-INV-021, TC-INV-022, TC-INV-023, TC-INV-024, TC-INV-025, TC-INV-026, TC-INV-027, TC-INV-028, TC-INV-029, TC-INV-030, TC-INV-031, TC-INV-032, TC-INV-033, TC-INV-034, TC-INV-039, TC-INV-041, TC-INV-042, TC-INV-043, TC-INV-044, TC-INV-045, TC-INV-049, TC-INV-050, TC-INV-051, TC-INV-052, TC-INV-053, TC-INV-055, TC-INV-062, TC-INV-063, TC-INV-064, TC-INV-065, TC-INV-066, TC-INV-068, TC-INV-071, TC-INV-094, TC-INV-095, TC-INV-099, TC-INV-100, TC-INV-104, TC-INV-105, TC-INV-106, TC-INV-107, TC-INV-108, TC-INV-109, TC-INV-111, TC-INV-112, TC-INV-113, TC-INV-114, TC-INV-115, TC-INV-117, TC-INV-118, TC-INV-119, TC-INV-120, TC-INV-121, TC-INV-125, TC-INV-130, TC-INV-134, TC-INV-137, TC-INV-138, TC-INV-139, TC-INV-246, TC-INV-247, TC-INV-248, TC-INV-250, TC-INV-252, TC-INV-253, TC-INV-254, TC-INV-256, TC-INV-257, TC-INV-258, TC-INV-264, TC-INV-265, TC-INV-266, TC-INV-268, TC-INV-269, TC-INV-270, TC-INV-271, TC-INV-272, TC-INV-273, TC-INV-274, TC-INV-275, TC-INV-280, TC-INV-281, TC-INV-282 |
-| SVC-API-INT | TC-INV-006, TC-INV-007, TC-INV-011, TC-INV-012, TC-INV-013, TC-INV-014, TC-INV-016, TC-INV-018, TC-INV-019, TC-INV-035, TC-INV-036, TC-INV-037, TC-INV-038, TC-INV-040, TC-INV-046, TC-INV-056, TC-INV-059, TC-INV-070, TC-INV-072, TC-INV-073, TC-INV-074, TC-INV-077, TC-INV-078, TC-INV-080, TC-INV-081, TC-INV-082, TC-INV-083, TC-INV-084, TC-INV-085, TC-INV-086, TC-INV-087, TC-INV-088, TC-INV-090, TC-INV-091, TC-INV-092, TC-INV-093, TC-INV-096, TC-INV-097, TC-INV-098, TC-INV-123, TC-INV-127, TC-INV-128, TC-INV-129, TC-INV-135, TC-INV-141, TC-INV-143, TC-INV-245, TC-INV-249, TC-INV-251, TC-INV-255, TC-INV-267, TC-INV-278, TC-INV-279 |
+| SVC-API-CRUD | TC-INV-001, TC-INV-002, TC-INV-003, TC-INV-004, TC-INV-005, TC-INV-008, TC-INV-009, TC-INV-010, TC-INV-017, TC-INV-020, TC-INV-021, TC-INV-022, TC-INV-023, TC-INV-024, TC-INV-025, TC-INV-026, TC-INV-027, TC-INV-028, TC-INV-029, TC-INV-030, TC-INV-031, TC-INV-032, TC-INV-033, TC-INV-034, TC-INV-039, TC-INV-041, TC-INV-042, TC-INV-043, TC-INV-044, TC-INV-045, TC-INV-049, TC-INV-050, TC-INV-051, TC-INV-052, TC-INV-053, TC-INV-055, TC-INV-062, TC-INV-063, TC-INV-064, TC-INV-065, TC-INV-066, TC-INV-068, TC-INV-071, TC-INV-094, TC-INV-095, TC-INV-099, TC-INV-100, TC-INV-104, TC-INV-105, TC-INV-106, TC-INV-107, TC-INV-108, TC-INV-109, TC-INV-111, TC-INV-112, TC-INV-113, TC-INV-114, TC-INV-115, TC-INV-117, TC-INV-118, TC-INV-119, TC-INV-120, TC-INV-121, TC-INV-125, TC-INV-130, TC-INV-134, TC-INV-137, TC-INV-138, TC-INV-139, TC-INV-246, TC-INV-247, TC-INV-248, TC-INV-250, TC-INV-252, TC-INV-253, TC-INV-254, TC-INV-256, TC-INV-257, TC-INV-258, TC-INV-264, TC-INV-265, TC-INV-266, TC-INV-268, TC-INV-269, TC-INV-270, TC-INV-271, TC-INV-272, TC-INV-273, TC-INV-274, TC-INV-275, TC-INV-280, TC-INV-281, TC-INV-282, TC-INV-286, TC-INV-288 |
+| SVC-API-INT | TC-INV-006, TC-INV-007, TC-INV-011, TC-INV-012, TC-INV-013, TC-INV-014, TC-INV-016, TC-INV-018, TC-INV-019, TC-INV-035, TC-INV-036, TC-INV-037, TC-INV-038, TC-INV-040, TC-INV-046, TC-INV-056, TC-INV-059, TC-INV-070, TC-INV-072, TC-INV-073, TC-INV-074, TC-INV-077, TC-INV-078, TC-INV-080, TC-INV-081, TC-INV-082, TC-INV-083, TC-INV-084, TC-INV-085, TC-INV-086, TC-INV-087, TC-INV-088, TC-INV-090, TC-INV-091, TC-INV-092, TC-INV-093, TC-INV-096, TC-INV-097, TC-INV-098, TC-INV-123, TC-INV-127, TC-INV-128, TC-INV-129, TC-INV-135, TC-INV-141, TC-INV-143, TC-INV-245, TC-INV-249, TC-INV-251, TC-INV-255, TC-INV-267, TC-INV-278, TC-INV-279, TC-INV-287 |
 | SVC-API-SEARCH | TC-INV-054, TC-INV-057, TC-INV-067, TC-INV-069, TC-INV-075, TC-INV-076, TC-INV-079, TC-INV-089, TC-INV-101, TC-INV-102, TC-INV-103, TC-INV-110, TC-INV-116, TC-INV-122, TC-INV-126, TC-INV-131, TC-INV-132, TC-INV-136, TC-INV-259, TC-INV-260, TC-INV-276, TC-INV-284 |
 | XM-INV-001 | TC-INV-147, TC-INV-148 |
 | XM-INV-002 | TC-INV-149, TC-INV-150 |
@@ -3595,15 +3649,16 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 
 | Measure | Result |
 |---|---|
-| AC covered (both tracks) | ✓ 154/154 · gaps: none |
-| AC covered on this track | 147/154 (the rest on the other track; 50 ACs on both) |
-| REQ covered (both tracks) | ✓ 138/138 · gaps: none |
-| REQ covered on this track | 131/138 |
+| AC covered (both tracks) | ✓ 158/158 · gaps: none |
+| AC covered on this track | 151/158 (the rest on the other track; 50 ACs on both) |
+| REQ covered (both tracks) | ✓ 140/140 · gaps: none |
+| REQ covered on this track | 133/140 |
 | API covered | ✓ 52/52 · gaps: none |
-| Error Catalog rows asserted | ✓ 58/58 HTTP rows (§5) and 6/6 in-process rows (§5.1) each named on a `Rule / code` line · gaps: none |
+| Error Catalog rows asserted | ✓ 59/59 HTTP rows (§5) and 5/5 in-process rows (§5.1) each named on a `Rule / code` line · gaps: none |
 | XM edges covered | ✓ 15/15 (11 HARD-FK → EXISTS + MISSING, 4 SOFT-READ → GRACEFUL-DEGRADATION) · gaps: none |
 | Split units with no TC | 2 of 25: DOC, ALIGN-BE · no AC, XM or UXD derives a case for them (ADR-INV-037) |
 | Concurrency and post-time guards (gate-analysis revise 1) | TC-INV-242 … 261: two posts of one document, a post racing a cancel, two default switches, two first receipts of one lot, a flag clear racing a receipt, a reservation racing a lot issue, one idempotency key submitted twice at once, a post after the Variant or the Item stock settings changed, a deactivation refused by a DRAFT, a reservation of another line, 4-decimal quantities and 5-decimal costs, the count of a never-valued Variant, native-query tenancy, the manifest and the boundary rules |
 | Catalogue coverage and guards (gate-analysis revise 2) | TC-INV-264 … 284: a line refusal named in `details`, a system-generated reason not checked, a lot-level negative check, a bundle receipt refused, the measure of an adjustment or opening stock line, stale versions on masters, documents, lots and settings, an inactive branch, the read-only code and docNo, inactive or missing warehouse over REST, the opening-stock cost, every not-found code, INV-400 / 401 / 500, a reused idempotency key, a sale racing an expiry correction, a future docDate, OPENING_STOCK refused on the adjustment screen, two concurrent branch default switches, one near-expiry notification per lot, the INV lookup endpoint |
-| Over-engineering guard | 213 TCs for 147 ACs + 15 XM (ratio 1.31 ≤ 2) |
+| Lot-less stock, offline sales, opening stock idempotency (gate-analysis revise 3) | TC-INV-286 … 288: lot-less stock counted, transferred and written off after lot tracking is switched on, and refused beyond its quantity; offline sales naming an inactive Variant or warehouse or no warehouse recorded and reported; a double-submitted opening stock load posted once and a reused key refused. Every INV code is asserted with its text (TC-INV-276, TC-INV-284 and the load-wrapper cases — ADR-INV-021 amended) |
+| Over-engineering guard | 216 TCs for 151 ACs + 15 XM (ratio 1.30 ≤ 2) |
 

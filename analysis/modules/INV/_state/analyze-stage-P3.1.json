@@ -26,7 +26,7 @@
     "C7.4": 98,
     "C7.5": 15,
     "C7.5b": 15,
-    "C7.6": 138,
+    "C7.6": 140,
     "C7.22": 46,
     "C7.21": 38,
     "C7.23": 60,
@@ -39,7 +39,7 @@
     "C7.27": 25,
     "C7.28": 15,
     "C7.29": 104,
-    "C7.30": 58,
+    "C7.30": 59,
     "C7.31": 52
   },
   "vacuous": [
@@ -62,8 +62,8 @@
       "to": [
         "AC"
       ],
-      "total": 138,
-      "covered": 138,
+      "total": 140,
+      "covered": 140,
       "pct": 100.0
     },
     {
@@ -72,9 +72,9 @@
       "to": [
         "API"
       ],
-      "total": 138,
-      "covered": 124,
-      "pct": 89.9
+      "total": 140,
+      "covered": 126,
+      "pct": 90.0
     },
     {
       "id": "req-ux",
@@ -83,9 +83,9 @@
         "SCR",
         "UXD"
       ],
-      "total": 138,
-      "covered": 93,
-      "pct": 67.4
+      "total": 140,
+      "covered": 95,
+      "pct": 67.9
     },
     {
       "id": "ac-tc",
@@ -93,8 +93,8 @@
       "to": [
         "TC"
       ],
-      "total": 154,
-      "covered": 154,
+      "total": 158,
+      "covered": 158,
       "pct": 100.0
     }
   ],
@@ -128,27 +128,27 @@
       "ui-ux-spec"
     ],
     "inputs": {
-      "api-spec": "a9aac6663be142b8644f23a7ae71f9734f26f7c80b519e09b077313c287bcaa6",
-      "backend-execution-plan": "91ba8294a7ba07ff44d9c170524bfbcd507919c5c96b167bd99d3a2de37a37b7",
-      "backend-test-plan": "f4b61357066c4c2894da7c0e328563399363ac6cdc71b1447b40232f76496c7f",
+      "api-spec": "2de84284d69c055ced0cc796c19dc51a157522219a97c0c038c3aaaf21da6542",
+      "backend-execution-plan": "0b86440a780356ffff07fc4acd44b57a47222e0ddffe6d15223935e258e72f75",
+      "backend-test-plan": "a2848c4bceb4af65effdf8273d49f47355b0a2eea9de910db22e56cd044119d7",
       "business-policies": "da99570613ed6f1a0a43584f43f4e90466c691c54de1a1479f2b234547608228",
-      "contract": "f1d0af1ca48e605f49cf99ec2c2a6a03f657f5824057235a8f3bb5e3012f4326",
-      "db-script": "2501820ff9122069feea2994670be93dc30cc832f9633aa15a170759ee41ba5f",
+      "contract": "55bde0be61227516daceaeb4f60412e58226c057a5036d780817a91a044843dc",
+      "db-script": "e157fbd7d11a59979ee9b4579a6294995d6c6ea4b3f358e277e8b17fa2ca26d0",
       "domain-profile": "710380eef205f5dc0efc149a0455b1a6767cbd4ca8f8eba00fc16ddff41e6266",
       "flow-diagram": "1b096f25ff17197f1418cea26c362deab57d0d7082fd1bc390b11594b92245bb",
-      "frontend-execution-plan": "7db825b5efbdfbd2e4b7c60db2c3b9d3b6f0af4fed2a09b009c2f681674c42e5",
-      "frontend-test-plan": "cc7f438a704eebae5b875338fe5214f1bc6365b2ec2d88576ba1c56b50109aa8",
+      "frontend-execution-plan": "c202cc54082daf22e6e85759be47d38ee3e15423d924fd96dc0109eb8f931a38",
+      "frontend-test-plan": "2520adc7d7074c343e3dfb44f2fc68bd809b63630893698956834f2d078bca8b",
       "module-registry": "be0cc7d8f9d123212c41f03cb3d5e6fbdd20a3dfe5595af077a44410c7a80850",
       "platform-summary": "e8af1d7b85f2baa7f9e31840acb606d15011aa3f2535579f444f8b2ea7e4c0ca",
       "prd": "f52ff7f14312415886002cc46cd742005901217a80eb6c2bdef91325eef0fc67",
       "project-registry": "65d88eb88ca726c32424576c4a5b17f9cc818391cfd86ef6165f2d93a4465877",
-      "registry-db": "e8b213b454a3271b8e8c0d455e1199a00d4d6fbdc49488fd9265f0b858747964",
-      "registry-exec-be": "b0dfd2bc9b8e19a3efc6d01850f58971c00efb08e3c4c283bbfef98ed7a63359",
-      "registry-exec-fe": "65872e24c2198e0b69bb764fae066aff4cfa5e882d1302887ff940538b38b974",
-      "registry-srs": "3885245ebc9a9ead2b47228ed5fb3d72ada97c434439e05508fb750c6861a2fe",
-      "srs": "6ca39664bd296791852dfcd2e3126eadf6b8df3577c207925e487e7851fed9fc",
-      "ui-ux-spec": "45c76edb5fea8ee16fedc3fb35e2dac1da190cadd849ba1c091be34ba027aac2"
+      "registry-db": "6cc377e3ea0da6e473a4349abf6c53a7f133148d2df1a4854d7ccf708009a0a2",
+      "registry-exec-be": "8303617dd427efff545be47f5ec47257b7ed679d3a3094a0beff7fcab230c795",
+      "registry-exec-fe": "14b92f401be5466cbdd494c74f6ba8456d432a7ec6d79452a7721ba4f7e18a31",
+      "registry-srs": "06eacc7418e5b1e4c6db4a0619406aefafee25ada758e0f2562d76e16de40b56",
+      "srs": "ee02880847dcea1a4d9d91d74235ac13aabf5994b52adba4ed15a8f9104900f8",
+      "ui-ux-spec": "946704a71ea08dcf2e0a0be9e570e79275af32628481bc55b372b7cfbed93435"
     },
-    "at": "2026-10-31T13:01:30+00:00"
+    "at": "2026-10-31T13:40:53+00:00"
   }
 }

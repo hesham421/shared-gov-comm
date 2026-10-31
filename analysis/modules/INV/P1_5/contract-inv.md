@@ -174,8 +174,11 @@ Signature : issueStock(warehousePk?: BIGINT, moveTypeCode ISSUE | RETURN_OUT, sa
 Entity    : ENT-INV-003
 Notes     : moves are valued at the Variant's current average cost (REQ-INV-061). An issue that
             references a reservation consumes it (REQ-INV-047). A synchronised offline POS sale
-            (offlineFl true) is always recorded, whatever the negative-stock setting
-            (REQ-INV-069). Flag `bundles` on: a bundle is issued as one move per component and
+            (offlineFl true) is always recorded, whatever the negative-stock setting, even when its
+            warehouse, Variant or Item became inactive after the sale, and in the default warehouse
+            when it names none; INV then tells the Warehouse role which record was inactive
+            (REQ-INV-069, ADR-INV-052) — "warehouse required", "warehouse inactive" and "Variant
+            inactive" are never answered to an offline sale. Flag `bundles` on: a bundle is issued as one move per component and
             none for the bundle itself (REQ-INV-053). Flag `lotExpiry` on: a sale issue draws stock
             without a lot first, then unexpired lots by nearest expiry, and posts any uncovered
             quantity without a lot (REQ-INV-110 … 113); a non-sale issue or return to supplier
@@ -256,6 +259,8 @@ numbers in `sequence`, users and roles in `sec`, the tenant in `tenant`.
   added, still ADDITIVE: the error meaning "idempotency key already used for a different
   request" on CON-INV-011, 014 and 015, the field `currencyCode` of CON-INV-020, and the stated
   refusal of a bundle receipt (CON-INV-014) and of a lot decrease beyond the lot (CON-INV-015).
+  Gate-analysis revise 3 widened, still ADDITIVE, the offline promise of CON-INV-015: an offline sale
+  is recorded although a record it names became inactive (fewer refusals, never more).
 - Items may be added freely. Changing or removing an item a consumer depends on — an identifier
   type, a key column, a signature input or output, an error meaning, an event field — happens
   only in a BREAKING version with an ADR; `gov.py graph` then raises a resolution event on every
