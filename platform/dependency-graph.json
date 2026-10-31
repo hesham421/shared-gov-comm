@@ -98,7 +98,7 @@
     {
       "from": "APR",
       "to": "INV",
-      "state": "DECLARED",
+      "state": "CONTRACTED",
       "source": "platform"
     },
     {
@@ -140,7 +140,7 @@
     {
       "from": "INS",
       "to": "INV",
-      "state": "DECLARED",
+      "state": "CONTRACTED",
       "source": "platform"
     },
     {
@@ -244,7 +244,7 @@
     {
       "from": "PUR",
       "to": "INV",
-      "state": "DECLARED",
+      "state": "CONTRACTED",
       "source": "platform"
     },
     {
@@ -262,7 +262,7 @@
     {
       "from": "SFR",
       "to": "INV",
-      "state": "DECLARED",
+      "state": "CONTRACTED",
       "source": "platform"
     },
     {
@@ -310,7 +310,7 @@
     {
       "from": "SLS",
       "to": "INV",
-      "state": "DECLARED",
+      "state": "CONTRACTED",
       "source": "platform"
     },
     {
@@ -346,7 +346,7 @@
     {
       "from": "SWR",
       "to": "INV",
-      "state": "DECLARED",
+      "state": "CONTRACTED",
       "source": "platform"
     },
     {
