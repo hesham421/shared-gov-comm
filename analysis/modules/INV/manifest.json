@@ -36,10 +36,72 @@
   "status": {
     "archived": false,
     "split": {
-      "backend/exec": false,
-      "backend/test": false,
+      "backend/exec": true,
+      "backend/test": true,
       "frontend/exec": false,
-      "frontend/test": false
+      "frontend/test": false,
+      "integration": [
+        {
+          "xm": "XM-INV-001",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-001"
+        },
+        {
+          "xm": "XM-INV-002",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-002"
+        },
+        {
+          "xm": "XM-INV-003",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-003"
+        },
+        {
+          "xm": "XM-INV-004",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-004"
+        },
+        {
+          "xm": "XM-INV-005",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-005"
+        },
+        {
+          "xm": "XM-INV-006",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-006"
+        },
+        {
+          "xm": "XM-INV-007",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-007"
+        },
+        {
+          "xm": "XM-INV-008",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-008"
+        },
+        {
+          "xm": "XM-INV-009",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-009"
+        },
+        {
+          "xm": "XM-INV-010",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-010"
+        },
+        {
+          "xm": "XM-INV-011",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-011"
+        },
+        {
+          "xm": "XM-INV-012",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-012"
+        },
+        {
+          "xm": "XM-INV-013",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-013"
+        },
+        {
+          "xm": "XM-INV-014",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-014"
+        },
+        {
+          "xm": "XM-INV-015",
+          "path": "governance-shared\\backend\\modules\\INV\\packages\\integration\\XM-INV-015"
+        }
+      ]
     },
     "coverage": {
       "us-req": 100.0,

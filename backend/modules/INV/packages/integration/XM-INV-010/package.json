@@ -1,0 +1,46 @@
+{
+  "xm": "XM-INV-010",
+  "target": "CAT · ENT-CAT-002",
+  "requires": "CAT:DELIVERED",
+  "tests": [
+    "AC-INV-065",
+    "AC-INV-069",
+    "TC-INV-165",
+    "TC-INV-166"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "cu",
+        "sequence",
+        "events",
+        "audit",
+        "mdl",
+        "tenant",
+        "sec",
+        "notif",
+        "report"
+      ],
+      "extension_points": [
+        "com.erp.tenant.TenantProvisioningContributor",
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.report.ReportProvider"
+      ],
+      "interfaces": [
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.audit.crossmodule.AuditApi",
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.tenant.TenantRunner",
+        "com.erp.sec.crossmodule.SecUserDirectoryApi",
+        "com.erp.notif.crossmodule.NotificationDispatchApi",
+        "com.erp.report.crossmodule.PrintApi"
+      ],
+      "api": []
+    }
+  ]
+}

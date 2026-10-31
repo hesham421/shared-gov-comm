@@ -1,0 +1,13 @@
+{
+  "module": "INV",
+  "track": "backend",
+  "plan": "test",
+  "version": 1,
+  "verify": "sha256",
+  "source": "analysis/modules/INV/P4/backend-test-plan-inv.md",
+  "checked": 230,
+  "missing": [],
+  "mismatched": [],
+  "ok": true,
+  "at": "2026-10-31T14:50:34+00:00"
+}

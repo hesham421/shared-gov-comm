@@ -1,0 +1,64 @@
+{
+  "unit": "SVC-API-SEARCH",
+  "kind": "SUB",
+  "tests": [
+    "TC-INV-054",
+    "TC-INV-057",
+    "TC-INV-067",
+    "TC-INV-069",
+    "TC-INV-075",
+    "TC-INV-076",
+    "TC-INV-079",
+    "TC-INV-089",
+    "TC-INV-101",
+    "TC-INV-102",
+    "TC-INV-103",
+    "TC-INV-110",
+    "TC-INV-116",
+    "TC-INV-122",
+    "TC-INV-126",
+    "TC-INV-131",
+    "TC-INV-132",
+    "TC-INV-136",
+    "TC-INV-259",
+    "TC-INV-260",
+    "TC-INV-276",
+    "TC-INV-284",
+    "TC-INV-292"
+  ],
+  "acceptance": "tests-green",
+  "given": [
+    {
+      "name": "erp-core",
+      "version": "1.6.0",
+      "modules": [
+        "cu",
+        "sequence",
+        "events",
+        "audit",
+        "mdl",
+        "tenant",
+        "sec",
+        "notif",
+        "report"
+      ],
+      "extension_points": [
+        "com.erp.tenant.TenantProvisioningContributor",
+        "com.erp.sec.permission.PermissionContributor",
+        "com.erp.report.ReportProvider"
+      ],
+      "interfaces": [
+        "com.erp.cu.crossmodule.SettingsApi",
+        "com.erp.sequence.crossmodule.NumberSeriesApi",
+        "com.erp.events.OutboxPublisher",
+        "com.erp.audit.crossmodule.AuditApi",
+        "com.erp.mdl.crossmodule.MdlLookupApi",
+        "com.erp.tenant.TenantRunner",
+        "com.erp.sec.crossmodule.SecUserDirectoryApi",
+        "com.erp.notif.crossmodule.NotificationDispatchApi",
+        "com.erp.report.crossmodule.PrintApi"
+      ],
+      "api": []
+    }
+  ]
+}

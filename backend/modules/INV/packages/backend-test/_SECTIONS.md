@@ -1,0 +1,603 @@
+<!-- source: content outside every PHASE block (leading / between / trailing sections) -->
+# BACKEND TEST PLAN — Inventory / المخزون (INV)
+══════════════════════════════════════════════════════════════════
+Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 5
+Track  : backend · plan test · lane test-gen · prepared by claude:opus
+Sources: _state/current-srs.md (INV v1 — REQ 141 · AC 160 · RULE 51 · SCR-REQ 12)
+         _state/current-registry-srs.md (P1) · _state/current-registry-db.md (P2 — XM-INV-001 … XM-INV-015)
+         _state/current-backend-execution-plan.md (P3.1 — API-INV-001 … 052, Error Catalog §5 / §5.1, INT-C)
+         _state/current-frontend-execution-plan.md (P3.2) · _state/current-api-spec (api-spec-inv.yaml, OpenAPI 3.1.0)
+         _state/current-dependency-graph.json (INV → CAT edges DELIVERED)
+Owns   : TC-INV-001 … TC-INV-172, TC-INV-242 … TC-INV-261 and TC-INV-264 … TC-INV-284 and TC-INV-286 … TC-INV-293 and TC-INV-295 (this file) — TC-INV-173 … 241,
+         262, 263, 285 and 294 are in frontend-test-plan-inv.md; TC-INV-242 … 261 were added at gate-analysis revise 1 (G5,
+         G16 and the cases of G1, G3, G6 … G13, G15), TC-INV-264 … 284 at gate-analysis revise 2 (G2 … G9, G13, G14,
+         G17 … G19), TC-INV-286 … 288 at revise 3, TC-INV-289, 290 at revise 4 (G2, G8) and TC-INV-291, 292, 293, 295 at
+         revise 5 (G2, G3, G4, G8), continuing the module's TC sequence
+ADRs   : raised here ADR-INV-037 (track placement and package), ADR-INV-038 (asserted texts and codes; schema-bound
+         derivation rule added at gate-analysis revise 1) — ACCEPTED, non-breaking · cited from the revise:
+         ADR-INV-030, 035, 041, 042, 043, 044, 045 · cited from gate-analysis revise 2: ADR-INV-046, 047, 048, 049, 050
+         (ADR-INV-038 point 1 narrowed there) · cited from gate-analysis revise 4: ADR-INV-021 (amended), ADR-INV-054 · cited from gate-analysis revise 5:
+         ADR-INV-055, ADR-INV-056 · open
+         BLOCKED: none raised here
+══════════════════════════════════════════════════════════════════
+
+## How to read this plan
+
+- **Framework.** `profile.stack.testing` is agnostic. Each TC block below is the whole contract. The consumer
+  repository chooses its tool and turns each block into one test.
+- **Shapes.** Each TC cites the `API-*` it calls. Method, path, request and response schemas, the
+  `ApiResponse<T>` envelope, paging and the error responses are read in `api-spec-inv.yaml`; they are not
+  restated here.
+- **In-process operations.** The contract operations that other modules call (CON-INV-006 … 019) are the injected
+  `InventoryApi` bean, with no REST route (ADR-INV-024). Their TCs cite the method and the contract item in
+  `Exercises` and name the package `SVC-API-INT` (ADR-INV-037).
+- **Refusals.** A refusal is asserted as the HTTP status of its catalogue row, `code`, `messageAr` and
+  `messageEn`. The texts are copied from the SRS. An in-process refusal is the same `LocalizedException` thrown
+  to the caller. "Nothing saved" is checked by reading back through the cited read operation.
+- **Clock.** "today" is the tenant's date. A TC that names a date fixes the tenant clock to it.
+- **Catalogue data.** Every lookup value a case names is seeded by INV (SRS A6 `seeded`). Only TC-INV-265 needs host
+  data: it makes the seeded COUNT_DIFFERENCE inactive in its own tenant through the given `mdl` call, because INV
+  seeds every value of its keys and the set of non-seeded A6 values is empty by design (ADR-INV-047). That case is
+  the one that exercises an inactive tenant value; no other case runs in its tenant. Unit-of-measure values (metre,
+  KG) belong to CAT's consumed lookup and are preconditions of the CAT catalogue, not INV data.
+- **Catalogue coverage.** Every row of the HTTP Error Catalog (§5) and every row of §5.1 (in-process codes) is
+  asserted by at least one TC — the code is named on its `Rule / code` line and asserted in `Expected`. A row added to
+  either catalogue adds its TC in the same change. The RULE/code → TC index below is the check.
+- **Line refusals.** A refusal raised for one line names it in `details` (`lineRef`, `lineRefKind`, `rowNo` —
+  ADR-INV-046); a TC that refuses a line asserts that entry.
+
+
+
+
+
+## TC TRACEABILITY INDEX
+
+Generated from the TC blocks above (and, for the AC column of the other track, from frontend-test-plan-inv.md).
+
+### AC → TC
+
+| AC | TC (backend) | TC (frontend) |
+|---|---|---|
+| AC-INV-001 | TC-INV-047 | — |
+| AC-INV-002 | TC-INV-048 | — |
+| AC-INV-003 | TC-INV-049 | — |
+| AC-INV-004 | TC-INV-001 | TC-INV-173 |
+| AC-INV-005 | TC-INV-050, TC-INV-269, TC-INV-273 | — |
+| AC-INV-006 | TC-INV-051, TC-INV-276 | — |
+| AC-INV-007 | TC-INV-002 | TC-INV-174 |
+| AC-INV-008 | TC-INV-003, TC-INV-252 | TC-INV-175 |
+| AC-INV-009 | TC-INV-052 | — |
+| AC-INV-010 | TC-INV-053, TC-INV-248 | — |
+| AC-INV-011 | TC-INV-004 | TC-INV-176 |
+| AC-INV-012 | TC-INV-054 | — |
+| AC-INV-013 | TC-INV-055 | TC-INV-177 |
+| AC-INV-014 | — | TC-INV-178 |
+| AC-INV-015 | — | TC-INV-179 |
+| AC-INV-016 | TC-INV-056 | — |
+| AC-INV-017 | TC-INV-005 | — |
+| AC-INV-018 | TC-INV-057 | TC-INV-213 |
+| AC-INV-019 | TC-INV-058 | — |
+| AC-INV-020 | TC-INV-006, TC-INV-274 | — |
+| AC-INV-021 | TC-INV-007, TC-INV-274 | — |
+| AC-INV-022 | TC-INV-059 | — |
+| AC-INV-023 | TC-INV-060 | — |
+| AC-INV-024 | TC-INV-061 | — |
+| AC-INV-025 | TC-INV-062 | — |
+| AC-INV-026 | TC-INV-008 | TC-INV-180 |
+| AC-INV-027 | TC-INV-063, TC-INV-273 | — |
+| AC-INV-028 | TC-INV-064 | — |
+| AC-INV-029 | TC-INV-009 | TC-INV-181 |
+| AC-INV-030 | TC-INV-010 | TC-INV-182 |
+| AC-INV-031 | TC-INV-065 | — |
+| AC-INV-032 | TC-INV-066, TC-INV-272, TC-INV-282 | — |
+| AC-INV-033 | TC-INV-067 | — |
+| AC-INV-034 | — | TC-INV-183 |
+| AC-INV-035 | — | TC-INV-184 |
+| AC-INV-036 | TC-INV-068, TC-INV-272 | — |
+| AC-INV-037 | TC-INV-069 | TC-INV-214 |
+| AC-INV-038 | TC-INV-070 | — |
+| AC-INV-039 | TC-INV-071 | — |
+| AC-INV-040 | TC-INV-072, TC-INV-244 | — |
+| AC-INV-041 | TC-INV-073 | — |
+| AC-INV-042 | TC-INV-074, TC-INV-251 | — |
+| AC-INV-043 | TC-INV-075 | — |
+| AC-INV-044 | TC-INV-076, TC-INV-259 | TC-INV-218, TC-INV-219, TC-INV-220, TC-INV-221, TC-INV-262, TC-INV-294 |
+| AC-INV-045 | TC-INV-077 | — |
+| AC-INV-046 | TC-INV-078 | — |
+| AC-INV-047 | TC-INV-079 | — |
+| AC-INV-048 | TC-INV-080 | — |
+| AC-INV-049 | TC-INV-011 | — |
+| AC-INV-050 | TC-INV-081 | — |
+| AC-INV-051 | TC-INV-082, TC-INV-293 | — |
+| AC-INV-052 | TC-INV-083, TC-INV-255 | — |
+| AC-INV-053 | TC-INV-012 | — |
+| AC-INV-054 | TC-INV-084 | — |
+| AC-INV-055 | TC-INV-085 | — |
+| AC-INV-056 | TC-INV-086, TC-INV-267 | — |
+| AC-INV-057 | TC-INV-087 | — |
+| AC-INV-058 | TC-INV-013 | — |
+| AC-INV-059 | TC-INV-088 | — |
+| AC-INV-060 | TC-INV-014 | — |
+| AC-INV-061 | TC-INV-015 | — |
+| AC-INV-062 | TC-INV-089, TC-INV-260 | TC-INV-263 |
+| AC-INV-063 | TC-INV-090 | — |
+| AC-INV-064 | TC-INV-091, TC-INV-245, TC-INV-278 | — |
+| AC-INV-065 | TC-INV-092 | — |
+| AC-INV-066 | TC-INV-093 | — |
+| AC-INV-067 | TC-INV-094 | — |
+| AC-INV-068 | TC-INV-095 | — |
+| AC-INV-069 | TC-INV-096 | TC-INV-238, TC-INV-239, TC-INV-240 |
+| AC-INV-070 | TC-INV-016 | — |
+| AC-INV-071 | TC-INV-017 | TC-INV-241 |
+| AC-INV-072 | TC-INV-097 | — |
+| AC-INV-073 | TC-INV-018, TC-INV-266 | — |
+| AC-INV-074 | TC-INV-098 | — |
+| AC-INV-075 | TC-INV-019 | — |
+| AC-INV-076 | TC-INV-099, TC-INV-257 | TC-INV-215 |
+| AC-INV-077 | TC-INV-100 | — |
+| AC-INV-078 | TC-INV-020 | — |
+| AC-INV-079 | TC-INV-021 | TC-INV-185 |
+| AC-INV-080 | TC-INV-101 | — |
+| AC-INV-081 | TC-INV-275 | TC-INV-186 |
+| AC-INV-082 | TC-INV-102 | TC-INV-224, TC-INV-225 |
+| AC-INV-083 | TC-INV-103, TC-INV-292 | TC-INV-187 |
+| AC-INV-084 | TC-INV-104 | — |
+| AC-INV-085 | TC-INV-105, TC-INV-280 | TC-INV-226, TC-INV-227 |
+| AC-INV-086 | TC-INV-106, TC-INV-270 | — |
+| AC-INV-087 | TC-INV-107, TC-INV-246, TC-INV-253, TC-INV-264 | TC-INV-285 |
+| AC-INV-088 | TC-INV-022 | TC-INV-188 |
+| AC-INV-089 | TC-INV-108, TC-INV-247 | — |
+| AC-INV-090 | TC-INV-023 | TC-INV-189 |
+| AC-INV-091 | TC-INV-024 | TC-INV-190 |
+| AC-INV-092 | TC-INV-109 | — |
+| AC-INV-093 | TC-INV-025, TC-INV-254 | TC-INV-191 |
+| AC-INV-094 | TC-INV-026 | — |
+| AC-INV-095 | TC-INV-110 | — |
+| AC-INV-096 | TC-INV-111 | — |
+| AC-INV-097 | TC-INV-112 | TC-INV-228, TC-INV-229 |
+| AC-INV-098 | TC-INV-027 | TC-INV-192 |
+| AC-INV-099 | TC-INV-113 | — |
+| AC-INV-100 | — | TC-INV-216 |
+| AC-INV-101 | TC-INV-028 | TC-INV-193 |
+| AC-INV-102 | TC-INV-114, TC-INV-258, TC-INV-265, TC-INV-289, TC-INV-291 | — |
+| AC-INV-103 | TC-INV-029 | TC-INV-194 |
+| AC-INV-104 | TC-INV-115 | — |
+| AC-INV-105 | TC-INV-116 | — |
+| AC-INV-106 | TC-INV-030 | TC-INV-195 |
+| AC-INV-107 | TC-INV-117 | TC-INV-230, TC-INV-231 |
+| AC-INV-108 | TC-INV-118, TC-INV-256 | — |
+| AC-INV-109 | TC-INV-031 | TC-INV-196 |
+| AC-INV-110 | TC-INV-119 | — |
+| AC-INV-111 | TC-INV-032 | TC-INV-197 |
+| AC-INV-112 | TC-INV-120 | — |
+| AC-INV-113 | TC-INV-033, TC-INV-281, TC-INV-284 | TC-INV-198 |
+| AC-INV-114 | TC-INV-121 | — |
+| AC-INV-115 | TC-INV-034 | — |
+| AC-INV-116 | TC-INV-122 | — |
+| AC-INV-117 | TC-INV-123 | — |
+| AC-INV-118 | TC-INV-035 | — |
+| AC-INV-119 | TC-INV-124, TC-INV-249 | — |
+| AC-INV-120 | TC-INV-036 | — |
+| AC-INV-121 | TC-INV-125, TC-INV-271, TC-INV-279 | — |
+| AC-INV-122 | TC-INV-126 | TC-INV-232, TC-INV-233 |
+| AC-INV-123 | TC-INV-127 | — |
+| AC-INV-124 | TC-INV-128 | — |
+| AC-INV-125 | TC-INV-129 | — |
+| AC-INV-126 | TC-INV-037, TC-INV-279 | — |
+| AC-INV-127 | TC-INV-038 | — |
+| AC-INV-128 | TC-INV-130 | TC-INV-217 |
+| AC-INV-129 | TC-INV-131 | TC-INV-199 |
+| AC-INV-130 | TC-INV-132 | TC-INV-200 |
+| AC-INV-131 | TC-INV-133, TC-INV-283 | — |
+| AC-INV-132 | TC-INV-134 | TC-INV-201 |
+| AC-INV-133 | TC-INV-039 | TC-INV-202 |
+| AC-INV-134 | TC-INV-135 | — |
+| AC-INV-135 | TC-INV-136 | TC-INV-203, TC-INV-222, TC-INV-223 |
+| AC-INV-136 | TC-INV-040, TC-INV-268 | — |
+| AC-INV-137 | TC-INV-137 | — |
+| AC-INV-138 | TC-INV-138 | TC-INV-234, TC-INV-235 |
+| AC-INV-139 | TC-INV-041 | TC-INV-204 |
+| AC-INV-140 | TC-INV-139 | TC-INV-236, TC-INV-237 |
+| AC-INV-141 | TC-INV-042 | TC-INV-205 |
+| AC-INV-142 | TC-INV-043, TC-INV-250 | TC-INV-206 |
+| AC-INV-143 | TC-INV-044 | TC-INV-207 |
+| AC-INV-144 | TC-INV-045 | — |
+| AC-INV-145 | TC-INV-140 | — |
+| AC-INV-146 | TC-INV-141 | — |
+| AC-INV-147 | TC-INV-046 | — |
+| AC-INV-148 | TC-INV-142, TC-INV-242, TC-INV-243 | — |
+| AC-INV-149 | TC-INV-143 | — |
+| AC-INV-150 | — | TC-INV-208 |
+| AC-INV-151 | — | TC-INV-209 |
+| AC-INV-152 | TC-INV-144 | TC-INV-210 |
+| AC-INV-153 | TC-INV-145, TC-INV-261 | TC-INV-211 |
+| AC-INV-154 | TC-INV-146, TC-INV-277 | TC-INV-212 |
+| AC-INV-155 | TC-INV-286 | — |
+| AC-INV-156 | TC-INV-286 | — |
+| AC-INV-157 | TC-INV-287 | — |
+| AC-INV-158 | TC-INV-288 | — |
+| AC-INV-159 | TC-INV-290 | — |
+| AC-INV-160 | TC-INV-295 | — |
+
+### REQ → TC
+
+| REQ | TC |
+|---|---|
+| REQ-INV-001 | TC-INV-047 |
+| REQ-INV-002 | TC-INV-048 |
+| REQ-INV-003 | TC-INV-001, TC-INV-049 |
+| REQ-INV-004 | TC-INV-050, TC-INV-269, TC-INV-273 |
+| REQ-INV-005 | TC-INV-051, TC-INV-276 |
+| REQ-INV-006 | TC-INV-002, TC-INV-003, TC-INV-252 |
+| REQ-INV-007 | TC-INV-052 |
+| REQ-INV-008 | TC-INV-004, TC-INV-053, TC-INV-248 |
+| REQ-INV-009 | TC-INV-054 |
+| REQ-INV-010 | TC-INV-055 |
+| REQ-INV-013 | TC-INV-056 |
+| REQ-INV-014 | TC-INV-005 |
+| REQ-INV-015 | TC-INV-057 |
+| REQ-INV-016 | TC-INV-058 |
+| REQ-INV-017 | TC-INV-006, TC-INV-274 |
+| REQ-INV-018 | TC-INV-007, TC-INV-274 |
+| REQ-INV-019 | TC-INV-059 |
+| REQ-INV-020 | TC-INV-060 |
+| REQ-INV-021 | TC-INV-061 |
+| REQ-INV-022 | TC-INV-008, TC-INV-062 |
+| REQ-INV-023 | TC-INV-063, TC-INV-273 |
+| REQ-INV-024 | TC-INV-064 |
+| REQ-INV-025 | TC-INV-009, TC-INV-010 |
+| REQ-INV-026 | TC-INV-065 |
+| REQ-INV-027 | TC-INV-066, TC-INV-272, TC-INV-282 |
+| REQ-INV-028 | TC-INV-067 |
+| REQ-INV-031 | TC-INV-068, TC-INV-272 |
+| REQ-INV-032 | TC-INV-069 |
+| REQ-INV-033 | TC-INV-070 |
+| REQ-INV-034 | TC-INV-071 |
+| REQ-INV-035 | TC-INV-072, TC-INV-147, TC-INV-148, TC-INV-244 |
+| REQ-INV-036 | TC-INV-073 |
+| REQ-INV-037 | TC-INV-074, TC-INV-251 |
+| REQ-INV-038 | TC-INV-075 |
+| REQ-INV-039 | TC-INV-076, TC-INV-147, TC-INV-148, TC-INV-172, TC-INV-259 |
+| REQ-INV-040 | TC-INV-077, TC-INV-147, TC-INV-148 |
+| REQ-INV-041 | TC-INV-078 |
+| REQ-INV-042 | TC-INV-079, TC-INV-169 |
+| REQ-INV-043 | TC-INV-080, TC-INV-153, TC-INV-154 |
+| REQ-INV-044 | TC-INV-011 |
+| REQ-INV-045 | TC-INV-081 |
+| REQ-INV-046 | TC-INV-082, TC-INV-293 |
+| REQ-INV-047 | TC-INV-083, TC-INV-255 |
+| REQ-INV-048 | TC-INV-012 |
+| REQ-INV-049 | TC-INV-084, TC-INV-155, TC-INV-156, TC-INV-169 |
+| REQ-INV-050 | TC-INV-085, TC-INV-153, TC-INV-154 |
+| REQ-INV-051 | TC-INV-086, TC-INV-149, TC-INV-150, TC-INV-267 |
+| REQ-INV-052 | TC-INV-013, TC-INV-087, TC-INV-149, TC-INV-150, TC-INV-171 |
+| REQ-INV-053 | TC-INV-088, TC-INV-151, TC-INV-152, TC-INV-169 |
+| REQ-INV-054 | TC-INV-014, TC-INV-169 |
+| REQ-INV-055 | TC-INV-015 |
+| REQ-INV-056 | TC-INV-089, TC-INV-260 |
+| REQ-INV-057 | TC-INV-090 |
+| REQ-INV-058 | TC-INV-091, TC-INV-245, TC-INV-278 |
+| REQ-INV-059 | TC-INV-092, TC-INV-165, TC-INV-166 |
+| REQ-INV-060 | TC-INV-093 |
+| REQ-INV-061 | TC-INV-094 |
+| REQ-INV-062 | TC-INV-095 |
+| REQ-INV-063 | TC-INV-096, TC-INV-165, TC-INV-166 |
+| REQ-INV-064 | TC-INV-016 |
+| REQ-INV-065 | TC-INV-017 |
+| REQ-INV-066 | TC-INV-097 |
+| REQ-INV-067 | TC-INV-018, TC-INV-266 |
+| REQ-INV-068 | TC-INV-098 |
+| REQ-INV-069 | TC-INV-019, TC-INV-287 |
+| REQ-INV-070 | TC-INV-099, TC-INV-161, TC-INV-162, TC-INV-257 |
+| REQ-INV-071 | TC-INV-020, TC-INV-100 |
+| REQ-INV-072 | TC-INV-021, TC-INV-161, TC-INV-162, TC-INV-170, TC-INV-171 |
+| REQ-INV-073 | TC-INV-101 |
+| REQ-INV-074 | TC-INV-275 |
+| REQ-INV-075 | TC-INV-102, TC-INV-149, TC-INV-150 |
+| REQ-INV-076 | TC-INV-103, TC-INV-292 |
+| REQ-INV-077 | TC-INV-104 |
+| REQ-INV-078 | TC-INV-105, TC-INV-157, TC-INV-158, TC-INV-171, TC-INV-280 |
+| REQ-INV-079 | TC-INV-106, TC-INV-270 |
+| REQ-INV-080 | TC-INV-022, TC-INV-107, TC-INV-157, TC-INV-158, TC-INV-246, TC-INV-253, TC-INV-264 |
+| REQ-INV-081 | TC-INV-108, TC-INV-247 |
+| REQ-INV-082 | TC-INV-023 |
+| REQ-INV-083 | TC-INV-024 |
+| REQ-INV-084 | TC-INV-025, TC-INV-109, TC-INV-254 |
+| REQ-INV-085 | TC-INV-026 |
+| REQ-INV-086 | TC-INV-110 |
+| REQ-INV-087 | TC-INV-111 |
+| REQ-INV-088 | TC-INV-027, TC-INV-112, TC-INV-159, TC-INV-160, TC-INV-170 |
+| REQ-INV-089 | TC-INV-113 |
+| REQ-INV-091 | TC-INV-028, TC-INV-170 |
+| REQ-INV-092 | TC-INV-114, TC-INV-159, TC-INV-160, TC-INV-258, TC-INV-265, TC-INV-289, TC-INV-290, TC-INV-291 |
+| REQ-INV-093 | TC-INV-029 |
+| REQ-INV-094 | TC-INV-115 |
+| REQ-INV-095 | TC-INV-116 |
+| REQ-INV-096 | TC-INV-030 |
+| REQ-INV-097 | TC-INV-117, TC-INV-161, TC-INV-162, TC-INV-171 |
+| REQ-INV-098 | TC-INV-031, TC-INV-118, TC-INV-256 |
+| REQ-INV-099 | TC-INV-032, TC-INV-119 |
+| REQ-INV-100 | TC-INV-120 |
+| REQ-INV-101 | TC-INV-033, TC-INV-281, TC-INV-284 |
+| REQ-INV-102 | TC-INV-121 |
+| REQ-INV-103 | TC-INV-034 |
+| REQ-INV-104 | TC-INV-122 |
+| REQ-INV-105 | TC-INV-035, TC-INV-123 |
+| REQ-INV-106 | TC-INV-124, TC-INV-163, TC-INV-164, TC-INV-249 |
+| REQ-INV-107 | TC-INV-036 |
+| REQ-INV-108 | TC-INV-125, TC-INV-271, TC-INV-279 |
+| REQ-INV-109 | TC-INV-126, TC-INV-163, TC-INV-164 |
+| REQ-INV-110 | TC-INV-127 |
+| REQ-INV-111 | TC-INV-128 |
+| REQ-INV-112 | TC-INV-129 |
+| REQ-INV-113 | TC-INV-037, TC-INV-279 |
+| REQ-INV-114 | TC-INV-038, TC-INV-130 |
+| REQ-INV-115 | TC-INV-131 |
+| REQ-INV-116 | TC-INV-132 |
+| REQ-INV-117 | TC-INV-133, TC-INV-283 |
+| REQ-INV-118 | TC-INV-134 |
+| REQ-INV-119 | TC-INV-039 |
+| REQ-INV-120 | TC-INV-135 |
+| REQ-INV-121 | TC-INV-136 |
+| REQ-INV-122 | TC-INV-040, TC-INV-268 |
+| REQ-INV-123 | TC-INV-137 |
+| REQ-INV-124 | TC-INV-041, TC-INV-138, TC-INV-167, TC-INV-168, TC-INV-172 |
+| REQ-INV-125 | TC-INV-042, TC-INV-139, TC-INV-167, TC-INV-168 |
+| REQ-INV-126 | TC-INV-043, TC-INV-172, TC-INV-250 |
+| REQ-INV-127 | TC-INV-044, TC-INV-172 |
+| REQ-INV-128 | TC-INV-045 |
+| REQ-INV-129 | TC-INV-140, TC-INV-167, TC-INV-168, TC-INV-172 |
+| REQ-INV-130 | TC-INV-141 |
+| REQ-INV-131 | TC-INV-046 |
+| REQ-INV-132 | TC-INV-142, TC-INV-242, TC-INV-243 |
+| REQ-INV-133 | TC-INV-143 |
+| REQ-INV-136 | TC-INV-144 |
+| REQ-INV-137 | TC-INV-145, TC-INV-261 |
+| REQ-INV-138 | TC-INV-146, TC-INV-277 |
+| REQ-INV-139 | TC-INV-286 |
+| REQ-INV-140 | TC-INV-288 |
+| REQ-INV-141 | TC-INV-295 |
+
+### API → TC
+
+| API | TC |
+|---|---|
+| API-INV-001 | TC-INV-001, TC-INV-004, TC-INV-047, TC-INV-048, TC-INV-049, TC-INV-051, TC-INV-052, TC-INV-053, TC-INV-054, TC-INV-069, TC-INV-248, TC-INV-272, TC-INV-277 |
+| API-INV-002 | TC-INV-002, TC-INV-003, TC-INV-051, TC-INV-058, TC-INV-252, TC-INV-269, TC-INV-276 |
+| API-INV-003 | TC-INV-001, TC-INV-049, TC-INV-057, TC-INV-068, TC-INV-272 |
+| API-INV-004 | TC-INV-050, TC-INV-269, TC-INV-272, TC-INV-273 |
+| API-INV-005 | TC-INV-002, TC-INV-003, TC-INV-051, TC-INV-071, TC-INV-252 |
+| API-INV-006 | TC-INV-052, TC-INV-269, TC-INV-272 |
+| API-INV-007 | TC-INV-004, TC-INV-053, TC-INV-248, TC-INV-269 |
+| API-INV-008 | TC-INV-055, TC-INV-057, TC-INV-069 |
+| API-INV-009 | TC-INV-008, TC-INV-047, TC-INV-060, TC-INV-061, TC-INV-062, TC-INV-064, TC-INV-065, TC-INV-066, TC-INV-067, TC-INV-272, TC-INV-282 |
+| API-INV-010 | TC-INV-009, TC-INV-010, TC-INV-064, TC-INV-269, TC-INV-276 |
+| API-INV-011 | TC-INV-008, TC-INV-062, TC-INV-069 |
+| API-INV-012 | TC-INV-063, TC-INV-269, TC-INV-273 |
+| API-INV-013 | TC-INV-009, TC-INV-010, TC-INV-064 |
+| API-INV-014 | TC-INV-065, TC-INV-269 |
+| API-INV-015 | TC-INV-066, TC-INV-269, TC-INV-272, TC-INV-282 |
+| API-INV-016 | TC-INV-019, TC-INV-037, TC-INV-072, TC-INV-073, TC-INV-074, TC-INV-076, TC-INV-086, TC-INV-087, TC-INV-097, TC-INV-107, TC-INV-109, TC-INV-114, TC-INV-119, TC-INV-123, TC-INV-124, TC-INV-128, TC-INV-130, TC-INV-136, TC-INV-137, TC-INV-144, TC-INV-145, TC-INV-147, TC-INV-148, TC-INV-170, TC-INV-244, TC-INV-245, TC-INV-249, TC-INV-259, TC-INV-265, TC-INV-266, TC-INV-277, TC-INV-286, TC-INV-288, TC-INV-289, TC-INV-290, TC-INV-291 |
+| API-INV-017 | TC-INV-011, TC-INV-075, TC-INV-079, TC-INV-145, TC-INV-153, TC-INV-169, TC-INV-244, TC-INV-251, TC-INV-259, TC-INV-278, TC-INV-295 |
+| API-INV-018 | TC-INV-006, TC-INV-007, TC-INV-012, TC-INV-013, TC-INV-014, TC-INV-018, TC-INV-019, TC-INV-035, TC-INV-036, TC-INV-037, TC-INV-038, TC-INV-040, TC-INV-056, TC-INV-057, TC-INV-058, TC-INV-073, TC-INV-074, TC-INV-086, TC-INV-087, TC-INV-088, TC-INV-089, TC-INV-091, TC-INV-094, TC-INV-099, TC-INV-102, TC-INV-103, TC-INV-105, TC-INV-107, TC-INV-108, TC-INV-115, TC-INV-117, TC-INV-119, TC-INV-120, TC-INV-121, TC-INV-123, TC-INV-127, TC-INV-128, TC-INV-129, TC-INV-135, TC-INV-143, TC-INV-144, TC-INV-145, TC-INV-149, TC-INV-150, TC-INV-151, TC-INV-152, TC-INV-245, TC-INV-246, TC-INV-247, TC-INV-253, TC-INV-255, TC-INV-258, TC-INV-260, TC-INV-261, TC-INV-267, TC-INV-278, TC-INV-279, TC-INV-286, TC-INV-287, TC-INV-290, TC-INV-292, TC-INV-295 |
+| API-INV-019 | TC-INV-015, TC-INV-089, TC-INV-276 |
+| API-INV-020 | TC-INV-005, TC-INV-023, TC-INV-025, TC-INV-110, TC-INV-144, TC-INV-145, TC-INV-280 |
+| API-INV-021 | TC-INV-022, TC-INV-024, TC-INV-026, TC-INV-105, TC-INV-106, TC-INV-157, TC-INV-158, TC-INV-246, TC-INV-247, TC-INV-253, TC-INV-264, TC-INV-270, TC-INV-276 |
+| API-INV-022 | TC-INV-005, TC-INV-023, TC-INV-025, TC-INV-105, TC-INV-157, TC-INV-280, TC-INV-292 |
+| API-INV-023 | TC-INV-026, TC-INV-106, TC-INV-158, TC-INV-270, TC-INV-273 |
+| API-INV-024 | TC-INV-022, TC-INV-024, TC-INV-095, TC-INV-107, TC-INV-109, TC-INV-246, TC-INV-247, TC-INV-253, TC-INV-264, TC-INV-270, TC-INV-286, TC-INV-292 |
+| API-INV-025 | TC-INV-108, TC-INV-247 |
+| API-INV-026 | TC-INV-116, TC-INV-144, TC-INV-274 |
+| API-INV-027 | TC-INV-027, TC-INV-028, TC-INV-029, TC-INV-030, TC-INV-112, TC-INV-113, TC-INV-115, TC-INV-159, TC-INV-160, TC-INV-270, TC-INV-276, TC-INV-290 |
+| API-INV-028 | TC-INV-111, TC-INV-274, TC-INV-280 |
+| API-INV-029 | TC-INV-027, TC-INV-028, TC-INV-030, TC-INV-112, TC-INV-159, TC-INV-160 |
+| API-INV-030 | TC-INV-113, TC-INV-270, TC-INV-276 |
+| API-INV-031 | TC-INV-113 |
+| API-INV-032 | TC-INV-029, TC-INV-114, TC-INV-258, TC-INV-265, TC-INV-270, TC-INV-286, TC-INV-289, TC-INV-290, TC-INV-291 |
+| API-INV-033 | TC-INV-115, TC-INV-252 |
+| API-INV-034 | TC-INV-020, TC-INV-021, TC-INV-033, TC-INV-122, TC-INV-144, TC-INV-145, TC-INV-146, TC-INV-171, TC-INV-256, TC-INV-257, TC-INV-268, TC-INV-274, TC-INV-275, TC-INV-281, TC-INV-288 |
+| API-INV-035 | TC-INV-031, TC-INV-032, TC-INV-034, TC-INV-100, TC-INV-114, TC-INV-117, TC-INV-118, TC-INV-161, TC-INV-162, TC-INV-254, TC-INV-264, TC-INV-265, TC-INV-266, TC-INV-270, TC-INV-276, TC-INV-281, TC-INV-289, TC-INV-290, TC-INV-291 |
+| API-INV-036 | TC-INV-032, TC-INV-033, TC-INV-055, TC-INV-094, TC-INV-117, TC-INV-130, TC-INV-145, TC-INV-146, TC-INV-161, TC-INV-171, TC-INV-256, TC-INV-268, TC-INV-274, TC-INV-277, TC-INV-280, TC-INV-281 |
+| API-INV-037 | TC-INV-031, TC-INV-034, TC-INV-104, TC-INV-118, TC-INV-162, TC-INV-270, TC-INV-273, TC-INV-281 |
+| API-INV-038 | TC-INV-032, TC-INV-094, TC-INV-119, TC-INV-121, TC-INV-130, TC-INV-137, TC-INV-254, TC-INV-264, TC-INV-266, TC-INV-270, TC-INV-286 |
+| API-INV-039 | TC-INV-120 |
+| API-INV-040 | TC-INV-124, TC-INV-126, TC-INV-131, TC-INV-132, TC-INV-134, TC-INV-144, TC-INV-163, TC-INV-164, TC-INV-244, TC-INV-249, TC-INV-289, TC-INV-295 |
+| API-INV-041 | TC-INV-109, TC-INV-125, TC-INV-133, TC-INV-271, TC-INV-276, TC-INV-279, TC-INV-283, TC-INV-289 |
+| API-INV-042 | TC-INV-125, TC-INV-271, TC-INV-279 |
+| API-INV-043 | TC-INV-138, TC-INV-140, TC-INV-167, TC-INV-168 |
+| API-INV-044 | TC-INV-041, TC-INV-042, TC-INV-043, TC-INV-044, TC-INV-045, TC-INV-140, TC-INV-172, TC-INV-250, TC-INV-271 |
+| API-INV-045 | TC-INV-032, TC-INV-041, TC-INV-042, TC-INV-043, TC-INV-044, TC-INV-045, TC-INV-138, TC-INV-139, TC-INV-167, TC-INV-168, TC-INV-250, TC-INV-254, TC-INV-271, TC-INV-286 |
+| API-INV-046 | TC-INV-101, TC-INV-144 |
+| API-INV-047 | TC-INV-020, TC-INV-021, TC-INV-099, TC-INV-100, TC-INV-147, TC-INV-148, TC-INV-165, TC-INV-244, TC-INV-257, TC-INV-268, TC-INV-275, TC-INV-280, TC-INV-288, TC-INV-295 |
+| API-INV-048 | TC-INV-017, TC-INV-039, TC-INV-097, TC-INV-134, TC-INV-144 |
+| API-INV-049 | TC-INV-011, TC-INV-017, TC-INV-039, TC-INV-134 |
+| API-INV-050 | TC-INV-144, TC-INV-166 |
+| API-INV-051 | TC-INV-016, TC-INV-092, TC-INV-093, TC-INV-094, TC-INV-095, TC-INV-099, TC-INV-121, TC-INV-165, TC-INV-166, TC-INV-258 |
+| API-INV-052 | TC-INV-265, TC-INV-284 |
+
+### RULE / code → TC
+
+| RULE / code | TC |
+|---|---|
+| RULE-INV-001 | TC-INV-049, TC-INV-050, TC-INV-273 |
+| RULE-INV-002 | TC-INV-001 |
+| RULE-INV-003 | TC-INV-002 |
+| RULE-INV-004 | TC-INV-003, TC-INV-252 |
+| RULE-INV-005 | TC-INV-051, TC-INV-071 |
+| RULE-INV-006 | TC-INV-004, TC-INV-053, TC-INV-248 |
+| RULE-INV-007 | TC-INV-007, TC-INV-274, TC-INV-287 |
+| RULE-INV-008 | TC-INV-006, TC-INV-055, TC-INV-056, TC-INV-058, TC-INV-274, TC-INV-287 |
+| RULE-INV-009 | TC-INV-068, TC-INV-272 |
+| RULE-INV-010 | TC-INV-062, TC-INV-063, TC-INV-273 |
+| RULE-INV-011 | TC-INV-008 |
+| RULE-INV-012 | TC-INV-009 |
+| RULE-INV-013 | TC-INV-010 |
+| RULE-INV-014 | TC-INV-064 |
+| RULE-INV-015 | TC-INV-066, TC-INV-272, TC-INV-282 |
+| RULE-INV-016 | TC-INV-005, TC-INV-023, TC-INV-107 |
+| RULE-INV-017 | TC-INV-256 |
+| RULE-INV-018 | TC-INV-013, TC-INV-253, TC-INV-264, TC-INV-267, TC-INV-287 |
+| RULE-INV-019 | TC-INV-017, TC-INV-018, TC-INV-019, TC-INV-024, TC-INV-266 |
+| RULE-INV-020 | TC-INV-011, TC-INV-081, TC-INV-251 |
+| RULE-INV-021 | TC-INV-012, TC-INV-082, TC-INV-083, TC-INV-293 |
+| RULE-INV-022 | TC-INV-014, TC-INV-169 |
+| RULE-INV-023 | TC-INV-015 |
+| RULE-INV-024 | TC-INV-091, TC-INV-245, TC-INV-288 |
+| RULE-INV-025 | TC-INV-016, TC-INV-121, TC-INV-257, TC-INV-258 |
+| RULE-INV-026 | TC-INV-099, TC-INV-275 |
+| RULE-INV-027 | TC-INV-020, TC-INV-100 |
+| RULE-INV-028 | TC-INV-021, TC-INV-148 |
+| RULE-INV-029 | TC-INV-026, TC-INV-030, TC-INV-034, TC-INV-108, TC-INV-115, TC-INV-120, TC-INV-246, TC-INV-247 |
+| RULE-INV-030 | TC-INV-105, TC-INV-111, TC-INV-117, TC-INV-273 |
+| RULE-INV-031 | TC-INV-022, TC-INV-029 |
+| RULE-INV-032 | TC-INV-028 |
+| RULE-INV-033 | TC-INV-033, TC-INV-265, TC-INV-281 |
+| RULE-INV-034 | TC-INV-032, TC-INV-137, TC-INV-290 |
+| RULE-INV-035 | TC-INV-035, TC-INV-123, TC-INV-143, TC-INV-289 |
+| RULE-INV-036 | TC-INV-036, TC-INV-124, TC-INV-249, TC-INV-289 |
+| RULE-INV-037 | TC-INV-025, TC-INV-109, TC-INV-254, TC-INV-286 |
+| RULE-INV-038 | TC-INV-037, TC-INV-075, TC-INV-127, TC-INV-131, TC-INV-279, TC-INV-295 |
+| RULE-INV-039 | TC-INV-038, TC-INV-130 |
+| RULE-INV-040 | TC-INV-040, TC-INV-135, TC-INV-268, TC-INV-290 |
+| RULE-INV-041 | TC-INV-042, TC-INV-139 |
+| RULE-INV-042 | TC-INV-043, TC-INV-250 |
+| RULE-INV-043 | TC-INV-044 |
+| RULE-INV-044 | TC-INV-045, TC-INV-138 |
+| RULE-INV-045 | TC-INV-041 |
+| RULE-INV-046 | TC-INV-046, TC-INV-141 |
+| RULE-INV-047 | TC-INV-027 |
+| RULE-INV-048 | TC-INV-031 |
+| RULE-INV-049 | TC-INV-255 |
+| RULE-INV-050 | TC-INV-278, TC-INV-288 |
+| RULE-INV-051 | TC-INV-280 |
+| INV-400 | TC-INV-277 |
+| INV-401 | TC-INV-277 |
+| INV-403 | TC-INV-144, TC-INV-145, TC-INV-146, TC-INV-261, TC-INV-284 |
+| INV-404-BRANCH-NOT-FOUND | TC-INV-276 |
+| INV-404-ITEM-NOT-FOUND | TC-INV-168, TC-INV-172 |
+| INV-404-LOOKUP-KEY-UNKNOWN | TC-INV-284 |
+| INV-404-LOT-NOT-FOUND | TC-INV-276 |
+| INV-404-STOCK-ADJUSTMENT-NOT-FOUND | TC-INV-276 |
+| INV-404-STOCK-COUNT-LINE-NOT-FOUND | TC-INV-276 |
+| INV-404-STOCK-COUNT-NOT-FOUND | TC-INV-276 |
+| INV-404-STOCK-MOVE-NOT-FOUND | TC-INV-276 |
+| INV-404-TRANSFER-NOT-FOUND | TC-INV-276 |
+| INV-404-VARIANT-NOT-FOUND | TC-INV-150, TC-INV-152, TC-INV-154, TC-INV-156, TC-INV-158, TC-INV-160, TC-INV-162, TC-INV-164, TC-INV-166, TC-INV-171 |
+| INV-404-WAREHOUSE-NOT-FOUND | TC-INV-276 |
+| INV-409-BRANCH-DEFAULT | TC-INV-009 |
+| INV-409-BRANCH-DEFAULT-INACTIVE | TC-INV-272 |
+| INV-409-BRANCH-IN-USE | TC-INV-010 |
+| INV-409-BRANCH-NAME-TAKEN | TC-INV-008 |
+| INV-409-DOCUMENT-CLOSED | TC-INV-026, TC-INV-030, TC-INV-034, TC-INV-246, TC-INV-247 |
+| INV-409-DUAL-QUANTITY-IN-USE | TC-INV-044 |
+| INV-409-IDEMPOTENCY-KEY-REUSED | TC-INV-278, TC-INV-288 |
+| INV-409-LOT-TRACKING-IN-USE | TC-INV-043, TC-INV-250 |
+| INV-409-NEGATIVE-STOCK | TC-INV-017, TC-INV-018, TC-INV-024, TC-INV-266 |
+| INV-409-RESERVATION-CLOSED | TC-INV-012 |
+| INV-409-RESERVE-NOT-AVAILABLE | TC-INV-011, TC-INV-251 |
+| INV-409-STALE-VERSION | TC-INV-269, TC-INV-270, TC-INV-271 |
+| INV-409-STOCK-MOVE-IMMUTABLE | TC-INV-015 |
+| INV-409-WAREHOUSE-DEFAULT | TC-INV-002 |
+| INV-409-WAREHOUSE-DEFAULT-INACTIVE | TC-INV-004 |
+| INV-409-WAREHOUSE-IN-USE | TC-INV-003, TC-INV-252 |
+| INV-409-WAREHOUSE-NAME-TAKEN | TC-INV-001 |
+| INV-422-BARCODE-UNKNOWN | TC-INV-028 |
+| INV-422-BRANCH-CODE-READONLY | TC-INV-273 |
+| INV-422-BRANCH-INACTIVE | TC-INV-272 |
+| INV-422-BUNDLE-NO-COMPONENTS | TC-INV-014, TC-INV-169 |
+| INV-422-BUNDLE-SETTINGS | TC-INV-041 |
+| INV-422-CAPABILITY-OFF | TC-INV-045 |
+| INV-422-COUNTED-NEGATIVE | TC-INV-027 |
+| INV-422-DOC-DATE-FUTURE | TC-INV-280 |
+| INV-422-DOC-NO-READONLY | TC-INV-273 |
+| INV-422-DUPLICATE-LINE | TC-INV-031 |
+| INV-422-HORIZON-RANGE | TC-INV-039 |
+| INV-422-LOAD-ROW-VARIANT | TC-INV-021, TC-INV-148 |
+| INV-422-LOAD-ROWS | TC-INV-020 |
+| INV-422-LOAD-ROWS-INVALID | TC-INV-021, TC-INV-148, TC-INV-257, TC-INV-275 |
+| INV-422-LOT-EXPIRED | TC-INV-038 |
+| INV-422-LOT-EXPIRY-MISMATCH | TC-INV-036, TC-INV-249 |
+| INV-422-LOT-EXPIRY-REQUIRED | TC-INV-035, TC-INV-143 |
+| INV-422-LOT-REQUIRED | TC-INV-025, TC-INV-254, TC-INV-286 |
+| INV-422-MEASURE-REQUIRED | TC-INV-040, TC-INV-268 |
+| INV-422-MEASURE-UNIT-REQUIRED | TC-INV-042 |
+| INV-422-NO-KNOWN-COST | TC-INV-016, TC-INV-257 |
+| INV-422-NO-LINES | TC-INV-022, TC-INV-029 |
+| INV-422-OPENING-COST-REQUIRED | TC-INV-275 |
+| INV-422-QUANTITY-INVALID | TC-INV-256 |
+| INV-422-REASON-REQUIRED | TC-INV-033, TC-INV-281 |
+| INV-422-RESERVATION-MISMATCH | TC-INV-255 |
+| INV-422-TRANSFER-WAREHOUSES | TC-INV-005, TC-INV-023 |
+| INV-422-VARIANT-INACTIVE | TC-INV-013, TC-INV-253, TC-INV-264, TC-INV-267 |
+| INV-422-WAREHOUSE-CODE-READONLY | TC-INV-273 |
+| INV-422-WAREHOUSE-INACTIVE | TC-INV-007, TC-INV-274 |
+| INV-422-WAREHOUSE-REQUIRED | TC-INV-006, TC-INV-274 |
+| INV-422-ZERO-CHANGE | TC-INV-032 |
+| INV-500 | TC-INV-277 |
+
+### XM → TC
+
+| XM | TC |
+|---|---|
+| XM-INV-001 | TC-INV-147, TC-INV-148 |
+| XM-INV-002 | TC-INV-149, TC-INV-150 |
+| XM-INV-003 | TC-INV-151, TC-INV-152 |
+| XM-INV-004 | TC-INV-153, TC-INV-154 |
+| XM-INV-005 | TC-INV-155, TC-INV-156 |
+| XM-INV-006 | TC-INV-157, TC-INV-158 |
+| XM-INV-007 | TC-INV-159, TC-INV-160 |
+| XM-INV-008 | TC-INV-161, TC-INV-162 |
+| XM-INV-009 | TC-INV-163, TC-INV-164 |
+| XM-INV-010 | TC-INV-165, TC-INV-166 |
+| XM-INV-011 | TC-INV-167, TC-INV-168 |
+| XM-INV-012 | TC-INV-169 |
+| XM-INV-013 | TC-INV-170 |
+| XM-INV-014 | TC-INV-171 |
+| XM-INV-015 | TC-INV-172 |
+
+### Package → TC
+
+| Package | TC |
+|---|---|
+| CORE | TC-INV-047, TC-INV-048, TC-INV-060, TC-INV-061, TC-INV-133, TC-INV-142, TC-INV-242, TC-INV-243, TC-INV-283 |
+| DATA-DOM-LOOKUP | TC-INV-140 |
+| DATA-DOM-MASTER | TC-INV-124 |
+| DATA-DOM-TRANSACTIONAL | TC-INV-015, TC-INV-058, TC-INV-244 |
+| SEC-BE | TC-INV-144, TC-INV-145, TC-INV-146, TC-INV-261, TC-INV-277 |
+| SVC-API-CRUD | TC-INV-001, TC-INV-002, TC-INV-003, TC-INV-004, TC-INV-005, TC-INV-008, TC-INV-009, TC-INV-010, TC-INV-017, TC-INV-020, TC-INV-021, TC-INV-022, TC-INV-023, TC-INV-024, TC-INV-025, TC-INV-026, TC-INV-027, TC-INV-028, TC-INV-029, TC-INV-030, TC-INV-031, TC-INV-032, TC-INV-033, TC-INV-034, TC-INV-039, TC-INV-041, TC-INV-042, TC-INV-043, TC-INV-044, TC-INV-045, TC-INV-049, TC-INV-050, TC-INV-051, TC-INV-052, TC-INV-053, TC-INV-055, TC-INV-062, TC-INV-063, TC-INV-064, TC-INV-065, TC-INV-066, TC-INV-068, TC-INV-071, TC-INV-094, TC-INV-095, TC-INV-099, TC-INV-100, TC-INV-104, TC-INV-105, TC-INV-106, TC-INV-107, TC-INV-108, TC-INV-109, TC-INV-111, TC-INV-112, TC-INV-113, TC-INV-114, TC-INV-115, TC-INV-117, TC-INV-118, TC-INV-119, TC-INV-120, TC-INV-121, TC-INV-125, TC-INV-130, TC-INV-134, TC-INV-137, TC-INV-138, TC-INV-139, TC-INV-246, TC-INV-247, TC-INV-248, TC-INV-250, TC-INV-252, TC-INV-253, TC-INV-254, TC-INV-256, TC-INV-257, TC-INV-258, TC-INV-264, TC-INV-265, TC-INV-266, TC-INV-268, TC-INV-269, TC-INV-270, TC-INV-271, TC-INV-272, TC-INV-273, TC-INV-274, TC-INV-275, TC-INV-280, TC-INV-281, TC-INV-282, TC-INV-286, TC-INV-288, TC-INV-289, TC-INV-290, TC-INV-291 |
+| SVC-API-INT | TC-INV-006, TC-INV-007, TC-INV-011, TC-INV-012, TC-INV-013, TC-INV-014, TC-INV-016, TC-INV-018, TC-INV-019, TC-INV-035, TC-INV-036, TC-INV-037, TC-INV-038, TC-INV-040, TC-INV-046, TC-INV-056, TC-INV-059, TC-INV-070, TC-INV-072, TC-INV-073, TC-INV-074, TC-INV-077, TC-INV-078, TC-INV-080, TC-INV-081, TC-INV-082, TC-INV-083, TC-INV-084, TC-INV-085, TC-INV-086, TC-INV-087, TC-INV-088, TC-INV-090, TC-INV-091, TC-INV-092, TC-INV-093, TC-INV-096, TC-INV-097, TC-INV-098, TC-INV-123, TC-INV-127, TC-INV-128, TC-INV-129, TC-INV-135, TC-INV-141, TC-INV-143, TC-INV-245, TC-INV-249, TC-INV-251, TC-INV-255, TC-INV-267, TC-INV-278, TC-INV-279, TC-INV-287, TC-INV-293, TC-INV-295 |
+| SVC-API-SEARCH | TC-INV-054, TC-INV-057, TC-INV-067, TC-INV-069, TC-INV-075, TC-INV-076, TC-INV-079, TC-INV-089, TC-INV-101, TC-INV-102, TC-INV-103, TC-INV-110, TC-INV-116, TC-INV-122, TC-INV-126, TC-INV-131, TC-INV-132, TC-INV-136, TC-INV-259, TC-INV-260, TC-INV-276, TC-INV-284, TC-INV-292 |
+| XM-INV-001 | TC-INV-147, TC-INV-148 |
+| XM-INV-002 | TC-INV-149, TC-INV-150 |
+| XM-INV-003 | TC-INV-151, TC-INV-152 |
+| XM-INV-004 | TC-INV-153, TC-INV-154 |
+| XM-INV-005 | TC-INV-155, TC-INV-156 |
+| XM-INV-006 | TC-INV-157, TC-INV-158 |
+| XM-INV-007 | TC-INV-159, TC-INV-160 |
+| XM-INV-008 | TC-INV-161, TC-INV-162 |
+| XM-INV-009 | TC-INV-163, TC-INV-164 |
+| XM-INV-010 | TC-INV-165, TC-INV-166 |
+| XM-INV-011 | TC-INV-167, TC-INV-168 |
+| XM-INV-012 | TC-INV-169 |
+| XM-INV-013 | TC-INV-170 |
+| XM-INV-014 | TC-INV-171 |
+| XM-INV-015 | TC-INV-172 |
+
+## COVERAGE
+
+| Measure | Result |
+|---|---|
+| AC covered (both tracks) | ✓ 160/160 · gaps: none |
+| AC covered on this track | 153/160 (the rest on the other track; 50 ACs on both) |
+| REQ covered (both tracks) | ✓ 141/141 · gaps: none |
+| REQ covered on this track | 134/141 |
+| API covered | ✓ 52/52 · gaps: none |
+| Error Catalog rows asserted | ✓ 59/59 HTTP rows (§5) and 5/5 in-process rows (§5.1) each named on a `Rule / code` line · gaps: none |
+| XM edges covered | ✓ 15/15 (11 HARD-FK → EXISTS + MISSING, 4 SOFT-READ → GRACEFUL-DEGRADATION) · gaps: none |
+| Split units with no TC | 2 of 25: DOC, ALIGN-BE · no AC, XM or UXD derives a case for them (ADR-INV-037) |
+| Concurrency and post-time guards (gate-analysis revise 1) | TC-INV-242 … 261: two posts of one document, a post racing a cancel, two default switches, two first receipts of one lot, a flag clear racing a receipt, a reservation racing a lot issue, one idempotency key submitted twice at once, a post after the Variant or the Item stock settings changed, a deactivation refused by a DRAFT, a reservation of another line, 4-decimal quantities and 5-decimal costs, the count of a never-valued Variant, native-query tenancy, the manifest and the boundary rules |
+| Catalogue coverage and guards (gate-analysis revise 2) | TC-INV-264 … 284: a line refusal named in `details`, a system-generated reason not checked, a lot-level negative check, a bundle receipt refused, the measure of an adjustment or opening stock line, stale versions on masters, documents, lots and settings, an inactive branch, the read-only code and docNo, inactive or missing warehouse over REST, the opening-stock cost, every not-found code, INV-400 / 401 / 500, a reused idempotency key, a sale racing an expiry correction, a future docDate, OPENING_STOCK refused on the adjustment screen, two concurrent branch default switches, one near-expiry notification per lot, the INV lookup endpoint |
+| Lot-less stock, offline sales, opening stock idempotency (gate-analysis revise 3) | TC-INV-286 … 288: lot-less stock counted, transferred and written off after lot tracking is switched on, and refused beyond its quantity; offline sales naming an inactive Variant or warehouse or no warehouse recorded and reported; a double-submitted opening stock load posted once and a reused key refused. Every INV code is asserted with its text (TC-INV-276, TC-INV-284 and the load-wrapper cases — ADR-INV-021 amended) |
+| Count-generated lines (gate-analysis revise 4) | TC-INV-289, 290: a positive count difference in an existing lot posts under that lot with no lot-expiry refusal; a measure-only count difference posts a measure-only ADJUSTMENT_OUT. TC-INV-269, 270, 271 and 277 now assert the texts of INV-409-STALE-VERSION, INV-400, INV-401 and INV-500 (ADR-INV-021 amended) |
+| Several lots, posting order, release retry, expired on receipt (gate-analysis revise 5) | TC-INV-291 … 293, 295: a count holding two lots of one Variant posts one adjustment line per lot (lotNo = the lot code, no duplicate-line refusal); a backdated transfer keeps the one-Variant, one-warehouse running balance in posting order; a release retried after success answers the RELEASED reservation unchanged; a lot received or loaded already past its expiry is recorded and never sold. TC-INV-012 now asserts the CONSUMED case of AC-INV-053; TC-INV-289 asserts lotNo L1 on the generated line |
+| Over-engineering guard | 222 TCs for 153 ACs + 15 XM (ratio 1.32 ≤ 2) |
