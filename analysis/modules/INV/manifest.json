@@ -18,7 +18,9 @@
     "F1": "F1",
     "api-verify": "api_verify"
   },
-  "plans": {},
+  "plans": {
+    "backend/exec": "P3_1/backend-execution-plan-inv.md"
+  },
   "packages": {
     "backend/exec": "../../../backend/modules/INV/packages/backend-execution",
     "backend/test": "../../../backend/modules/INV/packages/backend-test",
@@ -40,7 +42,7 @@
       "us-req": 100.0,
       "req-ac": 100.0,
       "req-api": 89.9,
-      "req-ux": 0.0,
+      "req-ux": 67.4,
       "ac-tc": 0.0
     },
     "xm_events": [
