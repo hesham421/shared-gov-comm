@@ -1,8 +1,8 @@
 # FRONTEND TEST PLAN — Inventory / المخزون (INV)
 ══════════════════════════════════════════════════════════════════
-Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 3
+Module : INV   Version : v1   Profile : commerce   Stage : P4 (Test Plan) · pass 2 · round 1 · gate-analysis revise 4
 Track  : frontend · plan test · lane test-gen · prepared by claude:opus
-Sources: _state/current-srs.md (INV v1 — REQ 140 · AC 158 · SCR-REQ 12)
+Sources: _state/current-srs.md (INV v1 — REQ 140 · AC 159 · SCR-REQ 12)
          _state/current-frontend-execution-plan.md (P3.2 — SCR-INV-001 … 012, UXD-INV-001 … 011, F1 … F4, SEC-FE)
          _state/current-api-spec (api-spec-inv.yaml — the document the mock server serves)
          _state/current-backend-execution-plan.md (Error Catalog texts) · _state/current-registry-srs.md
@@ -109,16 +109,16 @@ Test data    : reasonCode DAMAGE
 <!-- TC:TC-INV-177:END -->
 
 <!-- TC:TC-INV-178:START traces=AC-INV-014,REQ-INV-011,SCR-INV-005 -->
-### TC-INV-178 — With one warehouse the menu shows no transfer entry
+### TC-INV-178 — With one warehouse the menu and the create action are hidden, existing transfers stay readable
 Derived from : AC-INV-014  (REQ-INV-011)
-Exercises    : inventory menu · SCR-INV-005 /inventory/transfers (route gate)
+Exercises    : inventory menu · SCR-INV-005 /inventory/transfers, /inventory/transfers/:id, /inventory/transfers/new (route gate)
 Rule / code  : RULE-INV-016 → —
 Package      : F4-SCR-INV-005
 Scenario     : STATE · data class VALID · language ALL
-Preconditions: Warehouse user session; the context answers activeWarehouseCount 1
+Preconditions: Warehouse user session; the context answers activeWarehouseCount 1 (the tenant deactivated its second warehouse); a POSTED Transfer TR-0005 (transferPk T) from before the deactivation
 Host data    : none
-Steps        : 1. Open the inventory menu. 2. Deep-link to /inventory/transfers.
-Expected     : 1 → no transfer entry. 2 → the route shows ar «التحويل يحتاج إلى مستودعين نشطين مختلفين.» · en «A transfer needs two different active warehouses.» with a link to Warehouses, not the transfer search.
+Steps        : 1. Open the inventory menu. 2. Deep-link to /inventory/transfers. 3. Deep-link to /inventory/transfers/T and choose "Stock moves". 4. Deep-link to /inventory/transfers/new.
+Expected     : 1 → no transfer entry. 2 → the transfer search is shown and lists TR-0005; no "New" action is offered. 3 → TR-0005 opens read-only and its "Stock moves" link goes to /inventory/stock-moves?sourceDocTypeCode=INV_TRANSFER&sourceDocRef=T. 4 → the route shows ar «التحويل يحتاج إلى مستودعين نشطين مختلفين.» · en «A transfer needs two different active warehouses.» with a link to Warehouses, not the entry (SRS SCR-REQ-INV-005 B1).
 Test data    : —
 <!-- TC:TC-INV-178:END -->
 
@@ -1174,7 +1174,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-099 | TC-INV-113 | — |
 | AC-INV-100 | — | TC-INV-216 |
 | AC-INV-101 | TC-INV-028 | TC-INV-193 |
-| AC-INV-102 | TC-INV-114, TC-INV-258, TC-INV-265 | — |
+| AC-INV-102 | TC-INV-114, TC-INV-258, TC-INV-265, TC-INV-289 | — |
 | AC-INV-103 | TC-INV-029 | TC-INV-194 |
 | AC-INV-104 | TC-INV-115 | — |
 | AC-INV-105 | TC-INV-116 | — |
@@ -1231,6 +1231,7 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 | AC-INV-156 | TC-INV-286 | — |
 | AC-INV-157 | TC-INV-287 | — |
 | AC-INV-158 | TC-INV-288 | — |
+| AC-INV-159 | TC-INV-290 | — |
 
 ### REQ → TC
 
@@ -1426,8 +1427,8 @@ Generated from the TC blocks above (and, for the AC column of the other track, f
 
 | Measure | Result |
 |---|---|
-| AC covered (both tracks) | ✓ 158/158 · gaps: none |
-| AC covered on this track | 57/158 (the rest on the other track; 50 ACs on both; AC-INV-155 … 158 of gate-analysis revise 3 are backend cases TC-INV-286 … 288) |
+| AC covered (both tracks) | ✓ 159/159 · gaps: none |
+| AC covered on this track | 57/159 (the rest on the other track; 50 ACs on both; AC-INV-155 … 158 of gate-analysis revise 3 are backend cases TC-INV-286 … 288, AC-INV-159 of revise 4 is backend case TC-INV-290) |
 | REQ covered (both tracks) | ✓ 140/140 · gaps: none |
 | REQ covered on this track | 51/140 |
 | SCR covered | ✓ 12/12 · gaps: none |

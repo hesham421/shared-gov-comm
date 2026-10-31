@@ -97,7 +97,7 @@ Priority  : HIGH
 FLOW — Transfer stock between warehouses         traces=US-INV-008,REQ-INV-078,REQ-INV-079,REQ-INV-080,REQ-INV-081,REQ-INV-082,REQ-INV-083,REQ-INV-084,REQ-INV-085,REQ-INV-086,SCR-INV-005,SCR-INV-004
 Screens   : SCR-INV-005, SCR-INV-004
 Sequence  : Inventory menu → Transfers (search) → entry (new) → add lines → Save (DRAFT) → Post → Stock move history filtered by the transfer (document type and identifier) | Cancel (DRAFT) → search
-Trigger   : goods are moved from one warehouse to another (shown only with two or more active warehouses)
+Trigger   : goods are moved from one warehouse to another (the entry and the create action are shown only with two or more active warehouses; existing transfers stay readable by deep link)
 Priority  : HIGH
 ```
 

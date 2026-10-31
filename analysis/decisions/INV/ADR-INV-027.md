@@ -1,9 +1,9 @@
 # ADR-INV-027 — Opening stock is created and posted in one call, all rows or none
-Status      : ACCEPTED
+Status      : ACCEPTED (amended at gate-analysis revise 4, G6)
 Stage       : P3.1 (Backend Execution Plan)        Module: INV        Version: v1
 Lane        : analysis · claude:opus
 Decided     : 2026-10-31
-traces      : REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-073, REQ-INV-074, RULE-INV-027, RULE-INV-028, SRS D-13, API-INV-046, API-INV-047
+traces      : REQ-INV-070, REQ-INV-071, REQ-INV-072, REQ-INV-073, REQ-INV-074, RULE-INV-027, RULE-INV-028, SRS D-13, API-INV-046, API-INV-047, ADR-INV-053
 
 ## Context
 SRS D-13: opening stock is a Stock adjustment with reason OPENING_STOCK; the browser reads the xlsx sheet
@@ -24,7 +24,10 @@ code, so v1 names a Variant by barcode only (ADR-INV-035, revised at gate-analys
   measure columns only when their flags are on.
 
 ## Consequences
-- A resubmitted identical load creates a second adjustment; the screen prevents double submission.
+- A resubmitted identical load is retry-safe: it carries the same idempotency key and request hash, answers 201
+  with the first load's adjustment and records nothing; a different load under the same key answers
+  INV-409-IDEMPOTENCY-KEY-REUSED (ADR-INV-053 — this consequence amended at gate-analysis revise 4, G6; the first
+  version accepted a second adjustment).
 - No uploaded file is stored or parsed by INV (ADR-INV-018 stands).
 
 ## Status

@@ -167,7 +167,7 @@ Honours: CON-INV-001, CON-INV-002, CON-INV-003, CON-INV-004, CON-INV-005, CON-IN
 
 Error codes : 59 HTTP catalog rows (`error-catalog` block — INV-422-DOC-DATE-FUTURE and INV-404-LOOKUP-KEY-UNKNOWN added at gate-analysis revise 2, INV-409-IDEMPOTENCY-KEY-REUSED moved in at revise 3 for API-INV-047) + 5 in-process-only codes (§5.1 — INV-422-RESERVATION-MISMATCH added at revise 1) · format `{MOD}-{http}[-{SLUG}]`
 Rules with a code : 46 (41 in the HTTP catalog, 5 in-process only) · effect / answer rules without a code : RULE-INV-005, 014, 024, 038, 046 (messages kept in §1.3)
-Rules without a message in a language : none · codes without an INV text : 4 (INV-400, INV-401, INV-500, INV-409-STALE-VERSION — the platform's texts, ADR-INV-021 amended); every other PLATFORM-STD row — INV-403, the ten `INV-404-*-NOT-FOUND`, INV-404-LOOKUP-KEY-UNKNOWN — and INV-422-LOAD-ROWS-INVALID carry INV's ar / en text (gate-analysis revise 3, G1)
+Rules without a message in a language : none · codes without an INV text : none — every catalog row carries INV's ar / en text: INV-403, the ten `INV-404-*-NOT-FOUND`, INV-404-LOOKUP-KEY-UNKNOWN and INV-422-LOAD-ROWS-INVALID since gate-analysis revise 3 (G1), and INV-400, INV-401, INV-500 and INV-409-STALE-VERSION since revise 4 (G3, ADR-INV-021 amended); bundles `messages.properties` / `messages_ar.properties` (checklist C11)
 
 ### API document
 
@@ -215,7 +215,8 @@ the ADR-INV-021 row; totals XM 15.
 | ADR-INV-050 | Default switches serialise on a tenant advisory lock (G19) | ACCEPTED |
 | ADR-INV-051 | A lot-less line of a lot-tracked Item is accepted up to the lot-less on-hand (gate-analysis revise 3, G2) | ACCEPTED |
 | ADR-INV-052 | A synchronised offline sale skips the active-state checks and notifies the Warehouse role (G3; extends ADR-INV-045) | ACCEPTED |
-| ADR-INV-053 | An opening stock load carries an idempotency key (G4) | ACCEPTED |
+| ADR-INV-053 | An opening stock load carries an idempotency key (G4); its hash is taken over the request as submitted (revise 4, G5) | ACCEPTED (amended) |
+| ADR-INV-054 | A count posts the measure difference of a dual-quantity Item; the system measure is derived, not stored (gate-analysis revise 4, G8) | ACCEPTED |
 
 Revised in place at gate-analysis revise 1: ADR-INV-022 (G4), ADR-INV-024 (package, G22), ADR-INV-030 (count-difference
 increase valued at 0, G11), ADR-INV-035 (barcode-only sheet, G12), ADR-INV-036 (warehouse labels on the row, G13),
@@ -227,7 +228,9 @@ Revised in place at gate-analysis revise 2: ADR-INV-026 (lot locks, default-swit
 
 Revised in place at gate-analysis revise 3: ADR-INV-021 (INV owns the texts of its module-specific codes — G1).
 
-Next free ADR : ADR-INV-054.
+Revised in place at gate-analysis revise 4: ADR-INV-021 (INV states the text of every code, the four generic codes included — G3), ADR-INV-026 (referenced reservations locked in ascending reservationPk after the idempotency lock — G4), ADR-INV-048 and ADR-INV-053 (request hash taken over the request as submitted — G5), ADR-INV-027 and ADR-INV-048 point 3 (aligned with ADR-INV-053 — G6).
+
+Next free ADR : ADR-INV-055.
 
 ### Traceability
 
@@ -235,5 +238,5 @@ REQ covered by ≥ 1 API or DBF : 140 / 140 · orphan REQ : none.
 
 ### Event
 
-"P3.1 completed: INV v1 — API 51, QR 46, XM blocks 15 (13 registered + 2 minted), ADR-INV-021 … 032" · "gate-analysis revise 1: root package com.commerce.inv, ADR-INV-041 … 045" · "gate-analysis revise 2: API-INV-052 (InvLookups), RULE-INV-050 / 051 codes, ADR-INV-046 … 050" · "gate-analysis revise 3: texts of every INV code, INV-409-IDEMPOTENCY-KEY-REUSED on API-INV-047, labels on every row, package domain, ADR-INV-051 … 053"
+"P3.1 completed: INV v1 — API 51, QR 46, XM blocks 15 (13 registered + 2 minted), ADR-INV-021 … 032" · "gate-analysis revise 1: root package com.commerce.inv, ADR-INV-041 … 045" · "gate-analysis revise 2: API-INV-052 (InvLookups), RULE-INV-050 / 051 codes, ADR-INV-046 … 050" · "gate-analysis revise 3: texts of every INV code, INV-409-IDEMPOTENCY-KEY-REUSED on API-INV-047, labels on every row, package domain, ADR-INV-051 … 053" · "gate-analysis revise 4: count-generated lines use the counted lot and carry the measure difference, texts of the four generic codes, reservation lock order, request hash as submitted, ADR-INV-054"
 ══════════════════════════════════════════════════════════════════

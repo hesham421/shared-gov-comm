@@ -1,9 +1,9 @@
 # ADR-INV-026 — Locking order, insert-if-absent and serialisation points
-Status      : ACCEPTED
+Status      : ACCEPTED (amended at gate-analysis revise 2 and revise 4, G4)
 Stage       : P3.1 (Backend Execution Plan)        Module: INV        Version: v1
 Lane        : analysis · claude:opus
 Decided     : 2026-10-31
-traces      : ADR-INV-050, REQ-INV-108, QR-INV-039, REQ-INV-037, REQ-INV-008, REQ-INV-027, REQ-INV-006, REQ-INV-044, REQ-INV-088, SRS D-09, QR-INV-002, QR-INV-005, QR-INV-012, QR-INV-017, QR-INV-023, QR-INV-024, QR-INV-031, QR-INV-040, QR-INV-041
+traces      : ADR-INV-050, ADR-INV-044, REQ-INV-047, RULE-INV-049, REQ-INV-108, QR-INV-039, REQ-INV-037, REQ-INV-008, REQ-INV-027, REQ-INV-006, REQ-INV-044, REQ-INV-088, SRS D-09, QR-INV-002, QR-INV-005, QR-INV-012, QR-INV-017, QR-INV-023, QR-INV-024, QR-INV-031, QR-INV-040, QR-INV-041
 
 ## Context
 Parallel channels move the same Variant in the same warehouse (REQ-INV-037); the negative-stock and
@@ -16,6 +16,13 @@ of one Variant and a deactivation racing a post must all stay consistent. "Valid
   valuation rows next, ascending VARIANT_FK, the same way on UQ_INV_STOCK_VALUATION_VARIANT_FK. Checks read
   after the locks.
 - Reservations and issues of a Variant × warehouse serialise on the lot-less balance row of the pair.
+- Reservations an issue references (amended at gate-analysis revise 4, G4): every distinct reservation the
+  issue's lines name is locked FOR UPDATE (intent R-4) in ascending RESERVATION_PK, in one pass after the
+  idempotency advisory lock (ADR-INV-044) and before the pair's balance rows, whatever the line order. The global
+  order is therefore: idempotency advisory lock → referenced reservations (ascending reservationPk) → warehouse
+  FOR SHARE → Item stock settings FOR SHARE (ascending itemFk) → lot-less balance rows → lot balance rows → lots
+  FOR SHARE (ascending lotPk) → valuation rows. Two issues of one source document naming the same reservations in
+  opposite line order take them in the same order and cannot deadlock.
 - Posting paths read the warehouse FOR SHARE; deactivation takes it FOR UPDATE before its usage probe. The
   same pattern guards a branch against a concurrent warehouse save.
 - Default switches first take the tenant's default-switch advisory lock (`pg_advisory_xact_lock(hashtextextended(:tenantId || ':INV_WAREHOUSE_DEFAULT' | ':INV_BRANCH_DEFAULT', 0))`), then lock the current default and the target; the partial unique indexes back them (amended by ADR-INV-050, gate-analysis revise 2 G19 — locking only the current default row lost the race, because its WHERE no longer matched after the first switch committed).

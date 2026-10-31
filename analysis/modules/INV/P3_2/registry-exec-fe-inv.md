@@ -93,7 +93,9 @@ Cited from P3.1 at gate-analysis revise 2: ADR-INV-046 (line refusals in `detail
 
 Cited at gate-analysis revise 3: ADR-INV-051 («بدون تشغيلة» / "Without a lot" on transfer, count and decrease lines), ADR-INV-053 (one idempotency key per opening stock load); ADR-INV-021 amended.
 
-Filed under analysis/decisions/INV/. BLOCKED: none. Next free ADR: ADR-INV-054 (module-wide).
+Cited at gate-analysis revise 4: ADR-INV-054 (system measure of a posted dual-quantity count line, SCR-INV-006); the SCR-INV-005 guard now hides only the menu entry and the create action while one warehouse is active (G7).
+
+Filed under analysis/decisions/INV/. BLOCKED: none. Next free ADR: ADR-INV-055 (module-wide).
 
 ### Traceability
 

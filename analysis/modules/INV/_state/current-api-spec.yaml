@@ -557,7 +557,7 @@ paths:
       operationId: postStockCount
       summary: "API-INV-032 — post stock count"
       x-api-id: API-INV-032
-      x-traces: [REQ-INV-092, REQ-INV-093, REQ-INV-090, REQ-INV-068, REQ-INV-139, DBF-INV-117, DBF-INV-119, DBF-INV-122, DBF-INV-124, DBF-INV-132, DBF-INV-133, DBF-INV-144, DBF-INV-146, DBF-INV-147, DBF-INV-148, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-162, DBF-INV-163, DBF-INV-166, DBF-INV-167, DBF-INV-168, DBF-INV-171]
+      x-traces: [REQ-INV-092, REQ-INV-093, REQ-INV-090, REQ-INV-068, REQ-INV-139, DBF-INV-117, DBF-INV-119, DBF-INV-122, DBF-INV-124, DBF-INV-028, DBF-INV-131, DBF-INV-132, DBF-INV-133, DBF-INV-144, DBF-INV-146, DBF-INV-147, DBF-INV-148, DBF-INV-149, DBF-INV-150, DBF-INV-151, DBF-INV-159, DBF-INV-162, DBF-INV-163, DBF-INV-166, DBF-INV-167, DBF-INV-168, DBF-INV-171]
       parameters: [*pid]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/VersionedActionRequest'}}}}
       responses:
@@ -1146,6 +1146,7 @@ components:
         countedMeasureQty: {type: [number, 'null']}
         systemQty: {type: [number, 'null']}
         differenceQty: {type: [number, 'null']}
+        systemMeasureQty: {type: [number, 'null'], readOnly: true, description: "the on-hand measure at posting of a dual-quantity line — derived, not stored: countedMeasureQty minus the measureQtyChange of the count's adjustment line for this Variant and lot, or countedMeasureQty when the line produced none; null while DRAFT or for an Item that is not dual-quantity (ADR-INV-054)"}
         version: {type: integer, format: int64}
     StockCount:
       allOf:
